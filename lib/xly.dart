@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 /// A test widget for the xly package.
 class TestWidget extends StatelessWidget {
-  const TestWidget({Key? key}) : super(key: key);
+  const TestWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
