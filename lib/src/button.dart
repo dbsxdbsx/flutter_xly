@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 
 /// 一个漂亮的按钮小部件
-///
-class NiceButton extends StatelessWidget {
+class MyButton extends StatelessWidget {
   final String text;
   final VoidCallback onPressed;
 
-  const NiceButton({
+  const MyButton({
     super.key,
     required this.text,
     required this.onPressed,

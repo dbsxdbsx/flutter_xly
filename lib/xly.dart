@@ -1,18 +1,12 @@
-library xly;
+// 3rd packages
+export 'package:flutter_screenutil/flutter_screenutil.dart';
+export 'package:get/get.dart';
+export 'package:window_manager/window_manager.dart';
 
-import 'package:flutter/material.dart';
-
-/// A test widget for the xly package.
-class TestWidget extends StatelessWidget {
-  const TestWidget({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.blue,
-      child: const Center(
-        child: Text('This is a test widget from xly package'),
-      ),
-    );
-  }
-}
+// xly diy widgets
+export 'xly.dart';
+export 'src/init.dart' show MyApp, MyRoute;
+export 'src/button.dart' show MyButton;
+export 'src/platform.dart' show MyPlatform;
+export 'src/navigation.dart' show goToPage;
+export 'src/toast.dart' show toast, hideAllToasts;
