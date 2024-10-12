@@ -103,19 +103,21 @@ class Page1View extends GetView<Page1Controller> {
       ),
     ).showRightMenu(
       context: context,
-      menuItems: [
+      menuElements: [
         MyMenuItem(
           text: '选项1',
           onTap: () => toast('选择了选项1'),
         ),
+        MyMenuDivider(), // 添加分隔线
         MyMenuItem(
           icon: Icons.looks_two,
-          text: '选项2',
+          text: '选项2！！！！！！！！！！！！！！！！！！！！！！！！',
           onTap: () => toast('选择了选项2'),
         ),
+        MyMenuDivider(), // 添加分隔线
         MyMenuItem(
           icon: Icons.more_horiz,
-          text: '更多选项',
+          text: '多选项',
           subItems: [
             MyMenuItem(
               icon: Icons.info,
@@ -133,6 +135,7 @@ class Page1View extends GetView<Page1Controller> {
                 ),
               ],
             ),
+            MyMenuDivider(thicknessMultiplier: 0.7), // 添加分隔线
             MyMenuItem(
               icon: Icons.help,
               text: '帮助',
@@ -158,6 +161,7 @@ class Page1View extends GetView<Page1Controller> {
                   text: '语言设置',
                   onTap: () => toast('打开语言设置'),
                 ),
+                MyMenuDivider(), // 添加分隔线
                 MyMenuItem(
                   icon: Icons.color_lens,
                   text: '主题设置',

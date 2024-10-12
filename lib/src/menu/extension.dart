@@ -6,7 +6,7 @@ import 'style.dart';
 extension RightClickMenuExtension on Widget {
   Widget showRightMenu({
     required BuildContext context,
-    required List<MyMenuItem> menuItems,
+    required List<MyMenuElement> menuElements,
     MyMenuPopStyle animationStyle = MyMenuPopStyle.scale,
     MyMenuStyle style = const MyMenuStyle(),
   }) {
@@ -15,7 +15,7 @@ extension RightClickMenuExtension on Widget {
         MyMenu.show(
           context,
           details.globalPosition,
-          menuItems,
+          menuElements,
           animationStyle: animationStyle,
           style: style,
         );

@@ -21,7 +21,7 @@ class MyMenu {
   static Future<void> show(
     BuildContext context,
     Offset position,
-    List<MyMenuItem> menuItems, {
+    List<MyMenuElement> menuElements, {
     MyMenuPopStyle animationStyle = MyMenuPopStyle.scale,
     MyMenuStyle style = const MyMenuStyle(),
   }) async {
@@ -30,13 +30,13 @@ class MyMenu {
     _closeAllSubMenus();
     _menuCompleter = Completer<void>();
 
-    final menuSize = calculateMenuSize(menuItems, style);
+    final menuSize = calculateMenuSize(menuElements, style);
     final adjustedPosition = calculateMenuPosition(context, position, menuSize);
 
     _overlayEntry = OverlayEntry(
       builder: (context) => _MenuOverlay(
         position: adjustedPosition,
-        menuItems: menuItems,
+        menuElements: menuElements,
         animationStyle: animationStyle,
         style: style,
         onItemSelected: (item) {
@@ -57,13 +57,13 @@ class MyMenu {
   static Widget _buildMenuOverlay(
     BuildContext context,
     Offset position,
-    List<MyMenuItem> menuItems,
+    List<MyMenuElement> menuElements,
     MyMenuPopStyle animationStyle,
     MyMenuStyle style,
   ) {
     return _MenuOverlay(
       position: position,
-      menuItems: menuItems,
+      menuElements: menuElements,
       animationStyle: animationStyle,
       style: style,
       onItemSelected: (item) {
@@ -75,23 +75,32 @@ class MyMenu {
     );
   }
 
-  static Size calculateMenuSize(List<MyMenuItem> menuItems, MyMenuStyle style) {
-    double maxWidth = menuItems.fold(0.0, (maxWidth, item) {
-      final textPainter = TextPainter(
-        text: TextSpan(
-          text: item.text,
-          style: TextStyle(fontSize: style.fontSize.sp),
-        ),
-        maxLines: 1,
-        textDirection: TextDirection.ltr,
-      )..layout(minWidth: 0, maxWidth: double.infinity);
+  static Size calculateMenuSize(
+      List<MyMenuElement> menuElements, MyMenuStyle style) {
+    double maxWidth = 0.0;
+    double totalHeight = 0.0;
 
-      double itemWidth =
-          textPainter.width + (item.icon != null ? style.iconPadding.w : 0);
-      return max(maxWidth, itemWidth);
-    });
+    for (var element in menuElements) {
+      if (element is MyMenuItem) {
+        final textPainter = TextPainter(
+          text: TextSpan(
+            text: element.text,
+            style: TextStyle(fontSize: style.fontSize.sp),
+          ),
+          maxLines: 1,
+          textDirection: TextDirection.ltr,
+        )..layout(minWidth: 0, maxWidth: double.infinity);
 
-    return Size(maxWidth, style.itemHeight.h * menuItems.length);
+        double itemWidth = textPainter.width +
+            (element.icon != null ? style.iconPadding.w : 0);
+        maxWidth = max(maxWidth, itemWidth);
+        totalHeight += style.itemHeight.h;
+      } else if (element is MyMenuDivider) {
+        totalHeight += element.height * element.thicknessMultiplier;
+      }
+    }
+
+    return Size(maxWidth, totalHeight);
   }
 
   static Offset _adjustMenuPosition(
@@ -177,7 +186,7 @@ class MyMenu {
 // 3. 辅助类和组件
 class _MenuOverlay extends StatelessWidget {
   final Offset position;
-  final List<MyMenuItem> menuItems;
+  final List<MyMenuElement> menuElements;
   final MyMenuPopStyle animationStyle;
   final MyMenuStyle style;
   final Function(MyMenuItem) onItemSelected;
@@ -185,7 +194,7 @@ class _MenuOverlay extends StatelessWidget {
   const _MenuOverlay({
     Key? key,
     required this.position,
-    required this.menuItems,
+    required this.menuElements,
     required this.animationStyle,
     required this.style,
     required this.onItemSelected,
@@ -208,7 +217,7 @@ class _MenuOverlay extends StatelessWidget {
                 child: Material(
                   color: Colors.transparent,
                   child: _MyMenuWidget(
-                    menuItems: menuItems,
+                    menuElements: menuElements,
                     onItemSelected: onItemSelected,
                     style: style,
                   ),
@@ -306,14 +315,14 @@ class _AnimatedMenuWidgetState extends State<_AnimatedMenuWidget>
 }
 
 class _MyMenuWidget extends StatelessWidget {
-  final List<MyMenuItem> menuItems;
+  final List<MyMenuElement> menuElements;
   final Function(MyMenuItem) onItemSelected;
   final MyMenuStyle style;
   final bool isSubMenu;
   final int level;
 
   const _MyMenuWidget({
-    required this.menuItems,
+    required this.menuElements,
     required this.onItemSelected,
     required this.style,
     this.isSubMenu = false,
@@ -342,9 +351,8 @@ class _MyMenuWidget extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: menuItems
-                      .map((item) =>
-                          _buildMenuItem(context, item, activeSubMenus))
+                  children: menuElements
+                      .map((element) => _buildMenuElement(context, element))
                       .toList(),
                 ),
               ),
@@ -355,8 +363,16 @@ class _MyMenuWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuItem(BuildContext context, MyMenuItem item,
-      List<OverlayEntry> activeSubMenus) {
+  Widget _buildMenuElement(BuildContext context, MyMenuElement element) {
+    if (element is MyMenuItem) {
+      return _buildMenuItem(context, element);
+    } else if (element is MyMenuDivider) {
+      return element.build(context);
+    }
+    return const SizedBox.shrink(); // 处理未知类型
+  }
+
+  Widget _buildMenuItem(BuildContext context, MyMenuItem item) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -416,7 +432,7 @@ class _MyMenuWidget extends StatelessWidget {
           child: _AnimatedMenuWidget(
             animationStyle: MyMenu.currentAnimationStyle,
             child: _MyMenuWidget(
-              menuItems: item.subItems!,
+              menuElements: item.subItems!,
               onItemSelected: onItemSelected,
               style: style,
               isSubMenu: true,
@@ -473,7 +489,7 @@ class _SubMenuBuilder extends StatelessWidget {
             ],
             Expanded(
               child: Text(
-                item.text,
+                item.text ?? '',
                 style: TextStyle(
                     color: Colors.black87, fontSize: style.fontSize.sp),
                 maxLines: 1,
@@ -489,18 +505,46 @@ class _SubMenuBuilder extends StatelessWidget {
 }
 
 // 4. 公共类和扩展
-class MyMenuItem {
-  final String text;
+abstract class MyMenuElement {}
+
+class MyMenuItem extends MyMenuElement {
+  final String? text;
   final IconData? icon;
   final VoidCallback? onTap;
-  final List<MyMenuItem>? subItems;
+  final List<MyMenuElement>? subItems;
 
   MyMenuItem({
-    required this.text,
+    this.text,
     this.icon,
     this.onTap,
     this.subItems,
-  }) : assert(onTap != null || subItems != null, '必须提供 onTap 或 subItems 中的一个');
+  }) : assert(text != null && (onTap != null || subItems != null),
+            '必须提供 text 和 onTap 或 subItems 中的一个');
 
   bool get hasSubMenu => subItems != null && subItems!.isNotEmpty;
+}
+
+class MyMenuDivider extends MyMenuElement {
+  final double height;
+  final Color color;
+  final EdgeInsets margin;
+  final double thicknessMultiplier;
+
+  MyMenuDivider({
+    this.height = 1.0,
+    this.color = const Color(0x1F000000), // 更淡的灰色,透明度为0.12
+    this.margin = const EdgeInsets.symmetric(horizontal: 8.0), // 添加水平边距
+    this.thicknessMultiplier = 0.7,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: margin,
+      child: Container(
+        height: height * thicknessMultiplier,
+        color: color,
+      ),
+    );
+  }
 }
