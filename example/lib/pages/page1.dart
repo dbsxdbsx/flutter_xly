@@ -13,6 +13,51 @@ class Page1View extends GetView<Page1Controller> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Obx(() => MyMenuButton(
+                  iconSize: 30.0,
+                  iconColor: Colors.blue,
+                  isPressed: controller.isMenuButtonActivated.value,
+                  menuItems: [
+                    MyMenuItem(
+                      text: '加载内置引擎',
+                      icon: Icons.engineering,
+                      onTap: () {
+                        toast('选择了加载内置引擎');
+                        controller.isMenuButtonActivated.value =
+                            !controller.isMenuButtonActivated.value;
+                      },
+                    ),
+                    MyMenuItem(
+                      text: '加载自定义引擎',
+                      icon: Icons.settings,
+                      onTap: () => toast('加载自定义引擎功能暂未开放'),
+                    ),
+                  ],
+                )),
+            SizedBox(height: 20.h),
+            MyMenuButton(
+              icon: Icons.more_vert,
+              iconSize: 30.0,
+              iconColor: Colors.green,
+              menuItems: [
+                MyMenuItem(
+                  text: '选项A',
+                  icon: Icons.star,
+                  onTap: () => toast('选择了选项A'),
+                ),
+                MyMenuItem(
+                  text: '选项B',
+                  icon: Icons.favorite,
+                  onTap: () => toast('选择了选项B'),
+                ),
+              ],
+            ),
+            SizedBox(height: 20.h),
+            MyButton(
+              text: '切换菜单按钮状态',
+              onPressed: controller.toggleMenuButtonState,
+            ),
+            SizedBox(height: 20.h),
             MyButton(
               text: '前往页面2',
               onPressed: controller.goToPage2,
@@ -22,7 +67,6 @@ class Page1View extends GetView<Page1Controller> {
               text: '连续显示多条Toast',
               onPressed: controller.showToast,
             ),
-            SizedBox(height: 20.h),
           ],
         ),
       ),
@@ -45,6 +89,12 @@ class Page1View extends GetView<Page1Controller> {
 }
 
 class Page1Controller extends GetxController {
+  final isMenuButtonActivated = false.obs;
+
+  void toggleMenuButtonState() {
+    isMenuButtonActivated.value = !isMenuButtonActivated.value;
+  }
+
   void goToPage2() {
     goToPage(Routes.page2);
   }

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'dart:ui';
 
@@ -12,15 +13,18 @@ enum MyMenuPopStyle { scale, fade, slideFromTop, slideFromRight }
 // 2. 核心类定义
 class MyMenu {
   static OverlayEntry? _overlayEntry;
+  static Completer<void>? _menuCompleter;
 
-  static void show(
+  static Future<void> show(
     BuildContext context,
     Offset position,
     List<MyMenuItem> menuItems, {
     MyMenuPopStyle animationStyle = MyMenuPopStyle.scale,
     MyMenuStyle style = const MyMenuStyle(),
-  }) {
+  }) async {
     _closeMenu();
+    _menuCompleter = Completer<void>();
+
     final menuSize = _calculateMenuSize(menuItems, style);
     final adjustedPosition = _adjustMenuPosition(
       Overlay.of(context).context.findRenderObject()! as RenderBox,
@@ -40,6 +44,8 @@ class MyMenu {
 
     Overlay.of(context).insert(_overlayEntry!);
     _addRouteListener(context);
+
+    return _menuCompleter!.future;
   }
 
   static Widget _buildMenuOverlay(
@@ -97,6 +103,8 @@ class MyMenu {
   static void _closeMenu() {
     _overlayEntry?.remove();
     _overlayEntry = null;
+    _menuCompleter?.complete();
+    _menuCompleter = null;
   }
 }
 
