@@ -111,7 +111,7 @@ class Page1View extends GetView<Page1Controller> {
         MyMenuDivider(), // 添加分隔线
         MyMenuItem(
           icon: Icons.looks_two,
-          text: '选项2！！！！！！！！！！！！！！！！！！！！！！！！',
+          text: '选项2！',
           onTap: () => toast('选择了选项2'),
         ),
         MyMenuDivider(), // 添加分隔线
