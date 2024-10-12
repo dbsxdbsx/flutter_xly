@@ -19,8 +19,8 @@ class Page1View extends GetView<Page1Controller> {
                   isPressed: controller.isMenuButtonActivated.value,
                   menuItems: [
                     MyMenuItem(
-                      text: '加载内置引擎',
                       icon: Icons.engineering,
+                      text: '加载内置引擎',
                       onTap: () {
                         toast('选择了加载内置引擎');
                         controller.isMenuButtonActivated.value =
@@ -29,8 +29,39 @@ class Page1View extends GetView<Page1Controller> {
                     ),
                     MyMenuItem(
                       text: '加载自定义引擎',
-                      icon: Icons.settings,
                       onTap: () => toast('加载自定义引擎功能暂未开放'),
+                    ),
+                    MyMenuItem(
+                      icon: Icons.settings,
+                      text: '高级选项',
+                      subItems: [
+                        MyMenuItem(
+                          icon: Icons.speed,
+                          text: '性能设置',
+                          onTap: () => toast('打开性能设置'),
+                        ),
+                        MyMenuItem(
+                          icon: Icons.security,
+                          text: '安全选项',
+                          onTap: () => toast('打开安全选项'),
+                        ),
+                        MyMenuItem(
+                          icon: Icons.build,
+                          text: '开发者工具',
+                          subItems: [
+                            MyMenuItem(
+                              icon: Icons.bug_report,
+                              text: '调试模式',
+                              onTap: () => toast('开启调试模式'),
+                            ),
+                            MyMenuItem(
+                              icon: Icons.code,
+                              text: '控制台',
+                              onTap: () => toast('打开控制台'),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ],
                 )),
@@ -75,13 +106,66 @@ class Page1View extends GetView<Page1Controller> {
       menuItems: [
         MyMenuItem(
           text: '选项1',
-          icon: Icons.looks_one,
-          onTap: () => toast('选择了选项1!!!!!!!!!!!!!!!!!!!!'),
+          onTap: () => toast('选择了选项1'),
         ),
         MyMenuItem(
-          text: '选项2',
           icon: Icons.looks_two,
+          text: '选项2',
           onTap: () => toast('选择了选项2'),
+        ),
+        MyMenuItem(
+          icon: Icons.more_horiz,
+          text: '更多选项',
+          subItems: [
+            MyMenuItem(
+              icon: Icons.info,
+              text: '关于',
+              subItems: [
+                MyMenuItem(
+                  icon: Icons.info_outline,
+                  text: '版本信息',
+                  onTap: () => toast('显示版本信息'),
+                ),
+                MyMenuItem(
+                  icon: Icons.contact_support,
+                  text: '联系我们',
+                  onTap: () => toast('显示联系方式'),
+                ),
+              ],
+            ),
+            MyMenuItem(
+              icon: Icons.help,
+              text: '帮助',
+              subItems: [
+                MyMenuItem(
+                  icon: Icons.help_outline,
+                  text: '常见问题',
+                  onTap: () => toast('显示常见问题'),
+                ),
+                MyMenuItem(
+                  icon: Icons.book,
+                  text: '用户手册',
+                  onTap: () => toast('打开用户手册'),
+                ),
+              ],
+            ),
+            MyMenuItem(
+              icon: Icons.settings,
+              text: '设置',
+              subItems: [
+                MyMenuItem(
+                  icon: Icons.language,
+                  text: '语言设置',
+                  onTap: () => toast('打开语言设置'),
+                ),
+                MyMenuItem(
+                  icon: Icons.color_lens,
+                  text: '主题设置',
+                  onTap: () => toast('打开主题设置'),
+                ),
+              ],
+            ),
+          ],
         ),
       ],
     );
