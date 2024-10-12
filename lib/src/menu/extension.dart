@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:xly/src/menu.dart';
+import 'package:xly/src/menu/widget.dart';
+
+import 'style.dart';
 
 extension RightClickMenuExtension on Widget {
   Widget showRightMenu({
