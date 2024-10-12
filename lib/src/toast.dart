@@ -12,8 +12,8 @@ void toast(
   EdgeInsetsGeometry? textPadding,
   ToastPosition? position,
   bool stackToasts = false,
-  Duration animationDuration = const Duration(milliseconds: 200),
-  Curve animationCurve = Curves.easeInOut,
+  Duration animationDuration = Duration.zero,
+  Curve animationCurve = Curves.linear,
 }) {
   showToast(
     message,
@@ -28,21 +28,7 @@ void toast(
         textPadding ?? EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.w),
     position: position ?? ToastPosition.center,
     animationBuilder: (context, child, controller, direction) {
-      return SlideTransition(
-        position: Tween<Offset>(
-          begin: const Offset(0, 0.5),
-          end: Offset.zero,
-        ).animate(
-          CurvedAnimation(
-            parent: controller,
-            curve: animationCurve,
-          ),
-        ),
-        child: FadeTransition(
-          opacity: controller,
-          child: child,
-        ),
-      );
+      return child; // 无动画
     },
     animationDuration: animationDuration,
     animationCurve: animationCurve,
@@ -51,6 +37,6 @@ void toast(
 
 void hideAllToasts([int milliseconds = 0]) {
   Future.delayed(Duration(milliseconds: milliseconds), () {
-    dismissAllToast(showAnim: true);
+    dismissAllToast(showAnim: false);
   });
 }
