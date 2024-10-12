@@ -10,3 +10,5 @@ export 'src/button.dart' show MyButton;
 export 'src/platform.dart' show MyPlatform;
 export 'src/navigation.dart' show goToPage;
 export 'src/toast.dart' show toast, hideAllToasts;
+export 'src/menu.dart'
+    show MyMenu, MyMenuItem, MyMenuButton, RightClickMenuExtension, MyMenuPopStyle;

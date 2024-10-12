@@ -31,14 +31,29 @@ class Page1View extends GetView<Page1Controller> {
               text: '前往页面2',
               onPressed: controller.goToPage2,
             ),
-            SizedBox(height: 20.h), // 添加一些垂直间距
+            SizedBox(height: 20.h),
             MyButton(
               text: '连续显示多条Toast',
               onPressed: controller.showToast,
             ),
+            SizedBox(height: 20.h),
           ],
         ),
       ),
+    ).showRightMenu(
+      context: context,
+      menuItems: [
+        MyMenuItem(
+          text: '选项1',
+          icon: Icons.looks_one,
+          onTap: () => toast('选择了选项1!!!!!!!!!!!!!!!!!!!!'),
+        ),
+        MyMenuItem(
+          text: '选项2',
+          icon: Icons.looks_two,
+          onTap: () => toast('选择了选项2'),
+        ),
+      ],
     );
   }
 }
