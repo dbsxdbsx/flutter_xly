@@ -2,20 +2,6 @@ import 'package:example/main.dart';
 import 'package:flutter/material.dart';
 import 'package:xly/xly.dart';
 
-class Page1Controller extends GetxController {
-  void goToPage2() {
-    goToPage(Routes.page2);
-  }
-
-  void showToast() async {
-    toast('这是一条测试Toast消息1');
-    await Future.delayed(const Duration(seconds: 1));
-    toast('这是一条测试Toast消息2');
-    await Future.delayed(const Duration(seconds: 1));
-    toast('这是一条测试Toast消息3', stackToasts: true);
-  }
-}
-
 class Page1View extends GetView<Page1Controller> {
   const Page1View({super.key});
 
@@ -55,5 +41,19 @@ class Page1View extends GetView<Page1Controller> {
         ),
       ],
     );
+  }
+}
+
+class Page1Controller extends GetxController {
+  void goToPage2() {
+    goToPage(Routes.page2);
+  }
+
+  void showToast() async {
+    toast('这是一条测试Toast消息1');
+    await Future.delayed(const Duration(seconds: 1));
+    toast('这是一条测试Toast消息2');
+    await Future.delayed(const Duration(seconds: 1));
+    toast('这是一条测试Toast消息3', stackToasts: true);
   }
 }

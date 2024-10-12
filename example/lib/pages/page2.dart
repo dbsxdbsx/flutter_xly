@@ -2,12 +2,6 @@ import 'package:example/main.dart';
 import 'package:flutter/material.dart';
 import 'package:xly/xly.dart';
 
-class Page2Controller extends GetxController {
-  void goToPage1() {
-    goToPage(Routes.page1);
-  }
-}
-
 class Page2View extends GetView<Page2Controller> {
   const Page2View({super.key});
 
@@ -22,5 +16,11 @@ class Page2View extends GetView<Page2Controller> {
         ),
       ),
     );
+  }
+}
+
+class Page2Controller extends GetxController {
+  void goToPage1() {
+    goToPage(Routes.page1);
   }
 }

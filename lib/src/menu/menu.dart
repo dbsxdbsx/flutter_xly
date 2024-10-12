@@ -4,6 +4,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import 'style.dart';
+
 // 1. 枚举和常量定义
 enum MyMenuPopStyle { scale, fade, slideFromTop, slideFromRight }
 
@@ -40,7 +42,6 @@ class MyMenu {
     _addRouteListener(context);
   }
 
-  // 私有方法
   static Widget _buildMenuOverlay(
     BuildContext context,
     Offset position,
@@ -56,7 +57,8 @@ class MyMenu {
     );
   }
 
-  static Size _calculateMenuSize(List<MyMenuItem> menuItems, MyMenuStyle style) {
+  static Size _calculateMenuSize(
+      List<MyMenuItem> menuItems, MyMenuStyle style) {
     double maxWidth = menuItems.fold(0.0, (maxWidth, item) {
       final textPainter = TextPainter(
         text: TextSpan(
@@ -72,7 +74,8 @@ class MyMenu {
     return Size(maxWidth, style.itemHeight.h * menuItems.length);
   }
 
-  static Offset _adjustMenuPosition(RenderBox overlay, Size menuSize, Offset clickPosition) {
+  static Offset _adjustMenuPosition(
+      RenderBox overlay, Size menuSize, Offset clickPosition) {
     final screenSize = overlay.size;
     return Offset(
       clickPosition.dx + menuSize.width > screenSize.width
@@ -216,8 +219,9 @@ class _AnimatedMenuWidgetState extends State<_AnimatedMenuWidget>
         return FadeTransition(opacity: _animation, child: widget.child);
       case MyMenuPopStyle.slideFromTop:
         return SlideTransition(
-          position: Tween<Offset>(begin: const Offset(0, -0.1), end: Offset.zero)
-              .animate(_animation),
+          position:
+              Tween<Offset>(begin: const Offset(0, -0.1), end: Offset.zero)
+                  .animate(_animation),
           child: widget.child,
         );
       case MyMenuPopStyle.slideFromRight:
@@ -246,13 +250,15 @@ class _MyMenuWidget extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(style.borderRadius.sp),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: style.blurSigma.sp, sigmaY: style.blurSigma.sp),
+        filter: ImageFilter.blur(
+            sigmaX: style.blurSigma.sp, sigmaY: style.blurSigma.sp),
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.7),
             borderRadius: BorderRadius.circular(style.borderRadius.sp),
             border: Border.all(
-                color: Colors.white.withOpacity(0.2), width: style.borderWidth.w),
+                color: Colors.white.withOpacity(0.2),
+                width: style.borderWidth.w),
           ),
           child: IntrinsicWidth(
             child: Column(
@@ -286,7 +292,8 @@ class _MyMenuWidget extends StatelessWidget {
               Expanded(
                 child: Text(
                   item.text,
-                  style: TextStyle(color: Colors.black87, fontSize: style.fontSize.sp),
+                  style: TextStyle(
+                      color: Colors.black87, fontSize: style.fontSize.sp),
                   maxLines: 1,
                 ),
               ),
@@ -305,46 +312,4 @@ class MyMenuItem {
   final VoidCallback onTap;
 
   MyMenuItem({required this.text, required this.icon, required this.onTap});
-}
-
-class MyMenuStyle {
-  final double fontSize;
-  final double iconPadding;
-  final double itemHeight;
-  final double borderRadius;
-  final double blurSigma;
-  final double borderWidth;
-  final Color focusColor;
-
-  const MyMenuStyle({
-    this.fontSize = 15,
-    this.iconPadding = 90,
-    this.itemHeight = 50,
-    this.borderRadius = 13,
-    this.blurSigma = 10,
-    this.borderWidth = 1,
-    this.focusColor = const Color(0xFF007AFF),
-  });
-}
-
-extension RightClickMenuExtension on Widget {
-  Widget showRightMenu({
-    required BuildContext context,
-    required List<MyMenuItem> menuItems,
-    MyMenuPopStyle animationStyle = MyMenuPopStyle.scale,
-    MyMenuStyle style = const MyMenuStyle(),
-  }) {
-    return GestureDetector(
-      onSecondaryTapDown: (TapDownDetails details) {
-        MyMenu.show(
-          context,
-          details.globalPosition,
-          menuItems,
-          animationStyle: animationStyle,
-          style: style,
-        );
-      },
-      child: this,
-    );
-  }
 }
