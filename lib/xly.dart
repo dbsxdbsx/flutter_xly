@@ -5,7 +5,7 @@ export 'package:window_manager/window_manager.dart';
 
 // xly diy widgets
 export 'src/init.dart' show MyApp, MyRoute;
-export 'src/button.dart' show MyButton;
+export 'src/button.dart' show MyButton, MyButtonShape, MyIconPosition;
 export 'src/platform.dart' show MyPlatform;
 export 'src/navigation.dart' show goToPage;
 export 'src/toast.dart' show toast, hideAllToasts;
