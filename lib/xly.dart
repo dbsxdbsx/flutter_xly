@@ -12,3 +12,4 @@ export 'src/toast.dart' show toast, hideAllToasts;
 export 'src/menu/menu.dart';
 export 'src/focus.dart' show XlyFocusController, XlyFocusableExtension;
 export 'src/dialogue.dart' show MyDialog;
+export 'src/splash.dart' show MySplash;

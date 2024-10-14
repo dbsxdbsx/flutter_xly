@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:xly/src/platform.dart';
+import 'package:xly/src/splash.dart';
 
 class MyRoute<T extends GetxController> {
   final String path;
@@ -31,6 +32,7 @@ class MyApp extends StatelessWidget {
   final bool useOKToast;
   final bool dragToMoveArea;
   final bool showDebugTag;
+  final MySplash? splash;
 
   const MyApp._({
     required this.designSize,
@@ -41,6 +43,7 @@ class MyApp extends StatelessWidget {
     this.useOKToast = true,
     this.dragToMoveArea = true,
     this.showDebugTag = true,
+    this.splash,
   });
 
   static Future<void> initialize({
@@ -65,6 +68,7 @@ class MyApp extends StatelessWidget {
     bool showDebugTag = true,
     ThemeData? theme,
     Size? minimumSize,
+    MySplash? splash,
   }) async {
     if (ensureScreenSize) {
       await ScreenUtil.ensureScreenSize();
@@ -102,6 +106,7 @@ class MyApp extends StatelessWidget {
       useOKToast: useOKToast,
       dragToMoveArea: dragToMoveArea,
       showDebugTag: showDebugTag,
+      splash: splash,
     ));
   }
 
@@ -161,16 +166,23 @@ class MyApp extends StatelessWidget {
     Widget app = GetMaterialApp(
       debugShowCheckedModeBanner: showDebugTag,
       title: appName,
-      initialRoute: routes.isNotEmpty ? routes.first.path : '/',
-      getPages: routes
-          .map((route) => GetPage(
-                name: route.path,
-                page: () => route.page,
-                binding: BindingsBuilder(() {
-                  route.registerController();
-                }),
-              ))
-          .toList(),
+      initialRoute: splash != null
+          ? '/splash'
+          : (routes.isNotEmpty ? routes.first.path : '/'),
+      getPages: [
+        if (splash != null)
+          GetPage(
+            name: '/splash',
+            page: () => splash!,
+          ),
+        ...routes.map((route) => GetPage(
+              name: route.path,
+              page: () => route.page,
+              binding: BindingsBuilder(() {
+                route.registerController();
+              }),
+            )),
+      ],
       builder: (context, child) => _buildAppContent(context, child),
       theme: _buildTheme(),
     );

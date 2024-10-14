@@ -1,6 +1,6 @@
 name: xly
 description: "A Test Flutter Package， DO NOT USE IT at present"
-version: 0.2.0
+version: 0.3.0
 
 environment:
   sdk: ^3.5.3
@@ -14,10 +14,13 @@ dependencies:
   get: ^4.6.6
   flutter_screenutil: ^5.9.3
   window_manager: ^0.4.2
+  lottie: ^3.1.2
 
   # no need reexport
   oktoast: ^3.4.0
   flutter_inset_box_shadow: ^1.0.8
+
+
 
 dev_dependencies:
   flutter_test:
@@ -25,3 +28,4 @@ dev_dependencies:
   flutter_lints: ^4.0.0
 
 example: example
+

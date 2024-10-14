@@ -22,7 +22,6 @@ extension XlyFocusableExtension on Widget {
     double opacityBeginScale = 0.65,
   }) {
     return _XlyFocusableWidget(
-      child: this,
       focusKey: focusKey,
       onPressed: onPressed,
       opacity: opacity,
@@ -30,6 +29,7 @@ extension XlyFocusableExtension on Widget {
       borderWidth: borderWidth,
       animationDuration: animationDuration,
       opacityBeginScale: opacityBeginScale,
+      child: this,
     );
   }
 }
@@ -45,7 +45,6 @@ class _XlyFocusableWidget extends StatefulWidget {
   final double opacityBeginScale;
 
   const _XlyFocusableWidget({
-    Key? key,
     required this.child,
     this.focusKey,
     this.onPressed,
@@ -54,7 +53,7 @@ class _XlyFocusableWidget extends StatefulWidget {
     this.borderWidth = 1.5,
     this.animationDuration = const Duration(milliseconds: 350),
     this.opacityBeginScale = 0.65,
-  }) : super(key: key);
+  });
 
   @override
   _XlyFocusableWidgetState createState() => _XlyFocusableWidgetState();
@@ -102,7 +101,9 @@ class _XlyFocusableWidgetState extends State<_XlyFocusableWidget> {
   VoidCallback? _findHostOnPressed(Widget child) {
     if (child is MyButton) {
       return child.onPressed;
-    } else if (child is ElevatedButton || child is TextButton || child is OutlinedButton) {
+    } else if (child is ElevatedButton ||
+        child is TextButton ||
+        child is OutlinedButton) {
       return (child as dynamic).onPressed as VoidCallback?;
     }
     // Add more widget types as needed

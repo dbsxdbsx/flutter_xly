@@ -192,13 +192,12 @@ class _MenuOverlay extends StatelessWidget {
   final Function(MyMenuItem) onItemSelected;
 
   const _MenuOverlay({
-    Key? key,
     required this.position,
     required this.menuElements,
     required this.animationStyle,
     required this.style,
     required this.onItemSelected,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -236,10 +235,9 @@ class _AnimatedMenuWidget extends StatefulWidget {
   final MyMenuPopStyle animationStyle;
 
   const _AnimatedMenuWidget({
-    Key? key,
     required this.child,
     this.animationStyle = MyMenuPopStyle.scale,
-  }) : super(key: key);
+  });
 
   @override
   _AnimatedMenuWidgetState createState() => _AnimatedMenuWidgetState();
@@ -465,13 +463,12 @@ class _SubMenuBuilder extends StatelessWidget {
   final Function(bool) onHover;
 
   const _SubMenuBuilder({
-    Key? key,
     required this.item,
     required this.style,
     required this.onItemSelected,
     required this.level,
     required this.onHover,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

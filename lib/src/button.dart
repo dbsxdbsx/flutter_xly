@@ -90,7 +90,8 @@ class MyButton extends StatelessWidget {
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           foregroundColor: foregroundColor,
-          backgroundColor: gradient != null ? Colors.transparent : backgroundColor,
+          backgroundColor:
+              gradient != null ? Colors.transparent : backgroundColor,
           elevation: 0, // 我们使用 BoxDecoration 来处理阴影
           padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
           shape: RoundedRectangleBorder(
@@ -160,7 +161,7 @@ class MyButton extends StatelessWidget {
   Widget _buildButtonContent({bool isCube = false, bool isNormal = false}) {
     Widget iconWidget = icon != null
         ? Icon(icon, color: foregroundColor, size: 20.w)
-        : SizedBox.shrink();
+        : const SizedBox.shrink();
     Widget textWidget = Text(
       text,
       style: TextStyle(
@@ -175,7 +176,9 @@ class MyButton extends StatelessWidget {
     double spacing = isCube ? 2.w : 8.w;
 
     MyIconPosition effectiveIconPosition = iconPosition ??
-        (shape == MyButtonShape.normal ? MyIconPosition.left : MyIconPosition.top);
+        (shape == MyButtonShape.normal
+            ? MyIconPosition.left
+            : MyIconPosition.top);
 
     switch (effectiveIconPosition) {
       case MyIconPosition.left:
@@ -193,7 +196,7 @@ class MyButton extends StatelessWidget {
     }
 
     return effectiveIconPosition == MyIconPosition.left ||
-           effectiveIconPosition == MyIconPosition.right
+            effectiveIconPosition == MyIconPosition.right
         ? Row(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,

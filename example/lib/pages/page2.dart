@@ -25,7 +25,7 @@ class Page2View extends GetView<Page2Controller> {
             _buildSectionTitle('其他样式测试'),
             SizedBox(height: 16.h),
             _buildOtherStyleTests(),
-            Spacer(),
+            const Spacer(),
             _buildFocusableText(),
             SizedBox(height: 24.h),
             _buildGoBackButton(),
@@ -144,7 +144,7 @@ class Page2View extends GetView<Page2Controller> {
           onPressed: () => toast('渐变背景按钮被点击'),
           icon: Icons.gradient,
           shape: MyButtonShape.normal, // 确保使用普通形状
-          gradient: LinearGradient(
+          gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [Colors.pink, Colors.purple, Colors.green],
@@ -217,12 +217,5 @@ class Page2Controller extends GetxController {
 
   void goToPage1() {
     goToPage(Routes.page1);
-  }
-
-  @override
-  void onInit() {
-    super.onInit();
-    // 可以在这里设置初始焦点
-    // focusController.setFocus('left_icon_button');
   }
 }
