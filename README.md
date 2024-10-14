@@ -8,11 +8,12 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 
 1. 基于GetX的状态管理
 2. 基于ScreenUtil的屏幕适配
-3. Toast消息显示(基于oktoast)
-4. 导航辅助函数
-5. 自定义按钮组件
-6. 自定义菜单组件
-7. 焦点管理
+3. 基于window_manager的窗口管理
+4. Toast消息显示(基于oktoast)
+5. 导航辅助函数
+6. 自定义按钮组件
+7. 自定义菜单组件
+8. 焦点管理
 
 ## 使用示例
 
@@ -153,13 +154,16 @@ MyDialog.showIos(
 );
 ```
 
-### 完整示例
+## 完整示例
 
 对于一个完整的示例，请参考 Example 页面。该示例展示了如何综合使用 xly 包中的各种功能，包括按钮、菜单、焦点管理和导航等。Example 页面提供了更详细的代码实现和实际运行效果，可以帮助您更好地理解和使用 xly 包的各项功能。
 
 您可以在项目的 `example` 目录下找到完整的示例代码。通过运行示例项目，您可以直观地体验 xly 包提供的各种组件和功能，并了解它们在实际应用中的使用方法。
 
+## splash Json动画资源
 
+- [lottie 动画参考1](https://lottiefiles.com/featured)
+- [lottie 动画参考2](https://iconscout.com/lottie-animations/)
 
 ## 注意事项
 
