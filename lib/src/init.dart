@@ -35,23 +35,25 @@ class MyApp extends StatelessWidget {
   final bool dragToMoveArea;
   final bool showDebugTag;
   final MySplash? splash;
-  final bool escToExit;
+  final LogicalKeyboardKey? keyToRollBack;
   final Duration exitGapTime;
   final String exitInfoText;
+  final String backInfoText;
 
   const MyApp._({
     required this.designSize,
     this.theme,
+    this.splash,
     required this.routes,
     this.appBuilder,
     required this.appName,
     this.useOKToast = true,
     this.dragToMoveArea = true,
     this.showDebugTag = true,
-    this.splash,
-    this.escToExit = true,
+    this.keyToRollBack,
     this.exitGapTime = const Duration(seconds: 2),
     this.exitInfoText = '再按一次退出App',
+    this.backInfoText = '再按一次返回上一页',
   });
 
   static Future<void> initialize({
@@ -77,9 +79,10 @@ class MyApp extends StatelessWidget {
     ThemeData? theme,
     Size? minimumSize,
     MySplash? splash,
-    bool escToExit = true,
-    Duration exitGapTime = const Duration(seconds: 2),
+    LogicalKeyboardKey? keyToRollBack,
     String exitInfoText = '再按一次退出App',
+    String backInfoText = '再按一次返回上一页',
+    Duration exitGapTime = const Duration(seconds: 2),
   }) async {
     if (ensureScreenSize) {
       await ScreenUtil.ensureScreenSize();
@@ -88,7 +91,6 @@ class MyApp extends StatelessWidget {
       WidgetsFlutterBinding.ensureInitialized();
     }
 
-    // TODO: integrated with platform dart file
     if (MyPlatform.isDesktop) {
       if (initializeWindowManager) {
         await _initializeWindowManager(
@@ -118,9 +120,10 @@ class MyApp extends StatelessWidget {
       dragToMoveArea: dragToMoveArea,
       showDebugTag: showDebugTag,
       splash: splash,
-      escToExit: escToExit,
+      keyToRollBack: keyToRollBack,
       exitGapTime: exitGapTime,
       exitInfoText: exitInfoText,
+      backInfoText: backInfoText,
     ));
   }
 
@@ -239,23 +242,43 @@ class MyApp extends StatelessWidget {
 
   Widget _buildKeyboardShortcuts(Widget child) {
     DateTime? lastPressedTime;
+    String? lastRoute;
+
+    Future<void> handleRollBackIntent() async {
+      final now = DateTime.now();
+      final currentRoute = Get.currentRoute;
+
+      // 检查是否切换了路由或者超过了时间间隔
+      bool shouldResetTimer = lastRoute != currentRoute ||
+          lastPressedTime == null ||
+          now.difference(lastPressedTime!) > exitGapTime;
+
+      if (shouldResetTimer) {
+        lastPressedTime = now;
+        lastRoute = currentRoute;
+        if (currentRoute == routes.first.path) {
+          toast(exitInfoText, duration: exitGapTime);
+        } else {
+          toast(backInfoText, duration: exitGapTime);
+        }
+      } else {
+        if (currentRoute == routes.first.path) {
+          await MyApp.exit();
+        } else {
+          Get.back();
+        }
+        // 重置计时器和路由记录
+        lastPressedTime = null;
+        lastRoute = null;
+      }
+    }
 
     return Shortcuts(
       shortcuts: <LogicalKeySet, Intent>{
         LogicalKeySet(LogicalKeyboardKey.select): const ActivateIntent(),
-        if (escToExit)
-          LogicalKeySet(LogicalKeyboardKey.escape):
-              VoidCallbackIntent(() async {
-            final now = DateTime.now();
-            if (lastPressedTime == null ||
-                now.difference(lastPressedTime!) > exitGapTime) {
-              lastPressedTime = now;
-              toast(exitInfoText, duration: exitGapTime);
-            } else {
-              // 在间隔时间内再次按下ESC,退出应用
-              await MyApp.exit();
-            }
-          }),
+        if (keyToRollBack != null)
+          LogicalKeySet(keyToRollBack!):
+              VoidCallbackIntent(handleRollBackIntent),
       },
       child: Actions(
         actions: <Type, Action<Intent>>{

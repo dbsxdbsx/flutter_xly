@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:xly/xly.dart';
 
 import 'pages/page1.dart';
 import 'pages/page2.dart';
+import 'pages/page3.dart';
 
 void main() async {
   await MyApp.initialize(
@@ -32,11 +33,20 @@ void main() async {
         page: const Page2View(),
         controller: () => Page2Controller(),
       ),
+      MyRoute<Page3Controller>(
+        path: Routes.page3,
+        page: const Page3View(),
+        controller: () => Page3Controller(),
+      ),
     ],
+    keyToRollBack: LogicalKeyboardKey.backspace,
+    exitInfoText: '自定义: 再按一次退出App',
+    backInfoText: '自定义: 再按一次返回上一页',
   );
 }
 
 class Routes {
-  static const page1 = '/page1';
-  static const page2 = '/page2';
+  static const String page1 = '/page1';
+  static const String page2 = '/page2';
+  static const String page3 = '/page3';
 }

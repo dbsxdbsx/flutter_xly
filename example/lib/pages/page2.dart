@@ -28,7 +28,7 @@ class Page2View extends GetView<Page2Controller> {
             const Spacer(),
             _buildFocusableText(),
             SizedBox(height: 24.h),
-            _buildGoBackButton(),
+            _buildNavigationButtons(),
           ],
         ),
       ),
@@ -203,12 +203,22 @@ class Page2View extends GetView<Page2Controller> {
     );
   }
 
-  Widget _buildGoBackButton() {
-    return MyButton(
-      icon: Icons.arrow_back,
-      text: '返回页面1',
-      onPressed: controller.goToPage1,
-    ).setFocus(focusKey: 'go_back_button');
+  Widget _buildNavigationButtons() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        MyButton(
+          icon: Icons.arrow_back,
+          text: '返回页面1',
+          onPressed: controller.goToPage1,
+        ).setFocus(focusKey: 'go_back_button'),
+        MyButton(
+          icon: Icons.arrow_forward,
+          text: '前往页面3',
+          onPressed: controller.goToPage3,
+        ).setFocus(focusKey: 'go_to_page3_button'),
+      ],
+    );
   }
 }
 
@@ -217,5 +227,9 @@ class Page2Controller extends GetxController {
 
   void goToPage1() {
     goToPage(Routes.page1);
+  }
+
+  void goToPage3() {
+    goToPage(Routes.page3);
   }
 }
