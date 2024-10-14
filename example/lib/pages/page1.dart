@@ -13,6 +13,29 @@ class Page1View extends GetView<Page1Controller> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            MyButton(
+              text: '打开对话框',
+              onPressed: () {
+                MyDialog.show(
+                  content: '这是一个测试对话框',
+                  onLeftButtonPressed: () => toast('选择了左按钮'),
+                  onRightButtonPressed: () => toast('选择了右按钮'),
+                );
+              },
+            ),
+            SizedBox(height: 20.h),
+            // 新增：测试 iOS 风格对话框的按钮
+            MyButton(
+              text: '打开 iOS 风格对话框',
+              onPressed: () {
+                MyDialog.showIos(
+                  content: '这是一个 iOS 风格的测试对话框',
+                  onLeftButtonPressed: () => toast('选择了是'),
+                  onRightButtonPressed: () => toast('选择了否'),
+                );
+              },
+            ),
+            SizedBox(height: 20.h),
             Obx(() => MyMenuButton(
                   iconSize: 30.0,
                   iconColor: Colors.blue,

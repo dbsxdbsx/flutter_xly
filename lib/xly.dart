@@ -9,10 +9,6 @@ export 'src/button.dart' show MyButton, MyButtonShape, MyIconPosition;
 export 'src/platform.dart' show MyPlatform;
 export 'src/navigation.dart' show goToPage;
 export 'src/toast.dart' show toast, hideAllToasts;
-
 export 'src/menu/menu.dart';
-
-// New focus functionality
 export 'src/focus.dart' show XlyFocusController, XlyFocusableExtension;
-
-
+export 'src/dialogue.dart' show MyDialog;

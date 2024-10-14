@@ -14,11 +14,6 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 6. 自定义菜单组件
 7. 焦点管理
 
-## 安装
-
-要使用 XLY 包，首先在你的 `pubspec.yaml` 文件中添加 `xly` 依赖：
-
-
 ## 使用示例
 
 ### 初始化应用
@@ -119,6 +114,20 @@ class MyWidget extends StatelessWidget {
 goToPage(context, Routes.page2);
 ```
 
+### 显示对话框
+```dart
+MyDialog.show(
+  content: '这是一个测试对话框',
+  onLeftButtonPressed: () => toast('选择了左按钮'),
+  onRightButtonPressed: () => toast('选择了右按钮'),
+);
+
+MyDialog.showIos(
+  content: '这是一个测试对话框',
+  onLeftButtonPressed: () => toast('选择了左按钮'),
+  onRightButtonPressed: () => toast('选择了右按钮'),
+);
+```
 
 ### 完整示例
 
