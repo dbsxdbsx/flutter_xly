@@ -16,8 +16,6 @@ class MySplash extends StatefulWidget {
   final FontWeight fontWeight;
   final double? lottieWidth;
   final double? spaceBetween;
-  final Transition? transition;
-  final Duration transitionDuration;
 
   const MySplash({
     super.key,
@@ -31,8 +29,6 @@ class MySplash extends StatefulWidget {
     this.fontWeight = FontWeight.w800,
     this.lottieWidth,
     this.spaceBetween,
-    this.transition,
-    this.transitionDuration = const Duration(milliseconds: 300),
   });
 
   @override
@@ -48,17 +44,8 @@ class _MySplashState extends State<MySplash> {
 
   void _navigateToNextRoute() {
     Timer(widget.splashDuration, () {
-      Get.off(
-        () => GetRouterOutlet.builder(
-          routerDelegate: Get.rootDelegate,
-          builder: (context, delegate, config) {
-            return const Scaffold(
-                body: Center(child: CircularProgressIndicator()));
-          },
-        ),
-        routeName: widget.nextRoute,
-        transition: widget.transition,
-        duration: widget.transitionDuration,
+      Get.offNamed(
+        widget.nextRoute,
       );
     });
   }

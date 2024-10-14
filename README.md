@@ -20,10 +20,12 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 
 ```dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:xly/xly.dart';
 
 import 'pages/page1.dart';
 import 'pages/page2.dart';
+import 'pages/page3.dart';
 
 void main() async {
   await MyApp.initialize(
@@ -39,8 +41,6 @@ void main() async {
       fontWeight: FontWeight.bold,
       lottieWidth: 250,
       spaceBetween: 30,
-      transition: Transition.circularReveal,
-      transitionDuration: Duration(milliseconds: 1000),
     ),
     routes: [
       MyRoute<Page1Controller>(
@@ -53,13 +53,23 @@ void main() async {
         page: const Page2View(),
         controller: () => Page2Controller(),
       ),
+      MyRoute<Page3Controller>(
+        path: Routes.page3,
+        page: const Page3View(),
+        controller: () => Page3Controller(),
+      ),
     ],
+    keyToRollBack: LogicalKeyboardKey.backspace,
+    exitInfoText: '自定义: 再按一次退出App',
+    backInfoText: '自定义: 再按一次返回上一页',
+    pageTransitionStyle: Transition.fade,
   );
 }
 
 class Routes {
-  static const page1 = '/page1';
-  static const page2 = '/page2';
+  static const String page1 = '/page1';
+  static const String page2 = '/page2';
+  static const String page3 = '/page3';
 }
 ```
 
