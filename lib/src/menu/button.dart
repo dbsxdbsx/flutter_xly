@@ -2,7 +2,7 @@ import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
 import 'package:flutter_inset_box_shadow/flutter_inset_box_shadow.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import 'menu.dart';
+import 'lib.dart';
 
 class MyMenuButton extends StatefulWidget {
   final IconData icon;

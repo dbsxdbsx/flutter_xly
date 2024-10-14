@@ -1,3 +1,7 @@
+## 0.4.0
+
+* 新增MyBottomMenu组件
+
 ## 0.3.0
 
 * 新增Splash页面

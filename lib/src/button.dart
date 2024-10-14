@@ -31,6 +31,8 @@ class MyButton extends StatelessWidget {
   final LinearGradient? gradient;
   final double elevation;
   final double cornerRadius;
+  final double? width;
+  final EdgeInsetsGeometry? padding; // 新添加的 padding 参数
 
   const MyButton({
     super.key,
@@ -47,18 +49,36 @@ class MyButton extends StatelessWidget {
     this.gradient,
     this.elevation = 5,
     this.cornerRadius = 0.5, // 0.0 到 1.0 之间的值，表示圆角程度
+    this.width,
+    this.padding, // 新添加的 padding 参数
   });
 
   @override
   Widget build(BuildContext context) {
+    Widget button;
     switch (shape) {
       case MyButtonShape.normal:
-        return _buildNormalButton();
+        button = _buildNormalButton();
+        break;
       case MyButtonShape.cube:
-        return _buildCubeButton();
+        button = _buildCubeButton();
+        break;
       case MyButtonShape.round:
-        return _buildRoundButton();
+        button = _buildRoundButton();
+        break;
     }
+
+    // 如果提供了 width，用 SizedBox 包装
+    if (width != null) {
+      button = SizedBox(width: width, child: button);
+    }
+
+    // 如果提供了 padding，用 Padding 包装
+    if (padding != null) {
+      button = Padding(padding: padding!, child: button);
+    }
+
+    return button;
   }
 
   double get _effectiveCornerRadius {
