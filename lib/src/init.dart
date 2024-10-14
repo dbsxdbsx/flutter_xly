@@ -4,8 +4,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:xly/src/exit.dart';
 import 'package:xly/src/platform.dart';
 import 'package:xly/src/splash.dart';
+import 'package:xly/src/toast.dart';
 
 class MyRoute<T extends GetxController> {
   final String path;
@@ -33,6 +35,9 @@ class MyApp extends StatelessWidget {
   final bool dragToMoveArea;
   final bool showDebugTag;
   final MySplash? splash;
+  final bool escToExit;
+  final Duration exitGapTime;
+  final String exitInfoText;
 
   const MyApp._({
     required this.designSize,
@@ -44,6 +49,9 @@ class MyApp extends StatelessWidget {
     this.dragToMoveArea = true,
     this.showDebugTag = true,
     this.splash,
+    this.escToExit = true,
+    this.exitGapTime = const Duration(seconds: 2),
+    this.exitInfoText = '再按一次退出App',
   });
 
   static Future<void> initialize({
@@ -69,6 +77,9 @@ class MyApp extends StatelessWidget {
     ThemeData? theme,
     Size? minimumSize,
     MySplash? splash,
+    bool escToExit = true,
+    Duration exitGapTime = const Duration(seconds: 2),
+    String exitInfoText = '再按一次退出App',
   }) async {
     if (ensureScreenSize) {
       await ScreenUtil.ensureScreenSize();
@@ -107,6 +118,9 @@ class MyApp extends StatelessWidget {
       dragToMoveArea: dragToMoveArea,
       showDebugTag: showDebugTag,
       splash: splash,
+      escToExit: escToExit,
+      exitGapTime: exitGapTime,
+      exitInfoText: exitInfoText,
     ));
   }
 
@@ -174,6 +188,8 @@ class MyApp extends StatelessWidget {
           GetPage(
             name: '/splash',
             page: () => splash!,
+            transition: Transition.fade,
+            transitionDuration: Duration.zero,
           ),
         ...routes.map((route) => GetPage(
               name: route.path,
@@ -181,10 +197,14 @@ class MyApp extends StatelessWidget {
               binding: BindingsBuilder(() {
                 route.registerController();
               }),
+              transition: Transition.fade,
+              transitionDuration: const Duration(milliseconds: 300),
             )),
       ],
       builder: (context, child) => _buildAppContent(context, child),
       theme: _buildTheme(),
+      defaultTransition: Transition.fade,
+      transitionDuration: const Duration(milliseconds: 300),
     );
 
     return useOKToast ? OKToast(child: app) : app;
@@ -218,11 +238,33 @@ class MyApp extends StatelessWidget {
   }
 
   Widget _buildKeyboardShortcuts(Widget child) {
+    DateTime? lastPressedTime;
+
     return Shortcuts(
       shortcuts: <LogicalKeySet, Intent>{
         LogicalKeySet(LogicalKeyboardKey.select): const ActivateIntent(),
+        if (escToExit)
+          LogicalKeySet(LogicalKeyboardKey.escape):
+              VoidCallbackIntent(() async {
+            final now = DateTime.now();
+            if (lastPressedTime == null ||
+                now.difference(lastPressedTime!) > exitGapTime) {
+              lastPressedTime = now;
+              toast(exitInfoText, duration: exitGapTime);
+            } else {
+              // 在间隔时间内再次按下ESC,退出应用
+              await MyApp.exit();
+            }
+          }),
       },
-      child: child,
+      child: Actions(
+        actions: <Type, Action<Intent>>{
+          VoidCallbackIntent: CallbackAction<VoidCallbackIntent>(
+            onInvoke: (VoidCallbackIntent intent) => intent.callback(),
+          ),
+        },
+        child: child,
+      ),
     );
   }
 
@@ -231,4 +273,15 @@ class MyApp extends StatelessWidget {
       child: dragToMoveArea ? DragToMoveArea(child: child) : child,
     );
   }
+
+  /// 静态方法用于退出应用
+  static Future<void> exit() async {
+    await exitApp();
+  }
+}
+
+class VoidCallbackIntent extends Intent {
+  final VoidCallback callback;
+
+  const VoidCallbackIntent(this.callback);
 }

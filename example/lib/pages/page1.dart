@@ -121,6 +121,11 @@ class Page1View extends GetView<Page1Controller> {
               text: '连续显示多条Toast',
               onPressed: controller.showToast,
             ),
+            SizedBox(height: 20.h),
+            MyButton(
+              text: '退出应用',
+              onPressed: controller.confirmExitApp,
+            ),
           ],
         ),
       ),
@@ -216,5 +221,17 @@ class Page1Controller extends GetxController {
     toast('这是一条测试Toast消息2');
     await Future.delayed(const Duration(seconds: 1));
     toast('这是一条测试Toast消息3', stackToasts: true);
+  }
+
+  void confirmExitApp() async {
+    final _ = await MyDialog.show(
+      content: '确定要退出应用吗？',
+      leftButtonText: '取消',
+      rightButtonText: '确定',
+      onLeftButtonPressed: () {},
+      onRightButtonPressed: () async {
+        await MyApp.exit();
+      },
+    );
   }
 }
