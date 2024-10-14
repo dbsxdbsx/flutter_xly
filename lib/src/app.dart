@@ -39,6 +39,8 @@ class MyApp extends StatelessWidget {
   final Duration exitGapTime;
   final String exitInfoText;
   final String backInfoText;
+  final Transition pageTransitionStyle;
+  final Duration pageTransitionDuration;
 
   const MyApp._({
     required this.designSize,
@@ -54,6 +56,8 @@ class MyApp extends StatelessWidget {
     this.exitGapTime = const Duration(seconds: 2),
     this.exitInfoText = '再按一次退出App',
     this.backInfoText = '再按一次返回上一页',
+    this.pageTransitionStyle = Transition.fade,
+    this.pageTransitionDuration = const Duration(milliseconds: 300),
   });
 
   static Future<void> initialize({
@@ -83,6 +87,8 @@ class MyApp extends StatelessWidget {
     String exitInfoText = '再按一次退出App',
     String backInfoText = '再按一次返回上一页',
     Duration exitGapTime = const Duration(seconds: 2),
+    Transition pageTransitionStyle = Transition.fade,
+    Duration pageTransitionDuration = const Duration(milliseconds: 300),
   }) async {
     if (ensureScreenSize) {
       await ScreenUtil.ensureScreenSize();
@@ -124,6 +130,8 @@ class MyApp extends StatelessWidget {
       exitGapTime: exitGapTime,
       exitInfoText: exitInfoText,
       backInfoText: backInfoText,
+      pageTransitionStyle: pageTransitionStyle,
+      pageTransitionDuration: pageTransitionDuration,
     ));
   }
 
@@ -200,14 +208,14 @@ class MyApp extends StatelessWidget {
               binding: BindingsBuilder(() {
                 route.registerController();
               }),
-              transition: Transition.fade,
-              transitionDuration: const Duration(milliseconds: 300),
+              transition: pageTransitionStyle,
+              transitionDuration: pageTransitionDuration,
             )),
       ],
       builder: (context, child) => _buildAppContent(context, child),
       theme: _buildTheme(),
-      defaultTransition: Transition.fade,
-      transitionDuration: const Duration(milliseconds: 300),
+      defaultTransition: pageTransitionStyle,
+      transitionDuration: pageTransitionDuration,
     );
 
     return useOKToast ? OKToast(child: app) : app;

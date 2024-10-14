@@ -42,6 +42,7 @@ void main() async {
     keyToRollBack: LogicalKeyboardKey.backspace,
     exitInfoText: '自定义: 再按一次退出App',
     backInfoText: '自定义: 再按一次返回上一页',
+    pageTransitionStyle: Transition.fade,
   );
 }
 
