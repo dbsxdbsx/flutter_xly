@@ -178,7 +178,7 @@ class Page2View extends GetView<Page2Controller> {
         ).setFocus(focusKey: 'rounded_cube_button'),
         MyButton(
           text: '锐角立方',
-          onPressed: () => toast('锐角立方按钮被点击'),
+          onPressed: () => toast('锐角立方按钮被点'),
           icon: Icons.change_history,
           shape: MyButtonShape.cube,
           size: 70,
@@ -209,12 +209,12 @@ class Page2View extends GetView<Page2Controller> {
       children: [
         MyButton(
           icon: Icons.arrow_back,
-          text: '返回页面1',
+          text: '返回第1页',
           onPressed: controller.goToPage1,
         ).setFocus(focusKey: 'go_back_button'),
         MyButton(
           icon: Icons.arrow_forward,
-          text: '前往页面3',
+          text: '前往第3页',
           onPressed: controller.goToPage3,
         ).setFocus(focusKey: 'go_to_page3_button'),
       ],

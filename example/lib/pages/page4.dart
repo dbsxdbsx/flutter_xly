@@ -1,6 +1,54 @@
 import 'package:flutter/material.dart';
 import 'package:xly/xly.dart';
 
+class Page4View extends GetView<Page4Controller> {
+  const Page4View({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('可拖动卡片列表', style: TextStyle(fontSize: 18.sp)),
+      ),
+      body: Obx(
+        () => Scrollbar(
+          controller: controller.scrollController,
+          child: CustomScrollView(
+            controller: controller.scrollController,
+            slivers: [
+              SliverReorderableList(
+                itemCount: controller.cards.length,
+                itemBuilder: (context, index) {
+                  final card = controller.cards[index];
+                  return Card(
+                    key: ValueKey(card),
+                    elevation: 2,
+                    margin:
+                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+                    child: Container(
+                      padding: EdgeInsets.all(16.w),
+                      child: Text(card, style: TextStyle(fontSize: 16.sp)),
+                    ),
+                  );
+                },
+                onReorder: controller.reorderCards,
+              ),
+              MyEndOfListWidget(
+                isLoading: controller.isLoading.value,
+                hasError: controller.hasError.value,
+                hasMoreData: controller.hasMoreData.value,
+                onRetry: controller.loadMoreCards,
+                useSliver: true,
+                icon: Icons.sentiment_satisfied_alt,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class Page4Controller extends GetxController {
   final cards = <String>[].obs;
   final ScrollController scrollController = ScrollController();
@@ -68,55 +116,5 @@ class Page4Controller extends GetxController {
   void onClose() {
     scrollController.dispose();
     super.onClose();
-  }
-}
-
-class Page4View extends StatelessWidget {
-  const Page4View({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return GetBuilder<Page4Controller>(
-      builder: (controller) => Scaffold(
-        appBar: AppBar(
-          title: Text('可拖动卡片列表', style: TextStyle(fontSize: 18.sp)),
-        ),
-        body: Obx(
-          () => Scrollbar(
-            controller: controller.scrollController,
-            child: CustomScrollView(
-              controller: controller.scrollController,
-              slivers: [
-                SliverReorderableList(
-                  itemCount: controller.cards.length,
-                  itemBuilder: (context, index) {
-                    final card = controller.cards[index];
-                    return Card(
-                      key: ValueKey(card),
-                      elevation: 2,
-                      margin:
-                          EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
-                      child: Container(
-                        padding: EdgeInsets.all(16.w),
-                        child: Text(card, style: TextStyle(fontSize: 16.sp)),
-                      ),
-                    );
-                  },
-                  onReorder: controller.reorderCards,
-                ),
-                MyEndOfListWidget(
-                  isLoading: controller.isLoading.value,
-                  hasError: controller.hasError.value,
-                  hasMoreData: controller.hasMoreData.value,
-                  onRetry: controller.loadMoreCards,
-                  useSliver: true,
-                  icon: Icons.sentiment_satisfied_alt,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }

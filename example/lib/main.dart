@@ -9,12 +9,11 @@ import 'pages/page4.dart';
 
 void main() async {
   await MyApp.initialize(
-    dragToMoveArea: false,
     designSize: const Size(800, 600),
     splash: const MySplash(
       nextRoute: Routes.page1,
       lottieAssetPath: 'assets/animation/splash_loading.json',
-      appTitle: 'My Awesome App',
+      appTitle: '😜My Awesome App😜',
       backgroundColor: Colors.blueGrey,
       splashDuration: Duration(seconds: 3),
       textColor: Colors.white,
