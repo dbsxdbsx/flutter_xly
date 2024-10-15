@@ -40,19 +40,16 @@ class Page3View extends GetView<Page3Controller> {
 
   Widget _buildNavigationSection() {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        Expanded(
-          child: MyButton(
-            text: '返回第2页',
-            onPressed: controller.goToPage2,
-          ),
+        MyButton(
+          text: '返回第2页',
+          onPressed: controller.goToPage2,
         ),
         SizedBox(width: 12.w),
-        Expanded(
-          child: MyButton(
-            text: '前往第4页',
-            onPressed: controller.goToPage4,
-          ),
+        MyButton(
+          text: '前往第4页',
+          onPressed: controller.goToPage4,
         ),
       ],
     );
@@ -75,19 +72,9 @@ class Page3Controller extends GetxController {
         children: [
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '从剪贴板添加',
-                  style:
-                      TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
-                ),
-                IconButton(
-                  icon: Icon(Icons.close, size: 24.sp),
-                  onPressed: () => Get.back(),
-                ),
-              ],
+            child: Text(
+              '从剪贴板添加',
+              style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
             ),
           ),
           SizedBox(height: 20.h),

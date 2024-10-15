@@ -8,7 +8,7 @@ class Page2View extends GetView<Page2Controller> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('按钮样式测试')),
+      appBar: AppBar(title: const Text('第2页')),
       body: Padding(
         padding: EdgeInsets.all(16.w),
         child: Column(

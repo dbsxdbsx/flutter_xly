@@ -8,99 +8,139 @@ class Page4View extends GetView<Page4Controller> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('可拖动卡片列表', style: TextStyle(fontSize: 18.sp)),
+        title: Text('第4页', style: TextStyle(fontSize: 18.sp)),
       ),
-      body: Obx(
-        () => Scrollbar(
-          controller: controller.scrollController,
-          child: CustomScrollView(
-            controller: controller.scrollController,
-            slivers: [
-              SliverReorderableList(
-                itemCount: controller.cards.length,
-                itemBuilder: (context, index) {
-                  final card = controller.cards[index];
-                  return Card(
-                    key: ValueKey(card),
-                    elevation: 2,
-                    margin:
-                        EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
-                    child: Container(
-                      padding: EdgeInsets.all(16.w),
-                      child: Text(card, style: TextStyle(fontSize: 16.sp)),
+      body: Column(
+        children: [
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              child: Obx(
+                () => Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: MyGroupBox(
+                        title: '可拖动列表',
+                        style: SectionBorderStyle.inset,
+                        child: MyCardList(
+                          items: controller.draggableCards,
+                          isDraggable: true,
+                          onReorder: controller.reorderCards,
+                          footer: _buildFooter(controller.draggableListState),
+                          onCardPressed: _onCardPressed,
+                          onLoadMore: () =>
+                              controller.loadMoreCards(isDraggable: true),
+                          enableBtnToDelete: true,
+                          onDelete: controller.deleteDraggableCard,
+                        ),
+                      ),
                     ),
-                  );
-                },
-                onReorder: controller.reorderCards,
+                    SizedBox(width: 16.w),
+                    Expanded(
+                      child: MyGroupBox(
+                        title: '不可拖动列表',
+                        child: MyCardList(
+                          items: controller.staticCards,
+                          isDraggable: false,
+                          footer: _buildFooter(controller.staticListState),
+                          onCardPressed: _onCardPressed,
+                          onLoadMore: () =>
+                              controller.loadMoreCards(isDraggable: false),
+                          enableSwipeToDelete: true,
+                          onDelete: controller.deleteStaticCard,
+                          cardHeight: 50.h,
+                          fontSize: 14.sp,
+                          cardPadding: EdgeInsets.symmetric(
+                              horizontal: 16.w, vertical: 2.h),
+                          cardMargin: EdgeInsets.symmetric(
+                              horizontal: 5.w, vertical: 2.h),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              MyEndOfListWidget(
-                isLoading: controller.isLoading.value,
-                hasError: controller.hasError.value,
-                hasMoreData: controller.hasMoreData.value,
-                onRetry: controller.loadMoreCards,
-                useSliver: true,
-                icon: Icons.sentiment_satisfied_alt,
-              ),
-            ],
+            ),
           ),
-        ),
+          Padding(
+            padding: EdgeInsets.all(16.w),
+            child: MyButton(
+              onPressed: () => Get.back(),
+              text: '返回第3页',
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  void _onCardPressed(String cardText, bool isDraggable) {
+    String cardType = isDraggable ? "可拖动" : "静态";
+    toast('点击了$cardType卡片：$cardText');
+  }
+
+  Widget _buildFooter(Rx<ListState> listState) {
+    return Obx(() => MyEndOfListWidget(
+          isLoading: listState.value.isLoading,
+          hasError: listState.value.hasError,
+          hasMoreData: listState.value.hasMoreData,
+          onRetry: () => controller.loadMoreCards(
+            isDraggable: listState == controller.draggableListState,
+          ),
+          icon: Icons.sentiment_satisfied_alt,
+        ));
   }
 }
 
 class Page4Controller extends GetxController {
-  final cards = <String>[].obs;
-  final ScrollController scrollController = ScrollController();
+  final draggableCards = <String>[].obs;
+  final staticCards = <String>[].obs;
   final int maxCards = 30;
   final int loadIncrement = 10;
-  final isLoading = false.obs;
-  final hasError = false.obs;
-  final hasMoreData = true.obs;
+  final draggableListState = ListState().obs;
+  final staticListState = ListState().obs;
 
   @override
   void onInit() {
     super.onInit();
     _loadInitialCards();
-    _setupScrollListener();
   }
 
   void _loadInitialCards() {
-    cards.addAll(List.generate(15, (index) => '卡片 ${index + 1}'));
+    draggableCards.addAll(List.generate(8, (index) => '可拖动卡片 ${index + 1}'));
+    staticCards
+        .addAll(List.generate(10, (index) => '静态卡片 ${index + 1}')); // 修改这里
   }
 
-  void _setupScrollListener() {
-    scrollController.addListener(() {
-      if (scrollController.position.pixels >=
-          scrollController.position.maxScrollExtent - 100) {
-        if (hasMoreData.value && !isLoading.value && !hasError.value) {
-          loadMoreCards();
-        }
-      }
+  Future<void> loadMoreCards({required bool isDraggable}) async {
+    final listState = isDraggable ? draggableListState : staticListState;
+    final cardList = isDraggable ? draggableCards : staticCards;
+
+    if (listState.value.isLoading || !listState.value.hasMoreData) return;
+    listState.update((val) {
+      val!.isLoading = true;
+      val.hasError = false;
     });
-  }
-
-  Future<bool> loadMoreCards() async {
-    if (isLoading.value || !hasMoreData.value) return false;
-    isLoading.value = true;
-    hasError.value = false;
 
     try {
       await Future.delayed(const Duration(seconds: 2)); // 模拟网络延迟
-      int currentLength = cards.length;
+      int currentLength = cardList.length;
       int newLength = currentLength + loadIncrement;
       if (newLength > maxCards) {
         newLength = maxCards;
-        hasMoreData.value = false;
+        listState.update((val) => val!.hasMoreData = false);
       }
-      cards.addAll(List.generate(newLength - currentLength,
-          (index) => '卡片 ${currentLength + index + 1}'));
-      return true;
+      int newItemsCount = newLength - currentLength;
+
+      cardList.addAll(List.generate(
+          newItemsCount,
+          (index) =>
+              '${isDraggable ? "可拖动" : "静态"}卡片 ${cardList.length + index + 1}'));
     } catch (e) {
-      hasError.value = true;
-      return false;
+      listState.update((val) => val!.hasError = true);
     } finally {
-      isLoading.value = false;
+      listState.update((val) => val!.isLoading = false);
     }
   }
 
@@ -108,13 +148,43 @@ class Page4Controller extends GetxController {
     if (oldIndex < newIndex) {
       newIndex -= 1;
     }
-    final item = cards.removeAt(oldIndex);
-    cards.insert(newIndex, item);
+    final item = draggableCards.removeAt(oldIndex);
+    draggableCards.insert(newIndex, item);
   }
 
-  @override
-  void onClose() {
-    scrollController.dispose();
-    super.onClose();
+  void deleteStaticCard(int index) {
+    if (index >= 0 && index < staticCards.length) {
+      final deletedCard = staticCards.removeAt(index);
+      toast('删除了静态卡片：$deletedCard');
+
+      // 只为静态卡片列表加载更多卡片
+      if (staticCards.length < 5 && staticListState.value.hasMoreData) {
+        loadMoreCards(isDraggable: false);
+      }
+    }
   }
+
+  void deleteDraggableCard(int index) {
+    if (index >= 0 && index < draggableCards.length) {
+      final deletedCard = draggableCards.removeAt(index);
+      toast('删除了可拖动卡片：$deletedCard');
+
+      // 只为可拖动卡片列表加载更多卡片
+      if (draggableCards.length < 5 && draggableListState.value.hasMoreData) {
+        loadMoreCards(isDraggable: true);
+      }
+    }
+  }
+}
+
+class ListState {
+  bool isLoading = false;
+  bool hasError = false;
+  bool hasMoreData = true;
+
+  ListState({
+    this.isLoading = false,
+    this.hasError = false,
+    this.hasMoreData = true,
+  });
 }

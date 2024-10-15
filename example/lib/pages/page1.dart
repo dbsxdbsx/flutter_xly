@@ -8,7 +8,7 @@ class Page1View extends GetView<Page1Controller> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Page 1')),
+      appBar: AppBar(title: const Text('第1页')),
       body: Column(
         children: [
           Expanded(
