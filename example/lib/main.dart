@@ -5,9 +5,11 @@ import 'package:xly/xly.dart';
 import 'pages/page1.dart';
 import 'pages/page2.dart';
 import 'pages/page3.dart';
+import 'pages/page4.dart';
 
 void main() async {
   await MyApp.initialize(
+    dragToMoveArea: false,
     designSize: const Size(800, 600),
     splash: const MySplash(
       nextRoute: Routes.page1,
@@ -37,6 +39,11 @@ void main() async {
         page: const Page3View(),
         controller: () => Page3Controller(),
       ),
+      MyRoute<Page4Controller>(
+        path: Routes.page4,
+        page: const Page4View(),
+        controller: () => Page4Controller(),
+      ),
     ],
     keyToRollBack: LogicalKeyboardKey.backspace,
     exitInfoText: '自定义: 再按一次退出App',
@@ -49,4 +56,5 @@ class Routes {
   static const String page1 = '/page1';
   static const String page2 = '/page2';
   static const String page3 = '/page3';
+  static const String page4 = '/page4';
 }

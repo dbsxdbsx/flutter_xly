@@ -2,46 +2,6 @@ import 'package:example/main.dart';
 import 'package:flutter/material.dart';
 import 'package:xly/xly.dart';
 
-class Page3View extends GetView<Page3Controller> {
-  const Page3View({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Page 3')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              '欢迎来到页面3',
-              style: TextStyle(fontSize: 24.sp, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20.h),
-            MyButton(
-              text: '返回页面2',
-              onPressed: controller.goToPage2,
-              icon: Icons.arrow_back,
-            ).setFocus(focusKey: 'back_to_page2_button'),
-            SizedBox(height: 20.h),
-            MyButton(
-              text: '返回页面1',
-              onPressed: controller.goToPage1,
-              icon: Icons.home,
-            ).setFocus(focusKey: 'back_to_page1_button'),
-            SizedBox(height: 20.h),
-            MyButton(
-              text: '显示底部菜单',
-              onPressed: controller.showBottomMenu,
-              icon: Icons.menu,
-            ).setFocus(focusKey: 'show_bottom_menu_button'),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class Page3Controller extends GetxController {
   void goToPage2() {
     Get.back();
@@ -120,6 +80,39 @@ class Page3Controller extends GetxController {
           SizedBox(height: 10.h),
           Text(text, style: TextStyle(fontSize: 14.sp)),
         ],
+      ),
+    );
+  }
+
+  void goToPage4() {
+    Get.toNamed(Routes.page4);
+  }
+}
+
+class Page3View extends StatelessWidget {
+  const Page3View({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return GetBuilder<Page3Controller>(
+      builder: (controller) => Scaffold(
+        appBar: AppBar(
+          title: Text('第3页', style: TextStyle(fontSize: 18.sp)),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('这是第3页的内容', style: TextStyle(fontSize: 16.sp)),
+              SizedBox(height: 20.h),
+              MyButton(
+                text: '前往可拖动卡片列表',
+                onPressed: controller.goToPage4,
+                width: 200.w,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
