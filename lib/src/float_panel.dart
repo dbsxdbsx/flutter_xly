@@ -10,11 +10,30 @@ enum DockType { inside, outside }
 
 enum PanelState { expanded, closed }
 
-class MyFloatPanelItem {
-  final IconData icon;
-  final VoidCallback onPressed;
+// 在文件顶部添加新的枚举类型
+enum MyFloatPanelItemType { button, divider }
 
-  MyFloatPanelItem({required this.icon, required this.onPressed});
+class MyFloatPanelItem {
+  final IconData? icon;
+  final VoidCallback? onPressed;
+  final MyFloatPanelItemType type;
+
+  MyFloatPanelItem({
+    this.icon,
+    this.onPressed,
+    this.type = MyFloatPanelItemType.button,
+  }) : assert(
+          (type == MyFloatPanelItemType.button &&
+                  icon != null &&
+                  onPressed != null) ||
+              (type == MyFloatPanelItemType.divider),
+          '按钮类型必须提供图标和点击事件，分隔符类型不需要提供',
+        );
+
+  // 创建分隔符的工厂方法
+  factory MyFloatPanelItem.divider() {
+    return MyFloatPanelItem(type: MyFloatPanelItemType.divider);
+  }
 }
 
 class MyFloatPanel extends StatefulWidget {
@@ -44,7 +63,8 @@ class MyFloatPanel extends StatefulWidget {
   MyFloatPanel({
     super.key,
     this.items = const [],
-    this.borderColor = const Color(0xFF333333),
+    this.borderColor = Colors.grey,
+    // this.borderColor = const Color(0xFF333333),
     this.borderWidth = 0,
     this.panelWidth = 60,
     this.iconSize = 24,
@@ -53,7 +73,8 @@ class MyFloatPanel extends StatefulWidget {
     this.panelOpenOffset = 5,
     this.panelAnimDuration = 600,
     this.panelAnimCurve = Curves.fastLinearToSlowEaseIn,
-    this.backgroundColor = const Color(0xFF333333),
+    this.backgroundColor = Colors.grey,
+    // this.backgroundColor = const Color(0xFF333333),
     this.panelButtonColor = Colors.white,
     this.customButtonColor = Colors.white,
     this.panelShape = PanelShape.rounded,
@@ -65,7 +86,7 @@ class MyFloatPanel extends StatefulWidget {
     this.dockActivate = false,
     this.hiddenRatio = 0.8, // 默认隐藏80%
     this.initialPosition,
-  })  : borderRadius = borderRadius ?? BorderRadius.circular(30);
+  }) : borderRadius = borderRadius ?? BorderRadius.circular(30);
 
   @override
   _MyFloatPanelState createState() => _MyFloatPanelState();
@@ -83,11 +104,13 @@ class _MyFloatPanelState extends State<MyFloatPanel>
   late List<bool> _isCustomButtonHovered;
   late Size _lastScreenSize;
   bool _isRightSide = true;
+  late Animation<double> _expandAnimation;
 
   @override
   void initState() {
     super.initState();
     _initializeState();
+    _initializeExpandAnimation();
   }
 
   void _initializeState() {
@@ -119,6 +142,15 @@ class _MyFloatPanelState extends State<MyFloatPanel>
         _yOffset = size.height / 2 - widget.panelWidth.w / 2;
       });
     }
+  }
+
+  void _initializeExpandAnimation() {
+    _expandAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: widget.panelAnimCurve,
+      ),
+    );
   }
 
   @override
@@ -181,18 +213,18 @@ class _MyFloatPanelState extends State<MyFloatPanel>
   void _handlePanEnd(DragEndDetails details) {
     if (_panelState == PanelState.closed) {
       _animateToEdge();
+    } else {
+      _constrainPosition();
     }
   }
 
   void _animateToEdge() {
-    if (_panelState == PanelState.expanded) return;
-
     final size = MediaQuery.of(context).size;
     final centerX = _xOffset + widget.panelWidth.w / 2;
     _isRightSide = centerX > size.width / 2;
     final targetX = _isRightSide
-        ? size.width - widget.panelWidth.w + _hiddenWidth
-        : -_hiddenWidth;
+        ? size.width - widget.panelWidth.w / 2 // 修改这里，隐藏一半
+        : -widget.panelWidth.w / 2; // 修改这里，隐藏一半
     final targetY = _yOffset.clamp(0, size.height - _panelHeight());
 
     _animatePosition(targetX.toDouble(), targetY.toDouble());
@@ -215,30 +247,45 @@ class _MyFloatPanelState extends State<MyFloatPanel>
     final panelHeight = _panelHeight();
 
     setState(() {
-      _xOffset = _xOffset.clamp(
-        -_hiddenWidth,
-        size.width - widget.panelWidth.w + _hiddenWidth,
-      );
+      if (_panelState == PanelState.closed) {
+        _xOffset = _xOffset.clamp(
+          -widget.panelWidth.w / 2, // 修改这里
+          size.width - widget.panelWidth.w / 2, // 修改这里
+        );
+      } else {
+        _xOffset = _xOffset.clamp(
+          0,
+          size.width - widget.panelWidth.w,
+        );
+      }
       _yOffset = _yOffset.clamp(0, size.height - panelHeight);
     });
   }
 
   Widget _buildPanel() {
-    return Container(
-      width: widget.panelWidth.w,
-      height: _panelHeight(),
-      decoration: BoxDecoration(
-        color: widget.backgroundColor,
-        borderRadius: _borderRadius(),
-        border: _panelBorder(),
-      ),
-      child: Wrap(
-        direction: Axis.vertical,
-        children: [
-          _buildInnerButton(),
-          if (_panelState == PanelState.expanded) ..._buildCustomButtons(),
-        ],
-      ),
+    return AnimatedBuilder(
+      animation: _expandAnimation,
+      builder: (context, child) {
+        return Container(
+          width: widget.panelWidth.w,
+          height: _panelHeight(),
+          decoration: BoxDecoration(
+            color: widget.backgroundColor,
+            borderRadius: _borderRadius(),
+            border: _panelBorder(),
+          ),
+          child: SingleChildScrollView(
+            child: Wrap(
+              direction: Axis.vertical,
+              children: [
+                _buildInnerButton(),
+                if (_panelState == PanelState.expanded)
+                  ..._buildCustomButtons(_expandAnimation.value),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -260,47 +307,102 @@ class _MyFloatPanelState extends State<MyFloatPanel>
     );
   }
 
-  List<Widget> _buildCustomButtons() {
-    return List.generate(
-      widget.items.length,
-      (index) => MouseRegion(
-        onEnter: (_) => setState(() => _isCustomButtonHovered[index] = true),
-        onExit: (_) => setState(() => _isCustomButtonHovered[index] = false),
-        child: GestureDetector(
-          onTap: widget.items[index].onPressed,
-          child: _FloatButton(
-            icon: widget.items[index].icon,
-            color: _isCustomButtonHovered[index]
-                ? widget.customButtonFocusColor
-                : widget.customButtonColor,
-            size: widget.panelWidth.w,
-            iconSize: widget.iconSize.sp,
+  List<Widget> _buildCustomButtons(double animationValue) {
+    return widget.items.map((item) {
+      if (item.type == MyFloatPanelItemType.divider) {
+        return SizedBox(
+          height: widget.panelWidth.w * 0.2 * animationValue,
+          child: Opacity(
+            opacity: animationValue,
+            child: Center(
+              child: Container(
+                height: 1,
+                width: widget.panelWidth.w * 0.8,
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                  border: Border(
+                    top: BorderSide(
+                      color: widget.backgroundColor.brighten(20),
+                      width: 0.5,
+                    ),
+                    bottom: BorderSide(
+                      color: widget.backgroundColor.darken(20),
+                      width: 0.5,
+                    ),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: widget.backgroundColor.darken(30),
+                      offset: const Offset(0, 1),
+                      blurRadius: 1,
+                    ),
+                    BoxShadow(
+                      color: widget.backgroundColor.brighten(30),
+                      offset: const Offset(0, -1),
+                      blurRadius: 1,
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-        ),
-      ),
-    );
+        );
+      } else {
+        return SizeTransition(
+          sizeFactor: _expandAnimation,
+          axisAlignment: -1,
+          child: FadeTransition(
+            opacity: _expandAnimation,
+            child: MouseRegion(
+              onEnter: (_) => setState(() =>
+                  _isCustomButtonHovered[widget.items.indexOf(item)] = true),
+              onExit: (_) => setState(() =>
+                  _isCustomButtonHovered[widget.items.indexOf(item)] = false),
+              child: GestureDetector(
+                onTap: item.onPressed,
+                child: _FloatButton(
+                  icon: item.icon!,
+                  color: _isCustomButtonHovered[widget.items.indexOf(item)]
+                      ? widget.customButtonFocusColor
+                      : widget.customButtonColor,
+                  size: widget.panelWidth.w,
+                  iconSize: widget.iconSize.sp,
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+    }).toList();
   }
 
   void _onInnerButtonTapGesture() {
     setState(() {
-      _panelState = _panelState == PanelState.expanded
-          ? PanelState.closed
-          : PanelState.expanded;
-      _panelIcon = _panelState == PanelState.expanded
-          ? CupertinoIcons.minus_circle_fill
-          : Icons.add;
-      if (_panelState == PanelState.closed) {
+      if (_panelState == PanelState.expanded) {
+        _panelState = PanelState.closed;
+        _panelIcon = Icons.add;
         _animateToEdge();
+        _animationController.reverse();
       } else {
+        _panelState = PanelState.expanded;
+        _panelIcon = CupertinoIcons.minus_circle_fill;
         _constrainPosition();
+        _animationController.forward();
       }
     });
   }
 
   double _panelHeight() {
-    return _panelState == PanelState.expanded
-        ? widget.panelWidth.w * (widget.items.length + 1)
-        : widget.panelWidth.w;
+    if (_panelState == PanelState.expanded) {
+      double height = widget.panelWidth.w; // 主按钮的高度
+      for (var item in widget.items) {
+        height += item.type == MyFloatPanelItemType.divider
+            ? widget.panelWidth.w * 0.2 * _expandAnimation.value // 分隔符的高度
+            : widget.panelWidth.w * _expandAnimation.value; // 普通按钮的高度
+      }
+      return height;
+    }
+    return widget.panelWidth.w;
   }
 
   BorderRadius _borderRadius() {
@@ -318,7 +420,7 @@ class _MyFloatPanelState extends State<MyFloatPanel>
         : null;
   }
 
-  double get _hiddenWidth => widget.panelWidth.w * 0.2; // 只隐藏20%
+  double get _hiddenWidth => widget.panelWidth.w / 2; // 隐藏一半
 }
 
 class _FloatButton extends StatelessWidget {
@@ -336,7 +438,7 @@ class _FloatButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: size,
       height: size,
       child: Icon(
@@ -344,6 +446,31 @@ class _FloatButton extends StatelessWidget {
         color: color,
         size: iconSize,
       ),
+    );
+  }
+}
+
+// 在文件顶部添加以下扩展方法
+extension ColorBrightness on Color {
+  Color brighten([int percent = 10]) {
+    assert(1 <= percent && percent <= 100);
+    var p = percent / 100;
+    return Color.fromARGB(
+      alpha,
+      red + ((255 - red) * p).round(),
+      green + ((255 - green) * p).round(),
+      blue + ((255 - blue) * p).round(),
+    );
+  }
+
+  Color darken([int percent = 10]) {
+    assert(1 <= percent && percent <= 100);
+    var p = percent / 100;
+    return Color.fromARGB(
+      alpha,
+      (red * (1 - p)).round(),
+      (green * (1 - p)).round(),
+      (blue * (1 - p)).round(),
     );
   }
 }

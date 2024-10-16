@@ -73,6 +73,7 @@ class Page1View extends GetView<Page1Controller> {
               icon: CupertinoIcons.minus,
               onPressed: () => controller.minimizeWindow(),
             ),
+            MyFloatPanelItem.divider(), // 添加分隔符
             MyFloatPanelItem(
               icon: CupertinoIcons.xmark_circle,
               onPressed: () => controller.showExitConfirmation(context),
