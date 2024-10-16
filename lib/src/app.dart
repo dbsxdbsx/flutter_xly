@@ -8,6 +8,7 @@ import 'package:xly/src/exit.dart';
 import 'package:xly/src/platform.dart';
 import 'package:xly/src/splash.dart';
 import 'package:xly/src/toast.dart';
+import 'package:xly/src/float_panel.dart';
 
 class MyRoute<T extends GetxController> {
   final String path;
@@ -41,6 +42,7 @@ class MyApp extends StatelessWidget {
   final String backInfoText;
   final Transition pageTransitionStyle;
   final Duration pageTransitionDuration;
+  final FloatPanel? globalFloatPanel;
 
   const MyApp._({
     required this.designSize,
@@ -58,6 +60,7 @@ class MyApp extends StatelessWidget {
     this.backInfoText = '再按一次返回上一页',
     this.pageTransitionStyle = Transition.fade,
     this.pageTransitionDuration = const Duration(milliseconds: 300),
+    this.globalFloatPanel,
   });
 
   static Future<void> initialize({
@@ -89,6 +92,7 @@ class MyApp extends StatelessWidget {
     Duration exitGapTime = const Duration(seconds: 2),
     Transition pageTransitionStyle = Transition.fade,
     Duration pageTransitionDuration = const Duration(milliseconds: 300),
+    FloatPanel? globalFloatPanel,
   }) async {
     if (ensureScreenSize) {
       await ScreenUtil.ensureScreenSize();
@@ -132,6 +136,7 @@ class MyApp extends StatelessWidget {
       backInfoText: backInfoText,
       pageTransitionStyle: pageTransitionStyle,
       pageTransitionDuration: pageTransitionDuration,
+      globalFloatPanel: globalFloatPanel,
     ));
   }
 
@@ -237,7 +242,19 @@ class MyApp extends StatelessWidget {
       processedChild = appBuilder!(context, processedChild);
     }
 
-    return _buildKeyboardShortcuts(processedChild);
+    processedChild = _buildKeyboardShortcuts(processedChild);
+
+    // 如果提供了全局浮动面板，则添加它
+    if (globalFloatPanel != null) {
+      processedChild = Stack(
+        children: [
+          processedChild,
+          globalFloatPanel!,
+        ],
+      );
+    }
+
+    return processedChild;
   }
 
   Widget _buildMediaQueryWrapper(BuildContext context, Widget? child) {
