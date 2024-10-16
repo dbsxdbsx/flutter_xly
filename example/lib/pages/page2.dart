@@ -63,12 +63,14 @@ class Page2View extends GetView<Page2Controller> {
           onPressed: () => toast('上图标按钮被点击'),
           icon: Icons.arrow_upward,
           iconPosition: MyIconPosition.top,
+          size: 58,
         ).setFocus(focusKey: 'top_icon_button'),
         MyButton(
           text: '下图标',
           onPressed: () => toast('下图标按钮被点击'),
           icon: Icons.arrow_downward,
           iconPosition: MyIconPosition.bottom,
+          size: 58,
         ).setFocus(focusKey: 'bottom_icon_button'),
       ],
     );

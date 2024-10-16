@@ -32,7 +32,10 @@ class MyButton extends StatelessWidget {
   final double elevation;
   final double cornerRadius;
   final double? width;
-  final EdgeInsetsGeometry? padding; // 新添加的 padding 参数
+  final EdgeInsetsGeometry? padding;
+  final double normalAspectRatio; // 新添加的宽高比参数
+
+  static const double _goldenRatio = 1.618;
 
   const MyButton({
     super.key,
@@ -48,9 +51,10 @@ class MyButton extends StatelessWidget {
     this.outlineWidth = 0,
     this.gradient,
     this.elevation = 5,
-    this.cornerRadius = 0.5, // 0.0 到 1.0 之间的值，表示圆角程度
+    this.cornerRadius = 0.5,
     this.width,
-    this.padding, // 新添加的 padding 参数
+    this.padding,
+    this.normalAspectRatio = _goldenRatio * 2, // 默认值设置为 1.618 * 2
   });
 
   @override
@@ -93,6 +97,10 @@ class MyButton extends StatelessWidget {
   }
 
   Widget _buildNormalButton() {
+    // 使用新的 normalAspectRatio 参数计算按钮的宽度
+    final double buttonHeight = size.w;
+    final double buttonWidth = buttonHeight * normalAspectRatio;
+
     return DecoratedBox(
       decoration: BoxDecoration(
         gradient: gradient,
@@ -112,8 +120,9 @@ class MyButton extends StatelessWidget {
           foregroundColor: foregroundColor,
           backgroundColor:
               gradient != null ? Colors.transparent : backgroundColor,
-          elevation: 0, // 我们使用 BoxDecoration 来处理阴影
-          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+          elevation: 0,
+          padding: EdgeInsets.zero,
+          minimumSize: Size(buttonWidth, buttonHeight),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(_effectiveCornerRadius),
             side: BorderSide(
@@ -122,7 +131,12 @@ class MyButton extends StatelessWidget {
             ),
           ),
         ),
-        child: _buildButtonContent(isNormal: true),
+        child: Container(
+          width: buttonWidth,
+          height: buttonHeight,
+          alignment: Alignment.center,
+          child: _buildButtonContent(isNormal: true),
+        ),
       ),
     );
   }
@@ -180,13 +194,13 @@ class MyButton extends StatelessWidget {
 
   Widget _buildButtonContent({bool isCube = false, bool isNormal = false}) {
     Widget iconWidget = icon != null
-        ? Icon(icon, color: foregroundColor, size: 20.w)
+        ? Icon(icon, color: foregroundColor, size: isNormal ? 24.w : 20.w)
         : const SizedBox.shrink();
     Widget textWidget = Text(
       text,
       style: TextStyle(
         color: foregroundColor,
-        fontSize: isCube ? 13.sp : 16.sp,
+        fontSize: isNormal ? 16.sp : (isCube ? 13.sp : 16.sp),
         fontWeight: FontWeight.bold,
       ),
       textAlign: TextAlign.center,

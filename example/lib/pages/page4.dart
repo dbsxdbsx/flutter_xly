@@ -33,6 +33,7 @@ class Page4View extends GetView<Page4Controller> {
                               controller.loadMoreCards(isDraggable: true),
                           enableBtnToDelete: true,
                           onDelete: controller.deleteDraggableCard,
+                          cardColor: Colors.blue[50]!, // 为可拖动列表设置浅蓝色背景
                         ),
                       ),
                     ),
@@ -55,6 +56,7 @@ class Page4View extends GetView<Page4Controller> {
                               horizontal: 16.w, vertical: 2.h),
                           cardMargin: EdgeInsets.symmetric(
                               horizontal: 5.w, vertical: 2.h),
+                          cardColor: Colors.green[50]!, // 为不可拖动列表设置浅绿色背景
                         ),
                       ),
                     ),
@@ -68,6 +70,7 @@ class Page4View extends GetView<Page4Controller> {
             child: MyButton(
               onPressed: () => Get.back(),
               text: '返回第3页',
+              size: 80.w,
             ),
           ),
         ],

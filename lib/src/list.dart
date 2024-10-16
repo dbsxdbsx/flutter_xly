@@ -14,7 +14,7 @@ class MyList extends StatelessWidget {
   const MyList({
     super.key,
     required this.items,
-    required this.isDraggable,
+    this.isDraggable = false,
     required this.scrollController,
     this.onReorder,
     required this.itemBuilder,
@@ -82,15 +82,16 @@ class MyCardList extends StatefulWidget {
   final bool enableSwipeToDelete;
   final bool enableBtnToDelete;
   final Function(int)? onDelete;
-  final double? cardHeight;
-  final double? fontSize;
-  final EdgeInsetsGeometry? cardPadding;
-  final EdgeInsetsGeometry? cardMargin;
+  final double cardHeight;
+  final double fontSize;
+  final EdgeInsetsGeometry cardPadding;
+  final EdgeInsetsGeometry cardMargin;
+  final Color cardColor;
 
   const MyCardList({
     super.key,
     required this.items,
-    required this.isDraggable,
+    this.isDraggable = false,
     this.onReorder,
     this.footer,
     required this.onCardPressed,
@@ -98,10 +99,11 @@ class MyCardList extends StatefulWidget {
     this.enableSwipeToDelete = false,
     this.enableBtnToDelete = false,
     this.onDelete,
-    this.cardHeight,
-    this.fontSize,
-    this.cardPadding,
-    this.cardMargin,
+    this.cardHeight = 60,
+    this.fontSize = 16,
+    this.cardPadding = const EdgeInsets.all(16),
+    this.cardMargin = const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+    this.cardColor = Colors.white,
   });
 
   @override
@@ -165,9 +167,9 @@ class _MyCardListState extends State<MyCardList> {
             widget.onDelete != null ? () => widget.onDelete!(index) : null,
         height: widget.cardHeight,
         fontSize: widget.fontSize,
-        padding: widget.cardPadding ?? EdgeInsets.all(16.w),
-        margin: widget.cardMargin ??
-            EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+        padding: widget.cardPadding,
+        margin: widget.cardMargin,
+        backgroundColor: widget.cardColor,
       ),
       footer: widget.footer,
     );

@@ -22,7 +22,7 @@ class MyCard extends StatelessWidget {
   final VoidCallback? onDelete;
   final Widget? deleteBackground;
   final double? height;
-  final double? fontSize;
+  final double fontSize;
 
   const MyCard({
     super.key,
@@ -46,7 +46,7 @@ class MyCard extends StatelessWidget {
     this.onDelete,
     this.deleteBackground,
     this.height,
-    this.fontSize,
+    this.fontSize = 16, // 使用普通的 double 值
   });
 
   @override
@@ -63,7 +63,7 @@ class MyCard extends StatelessWidget {
         onTap: onPressed,
         borderRadius: BorderRadius.circular(borderRadius.r),
         child: Container(
-          height: height,
+          height: height?.h, // 在这里应用 .h
           padding: padding,
           decoration: decoration,
           child: Row(
@@ -77,7 +77,7 @@ class MyCard extends StatelessWidget {
                   text,
                   style: textStyle ??
                       TextStyle(
-                        fontSize: fontSize ?? 16.sp,
+                        fontSize: fontSize.sp, // 在这里应用 .sp
                         color: textColor,
                       ),
                 ),
