@@ -1,43 +1,90 @@
 import 'package:example/main.dart';
 import 'package:flutter/material.dart';
 import 'package:xly/xly.dart';
+import 'package:flutter/cupertino.dart';
 
 class Page1View extends GetView<Page1Controller> {
   const Page1View({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('第1页')),
-      body: Column(
-        children: [
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildSectionTitle('按钮测试'),
-                  SizedBox(height: 16.w),
-                  _buildButtonSection(),
-                  SizedBox(height: 24.w),
-                  _buildSectionTitle('菜单按钮测试'),
-                  SizedBox(height: 16.w),
-                  _buildMenuButtonSection(),
-                  SizedBox(height: 24.w),
-                ],
+    return Stack(
+      children: [
+        Scaffold(
+          appBar: AppBar(title: const Text('第1页')),
+          body: Column(
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.w),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildSectionTitle('按钮测试'),
+                      SizedBox(height: 16.w),
+                      _buildButtonSection(),
+                      SizedBox(height: 24.w),
+                      _buildSectionTitle('菜单按钮测试'),
+                      SizedBox(height: 16.w),
+                      _buildMenuButtonSection(),
+                      SizedBox(height: 24.w),
+                    ],
+                  ),
+                ),
               ),
-            ),
+              Padding(
+                padding: EdgeInsets.all(20.w),
+                child: _buildNavigationSection(),
+              ),
+            ],
           ),
-          Padding(
-            padding: EdgeInsets.all(20.w),
-            child: _buildNavigationSection(),
-          ),
-        ],
-      ),
-    ).showRightMenu(
-      context: context,
-      menuElements: _buildRightMenuItems(),
+        ).showRightMenu(
+          context: context,
+          menuElements: _buildRightMenuItems(),
+        ),
+        FloatPanel(
+          panelWidth: 60,
+          backgroundColor: const Color(0xFF222222),
+          panelShape: PanelShape.rectangle,
+          borderRadius: BorderRadius.circular(10),
+          dockType: DockType.outside,
+          panelButtonColor: Colors.blueGrey,
+          customButtonColor: Colors.grey,
+          dockActivate: true,
+          buttons: const [
+            CupertinoIcons.news,
+            CupertinoIcons.person,
+            CupertinoIcons.settings,
+            CupertinoIcons.link,
+            CupertinoIcons.minus,
+            CupertinoIcons.xmark_circle
+          ],
+          onPressed: (index) {
+            switch (index) {
+              case 0:
+                controller.onToolButtonPressed('新游戏按钮被点击');
+                break;
+              case 1:
+                controller.onToolButtonPressed('新AI按钮被点击');
+                break;
+              case 2:
+                controller.getSettingSheet(context);
+                break;
+              case 3:
+                controller.onToolButtonPressed('新链接按钮被点击');
+                break;
+              case 4:
+                controller.minimizeWindow();
+                break;
+              case 5:
+                controller.showExitConfirmation(context);
+                break;
+              default:
+                print("按下了默认按钮");
+            }
+          },
+        ),
+      ],
     );
   }
 
@@ -310,6 +357,28 @@ class Page1Controller extends GetxController {
       onRightButtonPressed: () async {
         await MyApp.exit();
       },
+    );
+  }
+
+  void onToolButtonPressed(String message) {
+    toast(message);
+  }
+
+  void getSettingSheet(BuildContext context) {
+    // 实现设置面板的逻辑
+    toast('打开设置面板');
+  }
+
+  void minimizeWindow() {
+    // 实现最小化窗口的逻辑
+    toast('窗口已最小化');
+  }
+
+  void showExitConfirmation(BuildContext context) {
+    MyDialog.showIos(
+      content: '是否退出程序？',
+      onLeftButtonPressed: () => MyApp.exit(),
+      onRightButtonPressed: () => Navigator.of(context).pop(),
     );
   }
 }

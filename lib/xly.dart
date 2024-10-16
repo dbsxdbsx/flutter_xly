@@ -17,3 +17,4 @@ export 'src/end_of_list_widget.dart';
 export 'src/group_box.dart';
 export 'src/card.dart';
 export 'src/list.dart';
+export 'src/float_panel.dart';
