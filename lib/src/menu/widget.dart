@@ -332,26 +332,39 @@ class _MyMenuWidget extends StatelessWidget {
     return ValueListenableBuilder<List<OverlayEntry>>(
       valueListenable: MyMenu.activeSubMenus,
       builder: (context, activeSubMenus, child) {
-        return ClipRRect(
-          borderRadius: BorderRadius.circular(style.borderRadius.sp),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(
-                sigmaX: style.blurSigma.sp, sigmaY: style.blurSigma.sp),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.7),
-                borderRadius: BorderRadius.circular(style.borderRadius.sp),
-                border: Border.all(
-                    color: Colors.white.withOpacity(0.2),
-                    width: style.borderWidth.w),
+        return Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(style.borderRadius.sp),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2 * style.shadowRatio),
+                blurRadius: 10.sp * style.shadowRatio,
+                spreadRadius: 2.sp * style.shadowRatio,
               ),
-              child: IntrinsicWidth(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: menuElements
-                      .map((element) => _buildMenuElement(context, element))
-                      .toList(),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(style.borderRadius.sp),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(
+                  sigmaX: style.blurSigma.sp, sigmaY: style.blurSigma.sp),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.8),
+                  borderRadius: BorderRadius.circular(style.borderRadius.sp),
+                  border: Border.all(
+                    color: Colors.grey.withOpacity(0.3 * style.shadowRatio),
+                    width: 1.w * style.shadowRatio,
+                  ),
+                ),
+                child: IntrinsicWidth(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: menuElements
+                        .map((element) => _buildMenuElement(context, element))
+                        .toList(),
+                  ),
                 ),
               ),
             ),

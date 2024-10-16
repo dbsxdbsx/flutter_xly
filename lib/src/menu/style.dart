@@ -8,6 +8,7 @@ class MyMenuStyle {
   final double blurSigma;
   final double borderWidth;
   final Color focusColor;
+  final double shadowRatio;
 
   const MyMenuStyle({
     this.fontSize = 15,
@@ -17,5 +18,6 @@ class MyMenuStyle {
     this.blurSigma = 10,
     this.borderWidth = 1,
     this.focusColor = const Color(0xFF007AFF),
+    this.shadowRatio = 0.5,
   });
 }

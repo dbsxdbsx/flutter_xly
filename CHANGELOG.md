@@ -5,6 +5,7 @@
 * 新增MyGroupBox组件
 * 新增MyList和MyCardList组件
 * 新增MyCard组件
+* 给菜单组件新增阴影效果
 
 ## 0.3.0
 

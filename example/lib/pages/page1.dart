@@ -42,6 +42,7 @@ class Page1View extends GetView<Page1Controller> {
         ).showRightMenu(
           context: context,
           menuElements: _buildRightMenuItems(),
+          style: MyMenuStyle(shadowRatio: 0.2),
         ),
         MyFloatPanel(
           panelWidth: 60,

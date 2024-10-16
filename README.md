@@ -158,12 +158,25 @@ MyDialog.showIos(
 ```dart
 MyBottomMenu.show(
   child: Text('这是一个测试底部菜单'),
+  style: MyMenuStyle(shadowRatio: 0.2),
 );
 ```
 
+### 右键菜单
+```dart
+Widget buildRightMenu() {
+  return Text('这是一个测试右键菜单').showRightMenu(
+    context: context,
+    menuElements: [
+      MyMenuItem(text: '选项A', onTap: () => toast('选择了选项A')),
+      MyMenuItem(text: '选项B', onTap: () => toast('选择了选项B')),
+    ],
+  );
+}
+
 ## 完整示例
 
-对于一个完整的示例，请参考 Example 页面。该示例展示了如何综合使用 xly 包中的各种功能，包括按钮、菜单、焦点管理和导航等。Example 页面提供了更详细的代码实现和实际运行效果，可以帮助您更好地理解和使用 xly 包的各项功能。
+对于一个完整的示例，请参考Example页面。该示例展示了如何综合使用 xly 包中的各种功能，包括按钮、菜单、焦点管理和导航等。Example 页面提供了更详细的代码实现和实际运行效果，可以帮助您更好地理解和使用 xly 包的各项功能。
 
 您可以在项目的 `example` 目录下找到完整的示例代码。通过运行示例项目，您可以直观地体验 xly 包提供的各种组件和功能，并了解它们在实际应用中的使用方法。
 
