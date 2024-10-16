@@ -1,7 +1,7 @@
 import 'package:example/main.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:xly/xly.dart';
-import 'package:flutter/cupertino.dart';
 
 class Page1View extends GetView<Page1Controller> {
   const Page1View({super.key});
@@ -16,7 +16,8 @@ class Page1View extends GetView<Page1Controller> {
             children: [
               Expanded(
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.w),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.w),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

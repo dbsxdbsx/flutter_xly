@@ -23,7 +23,7 @@ class MyButton extends StatelessWidget {
   final IconData? icon;
   final MyButtonShape shape;
   final MyIconPosition? iconPosition;
-  final double size;
+  final double? size;
   final Color backgroundColor;
   final Color foregroundColor;
   final Color outlineColor;
@@ -33,9 +33,10 @@ class MyButton extends StatelessWidget {
   final double cornerRadius;
   final double? width;
   final EdgeInsetsGeometry? padding;
-  final double normalAspectRatio; // 新添加的宽高比参数
+  final double normalAspectRatio;
 
   static const double _goldenRatio = 1.618;
+  static const double _defaultSize = 45.0;
 
   const MyButton({
     super.key,
@@ -44,7 +45,7 @@ class MyButton extends StatelessWidget {
     this.icon,
     this.shape = MyButtonShape.normal,
     this.iconPosition,
-    this.size = 45,
+    this.size,
     this.backgroundColor = Colors.teal,
     this.foregroundColor = Colors.white,
     this.outlineColor = Colors.transparent,
@@ -54,7 +55,7 @@ class MyButton extends StatelessWidget {
     this.cornerRadius = 0.5,
     this.width,
     this.padding,
-    this.normalAspectRatio = _goldenRatio * 2, // 默认值设置为 1.618 * 2
+    this.normalAspectRatio = _goldenRatio * 2,
   });
 
   @override
@@ -72,12 +73,10 @@ class MyButton extends StatelessWidget {
         break;
     }
 
-    // 如果提供了 width，用 SizedBox 包装
     if (width != null) {
       button = SizedBox(width: width, child: button);
     }
 
-    // 如果提供了 padding，用 Padding 包装
     if (padding != null) {
       button = Padding(padding: padding!, child: button);
     }
@@ -92,59 +91,54 @@ class MyButton extends StatelessWidget {
       case MyButtonShape.cube:
         return 8.r * cornerRadius;
       case MyButtonShape.round:
-        return size.w / 2;
+        return (size ?? _defaultSize).w / 2;
     }
   }
 
   Widget _buildNormalButton() {
-    // 使用新的 normalAspectRatio 参数计算按钮的宽度
-    final double buttonHeight = size.w;
-    final double buttonWidth = buttonHeight * normalAspectRatio;
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: gradient,
-        borderRadius: BorderRadius.circular(_effectiveCornerRadius),
-        boxShadow: [
-          if (elevation > 0)
-            BoxShadow(
-              color: Colors.black.withOpacity(0.3),
-              blurRadius: elevation,
-              offset: Offset(0, elevation / 2),
-            ),
-        ],
-      ),
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          foregroundColor: foregroundColor,
-          backgroundColor:
-              gradient != null ? Colors.transparent : backgroundColor,
-          elevation: 0,
-          padding: EdgeInsets.zero,
-          minimumSize: Size(buttonWidth, buttonHeight),
-          shape: RoundedRectangleBorder(
+    return IntrinsicHeight(
+      child: IntrinsicWidth(
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: gradient,
             borderRadius: BorderRadius.circular(_effectiveCornerRadius),
-            side: BorderSide(
-              color: outlineColor,
-              width: outlineWidth,
-            ),
+            boxShadow: [
+              if (elevation > 0)
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: elevation,
+                  offset: Offset(0, elevation / 2),
+                ),
+            ],
           ),
-        ),
-        child: Container(
-          width: buttonWidth,
-          height: buttonHeight,
-          alignment: Alignment.center,
-          child: _buildButtonContent(isNormal: true),
+          child: ElevatedButton(
+            onPressed: onPressed,
+            style: ElevatedButton.styleFrom(
+              foregroundColor: foregroundColor,
+              backgroundColor:
+                  gradient != null ? Colors.transparent : backgroundColor,
+              elevation: 0,
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.w),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(_effectiveCornerRadius),
+                side: BorderSide(
+                  color: outlineColor,
+                  width: outlineWidth,
+                ),
+              ),
+            ),
+            child: _buildButtonContent(isNormal: true),
+          ),
         ),
       ),
     );
   }
 
   Widget _buildCubeButton() {
+    final effectiveSize = (size ?? _defaultSize).w;
     return Container(
-      width: size.w,
-      height: size.w,
+      width: effectiveSize,
+      height: effectiveSize,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(_effectiveCornerRadius),
         border: Border.all(
@@ -174,6 +168,7 @@ class MyButton extends StatelessWidget {
   }
 
   Widget _buildRoundButton() {
+    final effectiveSize = (size ?? _defaultSize).w;
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
@@ -185,7 +180,7 @@ class MyButton extends StatelessWidget {
             width: outlineWidth,
           ),
         ),
-        padding: EdgeInsets.all(size.w / 4),
+        padding: EdgeInsets.all(effectiveSize / 4),
         elevation: elevation,
       ),
       child: _buildButtonContent(isCube: true),
