@@ -43,7 +43,7 @@ class Page1View extends GetView<Page1Controller> {
           context: context,
           menuElements: _buildRightMenuItems(),
         ),
-        FloatPanel(
+        MyFloatPanel(
           panelWidth: 60,
           backgroundColor: const Color(0xFF222222),
           panelShape: PanelShape.rectangle,
@@ -52,38 +52,32 @@ class Page1View extends GetView<Page1Controller> {
           panelButtonColor: Colors.blueGrey,
           customButtonColor: Colors.grey,
           dockActivate: true,
-          buttons: const [
-            CupertinoIcons.news,
-            CupertinoIcons.person,
-            CupertinoIcons.settings,
-            CupertinoIcons.link,
-            CupertinoIcons.minus,
-            CupertinoIcons.xmark_circle
+          items: [
+            MyFloatPanelItem(
+              icon: CupertinoIcons.news,
+              onPressed: () => controller.onToolButtonPressed('新游戏按钮被点击'),
+            ),
+            MyFloatPanelItem(
+              icon: CupertinoIcons.person,
+              onPressed: () => controller.onToolButtonPressed('新AI按钮被点击'),
+            ),
+            MyFloatPanelItem(
+              icon: CupertinoIcons.settings,
+              onPressed: () => controller.getSettingSheet(context),
+            ),
+            MyFloatPanelItem(
+              icon: CupertinoIcons.link,
+              onPressed: () => controller.onToolButtonPressed('新链接按钮被点击'),
+            ),
+            MyFloatPanelItem(
+              icon: CupertinoIcons.minus,
+              onPressed: () => controller.minimizeWindow(),
+            ),
+            MyFloatPanelItem(
+              icon: CupertinoIcons.xmark_circle,
+              onPressed: () => controller.showExitConfirmation(context),
+            ),
           ],
-          onPressed: (index) {
-            switch (index) {
-              case 0:
-                controller.onToolButtonPressed('新游戏按钮被点击');
-                break;
-              case 1:
-                controller.onToolButtonPressed('新AI按钮被点击');
-                break;
-              case 2:
-                controller.getSettingSheet(context);
-                break;
-              case 3:
-                controller.onToolButtonPressed('新链接按钮被点击');
-                break;
-              case 4:
-                controller.minimizeWindow();
-                break;
-              case 5:
-                controller.showExitConfirmation(context);
-                break;
-              default:
-                print("按下了默认按钮");
-            }
-          },
         ),
       ],
     );

@@ -5,10 +5,10 @@ import 'package:get/get.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:xly/src/exit.dart';
+import 'package:xly/src/float_panel.dart';
 import 'package:xly/src/platform.dart';
 import 'package:xly/src/splash.dart';
 import 'package:xly/src/toast.dart';
-import 'package:xly/src/float_panel.dart';
 
 class MyRoute<T extends GetxController> {
   final String path;
@@ -42,7 +42,7 @@ class MyApp extends StatelessWidget {
   final String backInfoText;
   final Transition pageTransitionStyle;
   final Duration pageTransitionDuration;
-  final FloatPanel? globalFloatPanel;
+  final MyFloatPanel? globalFloatPanel;
 
   const MyApp._({
     required this.designSize,
@@ -92,7 +92,7 @@ class MyApp extends StatelessWidget {
     Duration exitGapTime = const Duration(seconds: 2),
     Transition pageTransitionStyle = Transition.fade,
     Duration pageTransitionDuration = const Duration(milliseconds: 300),
-    FloatPanel? globalFloatPanel,
+    MyFloatPanel? globalFloatPanel,
   }) async {
     if (ensureScreenSize) {
       await ScreenUtil.ensureScreenSize();

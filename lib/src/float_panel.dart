@@ -10,7 +10,14 @@ enum DockType { inside, outside }
 
 enum PanelState { expanded, closed }
 
-class FloatPanel extends StatefulWidget {
+class MyFloatPanelItem {
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  MyFloatPanelItem({required this.icon, required this.onPressed});
+}
+
+class MyFloatPanel extends StatefulWidget {
   final Color borderColor;
   final double borderWidth;
   final double panelWidth;
@@ -28,15 +35,15 @@ class FloatPanel extends StatefulWidget {
   final bool dockActivate;
   final int dockAnimDuration;
   final Curve dockAnimCurve;
-  final List<IconData> buttons;
-  final void Function(int)? onPressed;
+  final List<MyFloatPanelItem> items;
   final Color innerButtonFocusColor;
   final Color customButtonFocusColor;
   final double hiddenRatio;
+  final Offset? initialPosition;
 
-  FloatPanel({
-    Key? key,
-    this.buttons = const [],
+  MyFloatPanel({
+    super.key,
+    this.items = const [],
     this.borderColor = const Color(0xFF333333),
     this.borderWidth = 0,
     this.panelWidth = 60,
@@ -53,19 +60,18 @@ class FloatPanel extends StatefulWidget {
     this.dockType = DockType.outside,
     this.dockAnimCurve = Curves.fastLinearToSlowEaseIn,
     this.dockAnimDuration = 300,
-    this.onPressed,
     this.innerButtonFocusColor = Colors.blue,
     this.customButtonFocusColor = Colors.red,
     this.dockActivate = false,
     this.hiddenRatio = 0.8, // 默认隐藏80%
-  })  : borderRadius = borderRadius ?? BorderRadius.circular(30),
-        super(key: key);
+    this.initialPosition,
+  })  : borderRadius = borderRadius ?? BorderRadius.circular(30);
 
   @override
-  _FloatPanelState createState() => _FloatPanelState();
+  _MyFloatPanelState createState() => _MyFloatPanelState();
 }
 
-class _FloatPanelState extends State<FloatPanel>
+class _MyFloatPanelState extends State<MyFloatPanel>
     with SingleTickerProviderStateMixin {
   PanelState _panelState = PanelState.closed;
   double _xOffset = 0.0;
@@ -94,18 +100,25 @@ class _FloatPanelState extends State<FloatPanel>
       parent: _animationController,
       curve: widget.dockAnimCurve,
     );
-    _isCustomButtonHovered = List.generate(widget.buttons.length, (_) => false);
+    _isCustomButtonHovered = List.generate(widget.items.length, (_) => false);
     _lastScreenSize = Size.zero;
-    WidgetsBinding.instance.addPostFrameCallback((_) => _initializePanelPosition());
+    if (widget.initialPosition != null) {
+      _xOffset = widget.initialPosition!.dx;
+      _yOffset = widget.initialPosition!.dy;
+    }
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => _initializePanelPosition());
   }
 
   void _initializePanelPosition() {
     final size = MediaQuery.of(context).size;
     _lastScreenSize = size;
-    setState(() {
-      _xOffset = size.width - widget.panelWidth.w;
-      _yOffset = size.height / 2 - widget.panelWidth.w / 2;
-    });
+    if (widget.initialPosition == null) {
+      setState(() {
+        _xOffset = size.width - widget.panelWidth.w;
+        _yOffset = size.height / 2 - widget.panelWidth.w / 2;
+      });
+    }
   }
 
   @override
@@ -149,8 +162,10 @@ class _FloatPanelState extends State<FloatPanel>
     final heightRatio = newSize.height / _lastScreenSize.height;
 
     setState(() {
-      _xOffset = (_xOffset * widthRatio).clamp(0, newSize.width - widget.panelWidth.w);
-      _yOffset = (_yOffset * heightRatio).clamp(0, newSize.height - _panelHeight());
+      _xOffset =
+          (_xOffset * widthRatio).clamp(0, newSize.width - widget.panelWidth.w);
+      _yOffset =
+          (_yOffset * heightRatio).clamp(0, newSize.height - _panelHeight());
       _lastScreenSize = newSize;
     });
   }
@@ -247,14 +262,14 @@ class _FloatPanelState extends State<FloatPanel>
 
   List<Widget> _buildCustomButtons() {
     return List.generate(
-      widget.buttons.length,
+      widget.items.length,
       (index) => MouseRegion(
         onEnter: (_) => setState(() => _isCustomButtonHovered[index] = true),
         onExit: (_) => setState(() => _isCustomButtonHovered[index] = false),
         child: GestureDetector(
-          onTap: () => widget.onPressed?.call(index),
+          onTap: widget.items[index].onPressed,
           child: _FloatButton(
-            icon: widget.buttons[index],
+            icon: widget.items[index].icon,
             color: _isCustomButtonHovered[index]
                 ? widget.customButtonFocusColor
                 : widget.customButtonColor,
@@ -284,7 +299,7 @@ class _FloatPanelState extends State<FloatPanel>
 
   double _panelHeight() {
     return _panelState == PanelState.expanded
-        ? widget.panelWidth.w * (widget.buttons.length + 1)
+        ? widget.panelWidth.w * (widget.items.length + 1)
         : widget.panelWidth.w;
   }
 

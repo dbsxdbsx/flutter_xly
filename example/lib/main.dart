@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:xly/xly.dart';
 
 import 'pages/page1.dart';
@@ -50,54 +49,7 @@ void main() async {
     exitInfoText: '自定义: 再按一次退出App',
     backInfoText: '自定义: 再按一次返回上一页',
     pageTransitionStyle: Transition.fade,
-    globalFloatPanel: FloatPanel(
-      panelWidth: 60,
-      backgroundColor: const Color(0xFF222222),
-      panelShape: PanelShape.rectangle,
-      borderRadius: BorderRadius.circular(10),
-      dockType: DockType.outside,
-      panelButtonColor: Colors.blueGrey,
-      customButtonColor: Colors.grey,
-      dockActivate: true,
-      buttons: const [
-        CupertinoIcons.news,
-        CupertinoIcons.person,
-        CupertinoIcons.settings,
-        CupertinoIcons.link,
-        CupertinoIcons.minus,
-        CupertinoIcons.xmark_circle
-      ],
-      onPressed: (index) {
-        switch (index) {
-          case 0:
-            toast('新游戏按钮被点击');
-            break;
-          case 1:
-            toast('新AI按钮被点击');
-            break;
-          case 2:
-            toast('设置按钮被点击');
-            break;
-          case 3:
-            toast('新链接按钮被点击');
-            break;
-          case 4:
-            toast('最小化按钮被点击');
-            break;
-          case 5:
-            MyDialog.showIos(
-              content: '是否退出程序？',
-              onLeftButtonPressed: () => MyApp.exit(),
-              onRightButtonPressed: () {},
-            );
-            break;
-          default:
-            print("按下了默认按钮");
-        }
-      },
-    ),
   );
-
 }
 
 class Routes {
