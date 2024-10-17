@@ -18,9 +18,6 @@ class MyMenu {
   static MyMenuPopStyle currentAnimationStyle = MyMenuPopStyle.scale;
   static final ValueNotifier<List<OverlayEntry>> activeSubMenus =
       ValueNotifier<List<OverlayEntry>>([]);
-  static Offset? _lastPosition;
-  static List<MyMenuElement>? _lastMenuElements;
-  static MyMenuStyle? _lastStyle;
 
   static Future<void> show(
     BuildContext context,
@@ -33,10 +30,6 @@ class MyMenu {
     _closeMenu(); // 关闭现有菜单
     _closeAllSubMenus(); // 关闭所有子菜单
     _menuCompleter = Completer<void>();
-
-    _lastPosition = position;
-    _lastMenuElements = menuElements;
-    _lastStyle = style;
 
     _showMenu(context, position, menuElements, style); // 显示新菜单
 
@@ -145,9 +138,6 @@ class MyMenu {
     _overlayEntry = null;
     _menuCompleter?.complete();
     _menuCompleter = null;
-    _lastPosition = null;
-    _lastMenuElements = null;
-    _lastStyle = null;
 
     _closeAllSubMenus(); // 确保所有子菜单也被关闭
   }
@@ -213,7 +203,8 @@ class MyMenu {
 }
 
 // 3. GetX控制器
-class AnimatedMenuController extends GetxController with GetSingleTickerProviderStateMixin {
+class AnimatedMenuController extends GetxController
+    with GetSingleTickerProviderStateMixin {
   late AnimationController animationController;
   late Animation<double> animation;
   final MyMenuPopStyle animationStyle;
@@ -236,7 +227,8 @@ class AnimatedMenuController extends GetxController with GetSingleTickerProvider
     switch (animationStyle) {
       case MyMenuPopStyle.scale:
         return Tween<double>(begin: 0.8, end: 1.0).animate(
-          CurvedAnimation(parent: animationController, curve: Curves.easeOutCubic),
+          CurvedAnimation(
+              parent: animationController, curve: Curves.easeOutCubic),
         );
       case MyMenuPopStyle.fade:
         return Tween<double>(begin: 0.0, end: 1.0).animate(
@@ -245,7 +237,8 @@ class AnimatedMenuController extends GetxController with GetSingleTickerProvider
       case MyMenuPopStyle.slideFromTop:
       case MyMenuPopStyle.slideFromRight:
         return Tween<double>(begin: 0.0, end: 1.0).animate(
-          CurvedAnimation(parent: animationController, curve: Curves.easeOutCubic),
+          CurvedAnimation(
+              parent: animationController, curve: Curves.easeOutCubic),
         );
     }
   }
@@ -343,8 +336,9 @@ class _AnimatedMenuWidget extends GetView<AnimatedMenuController> {
         return FadeTransition(opacity: controller.animation, child: child);
       case MyMenuPopStyle.slideFromTop:
         return SlideTransition(
-          position: Tween<Offset>(begin: const Offset(0, -0.1), end: Offset.zero)
-              .animate(controller.animation),
+          position:
+              Tween<Offset>(begin: const Offset(0, -0.1), end: Offset.zero)
+                  .animate(controller.animation),
           child: child,
         );
       case MyMenuPopStyle.slideFromRight:
