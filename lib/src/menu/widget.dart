@@ -424,9 +424,10 @@ class _MyMenuWidget extends StatelessWidget {
       final Offset itemPosition = itemBox.localToGlobal(Offset.zero);
       final Size menuSize = MyMenu.calculateMenuSize(item.subItems!, style);
 
-      // 计算子菜单的位置，确保对齐
-      final Offset subMenuPosition =
-          Offset(itemPosition.dx + itemBox.size.width, itemPosition.dy);
+      // 计算子菜单的位置，确保对齐并稍微重叠
+      final double overlapWidth = 5.w; // 重叠宽度
+      final Offset subMenuPosition = Offset(
+          itemPosition.dx + itemBox.size.width - overlapWidth, itemPosition.dy);
 
       final Offset adjustedPosition = MyMenu.calculateMenuPosition(
         context,
@@ -440,15 +441,12 @@ class _MyMenuWidget extends StatelessWidget {
         builder: (context) => Positioned(
           left: adjustedPosition.dx,
           top: adjustedPosition.dy,
-          child: _AnimatedMenuWidget(
-            animationStyle: MyMenu.currentAnimationStyle,
-            child: _MyMenuWidget(
-              menuElements: item.subItems!,
-              onItemSelected: onItemSelected,
-              style: style,
-              isSubMenu: true,
-              level: level + 1,
-            ),
+          child: _MyMenuWidget(
+            menuElements: item.subItems!,
+            onItemSelected: onItemSelected,
+            style: style,
+            isSubMenu: true,
+            level: level + 1,
           ),
         ),
       );
