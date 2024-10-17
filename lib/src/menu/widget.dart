@@ -4,6 +4,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 
 import 'style.dart';
 
@@ -17,6 +18,9 @@ class MyMenu {
   static MyMenuPopStyle currentAnimationStyle = MyMenuPopStyle.scale;
   static final ValueNotifier<List<OverlayEntry>> activeSubMenus =
       ValueNotifier<List<OverlayEntry>>([]);
+  static Offset? _lastPosition;
+  static List<MyMenuElement>? _lastMenuElements;
+  static MyMenuStyle? _lastStyle;
 
   static Future<void> show(
     BuildContext context,
@@ -26,32 +30,45 @@ class MyMenu {
     MyMenuStyle style = const MyMenuStyle(),
   }) async {
     currentAnimationStyle = animationStyle;
-    _closeMenu();
-    _closeAllSubMenus();
+    _closeMenu(); // 关闭现有菜单
+    _closeAllSubMenus(); // 关闭所有子菜单
     _menuCompleter = Completer<void>();
 
+    _lastPosition = position;
+    _lastMenuElements = menuElements;
+    _lastStyle = style;
+
+    _showMenu(context, position, menuElements, style); // 显示新菜单
+
+    return _menuCompleter!.future;
+  }
+
+  static void _showMenu(BuildContext context, Offset position,
+      List<MyMenuElement> menuElements, MyMenuStyle style) {
     final menuSize = calculateMenuSize(menuElements, style);
     final adjustedPosition = calculateMenuPosition(context, position, menuSize);
 
     _overlayEntry = OverlayEntry(
-      builder: (context) => _MenuOverlay(
-        position: adjustedPosition,
-        menuElements: menuElements,
-        animationStyle: animationStyle,
-        style: style,
-        onItemSelected: (item) {
-          if (item.onTap != null) {
-            _closeMenu();
-            Future.microtask(item.onTap!);
-          }
+      builder: (context) => LayoutBuilder(
+        builder: (context, constraints) {
+          return _MenuOverlay(
+            position: adjustedPosition,
+            menuElements: menuElements,
+            animationStyle: currentAnimationStyle,
+            style: style,
+            onItemSelected: (item) {
+              if (item.onTap != null) {
+                _closeMenu();
+                Future.microtask(item.onTap!);
+              }
+            },
+          );
         },
       ),
     );
 
     Overlay.of(context).insert(_overlayEntry!);
     _addRouteListener(context);
-
-    return _menuCompleter!.future;
   }
 
   static Widget _buildMenuOverlay(
@@ -96,7 +113,7 @@ class MyMenu {
         maxWidth = max(maxWidth, itemWidth);
         totalHeight += style.itemHeight.h;
       } else if (element is MyMenuDivider) {
-        totalHeight += element.height * element.thicknessMultiplier;
+        totalHeight += element.height.h * element.thicknessMultiplier;
       }
     }
 
@@ -128,6 +145,11 @@ class MyMenu {
     _overlayEntry = null;
     _menuCompleter?.complete();
     _menuCompleter = null;
+    _lastPosition = null;
+    _lastMenuElements = null;
+    _lastStyle = null;
+
+    _closeAllSubMenus(); // 确保所有子菜单也被关闭
   }
 
   static Offset calculateMenuPosition(
@@ -170,7 +192,14 @@ class MyMenu {
     }
 
     // 确保不会超出上下边界
-    dy = dy.clamp(0, screenSize.height - menuSize.height);
+    if (dy + menuSize.height > screenSize.height) {
+      // 如果底部超出屏幕,尝试向上调整
+      dy = screenSize.height - menuSize.height;
+      // 如果向上调整后顶部超出屏幕,则将顶部对齐到屏幕顶部
+      if (dy < 0) {
+        dy = 0;
+      }
+    }
 
     return Offset(dx, dy);
   }
@@ -183,7 +212,52 @@ class MyMenu {
   }
 }
 
-// 3. 辅助类和组件
+// 3. GetX控制器
+class AnimatedMenuController extends GetxController with GetSingleTickerProviderStateMixin {
+  late AnimationController animationController;
+  late Animation<double> animation;
+  final MyMenuPopStyle animationStyle;
+
+  AnimatedMenuController(this.animationStyle);
+
+  @override
+  void onInit() {
+    super.onInit();
+    animationController = AnimationController(
+      duration: const Duration(milliseconds: 150),
+      vsync: this,
+    );
+
+    animation = _createAnimation();
+    animationController.forward();
+  }
+
+  Animation<double> _createAnimation() {
+    switch (animationStyle) {
+      case MyMenuPopStyle.scale:
+        return Tween<double>(begin: 0.8, end: 1.0).animate(
+          CurvedAnimation(parent: animationController, curve: Curves.easeOutCubic),
+        );
+      case MyMenuPopStyle.fade:
+        return Tween<double>(begin: 0.0, end: 1.0).animate(
+          CurvedAnimation(parent: animationController, curve: Curves.easeOut),
+        );
+      case MyMenuPopStyle.slideFromTop:
+      case MyMenuPopStyle.slideFromRight:
+        return Tween<double>(begin: 0.0, end: 1.0).animate(
+          CurvedAnimation(parent: animationController, curve: Curves.easeOutCubic),
+        );
+    }
+  }
+
+  @override
+  void onClose() {
+    animationController.dispose();
+    super.onClose();
+  }
+}
+
+// 4. 辅助类和组件
 class _MenuOverlay extends StatelessWidget {
   final Offset position;
   final List<MyMenuElement> menuElements;
@@ -201,36 +275,52 @@ class _MenuOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onTap: MyMenu._closeMenu,
-      child: Stack(
-        children: [
-          Positioned(
-            left: position.dx,
-            top: position.dy,
-            child: GestureDetector(
-              onTap: () {}, // 防止点击菜单时关闭
-              child: _AnimatedMenuWidget(
-                animationStyle: animationStyle,
-                child: Material(
-                  color: Colors.transparent,
-                  child: _MyMenuWidget(
-                    menuElements: menuElements,
-                    onItemSelected: onItemSelected,
-                    style: style,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final screenSize = MediaQuery.of(context).size;
+        final menuSize = MyMenu.calculateMenuSize(menuElements, style);
+        final adjustedPosition = MyMenu.calculateMenuPosition(
+          context,
+          position,
+          menuSize,
+        );
+
+        return Stack(
+          children: [
+            // 添加一个全屏的透明层来捕获点击事件
+            Positioned.fill(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: MyMenu._closeMenu,
+                child: Container(color: Colors.transparent),
+              ),
+            ),
+            Positioned(
+              left: adjustedPosition.dx,
+              top: adjustedPosition.dy,
+              child: GestureDetector(
+                onTap: () {}, // 防止点击菜单时关闭
+                child: _AnimatedMenuWidget(
+                  animationStyle: animationStyle,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: _MyMenuWidget(
+                      menuElements: menuElements,
+                      onItemSelected: onItemSelected,
+                      style: style,
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
+          ],
+        );
+      },
     );
   }
 }
 
-class _AnimatedMenuWidget extends StatefulWidget {
+class _AnimatedMenuWidget extends GetView<AnimatedMenuController> {
   final Widget child;
   final MyMenuPopStyle animationStyle;
 
@@ -240,73 +330,28 @@ class _AnimatedMenuWidget extends StatefulWidget {
   });
 
   @override
-  _AnimatedMenuWidgetState createState() => _AnimatedMenuWidgetState();
-}
-
-class _AnimatedMenuWidgetState extends State<_AnimatedMenuWidget>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 150),
-      vsync: this,
-    );
-
-    _animation = _createAnimation();
-    _controller.forward();
-  }
-
-  Animation<double> _createAnimation() {
-    switch (widget.animationStyle) {
-      case MyMenuPopStyle.scale:
-        return Tween<double>(begin: 0.8, end: 1.0).animate(
-          CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-        );
-      case MyMenuPopStyle.fade:
-        return Tween<double>(begin: 0.0, end: 1.0).animate(
-          CurvedAnimation(parent: _controller, curve: Curves.easeOut),
-        );
-      case MyMenuPopStyle.slideFromTop:
-      case MyMenuPopStyle.slideFromRight:
-        return Tween<double>(begin: 0.0, end: 1.0).animate(
-          CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-        );
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    Get.put(AnimatedMenuController(animationStyle));
     return _buildAnimatedWidget();
   }
 
   Widget _buildAnimatedWidget() {
-    switch (widget.animationStyle) {
+    switch (animationStyle) {
       case MyMenuPopStyle.scale:
-        return ScaleTransition(scale: _animation, child: widget.child);
+        return ScaleTransition(scale: controller.animation, child: child);
       case MyMenuPopStyle.fade:
-        return FadeTransition(opacity: _animation, child: widget.child);
+        return FadeTransition(opacity: controller.animation, child: child);
       case MyMenuPopStyle.slideFromTop:
         return SlideTransition(
-          position:
-              Tween<Offset>(begin: const Offset(0, -0.1), end: Offset.zero)
-                  .animate(_animation),
-          child: widget.child,
+          position: Tween<Offset>(begin: const Offset(0, -0.1), end: Offset.zero)
+              .animate(controller.animation),
+          child: child,
         );
       case MyMenuPopStyle.slideFromRight:
         return SlideTransition(
           position: Tween<Offset>(begin: const Offset(0.1, 0), end: Offset.zero)
-              .animate(_animation),
-          child: widget.child,
+              .animate(controller.animation),
+          child: child,
         );
     }
   }
@@ -334,24 +379,24 @@ class _MyMenuWidget extends StatelessWidget {
       builder: (context, activeSubMenus, child) {
         return Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(style.borderRadius.sp),
+            borderRadius: BorderRadius.circular(style.borderRadius.r),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.2 * style.shadowRatio),
-                blurRadius: 10.sp * style.shadowRatio,
-                spreadRadius: 2.sp * style.shadowRatio,
+                blurRadius: 10.r * style.shadowRatio,
+                spreadRadius: 2.r * style.shadowRatio,
               ),
             ],
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(style.borderRadius.sp),
+            borderRadius: BorderRadius.circular(style.borderRadius.r),
             child: BackdropFilter(
               filter: ImageFilter.blur(
-                  sigmaX: style.blurSigma.sp, sigmaY: style.blurSigma.sp),
+                  sigmaX: style.blurSigma.r, sigmaY: style.blurSigma.r),
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.8),
-                  borderRadius: BorderRadius.circular(style.borderRadius.sp),
+                  borderRadius: BorderRadius.circular(style.borderRadius.r),
                   border: Border.all(
                     color: Colors.grey.withOpacity(0.3 * style.shadowRatio),
                     width: 1.w * style.shadowRatio,
@@ -424,17 +469,20 @@ class _MyMenuWidget extends StatelessWidget {
       final Offset itemPosition = itemBox.localToGlobal(Offset.zero);
       final Size menuSize = MyMenu.calculateMenuSize(item.subItems!, style);
 
-      // 计算子菜单的位置，确保对齐并稍微重叠
+      // 计算子菜单的位置,确保与父菜单项顶部对齐
       final double overlapWidth = 5.w; // 重叠宽度
       final Offset subMenuPosition = Offset(
-          itemPosition.dx + itemBox.size.width - overlapWidth, itemPosition.dy);
+        itemPosition.dx + itemBox.size.width - overlapWidth,
+        itemPosition.dy, // 使用父菜单项的y坐标
+      );
 
       final Offset adjustedPosition = MyMenu.calculateMenuPosition(
         context,
         subMenuPosition,
         menuSize,
         isSubMenu: true,
-        alignedY: itemPosition.dy, // 使用当前项的y坐标
+        parentMenuSize: itemBox.size,
+        alignedY: itemPosition.dy, // 使用父菜单项的y坐标
       );
 
       final newOverlayEntry = OverlayEntry(
@@ -457,7 +505,7 @@ class _MyMenuWidget extends StatelessWidget {
         newOverlayEntry
       ];
     } else {
-      // 如果不是子菜单项，移除所有子菜单
+      // 如果不是子菜单项,移除所有子菜单
       while (MyMenu.activeSubMenus.value.length > level) {
         final lastEntry = MyMenu.activeSubMenus.value.removeLast();
         lastEntry.remove();
@@ -487,7 +535,7 @@ class _SubMenuBuilder extends StatelessWidget {
       onEnter: (_) => onHover(true),
       onExit: (_) => onHover(false),
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 10.w, horizontal: 16.w),
+        padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 16.w),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -512,7 +560,7 @@ class _SubMenuBuilder extends StatelessWidget {
   }
 }
 
-// 4. 公共类和扩展
+// 5. 公共类和扩展
 abstract class MyMenuElement {}
 
 class MyMenuItem extends MyMenuElement {
@@ -540,8 +588,8 @@ class MyMenuDivider extends MyMenuElement {
 
   MyMenuDivider({
     this.height = 1.0,
-    this.color = const Color(0x1F000000), // 更淡的灰色,透明度为0.12
-    this.margin = const EdgeInsets.symmetric(horizontal: 8.0), // 添加水平边距
+    this.color = const Color(0x1F000000),
+    this.margin = const EdgeInsets.symmetric(horizontal: 8.0),
     this.thicknessMultiplier = 0.7,
   });
 
@@ -550,7 +598,7 @@ class MyMenuDivider extends MyMenuElement {
     return Padding(
       padding: margin,
       child: Container(
-        height: height * thicknessMultiplier,
+        height: (height * thicknessMultiplier).h,
         color: color,
       ),
     );
