@@ -39,18 +39,18 @@ class _MyMenuButtonState extends State<MyMenuButton> {
   double _blur = 0.0;
   bool _isDeepPressed = false;
   bool _isMenuOpen = false;
-  late final double _containerSize;
-  late final double _radius;
-
-  @override
-  void initState() {
-    super.initState();
-    _containerSize = widget.containerSizeRatio.sp * widget.iconSize;
-    _radius = widget.radiusRatio.sp * _containerSize;
-  }
 
   @override
   Widget build(BuildContext context) {
+    // 计算自定义缩放因子
+    final double scaleFactor = 0.8 + (1.w / ScreenUtil().screenWidth) * 0.2;
+
+    // 使用自定义缩放因子来计算尺寸
+    final double containerSize =
+        widget.containerSizeRatio * widget.iconSize * scaleFactor;
+    final double radius = widget.radiusRatio * widget.iconSize; // 保持固定值
+    final double iconSize = widget.iconSize * scaleFactor;
+
     return GestureDetector(
       onTapDown: (_) => setState(() => _isDeepPressed = true),
       onTapUp: (TapUpDetails details) async {
@@ -66,36 +66,36 @@ class _MyMenuButtonState extends State<MyMenuButton> {
       }),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        width: _containerSize,
-        height: _containerSize,
+        width: containerSize,
+        height: containerSize,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(_radius),
+          borderRadius: BorderRadius.circular(radius),
           gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [Colors.white, Colors.white70],
           ),
-          boxShadow: _getBoxShadows(),
+          boxShadow: _getBoxShadows(containerSize),
         ),
         child: Icon(
           widget.icon,
-          size: widget.iconSize,
+          size: iconSize,
           color: widget.iconColor,
         ),
       ),
     );
   }
 
-  List<BoxShadow> _getBoxShadows() {
+  List<BoxShadow> _getBoxShadows(double containerSize) {
     bool isActivated = widget.isPressed ?? false;
     if (_isDeepPressed) {
-      _distance = 0.18.sp * _containerSize;
+      _distance = 0.18 * containerSize;
       _blur = 2.0;
     } else if (_isMenuOpen || isActivated) {
-      _distance = 0.14.sp * _containerSize;
+      _distance = 0.14 * containerSize;
       _blur = 4.0;
     } else {
-      _distance = 0.11.sp * _containerSize;
+      _distance = 0.11 * containerSize;
       _blur = 6.0;
     }
 

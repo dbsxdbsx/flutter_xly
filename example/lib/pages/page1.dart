@@ -42,7 +42,7 @@ class Page1View extends GetView<Page1Controller> {
         ).showRightMenu(
           context: context,
           menuElements: _buildRightMenuItems(),
-          style: MyMenuStyle(shadowRatio: 0.2),
+          style: const MyMenuStyle(shadowRatio: 0.2),
         ),
         MyFloatPanel(
           panelWidth: 60,
@@ -128,14 +128,14 @@ class Page1View extends GetView<Page1Controller> {
       runSpacing: 12.w,
       children: [
         Obx(() => MyMenuButton(
-              iconSize: 30.sp,
+              iconSize: 30.w,
               iconColor: Colors.blue,
               isPressed: controller.isMenuButtonActivated.value,
               menuItems: _buildComplexMenuItems(),
             )),
         MyMenuButton(
           icon: Icons.more_vert,
-          iconSize: 30.sp,
+          iconSize: 25.w,
           iconColor: Colors.green,
           menuItems: _buildSimpleMenuItems(),
         ),
