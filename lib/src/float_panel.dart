@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
@@ -71,7 +72,7 @@ class MyFloatPanel extends StatefulWidget {
     this.initialPanelIcon = Icons.add,
     BorderRadius? borderRadius,
     this.panelOpenOffset = 5,
-    this.panelAnimDuration = 600,
+    this.panelAnimDuration = 600, 
     this.panelAnimCurve = Curves.fastLinearToSlowEaseIn,
     this.backgroundColor = Colors.grey,
     // this.backgroundColor = const Color(0xFF333333),
@@ -80,7 +81,7 @@ class MyFloatPanel extends StatefulWidget {
     this.panelShape = PanelShape.rounded,
     this.dockType = DockType.outside,
     this.dockAnimCurve = Curves.fastLinearToSlowEaseIn,
-    this.dockAnimDuration = 300,
+    this.dockAnimDuration = 500, // 将停靠动画时间从300ms增加到500ms
     this.innerButtonFocusColor = Colors.blue,
     this.customButtonFocusColor = Colors.red,
     this.dockActivate = false,
@@ -93,7 +94,7 @@ class MyFloatPanel extends StatefulWidget {
 }
 
 class _MyFloatPanelState extends State<MyFloatPanel>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   PanelState _panelState = PanelState.closed;
   double _xOffset = 0.0;
   double _yOffset = 0.0;
@@ -105,12 +106,15 @@ class _MyFloatPanelState extends State<MyFloatPanel>
   late Size _lastScreenSize;
   bool _isRightSide = true;
   late Animation<double> _expandAnimation;
+  late AnimationController _dockAnimationController;
+  late Animation<double> _dockAnimation;
 
   @override
   void initState() {
     super.initState();
     _initializeState();
     _initializeExpandAnimation();
+    _initializeDockAnimation();
 
     // 添加这个延迟调用
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -123,7 +127,8 @@ class _MyFloatPanelState extends State<MyFloatPanel>
     _panelIcon = widget.initialPanelIcon;
     _animationController = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: widget.dockAnimDuration),
+      duration: Duration(
+          milliseconds: widget.panelAnimDuration), // 使用 panelAnimDuration
     );
     _animation = CurvedAnimation(
       parent: _animationController,
@@ -151,17 +156,17 @@ class _MyFloatPanelState extends State<MyFloatPanel>
         // 如果提供了初始位置，则使用它
         _xOffset = widget.initialPosition!.dx;
         _yOffset = widget.initialPosition!.dy;
-        _isRightSide = _xOffset > size.width / 2;
+        _isRightSide = _xOffset + widget.panelWidth.w / 2 > size.width / 2;
       }
 
-      // 使用与 _adjustPanelPosition 相同的逻辑
+      // 根据 _isRightSide 调整 _xOffset
       if (_isRightSide) {
         _xOffset = size.width - widget.panelWidth.w / 2;
       } else {
         _xOffset = -widget.panelWidth.w / 2;
       }
 
-      // 如果没有指定初始 y 位置，则将面板垂直居中
+      // 如果没有指定初始 y 位置，则面板垂直居中
       if (widget.initialPosition == null) {
         _yOffset = size.height / 2 - widget.panelWidth.w / 2;
       }
@@ -172,35 +177,49 @@ class _MyFloatPanelState extends State<MyFloatPanel>
   }
 
   void _initializeExpandAnimation() {
-    _expandAnimation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: widget.panelAnimCurve,
-      ),
+    _expandAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: widget.panelAnimCurve,
+    );
+  }
+
+  void _initializeDockAnimation() {
+    _dockAnimationController = AnimationController(
+      duration: Duration(milliseconds: widget.dockAnimDuration),
+      vsync: this,
+    );
+    _dockAnimation = CurvedAnimation(
+      parent: _dockAnimationController,
+      curve: widget.dockAnimCurve,
     );
   }
 
   @override
   void dispose() {
     _animationController.dispose();
+    _dockAnimationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     _adjustToScreenSize();
-    // 确保面板在初始化时正确隐藏
     if (_panelState == PanelState.closed && _xOffset == 0) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _adjustPanelPosition());
+      WidgetsBinding.instance.addPostFrameCallback((_) => _animateToEdge());
     }
-    return Positioned(
-      left: _getAdjustedXOffset(),
-      top: _yOffset,
-      child: GestureDetector(
-        onPanUpdate: _handlePanUpdate,
-        onPanEnd: _handlePanEnd,
-        child: _buildPanel(),
-      ),
+    return AnimatedBuilder(
+      animation: Listenable.merge([_expandAnimation, _dockAnimation]),
+      builder: (context, child) {
+        return Positioned(
+          left: _getAdjustedXOffset(),
+          top: _yOffset,
+          child: GestureDetector(
+            onPanUpdate: _handlePanUpdate,
+            onPanEnd: _handlePanEnd,
+            child: _buildPanel(),
+          ),
+        );
+      },
     );
   }
 
@@ -215,9 +234,9 @@ class _MyFloatPanelState extends State<MyFloatPanel>
 
   double _getAdjustedXOffset() {
     if (_panelState == PanelState.closed) {
-      return _isRightSide ? _xOffset : _xOffset + widget.panelWidth.w / 2;
+      return _xOffset;
     }
-    return _xOffset;
+    return math.max(_xOffset, 0);
   }
 
   void _adjustPositionOnResize(Size newSize) {
@@ -235,36 +254,73 @@ class _MyFloatPanelState extends State<MyFloatPanel>
 
   void _handlePanUpdate(DragUpdateDetails details) {
     setState(() {
-      _xOffset += details.delta.dx;
-      _yOffset += details.delta.dy;
+      double newXOffset = _xOffset + details.delta.dx;
+      double newYOffset = _yOffset + details.delta.dy;
+
+      // 允许面板在左侧时也能被拖出
+      if (_panelState == PanelState.closed) {
+        if (_isRightSide) {
+          newXOffset = newXOffset.clamp(
+            widget.panelWidth.w / 2,
+            MediaQuery.of(context).size.width - widget.panelWidth.w / 2,
+          );
+        } else {
+          newXOffset = newXOffset.clamp(
+            -widget.panelWidth.w / 2,
+            MediaQuery.of(context).size.width - widget.panelWidth.w / 2,
+          );
+        }
+      } else {
+        newXOffset = newXOffset.clamp(
+          0,
+          MediaQuery.of(context).size.width - widget.panelWidth.w,
+        );
+      }
+
+      _xOffset = newXOffset;
+      _yOffset = newYOffset;
       _constrainPosition();
     });
   }
 
   void _handlePanEnd(DragEndDetails details) {
     if (_panelState == PanelState.closed) {
-      _adjustPanelPosition();
+      _animateToEdge();
     } else {
       _constrainPosition();
     }
   }
 
   void _animateToEdge() {
+    if (_panelState != PanelState.closed) return;
+
     final size = MediaQuery.of(context).size;
-    final centerX = _xOffset + widget.panelWidth.w / 2;
-    _isRightSide = centerX > size.width / 2;
+    _isRightSide = _xOffset + widget.panelWidth.w / 2 > size.width / 2;
     final targetX = _isRightSide
-        ? size.width - widget.panelWidth.w / 2 // 修改这里，隐藏一半
-        : -widget.panelWidth.w / 2; // 修改这里，隐藏一半
+        ? size.width - widget.panelWidth.w / 2
+        : -widget.panelWidth.w / 2;
     final targetY = _yOffset.clamp(0, size.height - _panelHeight());
 
-    _animatePosition(targetX.toDouble(), targetY.toDouble());
+    _dockAnimationController.reset();
+    _dockAnimation =
+        Tween<double>(begin: 0, end: 1).animate(_dockAnimationController)
+          ..addListener(() {
+            setState(() {
+              _xOffset = lerpDouble(_xOffset, targetX, _dockAnimation.value)!;
+              _yOffset = lerpDouble(_yOffset, targetY, _dockAnimation.value)!;
+            });
+          });
+    _dockAnimationController.forward();
   }
 
   void _animatePosition(double targetX, double targetY) {
     _animationController.reset();
-    _animation = Tween<double>(begin: 0, end: 1).animate(_animationController)
-      ..addListener(() {
+    _animation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut, // 使用更平滑的缓动曲线
+      ),
+    )..addListener(() {
         setState(() {
           _xOffset = lerpDouble(_xOffset, targetX, _animation.value)!;
           _yOffset = lerpDouble(_yOffset, targetY, _animation.value)!;
@@ -280,8 +336,8 @@ class _MyFloatPanelState extends State<MyFloatPanel>
     setState(() {
       if (_panelState == PanelState.closed) {
         _xOffset = _xOffset.clamp(
-          -widget.panelWidth.w / 2, // 修改这里
-          size.width - widget.panelWidth.w / 2, // 修改这里
+          -widget.panelWidth.w / 2,
+          size.width - widget.panelWidth.w / 2,
         );
       } else {
         _xOffset = _xOffset.clamp(
@@ -435,17 +491,18 @@ class _MyFloatPanelState extends State<MyFloatPanel>
     return widget.panelWidth.w;
   }
 
-  double get _hiddenWidth => widget.panelWidth.w / 2; // 隐藏一半
+  double get _hiddenWidth => widget.panelWidth.w / 2; // 隐藏半
 
   // 在 _MyFloatPanelState 类中添加一个新方法
   void _adjustPanelPosition() {
     final size = MediaQuery.of(context).size;
     setState(() {
       if (_panelState == PanelState.closed) {
+        _isRightSide = _xOffset + widget.panelWidth.w / 2 > size.width / 2;
         if (_isRightSide) {
           _xOffset = size.width - widget.panelWidth.w / 2;
         } else {
-          _xOffset = -widget.panelWidth.w / 2;
+          _xOffset = widget.panelWidth.w / 2;
         }
       } else {
         _xOffset = _xOffset.clamp(0.0, size.width - widget.panelWidth.w);
