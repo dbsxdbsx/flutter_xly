@@ -9,8 +9,8 @@ import 'pages/page4.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final app = await MyApp.initialize(
-    designSize: const Size(800, 600),
+  await MyApp.initialize(
+    designSize: const Size(900, 700),
     splash: const MySplash(
       nextRoute: Routes.page1,
       lottieAssetPath: 'assets/animation/splash_loading.json',
