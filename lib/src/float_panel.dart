@@ -111,6 +111,12 @@ class _MyFloatPanelState extends State<MyFloatPanel>
     super.initState();
     _initializeState();
     _initializeExpandAnimation();
+
+    // 添加这个延迟调用
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializePanelPosition();
+      _adjustPanelPosition(); // 再次调用以确保位置正确
+    });
   }
 
   void _initializeState() {
@@ -136,12 +142,33 @@ class _MyFloatPanelState extends State<MyFloatPanel>
   void _initializePanelPosition() {
     final size = MediaQuery.of(context).size;
     _lastScreenSize = size;
-    if (widget.initialPosition == null) {
-      setState(() {
-        _xOffset = size.width - widget.panelWidth.w;
+    setState(() {
+      if (widget.initialPosition == null) {
+        // 默认将面板放在右侧
+        _isRightSide = true;
+        _xOffset = size.width - widget.panelWidth.w / 2;
+      } else {
+        // 如果提供了初始位置，则使用它
+        _xOffset = widget.initialPosition!.dx;
+        _yOffset = widget.initialPosition!.dy;
+        _isRightSide = _xOffset > size.width / 2;
+      }
+
+      // 使用与 _adjustPanelPosition 相同的逻辑
+      if (_isRightSide) {
+        _xOffset = size.width - widget.panelWidth.w / 2;
+      } else {
+        _xOffset = -widget.panelWidth.w / 2;
+      }
+
+      // 如果没有指定初始 y 位置，则将面板垂直居中
+      if (widget.initialPosition == null) {
         _yOffset = size.height / 2 - widget.panelWidth.w / 2;
-      });
-    }
+      }
+
+      // 确保 y 位置在有效范围内
+      _yOffset = _yOffset.clamp(0.0, size.height - _panelHeight());
+    });
   }
 
   void _initializeExpandAnimation() {
@@ -162,6 +189,10 @@ class _MyFloatPanelState extends State<MyFloatPanel>
   @override
   Widget build(BuildContext context) {
     _adjustToScreenSize();
+    // 确保面板在初始化时正确隐藏
+    if (_panelState == PanelState.closed && _xOffset == 0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _adjustPanelPosition());
+    }
     return Positioned(
       left: _getAdjustedXOffset(),
       top: _yOffset,
@@ -184,7 +215,7 @@ class _MyFloatPanelState extends State<MyFloatPanel>
 
   double _getAdjustedXOffset() {
     if (_panelState == PanelState.closed) {
-      return _isRightSide ? _xOffset + _hiddenWidth : _xOffset - _hiddenWidth;
+      return _isRightSide ? _xOffset : _xOffset + widget.panelWidth.w / 2;
     }
     return _xOffset;
   }
@@ -212,7 +243,7 @@ class _MyFloatPanelState extends State<MyFloatPanel>
 
   void _handlePanEnd(DragEndDetails details) {
     if (_panelState == PanelState.closed) {
-      _animateToEdge();
+      _adjustPanelPosition();
     } else {
       _constrainPosition();
     }
@@ -271,8 +302,7 @@ class _MyFloatPanelState extends State<MyFloatPanel>
           height: _panelHeight(),
           decoration: BoxDecoration(
             color: widget.backgroundColor,
-            borderRadius: _borderRadius(),
-            border: _panelBorder(),
+            borderRadius: widget.borderRadius, // 直接使用 widget.borderRadius
           ),
           child: SingleChildScrollView(
             child: Wrap(
@@ -381,7 +411,7 @@ class _MyFloatPanelState extends State<MyFloatPanel>
       if (_panelState == PanelState.expanded) {
         _panelState = PanelState.closed;
         _panelIcon = Icons.add;
-        _animateToEdge();
+        _adjustPanelPosition();
         _animationController.reverse();
       } else {
         _panelState = PanelState.expanded;
@@ -405,22 +435,24 @@ class _MyFloatPanelState extends State<MyFloatPanel>
     return widget.panelWidth.w;
   }
 
-  BorderRadius _borderRadius() {
-    return widget.panelShape == PanelShape.rounded
-        ? BorderRadius.circular(widget.panelWidth.w / 2)
-        : widget.borderRadius;
-  }
-
-  Border? _panelBorder() {
-    return widget.borderWidth > 0
-        ? Border.all(
-            color: widget.borderColor,
-            width: widget.borderWidth.w,
-          )
-        : null;
-  }
-
   double get _hiddenWidth => widget.panelWidth.w / 2; // 隐藏一半
+
+  // 在 _MyFloatPanelState 类中添加一个新方法
+  void _adjustPanelPosition() {
+    final size = MediaQuery.of(context).size;
+    setState(() {
+      if (_panelState == PanelState.closed) {
+        if (_isRightSide) {
+          _xOffset = size.width - widget.panelWidth.w / 2;
+        } else {
+          _xOffset = -widget.panelWidth.w / 2;
+        }
+      } else {
+        _xOffset = _xOffset.clamp(0.0, size.width - widget.panelWidth.w);
+      }
+      _yOffset = _yOffset.clamp(0.0, size.height - _panelHeight());
+    });
+  }
 }
 
 class _FloatButton extends StatelessWidget {
