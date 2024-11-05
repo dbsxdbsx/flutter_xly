@@ -9,6 +9,7 @@ import 'package:xly/src/float_panel.dart';
 import 'package:xly/src/platform.dart';
 import 'package:xly/src/splash.dart';
 import 'package:xly/src/toast.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 class MyRoute<T extends GetxController> {
   final String path;
@@ -221,6 +222,16 @@ class MyApp extends StatelessWidget {
       theme: _buildTheme(),
       defaultTransition: pageTransitionStyle,
       transitionDuration: pageTransitionDuration,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('zh', 'CN'),
+        Locale('en', 'US'),
+      ],
+      locale: const Locale('zh', 'CN'),
     );
 
     return useOKToast ? OKToast(child: app) : app;
