@@ -6,6 +6,7 @@ import 'pages/page1.dart';
 import 'pages/page2.dart';
 import 'pages/page3.dart';
 import 'pages/page4.dart';
+import 'pages/page5.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,6 +45,11 @@ void main() async {
         page: const Page4View(),
         controller: () => Page4Controller(),
       ),
+      MyRoute<Page5Controller>(
+        path: Routes.page5,
+        page: const Page5View(),
+        controller: () => Page5Controller(),
+      ),
     ],
     keyToRollBack: LogicalKeyboardKey.backspace,
     exitInfoText: '自定义: 再按一次退出App',
@@ -57,4 +63,5 @@ class Routes {
   static const String page2 = '/page2';
   static const String page3 = '/page3';
   static const String page4 = '/page4';
+  static const String page5 = '/page5';
 }

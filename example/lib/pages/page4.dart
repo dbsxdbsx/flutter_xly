@@ -1,3 +1,4 @@
+import 'package:example/main.dart';
 import 'package:flutter/material.dart';
 import 'package:xly/xly.dart';
 
@@ -67,10 +68,20 @@ class Page4View extends GetView<Page4Controller> {
           ),
           Padding(
             padding: EdgeInsets.all(16.w),
-            child: MyButton(
-              onPressed: () => Get.back(),
-              text: '返回第3页',
-              size: 80.w,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                MyButton(
+                  onPressed: () => Get.back(),
+                  text: '返回第3页',
+                  size: 80.w,
+                ),
+                MyButton(
+                  onPressed: () => Get.toNamed(Routes.page5),
+                  text: '前往第5页',
+                  size: 80.w,
+                ),
+              ],
             ),
           ),
         ],

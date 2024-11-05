@@ -72,7 +72,7 @@ class MyFloatPanel extends StatefulWidget {
     this.initialPanelIcon = Icons.add,
     BorderRadius? borderRadius,
     this.panelOpenOffset = 5,
-    this.panelAnimDuration = 600, 
+    this.panelAnimDuration = 600,
     this.panelAnimCurve = Curves.fastLinearToSlowEaseIn,
     this.backgroundColor = Colors.grey,
     // this.backgroundColor = const Color(0xFF333333),
