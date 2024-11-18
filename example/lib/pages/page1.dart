@@ -117,9 +117,20 @@ class Page1View extends GetView<Page1Controller> {
     final showMethod = isIos ? MyDialog.showIos : MyDialog.show;
     showMethod(
       content: '这是一个${isIos ? 'iOS 风格的' : ''}测试对话框',
-      onLeftButtonPressed: () => toast('选择了${isIos ? '是' : '左按钮'}'),
-      onRightButtonPressed: () => toast('选择了${isIos ? '否' : '右按钮'}'),
-    );
+    ).then((result) {
+      // 通过返回值处理结果
+      switch (result) {
+        case MyDialogChosen.left:
+          toast('选择了${isIos ? '是' : '确定'}');
+          break;
+        case MyDialogChosen.right:
+          toast('选择了${isIos ? '否' : '取消'}');
+          break;
+        case MyDialogChosen.canceled:
+          toast('对话框被关闭');
+          break;
+      }
+    });
   }
 
   Widget _buildMenuButtonSection() {
@@ -346,15 +357,15 @@ class Page1Controller extends GetxController {
   }
 
   void confirmExitApp() async {
-    final _ = await MyDialog.show(
+    final result = await MyDialog.show(
       content: '确定要退出应用吗？',
       leftButtonText: '取消',
       rightButtonText: '确定',
-      onLeftButtonPressed: () {},
-      onRightButtonPressed: () async {
-        await MyApp.exit();
-      },
     );
+
+    if (result == MyDialogChosen.right) {
+      await MyApp.exit();
+    }
   }
 
   void onToolButtonPressed(String message) {
@@ -371,11 +382,13 @@ class Page1Controller extends GetxController {
     toast('窗口已最小化');
   }
 
-  void showExitConfirmation(BuildContext context) {
-    MyDialog.showIos(
+  void showExitConfirmation(BuildContext context) async {
+    final result = await MyDialog.showIos(
       content: '是否退出程序？',
-      onLeftButtonPressed: () => MyApp.exit(),
-      onRightButtonPressed: () => Navigator.of(context).pop(),
     );
+
+    if (result == MyDialogChosen.left) {
+      await MyApp.exit();
+    }
   }
 }

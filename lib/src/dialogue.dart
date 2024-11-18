@@ -7,7 +7,7 @@ enum MyDialogChosen { left, right, canceled }
 class MyDialog {
   static Future<MyDialogChosen> show({
     required String content,
-    required VoidCallback onLeftButtonPressed,
+    VoidCallback? onLeftButtonPressed,
     VoidCallback? onRightButtonPressed,
     String title = '提示',
     String leftButtonText = '好的',
@@ -45,7 +45,7 @@ class MyDialog {
 
   static Future<MyDialogChosen> showIos({
     required String content,
-    required VoidCallback onLeftButtonPressed,
+    VoidCallback? onLeftButtonPressed,
     VoidCallback? onRightButtonPressed,
     String title = '提示',
     String leftButtonText = '好的',
@@ -94,12 +94,14 @@ class MyDialog {
     required String rightButtonText,
     required Color leftButtonColor,
     required Color rightButtonColor,
-    required VoidCallback onLeftButtonPressed,
+    required VoidCallback? onLeftButtonPressed,
     required VoidCallback? onRightButtonPressed,
     required bool isMaterial,
   }) {
     void onLeftPressed() {
-      onLeftButtonPressed();
+      if (onLeftButtonPressed != null) {
+        onLeftButtonPressed();
+      }
       Get.back(result: MyDialogChosen.left);
     }
 
