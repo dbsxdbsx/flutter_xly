@@ -12,93 +12,135 @@ class MyDialog {
     String title = '提示',
     String leftButtonText = '好的',
     String rightButtonText = '取消',
-    Color backgroundColor = const Color(0xFF2C2C2C), // 更深的背景色
+    Color backgroundColor = const Color(0xFF2C2C2C),
     Color titleColor = Colors.white,
     Color contentColor = Colors.white70,
-    Color leftButtonColor = Colors.blueAccent, // 更亮的蓝色
-    Color rightButtonColor = Colors.redAccent, // 更亮的红色
+    Color leftButtonColor = Colors.blueAccent,
+    Color rightButtonColor = Colors.redAccent,
     double borderRadius = 12,
     double elevation = 8,
     double barrierOpacity = 0.5,
   }) async {
-    final result = await Get.dialog<ChosenOption>(
-      AlertDialog(
+    return _showDialog(
+      dialog: AlertDialog(
         backgroundColor: backgroundColor,
         title: Text(title, style: TextStyle(color: titleColor)),
         content: Text(content, style: TextStyle(color: contentColor)),
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(borderRadius)),
         elevation: elevation,
-        actions: <Widget>[
-          TextButton(
-            onPressed: () {
-              onLeftButtonPressed();
-              Get.back(result: ChosenOption.left);
-            },
-            style: ButtonStyle(
-              overlayColor:
-                  WidgetStateProperty.all(leftButtonColor.withOpacity(0.1)),
-            ),
-            child:
-                Text(leftButtonText, style: TextStyle(color: leftButtonColor)),
-          ),
-          TextButton(
-            onPressed: () {
-              if (onRightButtonPressed != null) {
-                onRightButtonPressed();
-              }
-              Get.back(result: ChosenOption.right);
-            },
-            style: ButtonStyle(
-              overlayColor:
-                  WidgetStateProperty.all(rightButtonColor.withOpacity(0.1)),
-            ),
-            child: Text(rightButtonText,
-                style: TextStyle(color: rightButtonColor)),
-          ),
-        ],
+        actions: _buildActions(
+          leftButtonText: leftButtonText,
+          rightButtonText: rightButtonText,
+          leftButtonColor: leftButtonColor,
+          rightButtonColor: rightButtonColor,
+          onLeftButtonPressed: onLeftButtonPressed,
+          onRightButtonPressed: onRightButtonPressed,
+          isMaterial: true,
+        ),
       ),
-      barrierDismissible: true,
-      barrierColor: Colors.black.withOpacity(barrierOpacity),
+      barrierOpacity: barrierOpacity,
     );
-
-    return result ?? ChosenOption.canceled;
   }
 
   static Future<ChosenOption> showIos({
-    String title = '提示',
     required String content,
-    String leftButtonText = '是',
-    String rightButtonText = '否',
     required VoidCallback onLeftButtonPressed,
     VoidCallback? onRightButtonPressed,
+    String title = '提示',
+    String leftButtonText = '好的',
+    String rightButtonText = '取消',
+    Color backgroundColor = Colors.white,
+    Color titleColor = CupertinoColors.black,
+    Color contentColor = CupertinoColors.black,
+    Color leftButtonColor = CupertinoColors.systemBlue,
+    Color rightButtonColor = CupertinoColors.systemRed,
+    double borderRadius = 12,
+    double elevation = 8,
+    double barrierOpacity = 0.5,
+  }) async {
+    return _showDialog(
+      dialog: CupertinoAlertDialog(
+        title: Text(title, style: TextStyle(color: titleColor)),
+        content: Text(content, style: TextStyle(color: contentColor)),
+        actions: _buildActions(
+          leftButtonText: leftButtonText,
+          rightButtonText: rightButtonText,
+          leftButtonColor: leftButtonColor,
+          rightButtonColor: rightButtonColor,
+          onLeftButtonPressed: onLeftButtonPressed,
+          onRightButtonPressed: onRightButtonPressed,
+          isMaterial: false,
+        ),
+      ),
+      barrierOpacity: barrierOpacity,
+    );
+  }
+
+  static Future<ChosenOption> _showDialog({
+    required Widget dialog,
+    required double barrierOpacity,
   }) async {
     final result = await Get.dialog<ChosenOption>(
-      CupertinoAlertDialog(
-        title: Text(title),
-        content: Text(content),
-        actions: <Widget>[
-          CupertinoDialogAction(
-            child: Text(leftButtonText),
-            onPressed: () {
-              onLeftButtonPressed();
-              Get.back(result: ChosenOption.left);
-            },
-          ),
-          CupertinoDialogAction(
-            child: Text(rightButtonText),
-            onPressed: () {
-              if (onRightButtonPressed != null) {
-                onRightButtonPressed();
-              }
-              Get.back(result: ChosenOption.right);
-            },
-          ),
-        ],
-      ),
+      dialog,
       barrierDismissible: true,
+      barrierColor: Colors.black.withOpacity(barrierOpacity),
     );
-
     return result ?? ChosenOption.canceled;
+  }
+
+  static List<Widget> _buildActions({
+    required String leftButtonText,
+    required String rightButtonText,
+    required Color leftButtonColor,
+    required Color rightButtonColor,
+    required VoidCallback onLeftButtonPressed,
+    required VoidCallback? onRightButtonPressed,
+    required bool isMaterial,
+  }) {
+    void onLeftPressed() {
+      onLeftButtonPressed();
+      Get.back(result: ChosenOption.left);
+    }
+
+    void onRightPressed() {
+      if (onRightButtonPressed != null) {
+        onRightButtonPressed();
+      }
+      Get.back(result: ChosenOption.right);
+    }
+
+    if (isMaterial) {
+      return [
+        TextButton(
+          onPressed: onLeftPressed,
+          style: ButtonStyle(
+            overlayColor:
+                WidgetStateProperty.all(leftButtonColor.withOpacity(0.1)),
+          ),
+          child: Text(leftButtonText, style: TextStyle(color: leftButtonColor)),
+        ),
+        TextButton(
+          onPressed: onRightPressed,
+          style: ButtonStyle(
+            overlayColor:
+                WidgetStateProperty.all(rightButtonColor.withOpacity(0.1)),
+          ),
+          child:
+              Text(rightButtonText, style: TextStyle(color: rightButtonColor)),
+        ),
+      ];
+    }
+
+    return [
+      CupertinoDialogAction(
+        onPressed: onLeftPressed,
+        child: Text(leftButtonText, style: TextStyle(color: leftButtonColor)),
+      ),
+      CupertinoDialogAction(
+        onPressed: onRightPressed,
+        child: Text(rightButtonText, style: TextStyle(color: rightButtonColor)),
+      ),
+    ];
   }
 }
