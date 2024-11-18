@@ -108,10 +108,12 @@ class Page4View extends GetView<Page4Controller> {
 }
 
 class Page4Controller extends GetxController {
-  final draggableCards = <String>[].obs;
-  final staticCards = <String>[].obs;
+  static const int initialLoadCount = 20;
   final int maxCards = 30;
   final int loadIncrement = 10;
+
+  final draggableCards = <String>[].obs;
+  final staticCards = <String>[].obs;
   final draggableListState = ListState().obs;
   final staticListState = ListState().obs;
 
@@ -122,9 +124,17 @@ class Page4Controller extends GetxController {
   }
 
   void _loadInitialCards() {
-    draggableCards.addAll(List.generate(8, (index) => '可拖动卡片 ${index + 1}'));
-    staticCards
-        .addAll(List.generate(10, (index) => '静态卡片 ${index + 1}')); // 修改这里
+    draggableCards.addAll(
+        List.generate(initialLoadCount, (index) => '可拖动卡片 ${index + 1}'));
+    staticCards.addAll(
+        List.generate(initialLoadCount, (index) => '静态卡片 ${index + 1}'));
+
+    draggableListState.update((val) {
+      val!.hasMoreData = draggableCards.length < maxCards;
+    });
+    staticListState.update((val) {
+      val!.hasMoreData = staticCards.length < maxCards;
+    });
   }
 
   Future<void> loadMoreCards({required bool isDraggable}) async {
