@@ -2,10 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-enum ChosenOption { left, right, canceled }
+enum MyDialogChosen { left, right, canceled }
 
 class MyDialog {
-  static Future<ChosenOption> show({
+  static Future<MyDialogChosen> show({
     required String content,
     required VoidCallback onLeftButtonPressed,
     VoidCallback? onRightButtonPressed,
@@ -43,7 +43,7 @@ class MyDialog {
     );
   }
 
-  static Future<ChosenOption> showIos({
+  static Future<MyDialogChosen> showIos({
     required String content,
     required VoidCallback onLeftButtonPressed,
     VoidCallback? onRightButtonPressed,
@@ -77,16 +77,16 @@ class MyDialog {
     );
   }
 
-  static Future<ChosenOption> _showDialog({
+  static Future<MyDialogChosen> _showDialog({
     required Widget dialog,
     required double barrierOpacity,
   }) async {
-    final result = await Get.dialog<ChosenOption>(
+    final result = await Get.dialog<MyDialogChosen>(
       dialog,
       barrierDismissible: true,
       barrierColor: Colors.black.withOpacity(barrierOpacity),
     );
-    return result ?? ChosenOption.canceled;
+    return result ?? MyDialogChosen.canceled;
   }
 
   static List<Widget> _buildActions({
@@ -100,14 +100,14 @@ class MyDialog {
   }) {
     void onLeftPressed() {
       onLeftButtonPressed();
-      Get.back(result: ChosenOption.left);
+      Get.back(result: MyDialogChosen.left);
     }
 
     void onRightPressed() {
       if (onRightButtonPressed != null) {
         onRightButtonPressed();
       }
-      Get.back(result: ChosenOption.right);
+      Get.back(result: MyDialogChosen.right);
     }
 
     if (isMaterial) {
