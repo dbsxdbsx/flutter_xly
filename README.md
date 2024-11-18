@@ -6,14 +6,17 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 
 当前，这个包提供了以下功能：
 
-1. 基于GetX的状态管理
-2. 基于ScreenUtil的屏幕适配
-3. 基于window_manager的窗口管理
-4. Toast消息显示(基于oktoast)
+1. 基于GetX的状态管理(不用再加入“get”包了)
+2. 基于ScreenUtil的屏幕适配(不用再加入“flutter_screenutil”包了)
+3. 基于window_manager的窗口管理(不用再加入“window_manager”包了)
+4. Toast消息显示(基于oktoast,不用再加入“oktoast”包了)
 5. 导航辅助函数
 6. 自定义按钮组件
 7. 自定义菜单组件
-8. 焦点管理
+8. 焦点管理(针对只能键盘或遥控操作的App很有用)
+
+## TODO
+permission功能？
 
 ## 使用示例
 

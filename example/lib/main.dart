@@ -8,6 +8,8 @@ import 'pages/page3.dart';
 import 'pages/page4.dart';
 import 'pages/page5.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await MyApp.initialize(
@@ -55,6 +57,7 @@ void main() async {
     exitInfoText: '自定义: 再按一次退出App',
     backInfoText: '自定义: 再按一次返回上一页',
     pageTransitionStyle: Transition.fade,
+    navigatorKey: navigatorKey,
   );
 }
 

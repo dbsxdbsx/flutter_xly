@@ -44,6 +44,7 @@ class MyApp extends StatelessWidget {
   final Transition pageTransitionStyle;
   final Duration pageTransitionDuration;
   final MyFloatPanel? globalFloatPanel;
+  final GlobalKey<NavigatorState>? navigatorKey;
 
   const MyApp._({
     required this.designSize,
@@ -62,6 +63,7 @@ class MyApp extends StatelessWidget {
     this.pageTransitionStyle = Transition.fade,
     this.pageTransitionDuration = const Duration(milliseconds: 300),
     this.globalFloatPanel,
+    this.navigatorKey,
   });
 
   static Future<void> initialize({
@@ -94,6 +96,7 @@ class MyApp extends StatelessWidget {
     Transition pageTransitionStyle = Transition.fade,
     Duration pageTransitionDuration = const Duration(milliseconds: 300),
     MyFloatPanel? globalFloatPanel,
+    GlobalKey<NavigatorState>? navigatorKey,
   }) async {
     if (ensureScreenSize) {
       await ScreenUtil.ensureScreenSize();
@@ -138,6 +141,7 @@ class MyApp extends StatelessWidget {
       pageTransitionStyle: pageTransitionStyle,
       pageTransitionDuration: pageTransitionDuration,
       globalFloatPanel: globalFloatPanel,
+      navigatorKey: navigatorKey,
     ));
   }
 
@@ -195,6 +199,7 @@ class MyApp extends StatelessWidget {
 
   Widget _buildApp(BuildContext context) {
     Widget app = GetMaterialApp(
+      navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: showDebugTag,
       title: appName,
       initialRoute: splash != null
