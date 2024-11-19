@@ -25,7 +25,7 @@ class Page4View extends GetView<Page4Controller> {
                         title: '可拖动列表',
                         style: SectionBorderStyle.inset,
                         child: MyCardList(
-                          items: controller.draggableCards,
+                          itemCount: controller.draggableCards.length,
                           isCardDraggable: true,
                           onSwipeDelete: (index) {
                             toast('即将删除：${controller.draggableCards[index]}');
@@ -36,10 +36,14 @@ class Page4View extends GetView<Page4Controller> {
                           onLoadMore: () =>
                               controller.loadMoreCards(isDraggable: true),
                           cardColor: Colors.blue[50] ?? Colors.blue[100]!,
-                          cardLeading: Icon(
+                          cardLeading: (index) => Icon(
                             Icons.drag_indicator,
                             size: 24.w,
                             color: Colors.blue[700],
+                          ),
+                          cardBody: (index) => Text(
+                            controller.draggableCards[index],
+                            style: TextStyle(fontSize: 14.sp),
                           ),
                           cardTrailing: (index) => Row(
                             mainAxisSize: MainAxisSize.min,
@@ -67,6 +71,12 @@ class Page4View extends GetView<Page4Controller> {
                               ),
                             ],
                           ),
+                          onCardPressed: (index) => _onCardPressed(
+                            controller.draggableCards[index],
+                            true,
+                          ),
+                          cardMargin: EdgeInsets.symmetric(
+                              horizontal: 5.w, vertical: 1.h),
                         ),
                       ),
                     ),
@@ -75,23 +85,69 @@ class Page4View extends GetView<Page4Controller> {
                       child: MyGroupBox(
                         title: '不可拖动列表',
                         child: MyCardList(
-                          items: controller.staticCards,
+                          itemCount: controller.staticCards.length,
                           isCardDraggable: false,
                           onSwipeDelete: (index) {
                             toast('即将删除：${controller.staticCards[index]}');
                             controller.deleteStaticCard(index);
                           },
+                          cardLeading: (index) => Icon(
+                            Icons.download_outlined,
+                            size: 24.w,
+                            color: Colors.green[700],
+                          ),
+                          cardBody: (index) => Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                controller.staticCards[index],
+                                style: TextStyle(
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              SizedBox(height: 4.h),
+                              Text(
+                                '下载专用 ${index + 1}',
+                                style: TextStyle(
+                                  fontSize: 12.sp,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                          cardTrailing: (index) => Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(Icons.file_download, size: 20.w),
+                                onPressed: () => _onDownloadCard(index),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                              ),
+                              SizedBox(width: 8.w),
+                              IconButton(
+                                icon: Icon(Icons.copy, size: 20.w),
+                                onPressed: () => _onCopyCard(index),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                              ),
+                            ],
+                          ),
                           footer: _buildFooter(controller.staticListState),
-                          onCardPressed: _onCardPressed,
+                          onCardPressed: (index) => _onCardPressed(
+                            controller.staticCards[index],
+                            false,
+                          ),
                           onLoadMore: () =>
                               controller.loadMoreCards(isDraggable: false),
-                          cardHeight: 50.h,
-                          fontSize: 14.sp,
+                          cardHeight: 70.h,
                           cardPadding: EdgeInsets.symmetric(
-                              horizontal: 16.w, vertical: 2.h),
+                              horizontal: 16.w, vertical: 8.h),
                           cardMargin: EdgeInsets.symmetric(
                               horizontal: 5.w, vertical: 2.h),
                           cardColor: Colors.green[50]!,
+                          showScrollbar: false,
                         ),
                       ),
                     ),
@@ -146,8 +202,8 @@ class Page4View extends GetView<Page4Controller> {
     );
   }
 
-  void _onCardPressed(String cardText, bool isDraggable) {
-    String cardType = isDraggable ? "可拖动" : "静态";
+  void _onCardPressed(String cardText, bool isDraggableCard) {
+    String cardType = isDraggableCard ? "可拖动" : "静态";
     toast('点击了$cardType卡片：$cardText');
   }
 
@@ -169,6 +225,14 @@ class Page4View extends GetView<Page4Controller> {
 
   void _onStarCard(int index) {
     toast('收藏卡片：${controller.draggableCards[index]}');
+  }
+
+  void _onDownloadCard(int index) {
+    toast('开始下载：${controller.staticCards[index]}');
+  }
+
+  void _onCopyCard(int index) {
+    toast('复制链接：${controller.staticCards[index]}');
   }
 }
 
@@ -258,7 +322,7 @@ class Page4Controller extends GetxController {
       final deletedCard = draggableCards.removeAt(index);
       toast('删除了可拖动卡片：$deletedCard');
 
-      // 只为可拖动卡片列表加载更多卡片
+      // 只可拖动卡片列表加载更多卡片
       if (draggableCards.length < 5 && draggableListState.value.hasMoreData) {
         loadMoreCards(isDraggable: true);
       }

@@ -75,65 +75,57 @@ class MyList<T> extends StatelessWidget {
   }
 }
 
-class MyCardList<T> extends StatefulWidget {
-  final List<T> items;
+class MyCardList extends StatefulWidget {
+  final int itemCount;
   final bool isCardDraggable;
+  final Function(int)? onSwipeDelete;
   final Function(int, int)? onReorder;
   final Widget? footer;
-  final Function(T, bool)? onCardPressed;
   final Future<void> Function()? onLoadMore;
-  final Widget Function(T item)? itemBuilder;
-
-  // Card style and behavior properties
-  final double cardHeight;
-  final double fontSize;
-  final EdgeInsetsGeometry cardPadding;
-  final EdgeInsetsGeometry cardMargin;
-  final Color cardColor;
-  final Color? cardTextColor;
-  final double cardElevation;
-  final double cardBorderRadius;
-  final Function(int)? onSwipeDelete;
-  final Widget? cardLeading;
+  final Color? cardColor;
+  final Widget Function(int)? cardLeading;
   final Widget Function(int)? cardTrailing;
-  final TextStyle? cardTextStyle;
-  final BoxDecoration? cardDecoration;
-  final Widget? cardDeleteBackground;
+  final Widget Function(int) cardBody;
+  final Function(int)? onCardPressed;
+  final double? cardHeight;
+  final double fontSize;
+  final EdgeInsetsGeometry? cardPadding;
+  final EdgeInsetsGeometry? cardMargin;
   final bool showScrollbar;
 
   const MyCardList({
     super.key,
-    required this.items,
+    required this.itemCount,
+    required this.cardBody,
     this.isCardDraggable = false,
+    this.onSwipeDelete,
     this.onReorder,
     this.footer,
-    this.onCardPressed,
     this.onLoadMore,
-    this.itemBuilder,
-    // Card customization properties with defaults
-    this.cardHeight = 60,
-    this.fontSize = 16,
-    this.cardPadding = const EdgeInsets.all(16),
-    this.cardMargin = const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-    this.cardColor = Colors.white,
-    this.cardTextColor,
-    this.cardElevation = 2,
-    this.cardBorderRadius = 8,
-    this.onSwipeDelete,
+    this.cardColor,
     this.cardLeading,
     this.cardTrailing,
-    this.cardTextStyle,
-    this.cardDecoration,
-    this.cardDeleteBackground,
+    this.onCardPressed,
+    this.cardHeight,
+    this.fontSize = 14,
+    this.cardPadding,
+    this.cardMargin,
     this.showScrollbar = true,
   });
 
   @override
-  State<MyCardList<T>> createState() => _MyCardListState<T>();
+  State<MyCardList> createState() => _MyCardListState();
 }
 
-class _MyCardListState<T> extends State<MyCardList<T>> {
+class _MyCardListState extends State<MyCardList> {
   final ScrollController _scrollController = ScrollController();
+
+  // 添加私有方法生成稳定的 key
+  ValueKey _generateStableKey(int index) {
+    // 使用 hashCode 来确保 key 的唯一性
+    final keyString = '${widget.itemCount}_$index'.hashCode.toString();
+    return ValueKey('card_$keyString');
+  }
 
   @override
   void initState() {
@@ -157,44 +149,34 @@ class _MyCardListState<T> extends State<MyCardList<T>> {
 
   @override
   Widget build(BuildContext context) {
-    return MyList<T>(
-      items: widget.items,
+    return MyList<int>(
+      items: List.generate(widget.itemCount, (i) => i),
       isDraggable: widget.isCardDraggable,
       scrollController: _scrollController,
       onReorder: widget.onReorder,
-      itemBuilder: (context, index) => MyCard(
-        key: widget.isCardDraggable
-            ? ValueKey('card_${widget.items[index].toString()}_$index')
-            : null,
-        text: widget.itemBuilder != null
-            ? widget.itemBuilder!(widget.items[index]).toString()
-            : widget.items[index].toString(),
-        isDraggable: widget.isCardDraggable,
-        index: widget.isCardDraggable ? index : null,
-        onPressed: widget.onCardPressed != null
-            ? () => widget.onCardPressed!(
-                widget.items[index], widget.isCardDraggable)
-            : null,
-        enableSwipeToDelete: widget.onSwipeDelete != null,
-        onSwipeDeleted: widget.onSwipeDelete != null
-            ? () => widget.onSwipeDelete!(index)
-            : null,
-        height: widget.cardHeight,
-        fontSize: widget.fontSize,
-        padding: widget.cardPadding,
-        margin: widget.cardMargin,
-        backgroundColor: widget.cardColor,
-        textColor: widget.cardTextColor,
-        elevation: widget.cardElevation,
-        borderRadius: widget.cardBorderRadius,
-        leading: widget.cardLeading,
-        trailing: widget.cardTrailing?.call(index),
-        textStyle: widget.cardTextStyle,
-        decoration: widget.cardDecoration,
-        deleteBackground: widget.cardDeleteBackground,
-      ),
       footer: widget.footer,
       showScrollbar: widget.showScrollbar,
+      itemBuilder: (context, index) {
+        return MyCard(
+          key: _generateStableKey(index), // 使用统一的 key 生成方法
+          isDraggable: widget.isCardDraggable,
+          index: index,
+          backgroundColor: widget.cardColor,
+          height: widget.cardHeight,
+          padding: widget.cardPadding ?? EdgeInsets.all(16.w),
+          margin: widget.cardMargin ?? EdgeInsets.symmetric(vertical: 4.h),
+          onPressed: widget.onCardPressed != null
+              ? () => widget.onCardPressed!(index)
+              : null,
+          enableSwipeToDelete: widget.onSwipeDelete != null,
+          onSwipeDeleted: widget.onSwipeDelete != null
+              ? () => widget.onSwipeDelete!(index)
+              : null,
+          leading: widget.cardLeading?.call(index),
+          trailing: widget.cardTrailing?.call(index),
+          child: widget.cardBody(index),
+        );
+      },
     );
   }
 }

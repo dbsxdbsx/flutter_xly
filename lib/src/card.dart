@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class MyCard extends StatelessWidget {
-  final String text;
   final bool isDraggable;
   final VoidCallback? onPressed;
   final int? index;
@@ -20,11 +19,11 @@ class MyCard extends StatelessWidget {
   final VoidCallback? onSwipeDeleted;
   final Widget? deleteBackground;
   final double? height;
-  final double fontSize;
+  final Widget child;
 
   const MyCard({
     super.key,
-    required this.text,
+    required this.child,
     this.isDraggable = false,
     this.onPressed,
     this.index,
@@ -42,61 +41,55 @@ class MyCard extends StatelessWidget {
     this.onSwipeDeleted,
     this.deleteBackground,
     this.height,
-    this.fontSize = 16,
   });
 
   @override
   Widget build(BuildContext context) {
-    Widget cardContent = Card(
+    Widget cardContent = Material(
+      color: backgroundColor ?? Colors.white,
       elevation: elevation,
-      margin: margin,
-      shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(borderRadius.r),
+      child: InkWell(
+        onTap: onPressed,
+        enableFeedback: true,
+        highlightColor: Colors.black12,
+        hoverColor: Colors.black.withOpacity(0.04),
         borderRadius: BorderRadius.circular(borderRadius.r),
-      ),
-      color: backgroundColor,
-      clipBehavior: Clip.antiAlias,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed,
-          enableFeedback: true,
-          highlightColor: Colors.black12,
-          hoverColor: Colors.black.withOpacity(0.04),
-          borderRadius: BorderRadius.circular(borderRadius.r),
-          child: Container(
-            height: height?.h,
-            padding: padding,
-            decoration: decoration,
-            child: Row(
-              children: [
-                if (leading != null) ...[
-                  leading!,
-                  SizedBox(width: 8.w),
-                ],
-                Expanded(
-                  child: Text(
-                    text,
-                    style: textStyle ??
-                        TextStyle(
-                          fontSize: fontSize.sp,
-                          color: textColor,
-                        ),
-                  ),
-                ),
-                if (trailing != null) ...[
-                  SizedBox(width: 8.w),
-                  trailing!,
-                ],
-              ],
+        child: Container(
+          height: height?.h,
+          padding: padding,
+          decoration: decoration ?? BoxDecoration(
+            borderRadius: BorderRadius.circular(borderRadius.r),
+            border: Border.all(
+              color: Colors.grey.withOpacity(0.2),
+              width: 1,
             ),
+          ),
+          child: Row(
+            children: [
+              if (leading != null) ...[
+                leading!,
+                SizedBox(width: 8.w),
+              ],
+              Expanded(child: child),
+              if (trailing != null) ...[
+                SizedBox(width: 8.w),
+                trailing!,
+              ],
+            ],
           ),
         ),
       ),
     );
 
+    cardContent = Padding(
+      padding: margin,
+      child: cardContent,
+    );
+
     if (enableSwipeToDelete) {
       cardContent = Dismissible(
-        key: Key(text),
+        key: Key(child.toString()),
         direction: DismissDirection.endToStart,
         onDismissed: (_) => onSwipeDeleted?.call(),
         background: deleteBackground ?? _defaultDeleteBackground(),
