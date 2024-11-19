@@ -10,6 +10,7 @@ class MyList<T> extends StatelessWidget {
   final Function(int, int)? onReorder;
   final Widget Function(BuildContext, int) itemBuilder;
   final Widget? footer;
+  final bool showScrollbar;
 
   const MyList({
     super.key,
@@ -19,12 +20,14 @@ class MyList<T> extends StatelessWidget {
     this.onReorder,
     required this.itemBuilder,
     this.footer,
+    this.showScrollbar = true,
   });
 
   @override
   Widget build(BuildContext context) {
     return Scrollbar(
       controller: scrollController,
+      thumbVisibility: showScrollbar,
       child: isDraggable
           ? Theme(
               data: Theme.of(context).copyWith(
@@ -96,6 +99,7 @@ class MyCardList<T> extends StatefulWidget {
   final TextStyle? cardTextStyle;
   final BoxDecoration? cardDecoration;
   final Widget? cardDeleteBackground;
+  final bool showScrollbar;
 
   const MyCardList({
     super.key,
@@ -121,6 +125,7 @@ class MyCardList<T> extends StatefulWidget {
     this.cardTextStyle,
     this.cardDecoration,
     this.cardDeleteBackground,
+    this.showScrollbar = true,
   });
 
   @override
@@ -167,7 +172,8 @@ class _MyCardListState<T> extends State<MyCardList<T>> {
         isDraggable: widget.isCardDraggable,
         index: widget.isCardDraggable ? index : null,
         onPressed: widget.onCardPressed != null
-            ? () => widget.onCardPressed!(widget.items[index], widget.isCardDraggable)
+            ? () => widget.onCardPressed!(
+                widget.items[index], widget.isCardDraggable)
             : null,
         enableSwipeToDelete: widget.onSwipeDelete != null,
         onSwipeDeleted: widget.onSwipeDelete != null
@@ -188,6 +194,7 @@ class _MyCardListState<T> extends State<MyCardList<T>> {
         deleteBackground: widget.cardDeleteBackground,
       ),
       footer: widget.footer,
+      showScrollbar: widget.showScrollbar,
     );
   }
 }
