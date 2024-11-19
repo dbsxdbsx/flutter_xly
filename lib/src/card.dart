@@ -16,10 +16,8 @@ class MyCard extends StatelessWidget {
   final Widget? trailing;
   final TextStyle? textStyle;
   final BoxDecoration? decoration;
-  final Widget Function(BuildContext, Widget)? cardBuilder;
   final bool enableSwipeToDelete;
-  final bool enableBtnToDelete;
-  final VoidCallback? onDelete;
+  final VoidCallback? onSwipeDeleted;
   final Widget? deleteBackground;
   final double? height;
   final double fontSize;
@@ -40,13 +38,11 @@ class MyCard extends StatelessWidget {
     this.trailing,
     this.textStyle,
     this.decoration,
-    this.cardBuilder,
     this.enableSwipeToDelete = false,
-    this.enableBtnToDelete = false,
-    this.onDelete,
+    this.onSwipeDeleted,
     this.deleteBackground,
     this.height,
-    this.fontSize = 16, // 使用普通的 double 值
+    this.fontSize = 16,
   });
 
   @override
@@ -59,57 +55,50 @@ class MyCard extends StatelessWidget {
       ),
       color: backgroundColor,
       clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(borderRadius.r),
-        child: Container(
-          height: height?.h, // 在这里应用 .h
-          padding: padding,
-          decoration: decoration,
-          child: Row(
-            children: [
-              if (leading != null) ...[
-                leading!,
-                SizedBox(width: 8.w),
-              ],
-              Expanded(
-                child: Text(
-                  text,
-                  style: textStyle ??
-                      TextStyle(
-                        fontSize: fontSize.sp, // 在这里应用 .sp
-                        color: textColor,
-                      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          enableFeedback: true,
+          highlightColor: Colors.black12,
+          hoverColor: Colors.black.withOpacity(0.04),
+          borderRadius: BorderRadius.circular(borderRadius.r),
+          child: Container(
+            height: height?.h,
+            padding: padding,
+            decoration: decoration,
+            child: Row(
+              children: [
+                if (leading != null) ...[
+                  leading!,
+                  SizedBox(width: 8.w),
+                ],
+                Expanded(
+                  child: Text(
+                    text,
+                    style: textStyle ??
+                        TextStyle(
+                          fontSize: fontSize.sp,
+                          color: textColor,
+                        ),
+                  ),
                 ),
-              ),
-              if (trailing != null) ...[
-                SizedBox(width: 8.w),
-                trailing!,
+                if (trailing != null) ...[
+                  SizedBox(width: 8.w),
+                  trailing!,
+                ],
               ],
-              if (enableBtnToDelete) ...[
-                SizedBox(width: 8.w),
-                IconButton(
-                  icon: Icon(Icons.delete, size: 20.w),
-                  onPressed: onDelete,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-              ],
-            ],
+            ),
           ),
         ),
       ),
     );
 
-    if (cardBuilder != null) {
-      cardContent = cardBuilder!(context, cardContent);
-    }
-
     if (enableSwipeToDelete) {
       cardContent = Dismissible(
         key: Key(text),
         direction: DismissDirection.endToStart,
-        onDismissed: (_) => onDelete?.call(),
+        onDismissed: (_) => onSwipeDeleted?.call(),
         background: deleteBackground ?? _defaultDeleteBackground(),
         child: cardContent,
       );

@@ -26,15 +26,47 @@ class Page4View extends GetView<Page4Controller> {
                         style: SectionBorderStyle.inset,
                         child: MyCardList(
                           items: controller.draggableCards,
-                          isDraggable: true,
+                          isCardDraggable: true,
+                          onSwipeDelete: (index) {
+                            toast('即将删除：${controller.draggableCards[index]}');
+                            controller.deleteDraggableCard(index);
+                          },
                           onReorder: controller.reorderCards,
                           footer: _buildFooter(controller.draggableListState),
-                          onCardPressed: _onCardPressed,
                           onLoadMore: () =>
                               controller.loadMoreCards(isDraggable: true),
-                          enableBtnToDelete: true,
-                          onDelete: controller.deleteDraggableCard,
-                          cardColor: Colors.blue[50]!, // 为可拖动列表设置浅蓝色背景
+                          cardColor: Colors.blue[50] ?? Colors.blue[100]!,
+                          cardLeading: Icon(
+                            Icons.drag_indicator,
+                            size: 24.w,
+                            color: Colors.blue[700],
+                          ),
+                          cardTrailing: (index) => Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(Icons.edit, size: 20.w),
+                                onPressed: () => _onEditCard(index),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                              ),
+                              SizedBox(width: 8.w),
+                              IconButton(
+                                icon: Icon(Icons.star_border, size: 20.w),
+                                onPressed: () => _onStarCard(index),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                              ),
+                              SizedBox(width: 8.w),
+                              IconButton(
+                                icon: Icon(Icons.delete, size: 20.w),
+                                onPressed: () =>
+                                    controller.deleteDraggableCard(index),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -44,20 +76,22 @@ class Page4View extends GetView<Page4Controller> {
                         title: '不可拖动列表',
                         child: MyCardList(
                           items: controller.staticCards,
-                          isDraggable: false,
+                          isCardDraggable: false,
+                          onSwipeDelete: (index) {
+                            toast('即将删除：${controller.staticCards[index]}');
+                            controller.deleteStaticCard(index);
+                          },
                           footer: _buildFooter(controller.staticListState),
                           onCardPressed: _onCardPressed,
                           onLoadMore: () =>
                               controller.loadMoreCards(isDraggable: false),
-                          enableSwipeToDelete: true,
-                          onDelete: controller.deleteStaticCard,
                           cardHeight: 50.h,
                           fontSize: 14.sp,
                           cardPadding: EdgeInsets.symmetric(
                               horizontal: 16.w, vertical: 2.h),
                           cardMargin: EdgeInsets.symmetric(
                               horizontal: 5.w, vertical: 2.h),
-                          cardColor: Colors.green[50]!, // 为不可拖动列表设置浅绿色背景
+                          cardColor: Colors.green[50]!,
                         ),
                       ),
                     ),
@@ -68,18 +102,41 @@ class Page4View extends GetView<Page4Controller> {
           ),
           Padding(
             padding: EdgeInsets.all(16.w),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                MyButton(
-                  onPressed: () => Get.back(),
-                  text: '返回第3页',
-                  size: 80.w,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    MyButton(
+                      onPressed: () =>
+                          toast('可拖动列表项数量：${controller.draggableCards.length}'),
+                      text: '可拖动列表数量',
+                      size: 80.w,
+                    ),
+                    MyButton(
+                      onPressed: () =>
+                          toast('静态列表项数量：${controller.staticCards.length}'),
+                      text: '静态列表数量',
+                      size: 80.w,
+                    ),
+                  ],
                 ),
-                MyButton(
-                  onPressed: () => Get.toNamed(Routes.page5),
-                  text: '前往第5页',
-                  size: 80.w,
+                SizedBox(height: 16.h),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    MyButton(
+                      onPressed: () => Get.back(),
+                      text: '返回第3页',
+                      size: 80.w,
+                    ),
+                    MyButton(
+                      onPressed: () => Get.toNamed(Routes.page5),
+                      text: '前往第5页',
+                      size: 80.w,
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -104,6 +161,14 @@ class Page4View extends GetView<Page4Controller> {
           ),
           icon: Icons.sentiment_satisfied_alt,
         ));
+  }
+
+  void _onEditCard(int index) {
+    toast('编辑卡片：${controller.draggableCards[index]}');
+  }
+
+  void _onStarCard(int index) {
+    toast('收藏卡片：${controller.draggableCards[index]}');
   }
 }
 

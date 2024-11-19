@@ -3,8 +3,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:xly/xly.dart';
 
-class MyList extends StatelessWidget {
-  final List<String> items;
+class MyList<T> extends StatelessWidget {
+  final List<T> items;
   final bool isDraggable;
   final ScrollController scrollController;
   final Function(int, int)? onReorder;
@@ -72,104 +72,120 @@ class MyList extends StatelessWidget {
   }
 }
 
-class MyCardList extends StatefulWidget {
-  final List<String> items;
-  final bool isDraggable;
+class MyCardList<T> extends StatefulWidget {
+  final List<T> items;
+  final bool isCardDraggable;
   final Function(int, int)? onReorder;
   final Widget? footer;
-  final Function(String, bool) onCardPressed;
+  final Function(T, bool)? onCardPressed;
   final Future<void> Function()? onLoadMore;
-  final bool enableSwipeToDelete;
-  final bool enableBtnToDelete;
-  final Function(int)? onDelete;
+  final Widget Function(T item)? itemBuilder;
+
+  // Card style and behavior properties
   final double cardHeight;
   final double fontSize;
   final EdgeInsetsGeometry cardPadding;
   final EdgeInsetsGeometry cardMargin;
   final Color cardColor;
+  final Color? cardTextColor;
+  final double cardElevation;
+  final double cardBorderRadius;
+  final Function(int)? onSwipeDelete;
+  final Widget? cardLeading;
+  final Widget Function(int)? cardTrailing;
+  final TextStyle? cardTextStyle;
+  final BoxDecoration? cardDecoration;
+  final Widget? cardDeleteBackground;
 
   const MyCardList({
     super.key,
     required this.items,
-    this.isDraggable = false,
+    this.isCardDraggable = false,
     this.onReorder,
     this.footer,
-    required this.onCardPressed,
+    this.onCardPressed,
     this.onLoadMore,
-    this.enableSwipeToDelete = false,
-    this.enableBtnToDelete = false,
-    this.onDelete,
+    this.itemBuilder,
+    // Card customization properties with defaults
     this.cardHeight = 60,
     this.fontSize = 16,
     this.cardPadding = const EdgeInsets.all(16),
     this.cardMargin = const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
     this.cardColor = Colors.white,
+    this.cardTextColor,
+    this.cardElevation = 2,
+    this.cardBorderRadius = 8,
+    this.onSwipeDelete,
+    this.cardLeading,
+    this.cardTrailing,
+    this.cardTextStyle,
+    this.cardDecoration,
+    this.cardDeleteBackground,
   });
 
   @override
-  _MyCardListState createState() => _MyCardListState();
+  State<MyCardList<T>> createState() => _MyCardListState<T>();
 }
 
-class _MyCardListState extends State<MyCardList> {
-  late ScrollController _scrollController;
-  bool _isLoading = false;
+class _MyCardListState<T> extends State<MyCardList<T>> {
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    _scrollController = ScrollController();
-    _scrollController.addListener(_scrollListener);
-  }
-
-  void _scrollListener() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 100) {
-      _loadMore();
-    }
-  }
-
-  Future<void> _loadMore() async {
-    if (!_isLoading && widget.onLoadMore != null) {
-      setState(() {
-        _isLoading = true;
-      });
-      await widget.onLoadMore!();
-      setState(() {
-        _isLoading = false;
-      });
-    }
+    _scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
-    _scrollController.removeListener(_scrollListener);
+    _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
   }
 
+  void _onScroll() {
+    if (_scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent) {
+      widget.onLoadMore?.call();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return MyList(
+    return MyList<T>(
       items: widget.items,
-      isDraggable: widget.isDraggable,
+      isDraggable: widget.isCardDraggable,
       scrollController: _scrollController,
       onReorder: widget.onReorder,
       itemBuilder: (context, index) => MyCard(
-        key: widget.isDraggable ? ValueKey(widget.items[index]) : null,
-        text: widget.items[index],
-        isDraggable: widget.isDraggable,
-        index: widget.isDraggable ? index : null,
-        onPressed: () =>
-            widget.onCardPressed(widget.items[index], widget.isDraggable),
-        enableSwipeToDelete: widget.enableSwipeToDelete,
-        enableBtnToDelete: widget.enableBtnToDelete,
-        onDelete:
-            widget.onDelete != null ? () => widget.onDelete!(index) : null,
+        key: widget.isCardDraggable
+            ? ValueKey('card_${widget.items[index].toString()}_$index')
+            : null,
+        text: widget.itemBuilder != null
+            ? widget.itemBuilder!(widget.items[index]).toString()
+            : widget.items[index].toString(),
+        isDraggable: widget.isCardDraggable,
+        index: widget.isCardDraggable ? index : null,
+        onPressed: widget.onCardPressed != null
+            ? () => widget.onCardPressed!(widget.items[index], widget.isCardDraggable)
+            : null,
+        enableSwipeToDelete: widget.onSwipeDelete != null,
+        onSwipeDeleted: widget.onSwipeDelete != null
+            ? () => widget.onSwipeDelete!(index)
+            : null,
         height: widget.cardHeight,
         fontSize: widget.fontSize,
         padding: widget.cardPadding,
         margin: widget.cardMargin,
         backgroundColor: widget.cardColor,
+        textColor: widget.cardTextColor,
+        elevation: widget.cardElevation,
+        borderRadius: widget.cardBorderRadius,
+        leading: widget.cardLeading,
+        trailing: widget.cardTrailing?.call(index),
+        textStyle: widget.cardTextStyle,
+        decoration: widget.cardDecoration,
+        deleteBackground: widget.cardDeleteBackground,
       ),
       footer: widget.footer,
     );
