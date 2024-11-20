@@ -4,23 +4,37 @@ import 'package:flutter/material.dart';
 import 'package:xly/xly.dart';
 
 class MyList<T> extends StatelessWidget {
+  // 1. 核心数据和构建器
   final List<T> items;
-  final bool isDraggable;
-  final ScrollController scrollController;
-  final Function(int, int)? onReorder;
   final Widget Function(BuildContext, int) itemBuilder;
-  final Widget? footer;
+
+  // 2. 滚动控制
+  final ScrollController scrollController;
   final bool showScrollbar;
+
+  // 3. 拖拽相关
+  final bool isDraggable;
+  final Function(int, int)? onReorder;
+
+  // 4. 附加组件
+  final Widget? footer;
 
   const MyList({
     super.key,
+    // 1. 核心数据和构建器
     required this.items,
-    this.isDraggable = false,
-    required this.scrollController,
-    this.onReorder,
     required this.itemBuilder,
-    this.footer,
+
+    // 2. 滚动控制
+    required this.scrollController,
     this.showScrollbar = true,
+
+    // 3. 拖拽相关
+    this.isDraggable = false,
+    this.onReorder,
+
+    // 4. 附加组件
+    this.footer,
   });
 
   @override
@@ -76,33 +90,34 @@ class MyList<T> extends StatelessWidget {
 }
 
 class MyCardList extends StatefulWidget {
-  // 1. 核心内容构建器（从左到右的视觉顺序）
+  // 1. 核心内容构建器 (保持 leading, body, trailing 顺序)
   final Widget Function(int)? cardLeading;
   final Widget Function(int) cardBody;
   final Widget Function(int)? cardTrailing;
 
-  // 2. 列表数据和状态
+  // 2. 列表数据
   final int itemCount;
+
+  // 3. 列表行为
   final bool isCardDraggable;
   final bool showScrollbar;
+  final Function(int, int)? onReorder;
+  final Function(int)? onSwipeDelete;
+  final Function(int)? onCardPressed;
+  final Future<void> Function()? onLoadMore;
 
-  // 3. 卡片样式和布局
+  // 4. 卡片样式
   final Color? cardColor;
+  final ShapeBorder? cardShape;
   final double? cardHeight;
   final double fontSize;
   final EdgeInsets? cardPadding;
   final EdgeInsets? cardMargin;
-  final double? elevation;
-  final Color? shadowColor;
+  final double? cardElevation;
+  final Color? cardShadowColor;
 
-  // 4. 列表附加组件
+  // 5. 附加组件
   final Widget? footer;
-
-  // 5. 回调函数
-  final Function(int)? onSwipeDelete;
-  final Function(int, int)? onReorder;
-  final Function(int)? onCardPressed;
-  final Future<void> Function()? onLoadMore;
 
   const MyCardList({
     super.key,
@@ -111,28 +126,29 @@ class MyCardList extends StatefulWidget {
     required this.cardBody,
     this.cardTrailing,
 
-    // 2. 列表数据和状态
+    // 2. 列表数据
     required this.itemCount,
+
+    // 3. 列表行为
     this.isCardDraggable = false,
     this.showScrollbar = true,
+    this.onReorder,
+    this.onSwipeDelete,
+    this.onCardPressed,
+    this.onLoadMore,
 
-    // 3. 卡片样式和布局
+    // 4. 卡片样式
     this.cardColor,
+    this.cardShape,
     this.cardHeight,
     this.fontSize = 14,
     this.cardPadding,
     this.cardMargin,
-    this.elevation,
-    this.shadowColor,
+    this.cardElevation,
+    this.cardShadowColor,
 
-    // 4. 列表附加组件
+    // 5. 附加组件
     this.footer,
-
-    // 5. 回调函数
-    this.onSwipeDelete,
-    this.onReorder,
-    this.onCardPressed,
-    this.onLoadMore,
   });
 
   @override
@@ -169,23 +185,6 @@ class _MyCardListState extends State<MyCardList> {
     }
   }
 
-  Widget _proxyDecorator(Widget child, int index, Animation<double> animation) {
-    return AnimatedBuilder(
-      animation: animation,
-      builder: (BuildContext context, Widget? child) {
-        final double animValue = Curves.easeInOut.transform(animation.value);
-        final double elevation = lerpDouble(0, 6.h, animValue)!;
-        return Material(
-          elevation: elevation,
-          color: Colors.transparent,
-          shadowColor: Colors.transparent,
-          child: child,
-        );
-      },
-      child: child,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return MyList<int>(
@@ -198,24 +197,37 @@ class _MyCardListState extends State<MyCardList> {
       itemBuilder: (context, index) {
         return MyCard(
           key: _generateStableKey(index),
-          isDraggable: widget.isCardDraggable,
+          // 0. 列表相关
           index: index,
-          backgroundColor: widget.cardColor,
+
+          // 1. 核心内容组件
+          leading: widget.cardLeading?.call(index),
+          // ignore: sort_child_properties_last
+          child: widget.cardBody(index),
+          trailing: widget.cardTrailing?.call(index),
+
+          // 2. 布局和尺寸
           height: widget.cardHeight,
+          leadingAndBodySpacing: 16,
+          contentPadding: 16,
           padding: widget.cardPadding,
           margin: widget.cardMargin,
-          elevation: widget.elevation,
-          shadowColor: widget.shadowColor,
+
+          // 3. 样式和装饰
+          backgroundColor: widget.cardColor,
+          elevation: widget.cardElevation,
+          shadowColor: widget.cardShadowColor,
+          shape: widget.cardShape ?? MyCard.defaultShape(context),
+
+          // 4. 交互行为
+          isDraggable: widget.isCardDraggable,
+          enableSwipeToDelete: widget.onSwipeDelete != null,
           onPressed: widget.onCardPressed != null
               ? () => widget.onCardPressed!(index)
               : null,
-          enableSwipeToDelete: widget.onSwipeDelete != null,
           onSwipeDeleted: widget.onSwipeDelete != null
               ? () => widget.onSwipeDelete!(index)
               : null,
-          leading: widget.cardLeading?.call(index),
-          trailing: widget.cardTrailing?.call(index),
-          child: widget.cardBody(index),
         );
       },
     );

@@ -2,27 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class MyCard extends StatelessWidget {
+  final int? index;
   final Widget? leading;
   final Widget child;
   final Widget? trailing;
   final double? height;
+  final double? leadingAndBodySpacing;
+  final double? contentPadding;
   final EdgeInsets? padding;
   final EdgeInsets? margin;
-  final double borderRadius;
   final Color? backgroundColor;
   final Color? textColor;
   final double? elevation;
   final Color? shadowColor;
+  final ShapeBorder shape;
   final BoxDecoration? decoration;
   final TextStyle? textStyle;
   final bool isDraggable;
   final bool enableSwipeToDelete;
-  final int? index;
   final VoidCallback? onPressed;
   final VoidCallback? onSwipeDeleted;
   final Widget? deleteBackground;
-  final double? leadingAndBodySpacing;
-  final double? contentPadding;
 
   static const EdgeInsets defaultPadding = EdgeInsets.all(4);
   static const EdgeInsets defaultMargin = EdgeInsets.symmetric(
@@ -32,28 +32,36 @@ class MyCard extends StatelessWidget {
 
   const MyCard({
     super.key,
+    this.index,
     this.leading,
     required this.child,
     this.trailing,
     this.height,
+    this.leadingAndBodySpacing = 16,
+    this.contentPadding = 16,
     this.padding,
     this.margin,
-    this.borderRadius = 12,
     this.backgroundColor,
     this.textColor,
     this.elevation,
     this.shadowColor,
+    this.shape = const RoundedRectangleBorder(
+      borderRadius: BorderRadius.all(Radius.circular(12)),
+    ),
     this.decoration,
     this.textStyle,
     this.isDraggable = false,
     this.enableSwipeToDelete = false,
-    this.index,
     this.onPressed,
     this.onSwipeDeleted,
     this.deleteBackground,
-    this.leadingAndBodySpacing = 16,
-    this.contentPadding = 16,
   });
+
+  static ShapeBorder defaultShape(BuildContext context) {
+    return RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12.r),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,13 +69,15 @@ class MyCard extends StatelessWidget {
       color: backgroundColor ?? const Color(0xFFF7F2FA),
       elevation: elevation?.h ?? 2.h,
       shadowColor: shadowColor ?? Colors.grey.withOpacity(0.2),
-      borderRadius: BorderRadius.circular(borderRadius.r),
+      shape: shape,
       child: InkWell(
         onTap: onPressed,
         enableFeedback: true,
         highlightColor: Colors.black12,
         hoverColor: Colors.black.withOpacity(0.04),
-        borderRadius: BorderRadius.circular(borderRadius.r),
+        borderRadius: shape is RoundedRectangleBorder
+            ? (shape as RoundedRectangleBorder).borderRadius as BorderRadius
+            : null,
         child: ListTile(
           dense: true,
           visualDensity: VisualDensity(horizontal: -4.w, vertical: -4.h),
