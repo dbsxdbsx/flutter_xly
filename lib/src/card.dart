@@ -83,9 +83,11 @@ class MyCard extends StatelessWidget {
           visualDensity: VisualDensity(horizontal: -4.w, vertical: -4.h),
           minVerticalPadding: 0,
           horizontalTitleGap: leadingAndBodySpacing?.w,
-          contentPadding: EdgeInsets.symmetric(
-            horizontal: (padding ?? defaultPadding).left.w,
-            vertical: (padding ?? defaultPadding).top.h,
+          contentPadding: EdgeInsets.only(
+            left: (padding ?? defaultPadding).left.w,
+            right: (padding ?? defaultPadding).right.w,
+            top: (padding ?? defaultPadding).top.h,
+            bottom: (padding ?? defaultPadding).bottom.h,
           ),
           leading: leading,
           title: child,
