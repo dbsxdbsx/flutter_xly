@@ -90,8 +90,10 @@ class MyCardList extends StatefulWidget {
   final Color? cardColor;
   final double? cardHeight;
   final double fontSize;
-  final EdgeInsetsGeometry? cardPadding;
-  final EdgeInsetsGeometry? cardMargin;
+  final EdgeInsets? cardPadding;
+  final EdgeInsets? cardMargin;
+  final double? elevation;
+  final Color? shadowColor;
 
   // 4. 列表附加组件
   final Widget? footer;
@@ -120,6 +122,8 @@ class MyCardList extends StatefulWidget {
     this.fontSize = 14,
     this.cardPadding,
     this.cardMargin,
+    this.elevation,
+    this.shadowColor,
 
     // 4. 列表附加组件
     this.footer,
@@ -165,6 +169,23 @@ class _MyCardListState extends State<MyCardList> {
     }
   }
 
+  Widget _proxyDecorator(Widget child, int index, Animation<double> animation) {
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (BuildContext context, Widget? child) {
+        final double animValue = Curves.easeInOut.transform(animation.value);
+        final double elevation = lerpDouble(0, 6.h, animValue)!;
+        return Material(
+          elevation: elevation,
+          color: Colors.transparent,
+          shadowColor: Colors.transparent,
+          child: child,
+        );
+      },
+      child: child,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return MyList<int>(
@@ -176,13 +197,15 @@ class _MyCardListState extends State<MyCardList> {
       showScrollbar: widget.showScrollbar,
       itemBuilder: (context, index) {
         return MyCard(
-          key: _generateStableKey(index), // 使用统一的 key 生成方法
+          key: _generateStableKey(index),
           isDraggable: widget.isCardDraggable,
           index: index,
           backgroundColor: widget.cardColor,
           height: widget.cardHeight,
-          padding: widget.cardPadding ?? EdgeInsets.all(16.w),
-          margin: widget.cardMargin ?? EdgeInsets.symmetric(vertical: 4.h),
+          padding: widget.cardPadding,
+          margin: widget.cardMargin,
+          elevation: widget.elevation,
+          shadowColor: widget.shadowColor,
           onPressed: widget.onCardPressed != null
               ? () => widget.onCardPressed!(index)
               : null,

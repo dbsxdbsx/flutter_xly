@@ -42,13 +42,11 @@ class Page4View extends GetView<Page4Controller> {
                                 iconColor: Colors.blue[300],
                                 onPressed: () => _onEditCard(index),
                               ),
-                              SizedBox(width: 8.w),
                               MyIcon(
                                 icon: Icons.star_border,
                                 iconColor: Colors.amber[300],
                                 onPressed: () => _onStarCard(index),
                               ),
-                              SizedBox(width: 8.w),
                               MyIcon(
                                 icon: Icons.delete,
                                 iconColor: Colors.red[300],
@@ -60,7 +58,7 @@ class Page4View extends GetView<Page4Controller> {
                           itemCount: controller.draggableCards.length,
                           isCardDraggable: true,
                           showScrollbar: true,
-                          cardColor: Colors.blue[50] ?? Colors.blue[100]!,
+                          // cardColor: Colors.blue[50] ?? Colors.blue[100]!,
                           cardMargin: EdgeInsets.symmetric(
                               horizontal: 5.w, vertical: 1.h),
                           footer: _buildFooter(controller.draggableListState),
@@ -113,7 +111,6 @@ class Page4View extends GetView<Page4Controller> {
                                 iconColor: Colors.green[300],
                                 onPressed: () => _onDownloadCard(index),
                               ),
-                              SizedBox(width: 8.w),
                               MyIcon(
                                 icon: Icons.copy,
                                 iconColor: Colors.purple[300],

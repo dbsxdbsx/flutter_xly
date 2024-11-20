@@ -6,12 +6,13 @@ class MyCard extends StatelessWidget {
   final Widget child;
   final Widget? trailing;
   final double? height;
-  final EdgeInsetsGeometry padding;
-  final EdgeInsetsGeometry margin;
+  final EdgeInsets? padding;
+  final EdgeInsets? margin;
   final double borderRadius;
   final Color? backgroundColor;
   final Color? textColor;
-  final double elevation;
+  final double? elevation;
+  final Color? shadowColor;
   final BoxDecoration? decoration;
   final TextStyle? textStyle;
   final bool isDraggable;
@@ -23,21 +24,25 @@ class MyCard extends StatelessWidget {
   final double? leadingAndBodySpacing;
   final double? contentPadding;
 
+  static const EdgeInsets defaultPadding = EdgeInsets.all(4);
+  static const EdgeInsets defaultMargin = EdgeInsets.symmetric(
+    vertical: 4,
+    horizontal: 8,
+  );
+
   const MyCard({
     super.key,
     this.leading,
     required this.child,
     this.trailing,
     this.height,
-    this.padding = const EdgeInsets.all(4),
-    this.margin = const EdgeInsets.symmetric(
-      vertical: 1.5,
-      horizontal: 2,
-    ),
-    this.borderRadius = 4,
+    this.padding,
+    this.margin,
+    this.borderRadius = 12,
     this.backgroundColor,
     this.textColor,
-    this.elevation = 2,
+    this.elevation,
+    this.shadowColor,
     this.decoration,
     this.textStyle,
     this.isDraggable = false,
@@ -53,8 +58,9 @@ class MyCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Widget cardContent = Material(
-      color: backgroundColor ?? Colors.white,
-      elevation: elevation.h,
+      color: backgroundColor ?? const Color(0xFFF7F2FA),
+      elevation: elevation?.h ?? 2.h,
+      shadowColor: shadowColor ?? Colors.grey.withOpacity(0.2),
       borderRadius: BorderRadius.circular(borderRadius.r),
       child: InkWell(
         onTap: onPressed,
@@ -62,37 +68,27 @@ class MyCard extends StatelessWidget {
         highlightColor: Colors.black12,
         hoverColor: Colors.black.withOpacity(0.04),
         borderRadius: BorderRadius.circular(borderRadius.r),
-        child: Container(
-          height: height?.h,
-          decoration: decoration ??
-              BoxDecoration(
-                borderRadius: BorderRadius.circular(borderRadius.r),
-                border: Border.all(
-                  color: Colors.grey.withOpacity(0.2),
-                  width: 1.w,
-                ),
-              ),
-          child: ListTile(
-            dense: true,
-            visualDensity: const VisualDensity(horizontal: -4, vertical: -2),
-            minVerticalPadding: 0,
-            horizontalTitleGap: leadingAndBodySpacing?.w,
-            contentPadding: padding is EdgeInsets
-                ? EdgeInsets.symmetric(
-                    horizontal: (padding as EdgeInsets).left.w,
-                    vertical: (padding as EdgeInsets).top.h,
-                  )
-                : EdgeInsets.symmetric(horizontal: contentPadding!.w),
-            leading: leading,
-            trailing: trailing,
-            title: child,
+        child: ListTile(
+          dense: true,
+          visualDensity: VisualDensity(horizontal: -4.w, vertical: -4.h),
+          minVerticalPadding: 0,
+          horizontalTitleGap: leadingAndBodySpacing?.w,
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: (padding ?? defaultPadding).left.w,
+            vertical: (padding ?? defaultPadding).top.h,
           ),
+          leading: leading,
+          title: child,
+          trailing: trailing,
         ),
       ),
     );
 
     cardContent = Padding(
-      padding: margin,
+      padding: EdgeInsets.symmetric(
+        horizontal: (margin ?? defaultMargin).left.w,
+        vertical: (margin ?? defaultMargin).top.h,
+      ),
       child: cardContent,
     );
 
