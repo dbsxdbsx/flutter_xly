@@ -37,19 +37,19 @@ class Page4View extends GetView<Page4Controller> {
                           cardTrailing: (index) => Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              MyIconButton(
+                              MyIcon(
                                 icon: Icons.edit,
                                 iconColor: Colors.blue[300],
-                                // onPressed: () => _onEditCard(index),
+                                onPressed: () => _onEditCard(index),
                               ),
                               SizedBox(width: 8.w),
-                              MyIconButton(
+                              MyIcon(
                                 icon: Icons.star_border,
                                 iconColor: Colors.amber[300],
                                 onPressed: () => _onStarCard(index),
                               ),
                               SizedBox(width: 8.w),
-                              MyIconButton(
+                              MyIcon(
                                 icon: Icons.delete,
                                 iconColor: Colors.red[300],
                                 onPressed: () =>
@@ -108,13 +108,13 @@ class Page4View extends GetView<Page4Controller> {
                           cardTrailing: (index) => Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              MyIconButton(
+                              MyIcon(
                                 icon: Icons.download,
                                 iconColor: Colors.green[300],
                                 onPressed: () => _onDownloadCard(index),
                               ),
                               SizedBox(width: 8.w),
-                              MyIconButton(
+                              MyIcon(
                                 icon: Icons.copy,
                                 iconColor: Colors.purple[300],
                                 onPressed: () => _onCopyCard(index),

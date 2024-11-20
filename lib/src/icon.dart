@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-class MyIconButton extends StatelessWidget {
+class MyIcon extends StatelessWidget {
   final IconData icon;
   final double? iconSize;
   final Color? iconColor;
@@ -9,7 +9,7 @@ class MyIconButton extends StatelessWidget {
   final EdgeInsetsGeometry? padding;
   final BoxConstraints? constraints;
 
-  const MyIconButton({
+  const MyIcon({
     super.key,
     required this.icon,
     this.iconSize = 16,
@@ -24,7 +24,7 @@ class MyIconButton extends StatelessWidget {
     return IconButton(
       icon: Icon(
         icon,
-        size: iconSize?.sp,
+        size: iconSize?.w,
         color: iconColor,
       ),
       onPressed: onPressed,

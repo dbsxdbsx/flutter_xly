@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:xly/src/buttons/button.dart';
+import 'package:xly/src/button.dart';
 
 class XlyFocusController extends GetxController {
   final _currentFocus = ''.obs;
