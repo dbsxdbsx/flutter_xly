@@ -5,8 +5,6 @@ export 'package:window_manager/window_manager.dart';
 
 // xly diy widgets
 export 'src/app.dart' show MyApp, MyRoute;
-export 'src/button.dart' show MyButton, MyButtonShape, MyIconPosition;
-export 'src/platform.dart';
 export 'src/navigation.dart' show goToPage;
 export 'src/toast.dart' show toast, hideAllToasts;
 export 'src/menu/lib.dart';
@@ -19,3 +17,4 @@ export 'src/card.dart';
 export 'src/list.dart';
 export 'src/float_panel.dart';
 export 'src/url_launcher.dart';
+export 'src/buttons/lib.dart';

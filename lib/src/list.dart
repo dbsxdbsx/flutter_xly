@@ -76,41 +76,59 @@ class MyList<T> extends StatelessWidget {
 }
 
 class MyCardList extends StatefulWidget {
+  // 1. 核心内容构建器（从左到右的视觉顺序）
+  final Widget Function(int)? cardLeading;
+  final Widget Function(int) cardBody;
+  final Widget Function(int)? cardTrailing;
+
+  // 2. 列表数据和状态
   final int itemCount;
   final bool isCardDraggable;
-  final Function(int)? onSwipeDelete;
-  final Function(int, int)? onReorder;
-  final Widget? footer;
-  final Future<void> Function()? onLoadMore;
+  final bool showScrollbar;
+
+  // 3. 卡片样式和布局
   final Color? cardColor;
-  final Widget Function(int)? cardLeading;
-  final Widget Function(int)? cardTrailing;
-  final Widget Function(int) cardBody;
-  final Function(int)? onCardPressed;
   final double? cardHeight;
   final double fontSize;
   final EdgeInsetsGeometry? cardPadding;
   final EdgeInsetsGeometry? cardMargin;
-  final bool showScrollbar;
+
+  // 4. 列表附加组件
+  final Widget? footer;
+
+  // 5. 回调函数
+  final Function(int)? onSwipeDelete;
+  final Function(int, int)? onReorder;
+  final Function(int)? onCardPressed;
+  final Future<void> Function()? onLoadMore;
 
   const MyCardList({
     super.key,
-    required this.itemCount,
-    required this.cardBody,
-    this.isCardDraggable = false,
-    this.onSwipeDelete,
-    this.onReorder,
-    this.footer,
-    this.onLoadMore,
-    this.cardColor,
+    // 1. 核心内容构建器
     this.cardLeading,
+    required this.cardBody,
     this.cardTrailing,
-    this.onCardPressed,
+
+    // 2. 列表数据和状态
+    required this.itemCount,
+    this.isCardDraggable = false,
+    this.showScrollbar = true,
+
+    // 3. 卡片样式和布局
+    this.cardColor,
     this.cardHeight,
     this.fontSize = 14,
     this.cardPadding,
     this.cardMargin,
-    this.showScrollbar = true,
+
+    // 4. 列表附加组件
+    this.footer,
+
+    // 5. 回调函数
+    this.onSwipeDelete,
+    this.onReorder,
+    this.onCardPressed,
+    this.onLoadMore,
   });
 
   @override

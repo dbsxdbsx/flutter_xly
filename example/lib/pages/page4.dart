@@ -25,17 +25,6 @@ class Page4View extends GetView<Page4Controller> {
                         title: '可拖动列表',
                         style: SectionBorderStyle.inset,
                         child: MyCardList(
-                          itemCount: controller.draggableCards.length,
-                          isCardDraggable: true,
-                          onSwipeDelete: (index) {
-                            toast('即将删除：${controller.draggableCards[index]}');
-                            controller.deleteDraggableCard(index);
-                          },
-                          onReorder: controller.reorderCards,
-                          footer: _buildFooter(controller.draggableListState),
-                          onLoadMore: () =>
-                              controller.loadMoreCards(isDraggable: true),
-                          cardColor: Colors.blue[50] ?? Colors.blue[100]!,
                           cardLeading: (index) => Icon(
                             Icons.drag_indicator,
                             size: 24.w,
@@ -48,35 +37,44 @@ class Page4View extends GetView<Page4Controller> {
                           cardTrailing: (index) => Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              IconButton(
-                                icon: Icon(Icons.edit, size: 20.w),
-                                onPressed: () => _onEditCard(index),
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
+                              MyIconButton(
+                                icon: Icons.edit,
+                                iconColor: Colors.blue[300],
+                                // onPressed: () => _onEditCard(index),
                               ),
                               SizedBox(width: 8.w),
-                              IconButton(
-                                icon: Icon(Icons.star_border, size: 20.w),
+                              MyIconButton(
+                                icon: Icons.star_border,
+                                iconColor: Colors.amber[300],
                                 onPressed: () => _onStarCard(index),
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
                               ),
                               SizedBox(width: 8.w),
-                              IconButton(
-                                icon: Icon(Icons.delete, size: 20.w),
+                              MyIconButton(
+                                icon: Icons.delete,
+                                iconColor: Colors.red[300],
                                 onPressed: () =>
                                     controller.deleteDraggableCard(index),
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
                               ),
                             ],
                           ),
+                          itemCount: controller.draggableCards.length,
+                          isCardDraggable: true,
+                          showScrollbar: true,
+                          cardColor: Colors.blue[50] ?? Colors.blue[100]!,
+                          cardMargin: EdgeInsets.symmetric(
+                              horizontal: 5.w, vertical: 1.h),
+                          footer: _buildFooter(controller.draggableListState),
+                          onSwipeDelete: (index) {
+                            toast('即将删除：${controller.draggableCards[index]}');
+                            controller.deleteDraggableCard(index);
+                          },
+                          onReorder: controller.reorderCards,
                           onCardPressed: (index) => _onCardPressed(
                             controller.draggableCards[index],
                             true,
                           ),
-                          cardMargin: EdgeInsets.symmetric(
-                              horizontal: 5.w, vertical: 1.h),
+                          onLoadMore: () =>
+                              controller.loadMoreCards(isDraggable: true),
                         ),
                       ),
                     ),
@@ -85,12 +83,6 @@ class Page4View extends GetView<Page4Controller> {
                       child: MyGroupBox(
                         title: '不可拖动列表',
                         child: MyCardList(
-                          itemCount: controller.staticCards.length,
-                          isCardDraggable: false,
-                          onSwipeDelete: (index) {
-                            toast('即将删除：${controller.staticCards[index]}');
-                            controller.deleteStaticCard(index);
-                          },
                           cardLeading: (index) => Icon(
                             Icons.download_outlined,
                             size: 24.w,
@@ -108,46 +100,44 @@ class Page4View extends GetView<Page4Controller> {
                               ),
                               SizedBox(height: 4.h),
                               Text(
-                                '下载专用 ${index + 1}',
-                                style: TextStyle(
-                                  fontSize: 12.sp,
-                                  color: Colors.grey[600],
-                                ),
+                                '这是一个静态卡片的描述信息',
+                                style: TextStyle(fontSize: 12.sp),
                               ),
                             ],
                           ),
                           cardTrailing: (index) => Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              IconButton(
-                                icon: Icon(Icons.file_download, size: 20.w),
+                              MyIconButton(
+                                icon: Icons.download,
+                                iconColor: Colors.green[300],
                                 onPressed: () => _onDownloadCard(index),
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
                               ),
                               SizedBox(width: 8.w),
-                              IconButton(
-                                icon: Icon(Icons.copy, size: 20.w),
+                              MyIconButton(
+                                icon: Icons.copy,
+                                iconColor: Colors.purple[300],
                                 onPressed: () => _onCopyCard(index),
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
                               ),
                             ],
                           ),
+                          itemCount: controller.staticCards.length,
+                          isCardDraggable: false,
+                          showScrollbar: false,
+                          cardColor: Colors.green[50]!,
+                          cardMargin: EdgeInsets.symmetric(
+                              horizontal: 5.w, vertical: 2.h),
                           footer: _buildFooter(controller.staticListState),
+                          onSwipeDelete: (index) {
+                            toast('即将删除：${controller.staticCards[index]}');
+                            controller.deleteStaticCard(index);
+                          },
                           onCardPressed: (index) => _onCardPressed(
                             controller.staticCards[index],
                             false,
                           ),
                           onLoadMore: () =>
                               controller.loadMoreCards(isDraggable: false),
-                          cardHeight: 70.h,
-                          cardPadding: EdgeInsets.symmetric(
-                              horizontal: 16.w, vertical: 8.h),
-                          cardMargin: EdgeInsets.symmetric(
-                              horizontal: 5.w, vertical: 2.h),
-                          cardColor: Colors.green[50]!,
-                          showScrollbar: false,
                         ),
                       ),
                     ),
