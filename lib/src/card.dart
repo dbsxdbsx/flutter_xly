@@ -81,7 +81,7 @@ class MyCard extends StatelessWidget {
         child: ListTile(
           dense: true,
           visualDensity: VisualDensity(horizontal: -4.w, vertical: -4.h),
-          minVerticalPadding: 0,
+          // minVerticalPadding: 0,
           horizontalTitleGap: leadingAndBodySpacing?.w,
           contentPadding: EdgeInsets.only(
             left: (padding ?? defaultPadding).left.w,
