@@ -118,7 +118,7 @@ class MyCardList extends StatefulWidget {
   final Color? cardSplashColor;
   final Color? cardShadowColor;
   final double? cardElevation;
-  final ShapeBorder? cardShape;
+  final BorderRadius? cardBorderRadius;
 
   // 6. 附加组件
   final Widget? footer;
@@ -153,7 +153,7 @@ class MyCardList extends StatefulWidget {
     this.cardSplashColor,
     this.cardShadowColor,
     this.cardElevation,
-    this.cardShape,
+    this.cardBorderRadius,
 
     // 6. 附加组件
     this.footer,
@@ -222,7 +222,7 @@ class _MyCardListState extends State<MyCardList> {
           backgroundColor: widget.cardColor,
           elevation: widget.cardElevation,
           shadowColor: widget.cardShadowColor,
-          borderShape: widget.cardShape,
+          borderRadius: widget.cardBorderRadius,
           hoverColor: widget.cardHoverColor,
           splashColor: widget.cardSplashColor,
 

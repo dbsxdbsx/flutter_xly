@@ -19,7 +19,7 @@ class MyCard extends StatelessWidget {
   final Color? splashColor;
   final Color? shadowColor;
   final double? elevation;
-  final ShapeBorder? borderShape;
+  final BorderRadius? borderRadius;
   final BoxDecoration? decoration;
   final Color? textColor;
   final TextStyle? textStyle;
@@ -29,11 +29,6 @@ class MyCard extends StatelessWidget {
   static EdgeInsets defaultMargin(BuildContext context) => EdgeInsets.symmetric(
         vertical: 4.h,
         horizontal: 8.w,
-      );
-
-  static ShapeBorder defaultBorderShape(BuildContext context) =>
-      RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(12.r)),
       );
 
   const MyCard({
@@ -55,7 +50,7 @@ class MyCard extends StatelessWidget {
     this.splashColor,
     this.shadowColor,
     this.elevation,
-    this.borderShape,
+    this.borderRadius,
     this.decoration,
     this.textColor,
     this.textStyle,
@@ -73,7 +68,9 @@ class MyCard extends StatelessWidget {
       ),
       elevation: elevation?.h ?? 2.h,
       shadowColor: shadowColor,
-      shape: borderShape ?? defaultBorderShape(context),
+      shape: RoundedRectangleBorder(
+        borderRadius: borderRadius ?? BorderRadius.circular(12.r),
+      ),
       color: backgroundColor,
       child: Padding(
         padding: padding ?? defaultPadding(context),
@@ -82,12 +79,7 @@ class MyCard extends StatelessWidget {
           enableFeedback: false,
           hoverColor: hoverColor,
           splashColor: splashColor,
-          borderRadius: (borderShape ?? defaultBorderShape(context))
-                  is RoundedRectangleBorder
-              ? ((borderShape ?? defaultBorderShape(context))
-                      as RoundedRectangleBorder)
-                  .borderRadius as BorderRadius
-              : null,
+          borderRadius: borderRadius ?? BorderRadius.circular(12.r),
           child: ListTile(
             dense: true,
             visualDensity: VisualDensity(horizontal: -4.w, vertical: -4.h),

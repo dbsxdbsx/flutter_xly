@@ -73,6 +73,7 @@ class Page4View extends GetView<Page4Controller> {
                               horizontal: 6.w, vertical: 2.h),
                           cardSplashColor: Colors.black12,
                           footer: _buildFooter(controller.draggableListState),
+                          // cardBorderRadius: BorderRadius.circular(48.r),
                         ),
                       ),
                     ),
@@ -136,6 +137,7 @@ class Page4View extends GetView<Page4Controller> {
                           ),
                           onLoadMore: () =>
                               controller.loadMoreCards(isDraggable: false),
+                          cardBorderRadius: BorderRadius.circular(8.r),
                         ),
                       ),
                     ),
