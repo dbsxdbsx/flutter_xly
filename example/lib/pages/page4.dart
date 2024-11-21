@@ -25,6 +25,7 @@ class Page4View extends GetView<Page4Controller> {
                         title: '可拖动列表',
                         // style: SectionBorderStyle.inset,
                         child: MyCardList(
+                          itemCount: controller.draggableCards.length,
                           cardLeading: (index) => Icon(
                             Icons.drag_indicator,
                             size: 24.w,
@@ -55,24 +56,23 @@ class Page4View extends GetView<Page4Controller> {
                               ),
                             ],
                           ),
-                          itemCount: controller.draggableCards.length,
                           isCardDraggable: true,
-                          showScrollbar: true,
-                          cardMargin: EdgeInsets.symmetric(
-                              horizontal: 5.w, vertical: 2.h),
-                          cardElevation: 2,
-                          footer: _buildFooter(controller.draggableListState),
-                          onSwipeDelete: (index) {
-                            toast('即将删除：${controller.draggableCards[index]}');
-                            controller.deleteDraggableCard(index);
-                          },
                           onReorder: controller.reorderCards,
                           onCardPressed: (index) => _onCardPressed(
                             controller.draggableCards[index],
                             true,
                           ),
+                          onSwipeDelete: (index) {
+                            toast('即将删除：${controller.draggableCards[index]}');
+                            controller.deleteDraggableCard(index);
+                          },
                           onLoadMore: () =>
                               controller.loadMoreCards(isDraggable: true),
+                          showScrollbar: true,
+                          cardMargin: EdgeInsets.symmetric(
+                              horizontal: 6.w, vertical: 2.h),
+                          cardSplashColor: Colors.black12,
+                          footer: _buildFooter(controller.draggableListState),
                         ),
                       ),
                     ),
@@ -123,7 +123,8 @@ class Page4View extends GetView<Page4Controller> {
                           showScrollbar: false,
                           cardColor: Colors.green[50]!,
                           cardMargin: EdgeInsets.symmetric(
-                              horizontal: 5.w, vertical: 2.h),
+                              horizontal: 2.h, vertical: 2.h),
+                          // horizontal: 5.w, vertical: 2.h),
                           footer: _buildFooter(controller.staticListState),
                           onSwipeDelete: (index) {
                             toast('即将删除：${controller.staticCards[index]}');

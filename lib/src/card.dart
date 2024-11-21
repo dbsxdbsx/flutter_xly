@@ -6,29 +6,35 @@ class MyCard extends StatelessWidget {
   final Widget? leading;
   final Widget child;
   final Widget? trailing;
+  final VoidCallback? onPressed;
+  final bool isDraggable;
+  final bool enableSwipeToDelete;
+  final VoidCallback? onSwipeDeleted;
   final double? height;
   final double? leadingAndBodySpacing;
-  final double? contentPadding;
   final EdgeInsets? padding;
   final EdgeInsets? margin;
   final Color? backgroundColor;
-  final Color? textColor;
-  final double? elevation;
+  final Color? hoverColor;
+  final Color? splashColor;
   final Color? shadowColor;
-  final ShapeBorder shape;
+  final double? elevation;
+  final ShapeBorder? borderShape;
   final BoxDecoration? decoration;
+  final Color? textColor;
   final TextStyle? textStyle;
-  final bool isDraggable;
-  final bool enableSwipeToDelete;
-  final VoidCallback? onPressed;
-  final VoidCallback? onSwipeDeleted;
   final Widget? deleteBackground;
 
-  static const EdgeInsets defaultPadding = EdgeInsets.all(4);
-  static const EdgeInsets defaultMargin = EdgeInsets.symmetric(
-    vertical: 4,
-    horizontal: 8,
-  );
+  static EdgeInsets defaultPadding(BuildContext context) => EdgeInsets.all(0.w);
+  static EdgeInsets defaultMargin(BuildContext context) => EdgeInsets.symmetric(
+        vertical: 4.h,
+        horizontal: 8.w,
+      );
+
+  static ShapeBorder defaultBorderShape(BuildContext context) =>
+      RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(12.r)),
+      );
 
   const MyCard({
     super.key,
@@ -36,66 +42,60 @@ class MyCard extends StatelessWidget {
     this.leading,
     required this.child,
     this.trailing,
+    this.onPressed,
+    this.isDraggable = false,
+    this.enableSwipeToDelete = false,
+    this.onSwipeDeleted,
     this.height,
-    this.leadingAndBodySpacing = 16,
-    this.contentPadding = 16,
+    this.leadingAndBodySpacing,
     this.padding,
     this.margin,
     this.backgroundColor,
-    this.textColor,
-    this.elevation,
+    this.hoverColor,
+    this.splashColor,
     this.shadowColor,
-    this.shape = const RoundedRectangleBorder(
-      borderRadius: BorderRadius.all(Radius.circular(12)),
-    ),
+    this.elevation,
+    this.borderShape,
     this.decoration,
+    this.textColor,
     this.textStyle,
-    this.isDraggable = false,
-    this.enableSwipeToDelete = false,
-    this.onPressed,
-    this.onSwipeDeleted,
     this.deleteBackground,
   });
-
-  static ShapeBorder defaultShape(BuildContext context) {
-    return RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(12.r),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
     Widget cardContent = Card(
       margin: EdgeInsets.only(
-        left: (margin ?? defaultMargin).left.w,
-        right: (margin ?? defaultMargin).right.w,
-        top: (margin ?? defaultMargin).top.h,
-        bottom: (margin ?? defaultMargin).bottom.h,
+        left: (margin ?? defaultMargin(context)).left.w,
+        right: (margin ?? defaultMargin(context)).right.w,
+        top: (margin ?? defaultMargin(context)).top.h,
+        bottom: (margin ?? defaultMargin(context)).bottom.h,
       ),
       elevation: elevation?.h ?? 2.h,
       shadowColor: shadowColor,
-      shape: shape,
+      shape: borderShape ?? defaultBorderShape(context),
       color: backgroundColor,
-      child: InkWell(
-        onTap: onPressed,
-        enableFeedback: false,
-        hoverColor: Colors.transparent,
-        borderRadius: shape is RoundedRectangleBorder
-            ? (shape as RoundedRectangleBorder).borderRadius as BorderRadius
-            : null,
-        child: ListTile(
-          dense: true,
-          visualDensity: VisualDensity(horizontal: -4.w, vertical: -4.h),
-          horizontalTitleGap: leadingAndBodySpacing?.w,
-          contentPadding: EdgeInsets.only(
-            left: (padding ?? defaultPadding).left.w,
-            right: (padding ?? defaultPadding).right.w,
-            top: (padding ?? defaultPadding).top.h,
-            bottom: (padding ?? defaultPadding).bottom.h,
+      child: Padding(
+        padding: padding ?? defaultPadding(context),
+        child: InkWell(
+          onTap: onPressed,
+          enableFeedback: false,
+          hoverColor: hoverColor,
+          splashColor: splashColor,
+          borderRadius: (borderShape ?? defaultBorderShape(context))
+                  is RoundedRectangleBorder
+              ? ((borderShape ?? defaultBorderShape(context))
+                      as RoundedRectangleBorder)
+                  .borderRadius as BorderRadius
+              : null,
+          child: ListTile(
+            dense: true,
+            visualDensity: VisualDensity(horizontal: -4.w, vertical: -4.h),
+            horizontalTitleGap: leadingAndBodySpacing?.w,
+            leading: leading,
+            title: child,
+            trailing: trailing,
           ),
-          leading: leading,
-          title: child,
-          trailing: trailing,
         ),
       ),
     );
