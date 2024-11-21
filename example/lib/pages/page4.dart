@@ -69,8 +69,8 @@ class Page4View extends GetView<Page4Controller> {
                           onLoadMore: () =>
                               controller.loadMoreCards(isDraggable: true),
                           showScrollbar: true,
-                          cardMargin: EdgeInsets.symmetric(
-                              horizontal: 6.w, vertical: 2.h),
+                          // cardMargin: EdgeInsets.symmetric(
+                          //     horizontal: 6.w, vertical: 2.h),
                           cardSplashColor: Colors.black12,
                           footer: _buildFooter(controller.draggableListState),
                           // cardBorderRadius: BorderRadius.circular(48.r),

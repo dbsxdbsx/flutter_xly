@@ -27,8 +27,8 @@ class MyCard extends StatelessWidget {
 
   static EdgeInsets defaultPadding(BuildContext context) => EdgeInsets.all(0.w);
   static EdgeInsets defaultMargin(BuildContext context) => EdgeInsets.symmetric(
-        vertical: 4.h,
-        horizontal: 8.w,
+        horizontal: 6.w,
+        vertical: 1.5.h,
       );
 
   const MyCard({
