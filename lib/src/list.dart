@@ -14,7 +14,7 @@ class MyList<T> extends StatelessWidget {
 
   // 3. 拖拽相关
   final bool isDraggable;
-  final Function(int, int)? onReorder;
+  final Function(int, int)? onCardReordered;
 
   // 4. 附加组件
   final Widget? footer;
@@ -31,7 +31,7 @@ class MyList<T> extends StatelessWidget {
 
     // 3. 拖拽相关
     this.isDraggable = false,
-    this.onReorder,
+    this.onCardReordered,
 
     // 4. 附加组件
     this.footer,
@@ -52,7 +52,7 @@ class MyList<T> extends StatelessWidget {
                 scrollController: scrollController,
                 itemCount: items.length,
                 itemBuilder: itemBuilder,
-                onReorder: onReorder!,
+                onReorder: onCardReordered!,
                 footer: footer,
                 buildDefaultDragHandles: false,
                 proxyDecorator: _proxyDecorator,
@@ -197,7 +197,7 @@ class _MyCardListState extends State<MyCardList> {
       items: List.generate(widget.itemCount, (i) => i),
       isDraggable: widget.onReorder != null,
       scrollController: _scrollController,
-      onReorder: widget.onReorder,
+      onCardReordered: widget.onReorder,
       footer: widget.footer,
       showScrollbar: widget.showScrollbar,
       itemBuilder: (context, index) {

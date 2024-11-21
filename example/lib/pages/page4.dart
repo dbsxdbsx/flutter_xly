@@ -123,6 +123,7 @@ class Page4View extends GetView<Page4Controller> {
                           cardColor: Colors.green[50]!,
                           cardMargin: EdgeInsets.symmetric(
                               horizontal: 2.h, vertical: 2.h),
+                          cardPadding: EdgeInsets.only(right: 15.w),
                           footer: _buildFooter(controller.staticListState),
                           onSwipeDelete: (index) {
                             toast('即将删除：${controller.staticCards[index]}');

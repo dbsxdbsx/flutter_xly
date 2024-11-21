@@ -25,7 +25,8 @@ class MyCard extends StatelessWidget {
   final TextStyle? textStyle;
   final Widget? deleteBackground;
 
-  static EdgeInsets defaultPadding(BuildContext context) => EdgeInsets.all(0.w);
+  static EdgeInsets defaultPadding(BuildContext context) =>
+      EdgeInsets.symmetric(horizontal: 4.w);
   static EdgeInsets defaultMargin(BuildContext context) => EdgeInsets.symmetric(
         horizontal: 6.w,
         vertical: 1.5.h,
@@ -72,22 +73,22 @@ class MyCard extends StatelessWidget {
         borderRadius: borderRadius ?? BorderRadius.circular(12.r),
       ),
       color: backgroundColor,
-      child: Padding(
-        padding: padding ?? defaultPadding(context),
-        child: InkWell(
-          onTap: onPressed,
-          enableFeedback: false,
-          hoverColor: hoverColor,
-          splashColor: splashColor,
-          borderRadius: borderRadius ?? BorderRadius.circular(12.r),
-          child: ListTile(
-            dense: true,
-            visualDensity: VisualDensity(horizontal: -4.w, vertical: -4.h),
-            horizontalTitleGap: leadingAndBodySpacing?.w,
-            leading: leading,
-            title: child,
-            trailing: trailing,
-          ),
+      child: InkWell(
+        onTap: onPressed,
+        enableFeedback: false,
+        hoverColor: hoverColor,
+        splashColor: splashColor,
+        borderRadius: borderRadius ?? BorderRadius.circular(12.r),
+        child: ListTile(
+          dense: true,
+          visualDensity: VisualDensity(horizontal: -4.w, vertical: -4.h),
+          horizontalTitleGap: leadingAndBodySpacing?.w,
+          // minLeadingWidth: 24.w,
+          contentPadding:
+              padding ?? defaultPadding(context), // NOTE：必须有，否则card最右侧会有空白
+          leading: leading,
+          title: child,
+          trailing: trailing,
         ),
       ),
     );
