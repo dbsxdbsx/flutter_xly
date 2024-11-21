@@ -23,7 +23,7 @@ class Page4View extends GetView<Page4Controller> {
                     Expanded(
                       child: MyGroupBox(
                         title: '可拖动列表',
-                        style: SectionBorderStyle.inset,
+                        // style: SectionBorderStyle.inset,
                         child: MyCardList(
                           cardLeading: (index) => Icon(
                             Icons.drag_indicator,
@@ -58,9 +58,9 @@ class Page4View extends GetView<Page4Controller> {
                           itemCount: controller.draggableCards.length,
                           isCardDraggable: true,
                           showScrollbar: true,
-                          // cardColor: Colors.blue[50] ?? Colors.blue[100]!,
                           cardMargin: EdgeInsets.symmetric(
-                              horizontal: 5.w, vertical: 1.h),
+                              horizontal: 5.w, vertical: 2.h),
+                          cardElevation: 2,
                           footer: _buildFooter(controller.draggableListState),
                           onSwipeDelete: (index) {
                             toast('即将删除：${controller.draggableCards[index]}');

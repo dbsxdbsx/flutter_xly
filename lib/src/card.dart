@@ -65,23 +65,27 @@ class MyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget cardContent = Material(
-      color: backgroundColor ?? const Color(0xFFF7F2FA),
+    Widget cardContent = Card(
+      margin: EdgeInsets.only(
+        left: (margin ?? defaultMargin).left.w,
+        right: (margin ?? defaultMargin).right.w,
+        top: (margin ?? defaultMargin).top.h,
+        bottom: (margin ?? defaultMargin).bottom.h,
+      ),
       elevation: elevation?.h ?? 2.h,
-      shadowColor: shadowColor ?? Colors.grey.withOpacity(0.2),
+      shadowColor: shadowColor,
       shape: shape,
+      color: backgroundColor,
       child: InkWell(
         onTap: onPressed,
-        enableFeedback: true,
-        highlightColor: Colors.black12,
-        hoverColor: Colors.black.withOpacity(0.04),
+        enableFeedback: false,
+        hoverColor: Colors.transparent,
         borderRadius: shape is RoundedRectangleBorder
             ? (shape as RoundedRectangleBorder).borderRadius as BorderRadius
             : null,
         child: ListTile(
           dense: true,
           visualDensity: VisualDensity(horizontal: -4.w, vertical: -4.h),
-          // minVerticalPadding: 0,
           horizontalTitleGap: leadingAndBodySpacing?.w,
           contentPadding: EdgeInsets.only(
             left: (padding ?? defaultPadding).left.w,
@@ -94,14 +98,6 @@ class MyCard extends StatelessWidget {
           trailing: trailing,
         ),
       ),
-    );
-
-    cardContent = Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: (margin ?? defaultMargin).left.w,
-        vertical: (margin ?? defaultMargin).top.h,
-      ),
-      child: cardContent,
     );
 
     if (enableSwipeToDelete) {
@@ -117,14 +113,11 @@ class MyCard extends StatelessWidget {
     if (isDraggable) {
       return ReorderableDragStartListener(
         index: index!,
-        child: SizedBox(
-          width: double.infinity,
-          child: cardContent,
-        ),
+        child: cardContent,
       );
-    } else {
-      return cardContent;
     }
+
+    return cardContent;
   }
 
   Widget _defaultDeleteBackground() {
