@@ -56,7 +56,7 @@ class Page4View extends GetView<Page4Controller> {
                               ),
                             ],
                           ),
-                          onReorder: controller.reorderCards,
+                          onCardReordered: controller.reorderCards,
                           onCardPressed: (index) => _onCardPressed(
                             controller.draggableCards[index],
                             true,

@@ -97,7 +97,7 @@ class MyCardList extends StatefulWidget {
   final Widget Function(int)? cardTrailing;
 
   // 2. 交互行为
-  final Function(int, int)? onReorder;
+  final Function(int, int)? onCardReordered;
   final Function(int)? onCardPressed;
   final Function(int)? onSwipeDelete;
   final Future<void> Function()? onLoadMore;
@@ -131,7 +131,7 @@ class MyCardList extends StatefulWidget {
     this.cardTrailing,
 
     // 2. 交互行为
-    this.onReorder,
+    this.onCardReordered,
     this.onCardPressed,
     this.onSwipeDelete,
     this.onLoadMore,
@@ -195,9 +195,9 @@ class _MyCardListState extends State<MyCardList> {
   Widget build(BuildContext context) {
     return MyList<int>(
       items: List.generate(widget.itemCount, (i) => i),
-      isDraggable: widget.onReorder != null,
+      isDraggable: widget.onCardReordered != null,
       scrollController: _scrollController,
-      onCardReordered: widget.onReorder,
+      onCardReordered: widget.onCardReordered,
       footer: widget.footer,
       showScrollbar: widget.showScrollbar,
       itemBuilder: (context, index) {
@@ -225,7 +225,7 @@ class _MyCardListState extends State<MyCardList> {
           splashColor: widget.cardSplashColor,
 
           // 4. 交互行为
-          isDraggable: widget.onReorder != null,
+          isDraggable: widget.onCardReordered != null,
           enableSwipeToDelete: widget.onSwipeDelete != null,
           onPressed: widget.onCardPressed != null
               ? () => widget.onCardPressed!(index)
