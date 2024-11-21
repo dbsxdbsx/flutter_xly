@@ -56,7 +56,6 @@ class Page4View extends GetView<Page4Controller> {
                               ),
                             ],
                           ),
-                          isCardDraggable: true,
                           onReorder: controller.reorderCards,
                           onCardPressed: (index) => _onCardPressed(
                             controller.draggableCards[index],
@@ -120,12 +119,10 @@ class Page4View extends GetView<Page4Controller> {
                             ],
                           ),
                           itemCount: controller.staticCards.length,
-                          isCardDraggable: false,
                           showScrollbar: false,
                           cardColor: Colors.green[50]!,
                           cardMargin: EdgeInsets.symmetric(
                               horizontal: 2.h, vertical: 2.h),
-                          // horizontal: 5.w, vertical: 2.h),
                           footer: _buildFooter(controller.staticListState),
                           onSwipeDelete: (index) {
                             toast('即将删除：${controller.staticCards[index]}');
