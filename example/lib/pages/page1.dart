@@ -106,7 +106,7 @@ class Page1View extends GetView<Page1Controller> {
           onPressed: () => _showDialog(false),
         ),
         MyButton(
-          text: '打开 iOS 风格对话框',
+          text: '打开iOS风格对话框',
           onPressed: () => _showDialog(true),
         ),
         MyButton(

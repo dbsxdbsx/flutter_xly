@@ -58,6 +58,8 @@ void main() async {
     backInfoText: '自定义: 再按一次返回上一页',
     pageTransitionStyle: Transition.fade,
     navigatorKey: navigatorKey,
+    setResizable: false,
+    setMaximizable: false,
   );
 }
 

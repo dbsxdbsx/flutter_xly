@@ -152,7 +152,7 @@ class MyApp extends StatelessWidget {
     bool setWindowButtonVisibility = false,
     bool setSkipTaskbar = false,
     bool setResizable = true,
-    bool setMinisizable = true,
+    bool setMinimizable = true,
     bool setMaximizable = true,
     bool centerWindow = true,
     bool focusWindow = true,
@@ -178,9 +178,9 @@ class MyApp extends StatelessWidget {
     if (minimumSize != null) {
       await windowManager.setMinimumSize(minimumSize);
     }
-    if (setMinisizable) await windowManager.setMinimizable(setMinisizable);
-    if (setMaximizable) await windowManager.setMaximizable(setMaximizable);
-    if (setResizable) await windowManager.setResizable(setResizable);
+    await windowManager.setMinimizable(setMinimizable);
+    await windowManager.setMaximizable(setMaximizable);
+    await windowManager.setResizable(setResizable);
 
     if (setSkipTaskbar) await windowManager.setSkipTaskbar(setSkipTaskbar);
 
