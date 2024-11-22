@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:oktoast/oktoast.dart';
@@ -9,7 +10,6 @@ import 'package:xly/src/float_panel.dart';
 import 'package:xly/src/platform.dart';
 import 'package:xly/src/splash.dart';
 import 'package:xly/src/toast.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 
 class MyRoute<T extends GetxController> {
   final String path;
@@ -178,11 +178,11 @@ class MyApp extends StatelessWidget {
     if (minimumSize != null) {
       await windowManager.setMinimumSize(minimumSize);
     }
-    if (setMinisizable) await windowManager.setMinimizable(true);
-    if (setMaximizable) await windowManager.setMaximizable(true);
-    if (setResizable) await windowManager.setResizable(true);
+    if (setMinisizable) await windowManager.setMinimizable(setMinisizable);
+    if (setMaximizable) await windowManager.setMaximizable(setMaximizable);
+    if (setResizable) await windowManager.setResizable(setResizable);
 
-    if (setSkipTaskbar) await windowManager.setSkipTaskbar(true);
+    if (setSkipTaskbar) await windowManager.setSkipTaskbar(setSkipTaskbar);
 
     if (centerWindow) await windowManager.center();
     if (focusWindow) await windowManager.focus();
