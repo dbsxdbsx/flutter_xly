@@ -27,6 +27,42 @@ class MyRoute<T extends GetxController> {
   }
 }
 
+class CustomDragArea extends StatelessWidget {
+  final Widget child;
+  final bool enableDoubleClickFullScreen;
+  final bool draggable;
+
+  const CustomDragArea({
+    super.key,
+    required this.child,
+    required this.enableDoubleClickFullScreen,
+    required this.draggable,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onPanStart: draggable
+          ? (details) async {
+              await windowManager.startDragging();
+            }
+          : null,
+      onDoubleTap: enableDoubleClickFullScreen
+          ? () async {
+              bool isMaximized = await windowManager.isMaximized();
+              if (isMaximized) {
+                await windowManager.restore();
+              } else {
+                await windowManager.maximize();
+              }
+            }
+          : null,
+      behavior: HitTestBehavior.translucent,
+      child: child,
+    );
+  }
+}
+
 class MyApp extends StatelessWidget {
   final Size designSize;
   final ThemeData? theme;
@@ -45,6 +81,8 @@ class MyApp extends StatelessWidget {
   final Duration pageTransitionDuration;
   final MyFloatPanel? globalFloatPanel;
   final GlobalKey<NavigatorState>? navigatorKey;
+  final bool enableDoubleClickFullScreen;
+  final bool draggable;
 
   const MyApp._({
     required this.designSize,
@@ -64,6 +102,8 @@ class MyApp extends StatelessWidget {
     this.pageTransitionDuration = const Duration(milliseconds: 300),
     this.globalFloatPanel,
     this.navigatorKey,
+    this.enableDoubleClickFullScreen = false,
+    this.draggable = true,
   });
 
   static Future<void> initialize({
@@ -97,6 +137,8 @@ class MyApp extends StatelessWidget {
     Duration pageTransitionDuration = const Duration(milliseconds: 300),
     MyFloatPanel? globalFloatPanel,
     GlobalKey<NavigatorState>? navigatorKey,
+    bool enableDoubleClickFullScreen = false,
+    bool draggable = true,
   }) async {
     if (ensureScreenSize) {
       await ScreenUtil.ensureScreenSize();
@@ -124,6 +166,11 @@ class MyApp extends StatelessWidget {
       }
     }
 
+    // 初始化时设置全局状态
+    _globalEnableResizable.value = setResizable;
+    _globalEnableDoubleClickFullScreen.value = enableDoubleClickFullScreen;
+    _globalEnableDraggable.value = draggable;
+
     runApp(MyApp._(
       designSize: designSize,
       theme: theme,
@@ -142,6 +189,8 @@ class MyApp extends StatelessWidget {
       pageTransitionDuration: pageTransitionDuration,
       globalFloatPanel: globalFloatPanel,
       navigatorKey: navigatorKey,
+      enableDoubleClickFullScreen: enableDoubleClickFullScreen,
+      draggable: draggable,
     ));
   }
 
@@ -334,7 +383,11 @@ class MyApp extends StatelessWidget {
 
   Widget _buildSafeArea(Widget child) {
     return SafeArea(
-      child: dragToMoveArea ? DragToMoveArea(child: child) : child,
+      child: Obx(() => CustomDragArea(
+            enableDoubleClickFullScreen: _globalEnableDoubleClickFullScreen.value,
+            draggable: _globalEnableDraggable.value,
+            child: child,
+          )),
     );
   }
 
@@ -342,10 +395,50 @@ class MyApp extends StatelessWidget {
   static Future<void> exit() async {
     await exitApp();
   }
+
+  static final _globalEnableDoubleClickFullScreen = false.obs;
+  static final _globalEnableResizable = false.obs;
+  static final _globalEnableDraggable = true.obs;
+
+  /// 获取当前双击最大化功能的状态
+  static bool isDoubleClickFullScreenEnabled() {
+    return _globalEnableDoubleClickFullScreen.value;
+  }
+
+  /// 设置双击最大化功能的启用状态
+  static Future<void> setDoubleClickFullScreenEnabled(bool enabled) async {
+    _globalEnableDoubleClickFullScreen.value = enabled;
+  }
+
+  /// 获取当前窗口大小调整功能的状态
+  static bool isResizableEnabled() {
+    return _globalEnableResizable.value;
+  }
+
+  /// 设置窗口大小调整功能的启用状态
+  static Future<void> setResizableEnabled(bool enabled) async {
+    _globalEnableResizable.value = enabled;
+    await windowManager.setResizable(enabled);
+  }
+
+  /// 获取当前窗口拖动功能的状态
+  static bool isDraggableEnabled() {
+    return _globalEnableDraggable.value;
+  }
+
+  /// 设置窗口拖动功能的启用状态
+  static Future<void> setDraggableEnabled(bool enabled) async {
+    _globalEnableDraggable.value = enabled;
+  }
 }
 
 class VoidCallbackIntent extends Intent {
   final VoidCallback callback;
 
   const VoidCallbackIntent(this.callback);
+}
+
+class WindowSettings extends GetxController {
+  static WindowSettings get to => Get.find();
+  final enableDoubleClickFullScreen = false.obs;
 }

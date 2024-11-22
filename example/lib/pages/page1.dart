@@ -212,7 +212,7 @@ class Page1View extends GetView<Page1Controller> {
       MyMenuItem(
         icon: Icons.security,
         text: '安全选项',
-        onTap: () => toast('打开安全选项'),
+        onTap: () => toast('开安全选项'),
       ),
       MyMenuItem(
         icon: Icons.build,
@@ -346,9 +346,16 @@ class Page1View extends GetView<Page1Controller> {
       runSpacing: 12.w,
       children: [
         Obx(() => MyButton(
-              text:
-                  '窗口控制功能: ${controller.isWindowControlEnabled.value ? "开启" : "关闭"}',
+              text: '允许拖动窗口: ${MyApp.isDraggableEnabled() ? "已开启" : "已关闭"}',
+              onPressed: controller.toggleDraggable,
+            )),
+        Obx(() => MyButton(
+              text: '允许手动调整窗口尺寸: ${MyApp.isResizableEnabled() ? "已开启" : "已关闭"}',
               onPressed: controller.toggleWindowControls,
+            )),
+        Obx(() => MyButton(
+              text: '允许双击最大化: ${MyApp.isDoubleClickFullScreenEnabled() ? "已开启" : "已关闭"}',
+              onPressed: controller.toggleDoubleClickFullScreen,
             )),
       ],
     );
@@ -357,7 +364,9 @@ class Page1View extends GetView<Page1Controller> {
 
 class Page1Controller extends GetxController {
   final isMenuButtonActivated = false.obs;
-  final isWindowControlEnabled = true.obs;
+  final isWindowControlEnabled = MyApp.isResizableEnabled().obs;
+  final enableDoubleClickFullScreen = MyApp.isDoubleClickFullScreenEnabled().obs;
+  final enableDraggable = MyApp.isDraggableEnabled().obs;
 
   void toggleMenuButtonState() {
     isMenuButtonActivated.value = !isMenuButtonActivated.value;
@@ -412,14 +421,44 @@ class Page1Controller extends GetxController {
   }
 
   void toggleWindowControls() async {
-    isWindowControlEnabled.toggle();
-    final enabled = isWindowControlEnabled.value;
+    // 获取当前状态的反状态
+    final newState = !MyApp.isResizableEnabled();
 
-    // 同时设置三个窗口控制参数
-    await windowManager.setMinimizable(enabled);
-    await windowManager.setMaximizable(enabled);
-    await windowManager.setResizable(enabled);
+    // 设置新状态
+    await MyApp.setResizableEnabled(newState);
 
-    toast('窗口控制${enabled ? "已启用" : "已禁用"}');
+    // 更新本地状态以保持UI同步
+    isWindowControlEnabled.value = newState;
+
+    // 显示提示
+    toast('允许手动调整窗口尺寸${newState ? "已启用" : "已禁用"}');
+  }
+
+  void toggleDoubleClickFullScreen() async {
+    // 获取当前状态的反状态
+    final newState = !MyApp.isDoubleClickFullScreenEnabled();
+
+    // 设置新状态
+    await MyApp.setDoubleClickFullScreenEnabled(newState);
+
+    // 更新本地状态以保持UI同步
+    enableDoubleClickFullScreen.value = newState;
+
+    // 显示提示
+    toast('允许双击最大化${newState ? "已启用" : "已禁用"}');
+  }
+
+  void toggleDraggable() async {
+    // 获取当前状态的反状态
+    final newState = !MyApp.isDraggableEnabled();
+
+    // 设置新状态
+    await MyApp.setDraggableEnabled(newState);
+
+    // 更新本地状态以保持UI同步
+    enableDraggable.value = newState;
+
+    // 显示提示
+    toast('允许拖动窗口${newState ? "已启用" : "已禁用"}');
   }
 }
