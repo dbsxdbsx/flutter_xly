@@ -14,18 +14,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await MyApp.initialize(
     designSize: const Size(900, 700),
-    splash: const MySplash(
-      nextRoute: Routes.page1,
-      lottieAssetPath: 'assets/animation/splash_loading.json',
-      appTitle: '😜My Awesome App😜',
-      backgroundColor: Colors.blueGrey,
-      splashDuration: Duration(seconds: 3),
-      textColor: Colors.white,
-      fontSize: 60,
-      fontWeight: FontWeight.bold,
-      lottieWidth: 250,
-      spaceBetween: 30,
-    ),
     routes: [
       MyRoute<Page1Controller>(
         path: Routes.page1,
@@ -53,14 +41,26 @@ void main() async {
         controller: () => Page5Controller(),
       ),
     ],
-    keyToRollBack: LogicalKeyboardKey.backspace,
-    exitInfoText: '自定义: 再按一次退出App',
-    backInfoText: '自定义: 再按一次返回上一页',
+    splash: const MySplash(
+      nextRoute: Routes.page1,
+      lottieAssetPath: 'assets/animation/splash_loading.json',
+      appTitle: '😜My Awesome App😜',
+      backgroundColor: Colors.blueGrey,
+      splashDuration: Duration(seconds: 3),
+      textColor: Colors.white,
+      fontSize: 60,
+      fontWeight: FontWeight.bold,
+      lottieWidth: 250,
+      spaceBetween: 30,
+    ),
     pageTransitionStyle: Transition.fade,
     navigatorKey: navigatorKey,
     draggable: false,
-    setResizable: true,
-    enableDoubleClickFullScreen: true,
+    resizable: true,
+    doubleClickToFullScreen: true,
+    keyToRollBack: LogicalKeyboardKey.backspace,
+    exitInfoText: '自定义: 再按一次退出App',
+    backInfoText: '自定义: 再按一次返回上一页',
   );
 }
 

@@ -107,39 +107,54 @@ class MyApp extends StatelessWidget {
   });
 
   static Future<void> initialize({
+    // 核心必需参数
     required Size designSize,
-    String appName = 'MyApp',
-    bool ensureScreenSize = true,
-    bool initializeWidgetsBinding = true,
-    bool initializeWindowManager = true,
     required List<MyRoute> routes,
+    String appName = 'MyApp',
+
+    // 路由和页面配置
+    MySplash? splash,
     Widget Function(BuildContext, Widget?)? appBuilder,
+    Transition pageTransitionStyle = Transition.fade,
+    Duration pageTransitionDuration = const Duration(milliseconds: 300),
+    GlobalKey<NavigatorState>? navigatorKey,
+
+    // 窗口基础配置
+    Size? minimumSize,
+    bool centerWindow = true,
+    bool showWindow = true,
+    bool focusWindow = true,
+
+    // 窗口交互配置
+    bool draggable = true,
+    bool resizable = true,
+    bool doubleClickToFullScreen = false,
+
+    // 窗口行为配置
     bool setTitleBarHidden = true,
     bool setWindowButtonVisibility = false,
     bool setSkipTaskbar = false,
-    bool setResizable = true,
     bool setMaximizable = true,
-    bool centerWindow = true,
-    bool focusWindow = true,
-    bool showWindow = true,
     bool setAspectRatio = true,
-    bool useOKToast = true,
-    bool dragToMoveArea = true,
-    bool showDebugTag = true,
+
+    // UI和主题配置
     ThemeData? theme,
-    Size? minimumSize,
-    MySplash? splash,
+    bool showDebugTag = true,
+    bool dragToMoveArea = true,
+    MyFloatPanel? globalFloatPanel,
+
+    // 其他功能配置
     LogicalKeyboardKey? keyToRollBack,
     String exitInfoText = '再按一次退出App',
     String backInfoText = '再按一次返回上一页',
     Duration exitGapTime = const Duration(seconds: 2),
-    Transition pageTransitionStyle = Transition.fade,
-    Duration pageTransitionDuration = const Duration(milliseconds: 300),
-    MyFloatPanel? globalFloatPanel,
-    GlobalKey<NavigatorState>? navigatorKey,
-    bool enableDoubleClickFullScreen = false,
-    bool draggable = true,
-  }) async {
+    bool useOKToast = true,
+
+    // 初始化配置
+    bool ensureScreenSize = true,
+    bool initializeWidgetsBinding = true,
+    bool initializeWindowManager = true,
+}) async {
     if (ensureScreenSize) {
       await ScreenUtil.ensureScreenSize();
     }
@@ -155,7 +170,7 @@ class MyApp extends StatelessWidget {
           setTitleBarHidden: setTitleBarHidden,
           setWindowButtonVisibility: setWindowButtonVisibility,
           setSkipTaskbar: setSkipTaskbar,
-          setResizable: setResizable,
+          setResizable: resizable,
           setMaximizable: setMaximizable,
           centerWindow: centerWindow,
           focusWindow: focusWindow,
@@ -167,8 +182,8 @@ class MyApp extends StatelessWidget {
     }
 
     // 初始化时设置全局状态
-    _globalEnableResizable.value = setResizable;
-    _globalEnableDoubleClickFullScreen.value = enableDoubleClickFullScreen;
+    _globalEnableResizable.value = resizable;
+    _globalEnableDoubleClickFullScreen.value = doubleClickToFullScreen;
     _globalEnableDraggable.value = draggable;
 
     runApp(MyApp._(
@@ -189,7 +204,7 @@ class MyApp extends StatelessWidget {
       pageTransitionDuration: pageTransitionDuration,
       globalFloatPanel: globalFloatPanel,
       navigatorKey: navigatorKey,
-      enableDoubleClickFullScreen: enableDoubleClickFullScreen,
+      enableDoubleClickFullScreen: doubleClickToFullScreen,
       draggable: draggable,
     ));
   }
@@ -384,7 +399,8 @@ class MyApp extends StatelessWidget {
   Widget _buildSafeArea(Widget child) {
     return SafeArea(
       child: Obx(() => CustomDragArea(
-            enableDoubleClickFullScreen: _globalEnableDoubleClickFullScreen.value,
+            enableDoubleClickFullScreen:
+                _globalEnableDoubleClickFullScreen.value,
             draggable: _globalEnableDraggable.value,
             child: child,
           )),
