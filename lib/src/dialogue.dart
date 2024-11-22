@@ -6,28 +6,36 @@ enum MyDialogChosen { left, right, canceled }
 
 class MyDialog {
   static Future<MyDialogChosen> show({
-    required String content,
+    required Widget content,
     VoidCallback? onLeftButtonPressed,
     VoidCallback? onRightButtonPressed,
     String title = '提示',
-    String leftButtonText = '好的',
-    String rightButtonText = '取消',
-    Color backgroundColor = const Color(0xFF2C2C2C),
-    Color titleColor = Colors.white,
-    Color contentColor = Colors.white70,
-    Color leftButtonColor = Colors.blueAccent,
-    Color rightButtonColor = Colors.redAccent,
-    double borderRadius = 12,
-    double elevation = 8,
-    double barrierOpacity = 0.5,
+    String leftButtonText = '取消',
+    String rightButtonText = '确定',
+    Color? backgroundColor,
+    Color? titleColor,
+    Color? leftButtonColor = Colors.black54,
+    Color? rightButtonColor = Colors.blue,
+    double? borderRadius,
+    double? elevation,
+    double? barrierOpacity,
   }) async {
     return _showDialog(
       dialog: AlertDialog(
         backgroundColor: backgroundColor,
-        title: Text(title, style: TextStyle(color: titleColor)),
-        content: Text(content, style: TextStyle(color: contentColor)),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(borderRadius)),
+        title: Text(
+          title,
+          style: TextStyle(
+            color: titleColor,
+            fontSize: 20.0,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        content: content,
+        shape: borderRadius != null
+            ? RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(borderRadius))
+            : null,
         elevation: elevation,
         actions: _buildActions(
           leftButtonText: leftButtonText,
@@ -44,25 +52,27 @@ class MyDialog {
   }
 
   static Future<MyDialogChosen> showIos({
-    required String content,
+    required Widget content,
     VoidCallback? onLeftButtonPressed,
     VoidCallback? onRightButtonPressed,
     String title = '提示',
-    String leftButtonText = '好的',
-    String rightButtonText = '取消',
-    Color backgroundColor = Colors.white,
-    Color titleColor = CupertinoColors.black,
-    Color contentColor = CupertinoColors.black,
-    Color leftButtonColor = CupertinoColors.systemBlue,
-    Color rightButtonColor = CupertinoColors.systemRed,
-    double borderRadius = 12,
-    double elevation = 8,
-    double barrierOpacity = 0.5,
+    String leftButtonText = '取消',
+    String rightButtonText = '确定',
+    Color? backgroundColor,
+    Color? titleColor,
+    Color? leftButtonColor = CupertinoColors.systemGrey,
+    Color? rightButtonColor = CupertinoColors.systemBlue,
+    double? borderRadius,
+    double? elevation,
+    double? barrierOpacity,
   }) async {
     return _showDialog(
       dialog: CupertinoAlertDialog(
-        title: Text(title, style: TextStyle(color: titleColor)),
-        content: Text(content, style: TextStyle(color: contentColor)),
+        title: Text(
+          title,
+          style: TextStyle(color: titleColor),
+        ),
+        content: content,
         actions: _buildActions(
           leftButtonText: leftButtonText,
           rightButtonText: rightButtonText,
@@ -79,12 +89,14 @@ class MyDialog {
 
   static Future<MyDialogChosen> _showDialog({
     required Widget dialog,
-    required double barrierOpacity,
+    double? barrierOpacity,
   }) async {
     final result = await Get.dialog<MyDialogChosen>(
       dialog,
       barrierDismissible: true,
-      barrierColor: Colors.black.withOpacity(barrierOpacity),
+      barrierColor: barrierOpacity != null
+          ? Colors.black.withOpacity(barrierOpacity)
+          : null,
     );
     return result ?? MyDialogChosen.canceled;
   }
@@ -92,8 +104,8 @@ class MyDialog {
   static List<Widget> _buildActions({
     required String leftButtonText,
     required String rightButtonText,
-    required Color leftButtonColor,
-    required Color rightButtonColor,
+    required Color? leftButtonColor,
+    required Color? rightButtonColor,
     required VoidCallback? onLeftButtonPressed,
     required VoidCallback? onRightButtonPressed,
     required bool isMaterial,
@@ -117,19 +129,26 @@ class MyDialog {
         TextButton(
           onPressed: onLeftPressed,
           style: ButtonStyle(
-            overlayColor:
-                WidgetStateProperty.all(leftButtonColor.withOpacity(0.1)),
+            overlayColor: leftButtonColor != null
+                ? MaterialStateProperty.all(leftButtonColor.withOpacity(0.1))
+                : null,
           ),
-          child: Text(leftButtonText, style: TextStyle(color: leftButtonColor)),
+          child: Text(
+            leftButtonText,
+            style: TextStyle(color: leftButtonColor),
+          ),
         ),
         TextButton(
           onPressed: onRightPressed,
           style: ButtonStyle(
-            overlayColor:
-                WidgetStateProperty.all(rightButtonColor.withOpacity(0.1)),
+            overlayColor: rightButtonColor != null
+                ? MaterialStateProperty.all(rightButtonColor.withOpacity(0.1))
+                : null,
           ),
-          child:
-              Text(rightButtonText, style: TextStyle(color: rightButtonColor)),
+          child: Text(
+            rightButtonText,
+            style: TextStyle(color: rightButtonColor),
+          ),
         ),
       ];
     }
@@ -137,11 +156,17 @@ class MyDialog {
     return [
       CupertinoDialogAction(
         onPressed: onLeftPressed,
-        child: Text(leftButtonText, style: TextStyle(color: leftButtonColor)),
+        child: Text(
+          leftButtonText,
+          style: TextStyle(color: leftButtonColor),
+        ),
       ),
       CupertinoDialogAction(
         onPressed: onRightPressed,
-        child: Text(rightButtonText, style: TextStyle(color: rightButtonColor)),
+        child: Text(
+          rightButtonText,
+          style: TextStyle(color: rightButtonColor),
+        ),
       ),
     ];
   }

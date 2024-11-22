@@ -116,15 +116,15 @@ class Page1View extends GetView<Page1Controller> {
   void _showDialog(bool isIos) {
     final showMethod = isIos ? MyDialog.showIos : MyDialog.show;
     showMethod(
-      content: '这是一个${isIos ? 'iOS 风格的' : ''}测试对话框',
+      content: Text('这是一个${isIos ? 'iOS 风格的' : ''}测试对话框'),
     ).then((result) {
       // 通过返回值处理结果
       switch (result) {
         case MyDialogChosen.left:
-          toast('选择了${isIos ? '是' : '确定'}');
+          toast('选择了${isIos ? '否' : '取消'}');
           break;
         case MyDialogChosen.right:
-          toast('选择了${isIos ? '否' : '取消'}');
+          toast('选择了${isIos ? '是' : '确定'}');
           break;
         case MyDialogChosen.canceled:
           toast('对话框被关闭');
@@ -358,7 +358,7 @@ class Page1Controller extends GetxController {
 
   void confirmExitApp() async {
     final result = await MyDialog.show(
-      content: '确定要退出应用吗？',
+      content: const Text('确定要退出应用吗？'),
       leftButtonText: '取消',
       rightButtonText: '确定',
     );
@@ -384,7 +384,7 @@ class Page1Controller extends GetxController {
 
   void showExitConfirmation(BuildContext context) async {
     final result = await MyDialog.showIos(
-      content: '是否退出程序？',
+      content: const Text('是否退出程序？'),
     );
 
     if (result == MyDialogChosen.left) {
