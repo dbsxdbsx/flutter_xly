@@ -12,36 +12,26 @@ class Page1View extends GetView<Page1Controller> {
       children: [
         Scaffold(
           appBar: AppBar(title: const Text('第1页')),
-          body: Column(
-            children: [
-              Expanded(
-                child: Padding(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.w),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildSectionTitle('按钮测试'),
-                      SizedBox(height: 16.w),
-                      _buildButtonSection(),
-                      SizedBox(height: 24.w),
-                      _buildSectionTitle('菜单按钮测试'),
-                      SizedBox(height: 16.w),
-                      _buildMenuButtonSection(),
-                      SizedBox(height: 24.w),
-                      _buildSectionTitle('窗口控制测试'),
-                      SizedBox(height: 16.w),
-                      _buildWindowControlSection(),
-                      SizedBox(height: 24.w),
-                    ],
-                  ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.all(20.w),
-                child: _buildNavigationSection(),
-              ),
-            ],
+          body: Padding(
+            padding: EdgeInsets.all(16.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildSectionTitle('按钮测试'),
+                SizedBox(height: 16.h),
+                _buildButtonSection(),
+                SizedBox(height: 24.h),
+                _buildSectionTitle('菜单按钮测试'),
+                SizedBox(height: 16.h),
+                _buildMenuButtonSection(),
+                SizedBox(height: 24.h),
+                _buildSectionTitle('窗口控制测试'),
+                SizedBox(height: 16.h),
+                _buildWindowControlSection(),
+                const Spacer(),
+                _buildNavigationSection(),
+              ],
+            ),
           ),
         ).showRightMenu(
           context: context,
@@ -97,9 +87,8 @@ class Page1View extends GetView<Page1Controller> {
   }
 
   Widget _buildButtonSection() {
-    return Wrap(
-      spacing: 12.w,
-      runSpacing: 12.w,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         MyButton(
           text: '打开默认（安卓）风格对话框',
@@ -138,9 +127,8 @@ class Page1View extends GetView<Page1Controller> {
   }
 
   Widget _buildMenuButtonSection() {
-    return Wrap(
-      spacing: 12.w,
-      runSpacing: 12.w,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         Obx(() => MyMenuButton(
               iconSize: 30.w,
@@ -163,18 +151,21 @@ class Page1View extends GetView<Page1Controller> {
   }
 
   Widget _buildNavigationSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.min,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        MyButton(
-          text: '前往第2页',
-          onPressed: controller.goToPage2,
+        Expanded(
+          child: MyButton(
+            text: '前往第2页',
+            onPressed: controller.goToPage2,
+          ),
         ),
-        SizedBox(height: 12.w),
-        MyButton(
-          text: '退出应用',
-          onPressed: controller.confirmExitApp,
+        SizedBox(width: 16.w),
+        Expanded(
+          child: MyButton(
+            text: '退出应用',
+            onPressed: controller.confirmExitApp,
+          ),
         ),
       ],
     );
@@ -341,22 +332,29 @@ class Page1View extends GetView<Page1Controller> {
   }
 
   Widget _buildWindowControlSection() {
-    return Wrap(
-      spacing: 12.w,
-      runSpacing: 12.w,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        Obx(() => MyButton(
-              text: '允许拖动窗口: ${MyApp.isDraggableEnabled() ? "已开启" : "已关闭"}',
-              onPressed: controller.toggleDraggable,
-            )),
-        Obx(() => MyButton(
-              text: '允许手动调整窗口尺寸: ${MyApp.isResizableEnabled() ? "已开启" : "已关闭"}',
-              onPressed: controller.toggleWindowControls,
-            )),
-        Obx(() => MyButton(
-              text: '允许双击最大化: ${MyApp.isDoubleClickFullScreenEnabled() ? "已开启" : "已关闭"}',
-              onPressed: controller.toggleDoubleClickFullScreen,
-            )),
+        Expanded(
+          child: Obx(() => MyButton(
+                text: '允许拖动窗口: ${MyApp.isDraggableEnabled() ? "已开启" : "已关闭"}',
+                onPressed: controller.toggleDraggable,
+              )),
+        ),
+        SizedBox(width: 16.w),
+        Expanded(
+          child: Obx(() => MyButton(
+                text: '允许手动调整窗口尺寸: ${MyApp.isResizableEnabled() ? "已开启" : "已关闭"}',
+                onPressed: controller.toggleWindowControls,
+              )),
+        ),
+        SizedBox(width: 16.w),
+        Expanded(
+          child: Obx(() => MyButton(
+                text: '允许双击最大化: ${MyApp.isDoubleClickFullScreenEnabled() ? "已开启" : "已关闭"}',
+                onPressed: controller.toggleDoubleClickFullScreen,
+              )),
+        ),
       ],
     );
   }
