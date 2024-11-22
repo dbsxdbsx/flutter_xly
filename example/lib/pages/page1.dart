@@ -29,6 +29,10 @@ class Page1View extends GetView<Page1Controller> {
                       SizedBox(height: 16.w),
                       _buildMenuButtonSection(),
                       SizedBox(height: 24.w),
+                      _buildSectionTitle('窗口控制测试'),
+                      SizedBox(height: 16.w),
+                      _buildWindowControlSection(),
+                      SizedBox(height: 24.w),
                     ],
                   ),
                 ),
@@ -335,10 +339,25 @@ class Page1View extends GetView<Page1Controller> {
       ),
     ];
   }
+
+  Widget _buildWindowControlSection() {
+    return Wrap(
+      spacing: 12.w,
+      runSpacing: 12.w,
+      children: [
+        Obx(() => MyButton(
+              text:
+                  '窗口控制功能: ${controller.isWindowControlEnabled.value ? "开启" : "关闭"}',
+              onPressed: controller.toggleWindowControls,
+            )),
+      ],
+    );
+  }
 }
 
 class Page1Controller extends GetxController {
   final isMenuButtonActivated = false.obs;
+  final isWindowControlEnabled = true.obs;
 
   void toggleMenuButtonState() {
     isMenuButtonActivated.value = !isMenuButtonActivated.value;
@@ -390,5 +409,17 @@ class Page1Controller extends GetxController {
     if (result == MyDialogChosen.left) {
       await MyApp.exit();
     }
+  }
+
+  void toggleWindowControls() async {
+    isWindowControlEnabled.toggle();
+    final enabled = isWindowControlEnabled.value;
+
+    // 同时设置三个窗口控制参数
+    await windowManager.setMinimizable(enabled);
+    await windowManager.setMaximizable(enabled);
+    await windowManager.setResizable(enabled);
+
+    toast('窗口控制${enabled ? "已启用" : "已禁用"}');
   }
 }
