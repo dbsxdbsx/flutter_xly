@@ -19,7 +19,7 @@ class MyToast {
   /// [stackToasts] 是否堆叠显示多条Toast
   /// [animationDuration] 动画持续时间
   /// [animationCurve] 动画曲线
-  static void show(
+  static Widget show(
     String message, {
     bool? forever,
     Duration? duration,
@@ -63,14 +63,16 @@ class MyToast {
       animationDuration: animationDuration,
       animationCurve: animationCurve,
     );
+    return const SizedBox.shrink();
   }
 
   /// 隐藏所有显示的 Toast
   /// [milliseconds] 延迟隐藏的毫秒数
-  static void hideAll([int milliseconds = 0]) {
+  static Widget hideAll([int milliseconds = 0]) {
     Future.delayed(Duration(milliseconds: milliseconds), () {
       dismissAllToast(showAnim: false);
     });
+    return const SizedBox.shrink();
   }
 
   /// 在屏幕顶部显示一个警告消息
@@ -78,7 +80,7 @@ class MyToast {
   /// [message] 警告消息内容
   /// [title] 提示标题，默认为"警告"
   /// [duration] 显示持续时间，默认2秒
-  static void showUpWarn(
+  static Widget showUpWarn(
     String message, {
     String title = '警告',
     Duration? duration,
@@ -102,6 +104,7 @@ class MyToast {
       forwardAnimationCurve: Curves.easeOutCubic,
       reverseAnimationCurve: Curves.easeInCubic,
     );
+    return const SizedBox.shrink();
   }
 
   /// 在屏幕顶部显示一个错误消息
@@ -109,7 +112,7 @@ class MyToast {
   /// [message] 错误消息内容
   /// [title] 提示标题，默认为"错误"
   /// [duration] 显示持续时间，默认2秒
-  static void showUpError(
+  static Widget showUpError(
     String message, {
     String title = '错误',
     Duration? duration,
@@ -133,6 +136,7 @@ class MyToast {
       forwardAnimationCurve: Curves.easeOutCubic,
       reverseAnimationCurve: Curves.easeInCubic,
     );
+    return const SizedBox.shrink();
   }
 
   /// 在屏幕顶部显示一个信息提示
@@ -140,7 +144,7 @@ class MyToast {
   /// [message] 提示消息内容
   /// [title] 提示标题，默认为"提示"
   /// [duration] 显示持续时间，默认2秒
-  static void showUpInfo(
+  static Widget showUpInfo(
     String message, {
     String title = '提示',
     Duration? duration,
@@ -164,6 +168,7 @@ class MyToast {
       forwardAnimationCurve: Curves.easeOutCubic,
       reverseAnimationCurve: Curves.easeInCubic,
     );
+    return const SizedBox.shrink();
   }
 
   /// 在屏幕底部显示一个黑色样式的提示消息
@@ -173,7 +178,7 @@ class MyToast {
   /// [backgroundColor] 自定义背景颜色，默认为黑色半透明
   /// [textColor] 自定义文字颜色，默认为白色
   /// [opacity] 背景透明度，取值范围0.0-1.0，默认0.9
-  static void showBottom(
+  static Widget showBottom(
     String message, {
     Duration? duration,
     Color? backgroundColor,
@@ -209,6 +214,7 @@ class MyToast {
         dismissDirection: DismissDirection.horizontal,
       ),
     );
+    return const SizedBox.shrink();
   }
 
   /// 显示一个加载动画指示器
@@ -222,7 +228,7 @@ class MyToast {
   /// [textStyle] 文本样式
   /// [spacing] 文本和加载动画之间的间距
   /// [duration] 显示持续时间，默认为null表示一直显示直到手动关闭
-  static void showSpinner({
+  static Widget showSpinner({
     String? message,
     ToastPosition position = ToastPosition.center,
     SpinnerMessagePosition messagePosition = SpinnerMessagePosition.bottom,
@@ -286,6 +292,7 @@ class MyToast {
         hideAll();
       });
     }
+    return const SizedBox.shrink();
   }
 }
 
