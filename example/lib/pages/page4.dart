@@ -62,7 +62,8 @@ class Page4View extends GetView<Page4Controller> {
                             true,
                           ),
                           onSwipeDelete: (index) {
-                            toast('即将删除：${controller.draggableCards[index]}');
+                            MyToast.show(
+                                '即将删除：${controller.draggableCards[index]}');
                             controller.deleteDraggableCard(index);
                           },
                           onLoadMore: () =>
@@ -126,7 +127,8 @@ class Page4View extends GetView<Page4Controller> {
                           cardPadding: EdgeInsets.only(right: 15.w),
                           footer: _buildFooter(controller.staticListState),
                           onSwipeDelete: (index) {
-                            toast('即将删除：${controller.staticCards[index]}');
+                            MyToast.show(
+                                '即将删除：${controller.staticCards[index]}');
                             controller.deleteStaticCard(index);
                           },
                           onCardPressed: (index) => _onCardPressed(
@@ -153,14 +155,14 @@ class Page4View extends GetView<Page4Controller> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     MyButton(
-                      onPressed: () =>
-                          toast('可拖动列表项数量：${controller.draggableCards.length}'),
+                      onPressed: () => MyToast.show(
+                          '可拖动列表项数量：${controller.draggableCards.length}'),
                       text: '可拖动列表数量',
                       size: 80.w,
                     ),
                     MyButton(
-                      onPressed: () =>
-                          toast('静态列表项数量：${controller.staticCards.length}'),
+                      onPressed: () => MyToast.show(
+                          '静态列表项数量：${controller.staticCards.length}'),
                       text: '静态列表数量',
                       size: 80.w,
                     ),
@@ -192,7 +194,7 @@ class Page4View extends GetView<Page4Controller> {
 
   void _onCardPressed(String cardText, bool isDraggableCard) {
     String cardType = isDraggableCard ? "可拖动" : "静态";
-    toast('点击了$cardType卡片：$cardText');
+    MyToast.show('点击了$cardType卡片：$cardText');
   }
 
   Widget _buildFooter(Rx<ListState> listState) {
@@ -208,19 +210,19 @@ class Page4View extends GetView<Page4Controller> {
   }
 
   void _onEditCard(int index) {
-    toast('编辑卡片：${controller.draggableCards[index]}');
+    MyToast.show('编辑卡片：${controller.draggableCards[index]}');
   }
 
   void _onStarCard(int index) {
-    toast('收藏卡片：${controller.draggableCards[index]}');
+    MyToast.show('收藏卡片：${controller.draggableCards[index]}');
   }
 
   void _onDownloadCard(int index) {
-    toast('开始下载：${controller.staticCards[index]}');
+    MyToast.show('开始下载：${controller.staticCards[index]}');
   }
 
   void _onCopyCard(int index) {
-    toast('复制链接：${controller.staticCards[index]}');
+    MyToast.show('复制链接：${controller.staticCards[index]}');
   }
 }
 
@@ -296,7 +298,7 @@ class Page4Controller extends GetxController {
   void deleteStaticCard(int index) {
     if (index >= 0 && index < staticCards.length) {
       final deletedCard = staticCards.removeAt(index);
-      toast('删除了静态卡片：$deletedCard');
+      MyToast.show('删除了静态卡片：$deletedCard');
 
       // 只为静态卡片列表加载更多卡片
       if (staticCards.length < 5 && staticListState.value.hasMoreData) {
@@ -308,7 +310,7 @@ class Page4Controller extends GetxController {
   void deleteDraggableCard(int index) {
     if (index >= 0 && index < draggableCards.length) {
       final deletedCard = draggableCards.removeAt(index);
-      toast('删除了可拖动卡片：$deletedCard');
+      MyToast.show('删除了可拖动卡片：$deletedCard');
 
       // 只可拖动卡片列表加载更多卡片
       if (draggableCards.length < 5 && draggableListState.value.hasMoreData) {

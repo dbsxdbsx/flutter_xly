@@ -154,7 +154,7 @@ class MyApp extends StatelessWidget {
     bool ensureScreenSize = true,
     bool initializeWidgetsBinding = true,
     bool initializeWindowManager = true,
-}) async {
+  }) async {
     if (ensureScreenSize) {
       await ScreenUtil.ensureScreenSize();
     }
@@ -362,9 +362,9 @@ class MyApp extends StatelessWidget {
         lastPressedTime = now;
         lastRoute = currentRoute;
         if (currentRoute == routes.first.path) {
-          toast(exitInfoText, duration: exitGapTime);
+          MyToast.show(exitInfoText, duration: exitGapTime);
         } else {
-          toast(backInfoText, duration: exitGapTime);
+          MyToast.show(backInfoText, duration: exitGapTime);
         }
       } else {
         if (currentRoute == routes.first.path) {

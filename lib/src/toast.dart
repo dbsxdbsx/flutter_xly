@@ -1,54 +1,213 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:oktoast/oktoast.dart';
 
-void toast(
-  String message, {
-  bool? forever,
-  Duration? duration,
-  TextStyle? textStyle,
-  Color? backgroundColor,
-  double? radius,
-  EdgeInsetsGeometry? textPadding,
-  ToastPosition? position,
-  bool stackToasts = false,
-  Duration animationDuration = const Duration(milliseconds: 500),
-  Curve animationCurve = Curves.easeOutCubic,
-}) {
-  showToast(
-    message,
-    dismissOtherToast: !stackToasts,
-    duration: forever == true
-        ? const Duration(days: 365)
-        : duration ?? const Duration(seconds: 3),
-    textStyle: textStyle ?? TextStyle(fontSize: 25.sp, color: Colors.white),
-    backgroundColor: backgroundColor ?? Colors.black87.withOpacity(0.7),
-    radius: radius ?? 20.0,
-    textPadding:
-        textPadding ?? EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.w),
-    position: position ?? ToastPosition.center,
-    animationBuilder: (context, child, controller, direction) {
-      return ScaleTransition(
-        scale: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-          parent: controller,
-          curve: animationCurve,
-        )),
-        child: FadeTransition(
-          opacity: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
+/// MyToast 提供了一个统一的 Toast 显示组件
+/// 支持自定义样式、动画和显示位置
+class MyToast {
+  /// 显示一条 Toast 消息
+  ///
+  /// [message] Toast显示的文本内容
+  /// [forever] 是否永久显示
+  /// [duration] 显示持续时间
+  /// [textStyle] 文本样式
+  /// [backgroundColor] 背景颜色
+  /// [radius] 圆角半径
+  /// [textPadding] 文本内边距
+  /// [position] 显示位置
+  /// [stackToasts] 是否堆叠显示多条Toast
+  /// [animationDuration] 动画持续时间
+  /// [animationCurve] 动画曲线
+  static void show(
+    String message, {
+    bool? forever,
+    Duration? duration,
+    TextStyle? textStyle,
+    Color? backgroundColor,
+    double? radius,
+    EdgeInsetsGeometry? textPadding,
+    ToastPosition? position,
+    bool stackToasts = false,
+    Duration animationDuration = const Duration(milliseconds: 500),
+    Curve animationCurve = Curves.easeOutCubic,
+  }) {
+    showToast(
+      message,
+      dismissOtherToast: !stackToasts,
+      duration: forever == true
+          ? const Duration(days: 365)
+          : duration ?? const Duration(seconds: 3),
+      textStyle: textStyle ?? TextStyle(fontSize: 25.sp, color: Colors.white),
+      backgroundColor: backgroundColor ?? Colors.black87.withOpacity(0.7),
+      radius: radius ?? 20.0,
+      textPadding:
+          textPadding ?? EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.w),
+      position: position ?? ToastPosition.center,
+      animationBuilder: (context, child, controller, direction) {
+        return ScaleTransition(
+          scale: Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
             parent: controller,
             curve: animationCurve,
           )),
-          child: child,
-        ),
-      );
-    },
-    animationDuration: animationDuration,
-    animationCurve: animationCurve,
-  );
-}
+          child: FadeTransition(
+            opacity:
+                Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
+              parent: controller,
+              curve: animationCurve,
+            )),
+            child: child,
+          ),
+        );
+      },
+      animationDuration: animationDuration,
+      animationCurve: animationCurve,
+    );
+  }
 
-void hideAllToasts([int milliseconds = 0]) {
-  Future.delayed(Duration(milliseconds: milliseconds), () {
-    dismissAllToast(showAnim: false);
-  });
+  /// 隐藏所有显示的 Toast
+  /// [milliseconds] 延迟隐藏的毫秒数
+  static void hideAll([int milliseconds = 0]) {
+    Future.delayed(Duration(milliseconds: milliseconds), () {
+      dismissAllToast(showAnim: false);
+    });
+  }
+
+  /// 在屏幕顶部显示一个警告消息
+  ///
+  /// [message] 警告消息内容
+  /// [title] 提示标题，默认为"警告"
+  /// [duration] 显示持续时间，默认2秒
+  static void showUpWarn(
+    String message, {
+    String title = '警告',
+    Duration? duration,
+  }) {
+    Get.snackbar(
+      title,
+      message,
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: Colors.amber[50],
+      colorText: Colors.amber[900],
+      duration: duration ?? const Duration(seconds: 2),
+      margin: EdgeInsets.all(10.w),
+      borderRadius: 8.w,
+      padding: EdgeInsets.symmetric(
+        horizontal: 15.w,
+        vertical: 10.w,
+      ),
+      snackStyle: SnackStyle.FLOATING,
+      isDismissible: true,
+      dismissDirection: DismissDirection.horizontal,
+      forwardAnimationCurve: Curves.easeOutCubic,
+      reverseAnimationCurve: Curves.easeInCubic,
+    );
+  }
+
+  /// 在屏幕顶部显示一个错误消息
+  ///
+  /// [message] 错误消息内容
+  /// [title] 提示标题，默认为"错误"
+  /// [duration] 显示持续时间，默认2秒
+  static void showUpError(
+    String message, {
+    String title = '错误',
+    Duration? duration,
+  }) {
+    Get.snackbar(
+      title,
+      message,
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: const Color(0xFFFFEBEE),
+      colorText: const Color(0xFFB71C1C),
+      duration: duration ?? const Duration(seconds: 2),
+      margin: EdgeInsets.all(10.w),
+      borderRadius: 8.w,
+      padding: EdgeInsets.symmetric(
+        horizontal: 15.w,
+        vertical: 10.w,
+      ),
+      snackStyle: SnackStyle.FLOATING,
+      isDismissible: true,
+      dismissDirection: DismissDirection.horizontal,
+      forwardAnimationCurve: Curves.easeOutCubic,
+      reverseAnimationCurve: Curves.easeInCubic,
+    );
+  }
+
+  /// 在屏幕顶部显示一个信息提示
+  ///
+  /// [message] 提示消息内容
+  /// [title] 提示标题，默认为"提示"
+  /// [duration] 显示持续时间，默认2秒
+  static void showUpInfo(
+    String message, {
+    String title = '提示',
+    Duration? duration,
+  }) {
+    Get.snackbar(
+      title,
+      message,
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: Colors.lightBlue[50],
+      colorText: Colors.lightBlue[900],
+      duration: duration ?? const Duration(seconds: 2),
+      margin: EdgeInsets.all(10.w),
+      borderRadius: 8.w,
+      padding: EdgeInsets.symmetric(
+        horizontal: 15.w,
+        vertical: 10.w,
+      ),
+      snackStyle: SnackStyle.FLOATING,
+      isDismissible: true,
+      dismissDirection: DismissDirection.horizontal,
+      forwardAnimationCurve: Curves.easeOutCubic,
+      reverseAnimationCurve: Curves.easeInCubic,
+    );
+  }
+
+  /// 在屏幕底部显示一个黑色样式的提示消息
+  ///
+  /// [message] 提示消息内容
+  /// [duration] 显示持续时间，默认2秒
+  /// [backgroundColor] 自定义背景颜色，默认为黑色半透明
+  /// [textColor] 自定义文字颜色，默认为白色
+  /// [opacity] 背景透明度，取值范围0.0-1.0，默认0.9
+  static void showBottom(
+    String message, {
+    Duration? duration,
+    Color? backgroundColor,
+    Color? textColor,
+    double opacity = 0.7,
+  }) {
+    assert(opacity >= 0.0 && opacity <= 1.0,
+        'opacity must be between 0.0 and 1.0');
+
+    final baseColor = backgroundColor ?? const Color(0xFF222222);
+    final finalColor = baseColor.withOpacity(opacity);
+
+    Get.showSnackbar(
+      GetSnackBar(
+        message: message,
+        duration: duration ?? const Duration(seconds: 2),
+        backgroundColor: finalColor,
+        messageText: Text(
+          message,
+          style: TextStyle(
+            color: textColor ?? Colors.white,
+            fontSize: 16.sp,
+          ),
+        ),
+        margin: EdgeInsets.zero,
+        borderRadius: 0,
+        padding: EdgeInsets.symmetric(
+          horizontal: 15.w,
+          vertical: 12.w,
+        ),
+        snackStyle: SnackStyle.GROUNDED,
+        isDismissible: true,
+        dismissDirection: DismissDirection.horizontal,
+      ),
+    );
+  }
 }

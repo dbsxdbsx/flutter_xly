@@ -28,6 +28,8 @@ class Page1View extends GetView<Page1Controller> {
                 _buildSectionTitle('窗口控制测试'),
                 SizedBox(height: 16.h),
                 _buildWindowControlSection(),
+                SizedBox(height: 24.h),
+                _buildToastTestSection(),
                 const Spacer(),
                 _buildNavigationSection(),
               ],
@@ -98,10 +100,6 @@ class Page1View extends GetView<Page1Controller> {
           text: '打开iOS风格对话框',
           onPressed: () => _showDialog(true),
         ),
-        MyButton(
-          text: '连续显示多条Toast',
-          onPressed: controller.showToast,
-        ),
       ],
     );
   }
@@ -111,16 +109,15 @@ class Page1View extends GetView<Page1Controller> {
     showMethod(
       content: Text('这是一个${isIos ? 'iOS 风格的' : ''}测试对话框'),
     ).then((result) {
-      // 通过返回值处理结果
       switch (result) {
         case MyDialogChosen.left:
-          toast('选择了${isIos ? '否' : '取消'}');
+          MyToast.show('选择了${isIos ? '否' : '取消'}');
           break;
         case MyDialogChosen.right:
-          toast('选择了${isIos ? '是' : '确定'}');
+          MyToast.show('选择了${isIos ? '是' : '确定'}');
           break;
         case MyDialogChosen.canceled:
-          toast('对话框被关闭');
+          MyToast.show('对话框被关闭');
           break;
       }
     });
@@ -177,13 +174,13 @@ class Page1View extends GetView<Page1Controller> {
         icon: Icons.engineering,
         text: '加载内置引擎',
         onTap: () {
-          toast('选择了加载内置引擎');
+          MyToast.show('选择了加载内置引擎');
           controller.toggleMenuButtonState();
         },
       ),
       MyMenuItem(
         text: '加载自定义引擎',
-        onTap: () => toast('加载自定义引擎功能暂未开放'),
+        onTap: () => MyToast.show('加载自定义引擎功能暂未开放'),
       ),
       MyMenuItem(
         icon: Icons.settings,
@@ -198,12 +195,12 @@ class Page1View extends GetView<Page1Controller> {
       MyMenuItem(
         icon: Icons.speed,
         text: '性能设置',
-        onTap: () => toast('打开性能设置'),
+        onTap: () => MyToast.show('打开性能设置'),
       ),
       MyMenuItem(
         icon: Icons.security,
         text: '安全选项',
-        onTap: () => toast('开安全选项'),
+        onTap: () => MyToast.show('开安全选项'),
       ),
       MyMenuItem(
         icon: Icons.build,
@@ -218,12 +215,12 @@ class Page1View extends GetView<Page1Controller> {
       MyMenuItem(
         icon: Icons.bug_report,
         text: '调试模式',
-        onTap: () => toast('开启调试模式'),
+        onTap: () => MyToast.show('开启调试模式'),
       ),
       MyMenuItem(
         icon: Icons.code,
         text: '控制台',
-        onTap: () => toast('打开控制台'),
+        onTap: () => MyToast.show('打开控制台'),
       ),
     ];
   }
@@ -233,12 +230,12 @@ class Page1View extends GetView<Page1Controller> {
       MyMenuItem(
         text: '选项A',
         icon: Icons.star,
-        onTap: () => toast('选择了选项A'),
+        onTap: () => MyToast.show('选择了选项A'),
       ),
       MyMenuItem(
         text: '选项B',
         icon: Icons.favorite,
-        onTap: () => toast('选择了选项B'),
+        onTap: () => MyToast.show('选择了选项B'),
       ),
     ];
   }
@@ -247,13 +244,13 @@ class Page1View extends GetView<Page1Controller> {
     return [
       MyMenuItem(
         text: '选项1',
-        onTap: () => toast('选择了选项1'),
+        onTap: () => MyToast.show('选择了选项1'),
       ),
       MyMenuDivider(),
       MyMenuItem(
         icon: Icons.looks_two,
         text: '选项2！',
-        onTap: () => toast('选择了选项2'),
+        onTap: () => MyToast.show('选择了选项2'),
       ),
       MyMenuDivider(),
       MyMenuItem(
@@ -290,12 +287,12 @@ class Page1View extends GetView<Page1Controller> {
       MyMenuItem(
         icon: Icons.info_outline,
         text: '版本信息',
-        onTap: () => toast('显示版本信息'),
+        onTap: () => MyToast.show('显示版本信息'),
       ),
       MyMenuItem(
         icon: Icons.contact_support,
         text: '联系我们',
-        onTap: () => toast('显示联系方式'),
+        onTap: () => MyToast.show('显示联系方式'),
       ),
     ];
   }
@@ -305,12 +302,12 @@ class Page1View extends GetView<Page1Controller> {
       MyMenuItem(
         icon: Icons.help_outline,
         text: '常见问题',
-        onTap: () => toast('显示常见问题'),
+        onTap: () => MyToast.show('显示常见问题'),
       ),
       MyMenuItem(
         icon: Icons.book,
         text: '用户手册',
-        onTap: () => toast('打开用户手册'),
+        onTap: () => MyToast.show('打开用户手册'),
       ),
     ];
   }
@@ -320,13 +317,13 @@ class Page1View extends GetView<Page1Controller> {
       MyMenuItem(
         icon: Icons.language,
         text: '语言设置',
-        onTap: () => toast('打开语言设置'),
+        onTap: () => MyToast.show('打开语言设置'),
       ),
       MyMenuDivider(),
       MyMenuItem(
         icon: Icons.color_lens,
         text: '主题设置',
-        onTap: () => toast('打开主题设置'),
+        onTap: () => MyToast.show('打开主题设置'),
       ),
     ];
   }
@@ -344,16 +341,77 @@ class Page1View extends GetView<Page1Controller> {
         SizedBox(width: 16.w),
         Expanded(
           child: Obx(() => MyButton(
-                text: '允许手动调整窗口尺寸: ${MyApp.isResizableEnabled() ? "已开启" : "已关闭"}',
+                text:
+                    '允许手动调整窗口尺寸: ${MyApp.isResizableEnabled() ? "已开启" : "已关闭"}',
                 onPressed: controller.toggleWindowControls,
               )),
         ),
         SizedBox(width: 16.w),
         Expanded(
           child: Obx(() => MyButton(
-                text: '允许双击最大化: ${MyApp.isDoubleClickFullScreenEnabled() ? "已开启" : "已关闭"}',
+                text:
+                    '允许双击最大化: ${MyApp.isDoubleClickFullScreenEnabled() ? "已开启" : "已关闭"}',
                 onPressed: controller.toggleDoubleClickFullScreen,
               )),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildToastTestSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _buildSectionTitle('Toast测试'),
+        SizedBox(height: 16.h),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Expanded(
+              child: MyButton(
+                text: '连续显示多条Toast',
+                onPressed: controller.showToast,
+              ),
+            ),
+            SizedBox(width: 16.w),
+            Expanded(
+              child: MyButton(
+                text: '显示顶部警告',
+                onPressed: () => controller.showUpWarnToast(),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 16.h),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Expanded(
+              child: MyButton(
+                text: '显示顶部错误',
+                onPressed: () => controller.showUpErrorToast(),
+              ),
+            ),
+            SizedBox(width: 16.w),
+            Expanded(
+              child: MyButton(
+                text: '显示顶部提示',
+                onPressed: () => controller.showUpInfoToast(),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 16.h),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Expanded(
+              child: MyButton(
+                text: '显示底部提示',
+                onPressed: () => controller.showBottomToast(),
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -363,7 +421,8 @@ class Page1View extends GetView<Page1Controller> {
 class Page1Controller extends GetxController {
   final isMenuButtonActivated = false.obs;
   final isWindowControlEnabled = MyApp.isResizableEnabled().obs;
-  final enableDoubleClickFullScreen = MyApp.isDoubleClickFullScreenEnabled().obs;
+  final enableDoubleClickFullScreen =
+      MyApp.isDoubleClickFullScreenEnabled().obs;
   final enableDraggable = MyApp.isDraggableEnabled().obs;
 
   void toggleMenuButtonState() {
@@ -375,11 +434,11 @@ class Page1Controller extends GetxController {
   }
 
   void showToast() async {
-    toast('这是一条测试Toast消息1');
+    MyToast.show('这是一条测试Toast消息1');
     await Future.delayed(const Duration(seconds: 1));
-    toast('这是一条测试Toast消息2');
+    MyToast.show('这是一条测试Toast消息2');
     await Future.delayed(const Duration(seconds: 1));
-    toast('这是一条测试Toast消息3', stackToasts: true);
+    MyToast.show('这是一条测试Toast消息3', stackToasts: true);
   }
 
   void confirmExitApp() async {
@@ -395,17 +454,17 @@ class Page1Controller extends GetxController {
   }
 
   void onToolButtonPressed(String message) {
-    toast(message);
+    MyToast.show(message);
   }
 
   void getSettingSheet(BuildContext context) {
     // 实现设置面板的逻辑
-    toast('打开设置面板');
+    MyToast.show('打开设置面板');
   }
 
   void minimizeWindow() {
     // 实现最小化窗口的逻辑
-    toast('窗口已最小化');
+    MyToast.show('窗口已最小化');
   }
 
   void showExitConfirmation(BuildContext context) async {
@@ -429,7 +488,7 @@ class Page1Controller extends GetxController {
     isWindowControlEnabled.value = newState;
 
     // 显示提示
-    toast('允许手动调整窗口尺寸${newState ? "已启用" : "已禁用"}');
+    MyToast.show('允许手动调整窗口尺寸${newState ? "已启用" : "已禁用"}');
   }
 
   void toggleDoubleClickFullScreen() async {
@@ -443,7 +502,7 @@ class Page1Controller extends GetxController {
     enableDoubleClickFullScreen.value = newState;
 
     // 显示提示
-    toast('允许双击最大化${newState ? "已启用" : "已禁用"}');
+    MyToast.show('允许双击最大化${newState ? "已启用" : "已禁用"}');
   }
 
   void toggleDraggable() async {
@@ -457,6 +516,25 @@ class Page1Controller extends GetxController {
     enableDraggable.value = newState;
 
     // 显示提示
-    toast('允许拖动窗口${newState ? "已启用" : "已禁用"}');
+    MyToast.show('允许拖动窗口${newState ? "已启用" : "已禁用"}');
+  }
+
+  void showUpWarnToast() {
+    MyToast.showUpWarn('这是一条警告消息示例');
+  }
+
+  void showUpErrorToast() {
+    MyToast.showUpError('这是一条错误消息示例');
+  }
+
+  void showUpInfoToast() {
+    MyToast.showUpInfo('这是一条信息提示示例');
+  }
+
+  void showBottomToast() {
+    MyToast.showBottom(
+      '这是一条底部提示消息',
+      opacity: 0.9,
+    );
   }
 }

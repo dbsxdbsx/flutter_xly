@@ -48,26 +48,26 @@ class Page2View extends GetView<Page2Controller> {
       children: [
         MyButton(
           text: '左图标',
-          onPressed: () => toast('左图标按钮被点击'),
+          onPressed: () => MyToast.show('左图标按钮被点击'),
           icon: Icons.arrow_back,
           iconPosition: MyIconPosition.left,
         ).setFocus(focusKey: 'left_icon_button'),
         MyButton(
           text: '右图标',
-          onPressed: () => toast('右图标按钮被点击'),
+          onPressed: () => MyToast.show('右图标按钮被点击'),
           icon: Icons.arrow_forward,
           iconPosition: MyIconPosition.right,
         ).setFocus(focusKey: 'right_icon_button'),
         MyButton(
           text: '上图标',
-          onPressed: () => toast('上图标按钮被点击'),
+          onPressed: () => MyToast.show('上图标按钮被点击'),
           icon: Icons.arrow_upward,
           iconPosition: MyIconPosition.top,
           size: 58,
         ).setFocus(focusKey: 'top_icon_button'),
         MyButton(
           text: '下图标',
-          onPressed: () => toast('下图标按钮被点击'),
+          onPressed: () => MyToast.show('下图标按钮被点击'),
           icon: Icons.arrow_downward,
           iconPosition: MyIconPosition.bottom,
           size: 58,
@@ -84,7 +84,7 @@ class Page2View extends GetView<Page2Controller> {
       children: [
         MyButton(
           text: '普通',
-          onPressed: () => toast('普通按钮被点击'),
+          onPressed: () => MyToast.show('普通按钮被点击'),
           icon: Icons.touch_app,
           shape: MyButtonShape.normal,
           backgroundColor: Colors.blue,
@@ -94,7 +94,7 @@ class Page2View extends GetView<Page2Controller> {
         ).setFocus(focusKey: 'normal_button'),
         MyButton(
           text: '立方体',
-          onPressed: () => toast('立方体按钮被点击'),
+          onPressed: () => MyToast.show('立方体按钮被点击'),
           icon: Icons.view_in_ar,
           shape: MyButtonShape.cube,
           size: 70,
@@ -108,7 +108,7 @@ class Page2View extends GetView<Page2Controller> {
         ).setFocus(focusKey: 'cube_button'),
         MyButton(
           text: '圆形',
-          onPressed: () => toast('圆形按钮被点击'),
+          onPressed: () => MyToast.show('圆形按钮被点击'),
           icon: Icons.radio_button_checked,
           shape: MyButtonShape.round,
           size: 70,
@@ -123,13 +123,13 @@ class Page2View extends GetView<Page2Controller> {
         ).setFocus(focusKey: 'round_button'),
         MyButton(
           text: '立方',
-          onPressed: () => toast('简单立方按钮被点击'),
+          onPressed: () => MyToast.show('简单立方按钮被点击'),
           icon: Icons.crop_square,
           shape: MyButtonShape.cube,
         ).setFocus(focusKey: 'simple_cube_button'),
         MyButton(
           text: '圆形',
-          onPressed: () => toast('简单圆形按钮被点击'),
+          onPressed: () => MyToast.show('简单圆形按钮被点击'),
           icon: Icons.circle_outlined,
           shape: MyButtonShape.round,
         ).setFocus(focusKey: 'simple_round_button'),
@@ -143,7 +143,7 @@ class Page2View extends GetView<Page2Controller> {
       children: [
         MyButton(
           text: '渐变背景',
-          onPressed: () => toast('渐变背景按钮被点击'),
+          onPressed: () => MyToast.show('渐变背景按钮被点击'),
           icon: Icons.gradient,
           shape: MyButtonShape.normal, // 确保使用普通形状
           gradient: const LinearGradient(
@@ -154,14 +154,14 @@ class Page2View extends GetView<Page2Controller> {
         ).setFocus(focusKey: 'gradient_button'),
         MyButton(
           text: '自定义轮廓',
-          onPressed: () => toast('自定义轮廓按钮被点击'),
+          onPressed: () => MyToast.show('自定义轮廓按钮被点击'),
           icon: Icons.brush,
           outlineColor: Colors.red,
           outlineWidth: 2,
         ).setFocus(focusKey: 'custom_outline_button'),
         MyButton(
           text: '圆角普通',
-          onPressed: () => toast('圆角普通按钮被点击'),
+          onPressed: () => MyToast.show('圆角普通按钮被点击'),
           icon: Icons.rounded_corner,
           shape: MyButtonShape.normal,
           cornerRadius: 1.0, // 最大圆角
@@ -170,7 +170,7 @@ class Page2View extends GetView<Page2Controller> {
         ).setFocus(focusKey: 'rounded_normal_button'),
         MyButton(
           text: '圆角立方',
-          onPressed: () => toast('圆角立方按钮被点击'),
+          onPressed: () => MyToast.show('圆角立方按钮被点击'),
           icon: Icons.view_in_ar,
           shape: MyButtonShape.cube,
           size: 70,
@@ -180,7 +180,7 @@ class Page2View extends GetView<Page2Controller> {
         ).setFocus(focusKey: 'rounded_cube_button'),
         MyButton(
           text: '锐角立方',
-          onPressed: () => toast('锐角立方按钮被点'),
+          onPressed: () => MyToast.show('锐角立方按钮被点'),
           icon: Icons.change_history,
           shape: MyButtonShape.cube,
           size: 70,
@@ -198,7 +198,7 @@ class Page2View extends GetView<Page2Controller> {
       style: TextStyle(fontSize: 18.sp),
     ).setFocus(
       focusKey: 'focusable_text',
-      onPressed: () => toast('文本被聚焦并点击'),
+      onPressed: () => MyToast.show('文本被聚焦并点击'),
       opacity: true,
       focusedBorderColor: Colors.green,
       borderWidth: 2,

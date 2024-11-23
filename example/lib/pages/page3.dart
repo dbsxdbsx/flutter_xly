@@ -82,8 +82,8 @@ class Page3Controller extends GetxController {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               _buildMenuItem(
-                  Icons.content_paste, '从剪贴板添加', () => toast('从剪贴板添加')),
-              _buildMenuItem(Icons.edit, '手动输入', () => toast('手动输入')),
+                  Icons.content_paste, '从剪贴板添加', () => MyToast.show('从剪贴板添加')),
+              _buildMenuItem(Icons.edit, '手动输入', () => MyToast.show('手动输入')),
             ],
           ),
           SizedBox(height: 30.h),
@@ -97,7 +97,7 @@ class Page3Controller extends GetxController {
           SizedBox(height: 10.h),
           MyButton(
             text: '添加 WARP',
-            onPressed: () => toast('添加 WARP'),
+            onPressed: () => MyToast.show('添加 WARP'),
             icon: Icons.add,
             width: double.infinity,
             padding: EdgeInsets.symmetric(horizontal: 20.w),
