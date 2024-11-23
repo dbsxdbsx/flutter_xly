@@ -239,59 +239,58 @@ class MyToast {
     double? spacing,
     Duration? duration,
   }) {
-    final content = Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (messagePosition == SpinnerMessagePosition.top &&
-            message != null) ...[
-          Text(
-            message,
-            style: textStyle ?? TextStyle(fontSize: 14.sp, color: Colors.white),
-          ),
-          SizedBox(height: spacing ?? 8.w),
-        ],
-        SizedBox(
-          width: spinnerSize ?? 40.w,
-          height: spinnerSize ?? 40.w,
-          child: CircularProgressIndicator(
-            strokeWidth: 3.w,
-            valueColor: AlwaysStoppedAnimation<Color>(
-              spinnerColor ?? Colors.white,
+    final content = Container(
+      padding: EdgeInsets.all(20.w),
+      decoration: BoxDecoration(
+        color: backgroundColor ?? Colors.black87.withOpacity(0.7),
+        borderRadius: BorderRadius.circular(20.0),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (messagePosition == SpinnerMessagePosition.top &&
+              message != null) ...[
+            Text(
+              message,
+              style:
+                  textStyle ?? TextStyle(fontSize: 14.sp, color: Colors.white),
+            ),
+            SizedBox(height: spacing ?? 8.w),
+          ],
+          SizedBox(
+            width: spinnerSize ?? 40.w,
+            height: spinnerSize ?? 40.w,
+            child: CircularProgressIndicator(
+              strokeWidth: 3.w,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                spinnerColor ?? Colors.white,
+              ),
             ),
           ),
-        ),
-        if (messagePosition == SpinnerMessagePosition.bottom &&
-            message != null) ...[
-          SizedBox(height: spacing ?? 8.w),
-          Text(
-            message,
-            style: textStyle ?? TextStyle(fontSize: 14.sp, color: Colors.white),
-          ),
+          if (messagePosition == SpinnerMessagePosition.bottom &&
+              message != null) ...[
+            SizedBox(height: spacing ?? 8.w),
+            Text(
+              message,
+              style:
+                  textStyle ?? TextStyle(fontSize: 14.sp, color: Colors.white),
+            ),
+          ],
         ],
-      ],
-    );
-
-    showToastWidget(
-      Container(
-        padding: EdgeInsets.all(20.w),
-        decoration: BoxDecoration(
-          color: backgroundColor ?? Colors.black87.withOpacity(0.7),
-          borderRadius: BorderRadius.circular(20.0),
-        ),
-        child: content,
       ),
-      dismissOtherToast: true,
-      duration:
-          duration ?? const Duration(days: 365), // 如果没有指定duration，则设置一个很长的时间
-      position: position,
     );
 
-    // 如果指定了duration，则自动隐藏
-    if (duration != null) {
-      Future.delayed(duration, () {
-        hideAll();
-      });
-    }
+    // 使用 Future.microtask 来避免在 build 过程中触发 setState
+    Future.microtask(() {
+      showToastWidget(
+        content,
+        dismissOtherToast: true,
+        duration: duration ?? const Duration(days: 365),
+        position: position,
+      );
+    });
+
+    // 返回一个空的占位 Widget
     return const SizedBox.shrink();
   }
 }
