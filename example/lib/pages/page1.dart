@@ -13,22 +13,22 @@ class Page1View extends GetView<Page1Controller> {
         Scaffold(
           appBar: AppBar(title: const Text('第1页')),
           body: Padding(
-            padding: EdgeInsets.all(16.w),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.w),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _buildSectionTitle('按钮测试'),
-                SizedBox(height: 16.h),
+                SizedBox(height: 12.h),
                 _buildButtonSection(),
-                SizedBox(height: 24.h),
+                SizedBox(height: 16.h),
                 _buildSectionTitle('菜单按钮测试'),
-                SizedBox(height: 16.h),
+                SizedBox(height: 12.h),
                 _buildMenuButtonSection(),
-                SizedBox(height: 24.h),
-                _buildSectionTitle('窗口控制测试'),
                 SizedBox(height: 16.h),
+                _buildSectionTitle('窗口控制测试'),
+                SizedBox(height: 12.h),
                 _buildWindowControlSection(),
-                SizedBox(height: 24.h),
+                SizedBox(height: 16.h),
                 _buildToastTestSection(),
                 const Spacer(),
                 _buildNavigationSection(),
@@ -363,53 +363,112 @@ class Page1View extends GetView<Page1Controller> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _buildSectionTitle('Toast测试'),
-        SizedBox(height: 16.h),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        SizedBox(height: 12.h),
+        // 顶部Toast测试区域
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: MyButton(
-                text: '连续显示多条Toast',
-                onPressed: controller.showToast,
-              ),
+            Text(
+              '顶部Toast',
+              style: TextStyle(fontSize: 13.sp, color: Colors.grey[700]),
             ),
-            SizedBox(width: 16.w),
-            Expanded(
-              child: MyButton(
-                text: '显示顶部警告',
-                onPressed: () => controller.showUpWarnToast(),
-              ),
+            SizedBox(height: 6.h),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Expanded(
+                  child: MyButton(
+                    text: '显示警告',
+                    onPressed: () => controller.showUpWarnToast(),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: MyButton(
+                    text: '显示错误',
+                    onPressed: () => controller.showUpErrorToast(),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: MyButton(
+                    text: '显示提示',
+                    onPressed: () => controller.showUpInfoToast(),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
         SizedBox(height: 16.h),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        // 中间Toast测试区域
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: MyButton(
-                text: '显示顶部错误',
-                onPressed: () => controller.showUpErrorToast(),
-              ),
+            Text(
+              '中间Toast',
+              style: TextStyle(fontSize: 13.sp, color: Colors.grey[700]),
             ),
-            SizedBox(width: 16.w),
-            Expanded(
-              child: MyButton(
-                text: '显示顶部提示',
-                onPressed: () => controller.showUpInfoToast(),
-              ),
+            SizedBox(height: 6.h),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Expanded(
+                  child: MyButton(
+                    text: '连续显示Toast',
+                    onPressed: controller.showToast,
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: MyButton(
+                    text: '显示永久加载',
+                    onPressed: () => controller.showPermanentSpinner(),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 6.h),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Expanded(
+                  child: MyButton(
+                    text: '自动关闭加载(3秒)',
+                    onPressed: () => controller.showAutoCloseSpinner(),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: MyButton(
+                    text: '关闭加载动画',
+                    onPressed: () => controller.hideSpinner(),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
         SizedBox(height: 16.h),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        // 底部Toast测试区域
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: MyButton(
-                text: '显示底部提示',
-                onPressed: () => controller.showBottomToast(),
-              ),
+            Text(
+              '底部Toast',
+              style: TextStyle(fontSize: 13.sp, color: Colors.grey[700]),
+            ),
+            SizedBox(height: 6.h),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Expanded(
+                  child: MyButton(
+                    text: '显示底部提示',
+                    onPressed: () => controller.showBottomToast(),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -535,6 +594,37 @@ class Page1Controller extends GetxController {
     MyToast.showBottom(
       '这是一条底部提示消息',
       opacity: 0.9,
+    );
+  }
+
+  void showPermanentSpinner() {
+    MyToast.showSpinner(
+      message: '永久加载中...',
+      spinnerColor: Colors.blue,
+      backgroundColor: Colors.black.withOpacity(0.8),
+      textStyle: TextStyle(
+        fontSize: 16.sp,
+        color: Colors.white,
+        fontWeight: FontWeight.bold,
+      ),
+    );
+  }
+
+  void hideSpinner() {
+    MyToast.hideAll();
+  }
+
+  void showAutoCloseSpinner() {
+    MyToast.showSpinner(
+      message: '加载中(3秒后自动关闭)...',
+      spinnerColor: Colors.green,
+      backgroundColor: Colors.black.withOpacity(0.8),
+      textStyle: TextStyle(
+        fontSize: 16.sp,
+        color: Colors.white,
+        fontWeight: FontWeight.bold,
+      ),
+      duration: const Duration(seconds: 3),
     );
   }
 }

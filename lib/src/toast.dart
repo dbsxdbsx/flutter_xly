@@ -210,4 +210,90 @@ class MyToast {
       ),
     );
   }
+
+  /// 显示一个加载动画指示器
+  ///
+  /// [message] 可选的提示文本
+  /// [position] 显示位置，默认居中
+  /// [messagePosition] 文本相对于加载动画的位置，默认在下方
+  /// [spinnerSize] 加载动画的大小
+  /// [spinnerColor] 加载动画的颜色
+  /// [backgroundColor] 背景颜色
+  /// [textStyle] 文本样式
+  /// [spacing] 文本和加载动画之间的间距
+  /// [duration] 显示持续时间，默认为null表示一直显示直到手动关闭
+  static void showSpinner({
+    String? message,
+    ToastPosition position = ToastPosition.center,
+    SpinnerMessagePosition messagePosition = SpinnerMessagePosition.bottom,
+    double? spinnerSize,
+    Color? spinnerColor,
+    Color? backgroundColor,
+    TextStyle? textStyle,
+    double? spacing,
+    Duration? duration,
+  }) {
+    final content = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (messagePosition == SpinnerMessagePosition.top &&
+            message != null) ...[
+          Text(
+            message,
+            style: textStyle ?? TextStyle(fontSize: 14.sp, color: Colors.white),
+          ),
+          SizedBox(height: spacing ?? 8.w),
+        ],
+        SizedBox(
+          width: spinnerSize ?? 40.w,
+          height: spinnerSize ?? 40.w,
+          child: CircularProgressIndicator(
+            strokeWidth: 3.w,
+            valueColor: AlwaysStoppedAnimation<Color>(
+              spinnerColor ?? Colors.white,
+            ),
+          ),
+        ),
+        if (messagePosition == SpinnerMessagePosition.bottom &&
+            message != null) ...[
+          SizedBox(height: spacing ?? 8.w),
+          Text(
+            message,
+            style: textStyle ?? TextStyle(fontSize: 14.sp, color: Colors.white),
+          ),
+        ],
+      ],
+    );
+
+    showToastWidget(
+      Container(
+        padding: EdgeInsets.all(20.w),
+        decoration: BoxDecoration(
+          color: backgroundColor ?? Colors.black87.withOpacity(0.7),
+          borderRadius: BorderRadius.circular(20.0),
+        ),
+        child: content,
+      ),
+      dismissOtherToast: true,
+      duration:
+          duration ?? const Duration(days: 365), // 如果没有指定duration，则设置一个很长的时间
+      position: position,
+    );
+
+    // 如果指定了duration，则自动隐藏
+    if (duration != null) {
+      Future.delayed(duration, () {
+        hideAll();
+      });
+    }
+  }
+}
+
+/// 定义文本相对于加载动画的位置
+enum SpinnerMessagePosition {
+  /// 文本在加载动画上方
+  top,
+
+  /// 文本在加载动画下方
+  bottom,
 }
