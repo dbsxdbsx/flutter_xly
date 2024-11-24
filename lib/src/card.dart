@@ -14,7 +14,7 @@ class MyCard extends StatelessWidget {
   final double? leadingAndBodySpacing;
   final EdgeInsets? padding;
   final EdgeInsets? margin;
-  final Color? cardBackgroundColor;
+  final Color? cardColor;
   final Color? cardHoverColor;
   final Color? cardSplashColor;
   final Color? cardShadowColor;
@@ -47,7 +47,7 @@ class MyCard extends StatelessWidget {
     this.leadingAndBodySpacing,
     this.padding,
     this.margin,
-    this.cardBackgroundColor,
+    this.cardColor,
     this.cardHoverColor,
     this.cardSplashColor,
     this.cardShadowColor,
@@ -74,7 +74,7 @@ class MyCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: cardBorderRadius ?? BorderRadius.circular(12.r),
       ),
-      color: cardBackgroundColor,
+      color: cardColor,
       child: InkWell(
         onTap: onPressed,
         enableFeedback: false,

@@ -219,8 +219,8 @@ class MyCardListState extends State<MyCardList> {
     final listViewHeight = listViewBox.size.height;
 
     // Calculate card total height including margins
-    final cardTotalHeight =
-        (widget.cardHeight ?? 80.h) + (widget.cardMargin?.call(index)?.vertical ?? 3.h);
+    final cardTotalHeight = (widget.cardHeight ?? 80.h) +
+        (widget.cardMargin?.call(index)?.vertical ?? 3.h);
 
     // Calculate ideal position to center the card
     final targetCard = index * cardTotalHeight;
@@ -270,7 +270,7 @@ class MyCardListState extends State<MyCardList> {
           margin: widget.cardMargin?.call(index),
 
           // 3. 样式和装饰 - 调用函数获取样式
-          cardBackgroundColor: widget.cardColor?.call(index),
+          cardColor: widget.cardColor?.call(index),
           cardElevation: widget.cardElevation?.call(index),
           cardShadowColor: widget.cardShadowColor?.call(index),
           cardBorderRadius: widget.cardBorderRadius?.call(index),
