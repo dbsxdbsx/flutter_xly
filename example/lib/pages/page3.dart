@@ -43,11 +43,13 @@ class Page3View extends GetView<Page3Controller> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         MyButton(
+          icon: Icons.arrow_back,
           text: '返回第2页',
           onPressed: controller.goToPage2,
         ),
         SizedBox(width: 12.w),
         MyButton(
+          icon: Icons.arrow_forward,
           text: '前往第4页',
           onPressed: controller.goToPage4,
         ),

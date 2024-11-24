@@ -24,9 +24,9 @@ class Page5View extends GetView<Page5Controller> {
             const Spacer(),
             Center(
               child: MyButton(
+                icon: Icons.arrow_back,
                 text: '返回第4页',
                 onPressed: () => Get.back(),
-                width: 120.w,
               ),
             ),
           ],

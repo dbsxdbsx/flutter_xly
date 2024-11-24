@@ -151,18 +151,16 @@ class Page1View extends GetView<Page1Controller> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        Expanded(
-          child: MyButton(
-            text: '前往第2页',
-            onPressed: controller.goToPage2,
-          ),
+        MyButton(
+          icon: Icons.exit_to_app,
+          text: '退出应用',
+          onPressed: controller.confirmExitApp,
         ),
         SizedBox(width: 16.w),
-        Expanded(
-          child: MyButton(
-            text: '退出应用',
-            onPressed: controller.confirmExitApp,
-          ),
+        MyButton(
+          icon: Icons.arrow_forward,
+          text: '前往第2页',
+          onPressed: controller.goToPage2,
         ),
       ],
     );

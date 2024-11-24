@@ -207,13 +207,15 @@ class Page4View extends GetView<Page4Controller> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     MyButton(
-                      onPressed: () => Get.back(),
+                      icon: Icons.arrow_back,
                       text: '返回第3页',
+                      onPressed: () => Get.back(),
                       size: 80.w,
                     ),
                     MyButton(
-                      onPressed: () => Get.toNamed(Routes.page5),
+                      icon: Icons.arrow_forward,
                       text: '前往第5页',
+                      onPressed: () => Get.toNamed(Routes.page5),
                       size: 80.w,
                     ),
                   ],
