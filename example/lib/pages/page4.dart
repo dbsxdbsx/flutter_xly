@@ -285,8 +285,6 @@ class Page4Controller extends GetxController {
 
   // 添加 GlobalKey
   final listKey = GlobalKey<MyCardListState>();
-  // 添加一个变量来保存滚动位置
-  double? lastScrollPosition;
 
   @override
   void onInit() {
@@ -384,12 +382,11 @@ class Page4Controller extends GetxController {
   // 添加强制滚动方法
   void forceScrollToIndex() {
     if (selectedCardIndex.value >= 0) {
-      lastScrollPosition = listKey.currentState?.getCurrentScrollPosition();
-
-      listKey.currentState?.scrollToIndex(selectedCardIndex.value,
-          duration: const Duration(milliseconds: 300),
-          alignment: 0.5,
-          startPosition: lastScrollPosition);
+      listKey.currentState?.scrollToIndex(
+        selectedCardIndex.value,
+        duration: const Duration(milliseconds: 300),
+        alignment: 0.5, // 居中对齐
+      );
     }
   }
 }
