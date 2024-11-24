@@ -82,6 +82,10 @@ class Page4View extends GetView<Page4Controller> {
                       child: MyGroupBox(
                         title: '不可拖动列表',
                         child: MyCardList(
+                          indexToScroll:
+                              controller.selectedCardIndex.value == -1
+                                  ? null
+                                  : controller.selectedCardIndex.value,
                           cardLeading: (index) => Icon(
                             Icons.download_outlined,
                             size: 24.w,
@@ -125,7 +129,6 @@ class Page4View extends GetView<Page4Controller> {
                           cardMargin: EdgeInsets.symmetric(
                               horizontal: 2.h, vertical: 2.h),
                           cardPadding: EdgeInsets.only(right: 15.w),
-                          footer: _buildFooter(controller.staticListState),
                           onSwipeDelete: (index) {
                             MyToast.show(
                                 '即将删除：${controller.staticCards[index]}');
@@ -160,11 +163,42 @@ class Page4View extends GetView<Page4Controller> {
                       text: '可拖动列表数量',
                       size: 80.w,
                     ),
-                    MyButton(
-                      onPressed: () => MyToast.show(
-                          '静态列表项数量：${controller.staticCards.length}'),
-                      text: '静态列表数量',
-                      size: 80.w,
+                    Row(
+                      children: [
+                        MyButton(
+                          onPressed: () => MyToast.show(
+                              '静态列表项数量：${controller.staticCards.length}'),
+                          text: '静态列表数量',
+                          size: 80.w,
+                        ),
+                        SizedBox(width: 8.w),
+                        // 下拉列表
+                        SizedBox(
+                          width: 120.w,
+                          child: Obx(() => DropdownButtonFormField<int>(
+                                value: controller.selectedCardIndex.value == -1
+                                    ? null
+                                    : controller.selectedCardIndex.value,
+                                decoration: InputDecoration(
+                                  contentPadding: EdgeInsets.symmetric(
+                                      horizontal: 12.w, vertical: 8.h),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8.r),
+                                  ),
+                                  hintText: '跳转到...',
+                                ),
+                                items: List.generate(
+                                  controller.staticCards.length,
+                                  (index) => DropdownMenuItem(
+                                    value: index,
+                                    child: Text('第 ${index + 1} 项',
+                                        style: TextStyle(fontSize: 14.sp)),
+                                  ),
+                                ),
+                                onChanged: controller.scrollToIndex,
+                              )),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -235,6 +269,7 @@ class Page4Controller extends GetxController {
   final staticCards = <String>[].obs;
   final draggableListState = ListState().obs;
   final staticListState = ListState().obs;
+  final selectedCardIndex = (-1).obs;
 
   @override
   void onInit() {
@@ -317,6 +352,11 @@ class Page4Controller extends GetxController {
         loadMoreCards(isDraggable: true);
       }
     }
+  }
+
+  void scrollToIndex(int? index) {
+    if (index == null) return;
+    selectedCardIndex.value = index;
   }
 }
 

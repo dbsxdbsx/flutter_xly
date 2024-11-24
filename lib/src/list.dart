@@ -122,6 +122,9 @@ class MyCardList extends StatefulWidget {
   // 6. 附加组件
   final Widget? footer;
 
+  // Add new parameter for scroll control
+  final int? indexToScroll;
+
   const MyCardList({
     super.key,
     // 1. 核心内容
@@ -155,14 +158,17 @@ class MyCardList extends StatefulWidget {
 
     // 6. 附加组件
     this.footer,
+    this.indexToScroll,
   });
 
   @override
-  State<MyCardList> createState() => _MyCardListState();
+  MyCardListState createState() => MyCardListState();
 }
 
-class _MyCardListState extends State<MyCardList> {
+class MyCardListState extends State<MyCardList> {
   final ScrollController _scrollController = ScrollController();
+  // Add key to measure list view size
+  final GlobalKey _listViewKey = GlobalKey();
 
   // 添加私有方法生成稳定的 key
   ValueKey _generateStableKey(int index) {
@@ -192,8 +198,55 @@ class _MyCardListState extends State<MyCardList> {
   }
 
   @override
+  void didUpdateWidget(MyCardList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Scroll when indexToScroll changes
+    if (widget.indexToScroll != null &&
+        widget.indexToScroll != oldWidget.indexToScroll) {
+      _scrollToIndex(widget.indexToScroll!);
+    }
+  }
+
+  void _scrollToIndex(int index) {
+    if (!mounted) return;
+    //↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓计算滚动条的目标位置↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
+    // Get the list view's render box
+    final RenderBox? listViewBox =
+        _listViewKey.currentContext?.findRenderObject() as RenderBox?;
+    if (listViewBox == null) return;
+
+    // Calculate total height of list view
+    final listViewHeight = listViewBox.size.height;
+
+    // Calculate card total height including margins
+    final cardTotalHeight =
+        (widget.cardHeight ?? 80.h) + (widget.cardMargin?.vertical ?? 3.h);
+
+    // Calculate ideal position to center the card
+    final targetCard = index * cardTotalHeight;
+    final middleOffset = listViewHeight / 2;
+    final cardOffset = cardTotalHeight / 2;
+
+    // Calculate target scroll position
+    double targetPosition = targetCard - (middleOffset - cardOffset);
+
+    // Constrain target position to valid scroll bounds
+    targetPosition =
+        targetPosition.clamp(0.0, _scrollController.position.maxScrollExtent);
+    //↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑计算滚动条的目标位置↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
+
+    // 使用动画滚动到目标位置
+    _scrollController.animateTo(
+      targetPosition,
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MyList<int>(
+      key: _listViewKey, // Add key to list view
       items: List.generate(widget.itemCount, (i) => i),
       isDraggable: widget.onCardReordered != null,
       scrollController: _scrollController,
