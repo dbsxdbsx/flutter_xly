@@ -24,6 +24,7 @@ class MyCard extends StatelessWidget {
   final Color? textColor;
   final TextStyle? textStyle;
   final Widget? deleteBackground;
+  final VisualDensity? visualDensity;
 
   static EdgeInsets defaultPadding(BuildContext context) =>
       EdgeInsets.symmetric(horizontal: 4.w);
@@ -56,6 +57,7 @@ class MyCard extends StatelessWidget {
     this.textColor,
     this.textStyle,
     this.deleteBackground,
+    this.visualDensity,
   });
 
   @override
@@ -81,9 +83,8 @@ class MyCard extends StatelessWidget {
         borderRadius: cardBorderRadius ?? BorderRadius.circular(12.r),
         child: ListTile(
           dense: true,
-          visualDensity: VisualDensity(horizontal: -4.w, vertical: -4.h),
+          visualDensity: visualDensity ?? VisualDensity.compact,
           horizontalTitleGap: leadingAndBodySpacing?.w,
-          // minLeadingWidth: 24.w,
           contentPadding:
               padding ?? defaultPadding(context), // NOTE：必须有，否则card最右侧会有空白
           leading: leading,
