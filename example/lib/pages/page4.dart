@@ -82,10 +82,10 @@ class Page4View extends GetView<Page4Controller> {
                       child: MyGroupBox(
                         title: '不可拖动列表',
                         child: MyCardList(
-                          indexToScroll:
-                              controller.selectedCardIndex.value == -1
-                                  ? null
-                                  : controller.selectedCardIndex.value,
+                          indexToScroll: controller.enableAutoScroll.value &&
+                                         controller.selectedCardIndex.value != -1
+                                      ? controller.selectedCardIndex.value
+                                      : null,
                           cardLeading: (index) => Icon(
                             Icons.download_outlined,
                             size: 24.w,
@@ -174,6 +174,11 @@ class Page4View extends GetView<Page4Controller> {
                           size: 80.w,
                         ),
                         SizedBox(width: 8.w),
+                        // 添加复选框
+                        Obx(() => Checkbox(
+                          value: controller.enableAutoScroll.value,
+                          onChanged: (value) => controller.enableAutoScroll.value = value!,
+                        )),
                         // 下拉列表
                         SizedBox(
                           width: 120.w,
@@ -274,6 +279,7 @@ class Page4Controller extends GetxController {
   final draggableListState = ListState().obs;
   final staticListState = ListState().obs;
   final selectedCardIndex = (-1).obs;
+  final enableAutoScroll = false.obs;
 
   @override
   void onInit() {
@@ -351,7 +357,7 @@ class Page4Controller extends GetxController {
       final deletedCard = draggableCards.removeAt(index);
       MyToast.show('删除了可拖动卡片：$deletedCard');
 
-      // 只可拖动���片列表加载更多卡片
+      // 只可拖动片列表加载更多卡片
       if (draggableCards.length < 5 && draggableListState.value.hasMoreData) {
         loadMoreCards(isDraggable: true);
       }
