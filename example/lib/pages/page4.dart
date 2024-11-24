@@ -82,10 +82,11 @@ class Page4View extends GetView<Page4Controller> {
                       child: MyGroupBox(
                         title: '不可拖动列表',
                         child: MyCardList(
+                          key: controller.listKey,
                           indexToScroll: controller.enableAutoScroll.value &&
-                                         controller.selectedCardIndex.value != -1
-                                      ? controller.selectedCardIndex.value
-                                      : null,
+                                  controller.selectedCardIndex.value != -1
+                              ? controller.selectedCardIndex.value
+                              : null,
                           cardLeading: (index) => Icon(
                             Icons.download_outlined,
                             size: 24.w,
@@ -176,9 +177,10 @@ class Page4View extends GetView<Page4Controller> {
                         SizedBox(width: 8.w),
                         // 添加复选框
                         Obx(() => Checkbox(
-                          value: controller.enableAutoScroll.value,
-                          onChanged: (value) => controller.enableAutoScroll.value = value!,
-                        )),
+                              value: controller.enableAutoScroll.value,
+                              onChanged: (value) =>
+                                  controller.enableAutoScroll.value = value!,
+                            )),
                         // 下拉列表
                         SizedBox(
                           width: 120.w,
@@ -281,6 +283,9 @@ class Page4Controller extends GetxController {
   final selectedCardIndex = (-1).obs;
   final enableAutoScroll = false.obs;
 
+  // 添加 GlobalKey
+  final listKey = GlobalKey<MyCardListState>();
+
   @override
   void onInit() {
     super.onInit();
@@ -367,6 +372,22 @@ class Page4Controller extends GetxController {
   void scrollToIndex(int? index) {
     if (index == null) return;
     selectedCardIndex.value = index;
+
+    // 如果启用了自动滚动，立即强制滚动到目标位置
+    if (enableAutoScroll.value) {
+      forceScrollToIndex();
+    }
+  }
+
+  // 添加强制滚动方法
+  void forceScrollToIndex() {
+    if (selectedCardIndex.value >= 0) {
+      listKey.currentState?.scrollToIndex(
+        selectedCardIndex.value,
+        duration: const Duration(milliseconds: 300),
+        alignment: 0.5, // 居中对齐
+      );
+    }
   }
 }
 

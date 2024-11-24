@@ -167,8 +167,42 @@ class MyCardList extends StatefulWidget {
 
 class MyCardListState extends State<MyCardList> {
   final ScrollController _scrollController = ScrollController();
-  // Add key to measure list view size
   final GlobalKey _listViewKey = GlobalKey();
+
+  // 暴露命令式滚动方法
+  void scrollToIndex(
+    int index, {
+    Duration duration = const Duration(milliseconds: 500),
+    Curve curve = Curves.easeInOut,
+    double alignment = 0.5, // 0.0 顶部, 0.5 居中, 1.0 底部
+  }) {
+    if (!mounted) return;
+
+    final RenderBox? listViewBox =
+        _listViewKey.currentContext?.findRenderObject() as RenderBox?;
+    if (listViewBox == null) return;
+
+    // 计算滚动位置
+    final listViewHeight = listViewBox.size.height;
+    final cardTotalHeight = (widget.cardHeight ?? 80.h) +
+        (widget.cardMargin?.call(index)?.vertical ?? 3.h);
+
+    final targetCard = index * cardTotalHeight;
+    final viewportMiddle = listViewHeight * alignment;
+    final cardOffset = cardTotalHeight * alignment;
+
+    double targetPosition = targetCard - (viewportMiddle - cardOffset);
+    targetPosition = targetPosition.clamp(
+      0.0,
+      _scrollController.position.maxScrollExtent,
+    );
+
+    _scrollController.animateTo(
+      targetPosition,
+      duration: duration,
+      curve: curve,
+    );
+  }
 
   // 添加私有方法生成稳定的 key
   ValueKey _generateStableKey(int index) {
@@ -203,44 +237,8 @@ class MyCardListState extends State<MyCardList> {
     // Scroll when indexToScroll changes
     if (widget.indexToScroll != null &&
         widget.indexToScroll != oldWidget.indexToScroll) {
-      _scrollToIndex(widget.indexToScroll!);
+      scrollToIndex(widget.indexToScroll!);
     }
-  }
-
-  void _scrollToIndex(int index) {
-    if (!mounted) return;
-    //↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓计算滚动条的目标位置↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
-    // Get the list view's render box
-    final RenderBox? listViewBox =
-        _listViewKey.currentContext?.findRenderObject() as RenderBox?;
-    if (listViewBox == null) return;
-
-    // Calculate total height of list view
-    final listViewHeight = listViewBox.size.height;
-
-    // Calculate card total height including margins
-    final cardTotalHeight = (widget.cardHeight ?? 80.h) +
-        (widget.cardMargin?.call(index)?.vertical ?? 3.h);
-
-    // Calculate ideal position to center the card
-    final targetCard = index * cardTotalHeight;
-    final middleOffset = listViewHeight / 2;
-    final cardOffset = cardTotalHeight / 2;
-
-    // Calculate target scroll position
-    double targetPosition = targetCard - (middleOffset - cardOffset);
-
-    // Constrain target position to valid scroll bounds
-    targetPosition =
-        targetPosition.clamp(0.0, _scrollController.position.maxScrollExtent);
-    //↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑计算滚动条的目标位置↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
-
-    // 使用动画滚动到目标位置
-    _scrollController.animateTo(
-      targetPosition,
-      duration: const Duration(milliseconds: 500),
-      curve: Curves.easeInOut,
-    );
   }
 
   @override
