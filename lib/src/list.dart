@@ -169,12 +169,19 @@ class MyCardListState extends State<MyCardList> {
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _listViewKey = GlobalKey();
 
-  // 暴露命令式滚动方法
+  // 获取当前滚动位置
+  double? getCurrentScrollPosition() {
+    if (!mounted || !_scrollController.hasClients) return null;
+    return _scrollController.position.pixels;
+  }
+
+  // 修改滚动方法，添加起始位置参数
   void scrollToIndex(
     int index, {
     Duration duration = const Duration(milliseconds: 500),
     Curve curve = Curves.easeInOut,
-    double alignment = 0.5, // 0.0 顶部, 0.5 居中, 1.0 底部
+    double alignment = 0.5,
+    double? startPosition, // 新增：起始滚动位置
   }) {
     if (!mounted) return;
 
@@ -182,7 +189,7 @@ class MyCardListState extends State<MyCardList> {
         _listViewKey.currentContext?.findRenderObject() as RenderBox?;
     if (listViewBox == null) return;
 
-    // 计算滚动位置
+    // 计算目标位置
     final listViewHeight = listViewBox.size.height;
     final cardTotalHeight = (widget.cardHeight ?? 80.h) +
         (widget.cardMargin?.call(index)?.vertical ?? 3.h);
@@ -197,11 +204,22 @@ class MyCardListState extends State<MyCardList> {
       _scrollController.position.maxScrollExtent,
     );
 
-    _scrollController.animateTo(
-      targetPosition,
-      duration: duration,
-      curve: curve,
-    );
+    // 如果提供了起始位置，使用相对滚动
+    if (startPosition != null) {
+      final relativeOffset = targetPosition - startPosition;
+      _scrollController.animateTo(
+        _scrollController.position.pixels + relativeOffset,
+        duration: duration,
+        curve: curve,
+      );
+    } else {
+      // 否则直接滚动到目标位置
+      _scrollController.animateTo(
+        targetPosition,
+        duration: duration,
+        curve: curve,
+      );
+    }
   }
 
   // 添加私有方法生成稳定的 key
