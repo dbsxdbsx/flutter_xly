@@ -14,12 +14,12 @@ class MyCard extends StatelessWidget {
   final double? leadingAndBodySpacing;
   final EdgeInsets? padding;
   final EdgeInsets? margin;
-  final Color? backgroundColor;
-  final Color? hoverColor;
-  final Color? splashColor;
-  final Color? shadowColor;
-  final double? elevation;
-  final BorderRadius? borderRadius;
+  final Color? cardBackgroundColor;
+  final Color? cardHoverColor;
+  final Color? cardSplashColor;
+  final Color? cardShadowColor;
+  final double? cardElevation;
+  final BorderRadius? cardBorderRadius;
   final BoxDecoration? decoration;
   final Color? textColor;
   final TextStyle? textStyle;
@@ -46,12 +46,12 @@ class MyCard extends StatelessWidget {
     this.leadingAndBodySpacing,
     this.padding,
     this.margin,
-    this.backgroundColor,
-    this.hoverColor,
-    this.splashColor,
-    this.shadowColor,
-    this.elevation,
-    this.borderRadius,
+    this.cardBackgroundColor,
+    this.cardHoverColor,
+    this.cardSplashColor,
+    this.cardShadowColor,
+    this.cardElevation,
+    this.cardBorderRadius,
     this.decoration,
     this.textColor,
     this.textStyle,
@@ -67,18 +67,18 @@ class MyCard extends StatelessWidget {
         top: (margin ?? defaultMargin(context)).top.h,
         bottom: (margin ?? defaultMargin(context)).bottom.h,
       ),
-      elevation: elevation?.h ?? 2.h,
-      shadowColor: shadowColor,
+      elevation: cardElevation?.h ?? 2.h,
+      shadowColor: cardShadowColor,
       shape: RoundedRectangleBorder(
-        borderRadius: borderRadius ?? BorderRadius.circular(12.r),
+        borderRadius: cardBorderRadius ?? BorderRadius.circular(12.r),
       ),
-      color: backgroundColor,
+      color: cardBackgroundColor,
       child: InkWell(
         onTap: onPressed,
         enableFeedback: false,
-        hoverColor: hoverColor,
-        splashColor: splashColor,
-        borderRadius: borderRadius ?? BorderRadius.circular(12.r),
+        hoverColor: cardHoverColor,
+        splashColor: cardSplashColor,
+        borderRadius: cardBorderRadius ?? BorderRadius.circular(12.r),
         child: ListTile(
           dense: true,
           visualDensity: VisualDensity(horizontal: -4.w, vertical: -4.h),

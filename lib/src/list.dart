@@ -108,16 +108,16 @@ class MyCardList extends StatefulWidget {
   // 4. 卡片布局
   final double? cardHeight;
   final double? leadingAndBodySpacing;
-  final EdgeInsets? cardPadding;
-  final EdgeInsets? cardMargin;
+  final EdgeInsets? Function(int)? cardPadding;
+  final EdgeInsets? Function(int)? cardMargin;
 
-  // 5. 卡片样式
-  final Color? cardColor;
-  final Color? cardHoverColor;
-  final Color? cardSplashColor;
-  final Color? cardShadowColor;
-  final double? cardElevation;
-  final BorderRadius? cardBorderRadius;
+  // 5. 卡片样式 - 修改为函数类型
+  final Color? Function(int)? cardColor;
+  final Color? Function(int)? cardHoverColor;
+  final Color? Function(int)? cardSplashColor;
+  final Color? Function(int)? cardShadowColor;
+  final double? Function(int)? cardElevation;
+  final BorderRadius? Function(int)? cardBorderRadius;
 
   // 6. 附加组件
   final Widget? footer;
@@ -220,7 +220,7 @@ class MyCardListState extends State<MyCardList> {
 
     // Calculate card total height including margins
     final cardTotalHeight =
-        (widget.cardHeight ?? 80.h) + (widget.cardMargin?.vertical ?? 3.h);
+        (widget.cardHeight ?? 80.h) + (widget.cardMargin?.call(index)?.vertical ?? 3.h);
 
     // Calculate ideal position to center the card
     final targetCard = index * cardTotalHeight;
@@ -266,16 +266,16 @@ class MyCardListState extends State<MyCardList> {
           // 2. 布局和尺寸
           height: widget.cardHeight,
           leadingAndBodySpacing: widget.leadingAndBodySpacing,
-          padding: widget.cardPadding,
-          margin: widget.cardMargin,
+          padding: widget.cardPadding?.call(index),
+          margin: widget.cardMargin?.call(index),
 
-          // 3. 样式和装饰
-          backgroundColor: widget.cardColor,
-          elevation: widget.cardElevation,
-          shadowColor: widget.cardShadowColor,
-          borderRadius: widget.cardBorderRadius,
-          hoverColor: widget.cardHoverColor,
-          splashColor: widget.cardSplashColor,
+          // 3. 样式和装饰 - 调用函数获取样式
+          cardBackgroundColor: widget.cardColor?.call(index),
+          cardElevation: widget.cardElevation?.call(index),
+          cardShadowColor: widget.cardShadowColor?.call(index),
+          cardBorderRadius: widget.cardBorderRadius?.call(index),
+          cardHoverColor: widget.cardHoverColor?.call(index),
+          cardSplashColor: widget.cardSplashColor?.call(index),
 
           // 4. 交互行为
           isDraggable: widget.onCardReordered != null,

@@ -71,7 +71,7 @@ class Page4View extends GetView<Page4Controller> {
                           showScrollbar: true,
                           // cardMargin: EdgeInsets.symmetric(
                           //     horizontal: 6.w, vertical: 2.h),
-                          cardSplashColor: Colors.black12,
+                          cardSplashColor: (_) => Colors.black12,
                           footer: _buildFooter(controller.draggableListState),
                           // cardBorderRadius: BorderRadius.circular(48.r),
                         ),
@@ -124,11 +124,13 @@ class Page4View extends GetView<Page4Controller> {
                             ],
                           ),
                           itemCount: controller.staticCards.length,
-                          showScrollbar: false,
-                          cardColor: Colors.green[50]!,
-                          cardMargin: EdgeInsets.symmetric(
-                              horizontal: 2.h, vertical: 2.h),
-                          cardPadding: EdgeInsets.only(right: 15.w),
+                          showScrollbar: true,
+                          cardColor: (_) => Colors.green[50]!,
+                          cardMargin: (_) => EdgeInsets.symmetric(
+                            horizontal: 2.h,
+                            vertical: 2.h,
+                          ),
+                          cardPadding: (_) => EdgeInsets.only(right: 15.w),
                           onSwipeDelete: (index) {
                             MyToast.show(
                                 '即将删除：${controller.staticCards[index]}');
@@ -140,7 +142,7 @@ class Page4View extends GetView<Page4Controller> {
                           ),
                           onLoadMore: () =>
                               controller.loadMoreCards(isDraggable: false),
-                          cardBorderRadius: BorderRadius.circular(8.r),
+                          cardBorderRadius: (_) => BorderRadius.circular(8.r),
                         ),
                       ),
                     ),
@@ -349,7 +351,7 @@ class Page4Controller extends GetxController {
       final deletedCard = draggableCards.removeAt(index);
       MyToast.show('删除了可拖动卡片：$deletedCard');
 
-      // 只可拖动卡片列表加载更多卡片
+      // 只可拖动���片列表加载更多卡片
       if (draggableCards.length < 5 && draggableListState.value.hasMoreData) {
         loadMoreCards(isDraggable: true);
       }
