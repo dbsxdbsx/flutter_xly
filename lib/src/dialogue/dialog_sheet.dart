@@ -21,7 +21,8 @@ class MyDialogSheet {
         child: child,
       ),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(actualBorderRadius)),
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(actualBorderRadius)),
       ),
       backgroundColor: Colors.transparent,
     );
@@ -207,19 +208,31 @@ class _CenterDialogSheet extends StatelessWidget {
                         Get.back();
                       }
                     },
+                    style: ButtonStyle(
+                      overlayColor: WidgetStateProperty.all(
+                        Colors.black54.withOpacity(0.1),
+                      ),
+                    ),
                     child: Text(
                       exitText,
                       style: TextStyle(
                         fontSize: _getAdaptiveSize(context, 14.0).sp,
+                        color: Colors.black54,
                       ),
                     ),
                   ),
                   TextButton(
                     onPressed: onConfirm,
+                    style: ButtonStyle(
+                      overlayColor: WidgetStateProperty.all(
+                        Colors.blue.withOpacity(0.1),
+                      ),
+                    ),
                     child: Text(
                       confirmText,
                       style: TextStyle(
                         fontSize: _getAdaptiveSize(context, 14.0).sp,
+                        color: Colors.blue,
                       ),
                     ),
                   ),
