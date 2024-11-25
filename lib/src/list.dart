@@ -10,7 +10,7 @@ class MyList<T> extends StatelessWidget {
 
   // 2. 滚动控制
   final ScrollController scrollController;
-  final bool showScrollBar;
+  final bool showScrollbar;
 
   // 3. 拖拽相关
   final bool isDraggable;
@@ -27,7 +27,7 @@ class MyList<T> extends StatelessWidget {
 
     // 2. 滚动控制
     required this.scrollController,
-    this.showScrollBar = true,
+    this.showScrollbar = true,
 
     // 3. 拖拽相关
     this.isDraggable = false,
@@ -41,7 +41,7 @@ class MyList<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scrollbar(
       controller: scrollController,
-      thumbVisibility: showScrollBar,
+      thumbVisibility: showScrollbar,
       child: isDraggable
           ? Theme(
               data: Theme.of(context).copyWith(
@@ -250,7 +250,7 @@ class MyCardListState extends State<MyCardList> {
       scrollController: _scrollController,
       onCardReordered: widget.onCardReordered,
       footer: widget.footer,
-      showScrollBar: widget.showScrollbar,
+      showScrollbar: widget.showScrollbar,
       itemBuilder: (context, index) {
         return MyCard(
           key: _generateStableKey(index),
