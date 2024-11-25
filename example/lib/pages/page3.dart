@@ -22,7 +22,13 @@ class Page3View extends GetView<Page3Controller> {
                   SizedBox(height: 20.h),
                   MyButton(
                     text: '显示底部菜单',
-                    onPressed: controller.showBottomMenu,
+                    onPressed: controller.showBottomSheet,
+                    width: 200.w,
+                  ),
+                  SizedBox(height: 20.h),
+                  MyButton(
+                    text: '显示中心对话框',
+                    onPressed: controller.showCenterDialog,
                     width: 200.w,
                   ),
                 ],
@@ -67,7 +73,7 @@ class Page3Controller extends GetxController {
     goToPage(Routes.page1);
   }
 
-  void showBottomMenu() {
+  void showBottomSheet() {
     MyDialogSheet.showBottom(
       height: 300.h,
       child: Column(
@@ -133,5 +139,34 @@ class Page3Controller extends GetxController {
 
   void goToPage4() {
     Get.toNamed(Routes.page4);
+  }
+
+  void showCenterDialog() {
+    MyDialogSheet.show(
+      title: '设置对话框',
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: Icon(Icons.settings, size: 24.sp),
+            title: Text('设置项 1', style: TextStyle(fontSize: 16.sp)),
+            onTap: () => MyToast.show('点击了设置项 1'),
+          ),
+          ListTile(
+            leading: Icon(Icons.info, size: 24.sp),
+            title: Text('设置项 2', style: TextStyle(fontSize: 16.sp)),
+            onTap: () => MyToast.show('点击了设置项 2'),
+          ),
+        ],
+      ),
+      onConfirm: () {
+        MyToast.show('确认设置');
+        Get.back();
+      },
+      onExit: () {
+        MyToast.show('取消设置');
+        Get.back();
+      },
+    );
   }
 }

@@ -26,6 +26,41 @@ class MyDialogSheet {
       backgroundColor: Colors.transparent,
     );
   }
+
+  /// 显示中心弹出对话框
+  static Future<T?> show<T>({
+    String? title,
+    required Widget content,
+    EdgeInsetsGeometry? contentPadding,
+    EdgeInsetsGeometry? titlePadding,
+    EdgeInsetsGeometry? actionsPadding,
+    EdgeInsets? insetPadding,
+    double? titleFontSize,
+    bool centerTitle = true,
+    VoidCallback? onConfirm,
+    VoidCallback? onExit,
+    String confirmText = '确定',
+    String exitText = '取消',
+  }) {
+    return Get.dialog(
+      _CenterDialogSheet(
+        title: title,
+        content: content,
+        contentPadding: contentPadding,
+        titlePadding: titlePadding,
+        actionsPadding: actionsPadding,
+        insetPadding: insetPadding,
+        titleFontSize: titleFontSize,
+        centerTitle: centerTitle,
+        onConfirm: onConfirm,
+        onExit: onExit,
+        confirmText: confirmText,
+        exitText: exitText,
+      ),
+      barrierDismissible: true,
+      useSafeArea: true,
+    );
+  }
 }
 
 /// 内部使用的底部菜单容器组件
@@ -65,6 +100,164 @@ class _BottomSheetContainer extends StatelessWidget {
           Expanded(child: child),
         ],
       ),
+    );
+  }
+}
+
+/// 中心弹出对话框组件
+class _CenterDialogSheet extends StatelessWidget {
+  static const double _baseWidth = 350.0;
+  static const double _baseHeight = 600.0;
+  static const double _baseDialogWidthRatio = 0.95;
+  static const double _baseDialogMaxHeightRatio = 0.95;
+  static const double _baseInsetRatio = 0.07;
+
+  final String? title;
+  final Widget content;
+  final EdgeInsetsGeometry? contentPadding;
+  final EdgeInsetsGeometry? titlePadding;
+  final EdgeInsetsGeometry? actionsPadding;
+  final EdgeInsets? insetPadding;
+  final double? titleFontSize;
+  final bool centerTitle;
+  final VoidCallback? onConfirm;
+  final VoidCallback? onExit;
+  final String confirmText;
+  final String exitText;
+
+  const _CenterDialogSheet({
+    this.title,
+    required this.content,
+    this.contentPadding,
+    this.titlePadding,
+    this.actionsPadding,
+    this.insetPadding,
+    this.titleFontSize,
+    this.centerTitle = true,
+    this.onConfirm,
+    this.onExit,
+    this.confirmText = '确定',
+    this.exitText = '取消',
+  });
+
+  double _getAdaptiveSize(BuildContext context, double baseSize) {
+    final designSize = MediaQuery.of(context).size;
+    final scaleFactor =
+        (designSize.width + designSize.height) / (_baseWidth + _baseHeight);
+    return baseSize * scaleFactor;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final designSize = MediaQuery.of(context).size;
+
+    // 计算对话框尺寸
+    final dialogWidth = designSize.width * _baseDialogWidthRatio;
+    final dialogMaxHeight = designSize.height * _baseDialogMaxHeightRatio;
+
+    // 计算inset尺寸
+    final insetWidthSize = designSize.width * _baseInsetRatio;
+    final insetHeightSize = designSize.height * _baseInsetRatio;
+
+    final titleWidget = title != null
+        ? Text(
+            title!,
+            style: TextStyle(
+              fontSize: titleFontSize ?? _getAdaptiveSize(context, 18.0).sp,
+            ),
+          )
+        : null;
+
+    Widget dialogContent = Material(
+      type: MaterialType.transparency,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (titleWidget != null)
+            Padding(
+              padding: titlePadding ??
+                  EdgeInsets.symmetric(
+                    vertical: _getAdaptiveSize(context, 8.0).w,
+                    horizontal: _getAdaptiveSize(context, 8.0).w,
+                  ),
+              child: centerTitle ? Center(child: titleWidget) : titleWidget,
+            ),
+          Flexible(
+            child: Container(
+              padding: contentPadding ??
+                  EdgeInsets.symmetric(
+                    horizontal: _getAdaptiveSize(context, 4.0).w,
+                  ),
+              child: content,
+            ),
+          ),
+          if (onConfirm != null)
+            Padding(
+              padding: actionsPadding ??
+                  EdgeInsets.all(_getAdaptiveSize(context, 8.0).w),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      if (onExit != null) {
+                        onExit!();
+                      } else {
+                        Get.back();
+                      }
+                    },
+                    child: Text(
+                      exitText,
+                      style: TextStyle(
+                        fontSize: _getAdaptiveSize(context, 14.0).sp,
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: onConfirm,
+                    child: Text(
+                      confirmText,
+                      style: TextStyle(
+                        fontSize: _getAdaptiveSize(context, 14.0).sp,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+
+    dialogContent = Container(
+      width: dialogWidth.w,
+      constraints: BoxConstraints(
+        maxHeight: dialogMaxHeight.h,
+      ),
+      decoration: ShapeDecoration(
+        color: Theme.of(context).dialogBackgroundColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(
+            _getAdaptiveSize(context, 28.0).r,
+          ),
+        ),
+      ),
+      child: dialogContent,
+    );
+
+    return Dialog(
+      insetPadding: insetPadding ??
+          EdgeInsets.symmetric(
+            horizontal: insetWidthSize.w,
+            vertical: insetHeightSize.h,
+          ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(
+          _getAdaptiveSize(context, 28.0).r,
+        ),
+      ),
+      child: dialogContent,
     );
   }
 }
