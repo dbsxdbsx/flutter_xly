@@ -19,3 +19,4 @@ export 'src/card.dart';
 export 'src/list.dart';
 export 'src/float_panel.dart';
 export 'src/url_launcher.dart';
+export 'src/text_editor.dart';

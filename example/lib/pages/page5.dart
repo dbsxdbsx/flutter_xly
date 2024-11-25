@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:xly/xly.dart';
 
+import '../main.dart';
+
 class Page5View extends GetView<Page5Controller> {
   const Page5View({super.key});
 
@@ -10,27 +12,46 @@ class Page5View extends GetView<Page5Controller> {
       appBar: AppBar(
         title: Text('URL启动器测试', style: TextStyle(fontSize: 18.sp)),
       ),
-      body: Padding(
-        padding: EdgeInsets.all(16.w),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '点击下面的链接测试URL启动器:',
-              style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20.h),
-            _buildUrlSection(),
-            const Spacer(),
-            Center(
-              child: MyButton(
-                icon: Icons.arrow_back,
-                text: '返回第4页',
-                onPressed: () => Get.back(),
+      body: Column(
+        children: [
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.all(16.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '点击下面的链接测试URL启动器:',
+                    style:
+                        TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 20.h),
+                  _buildUrlSection(),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+          Padding(
+            padding: EdgeInsets.all(16.w),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                MyButton(
+                  icon: Icons.arrow_back,
+                  text: '返回第4页',
+                  onPressed: () => Get.back(),
+                  size: 80.w,
+                ),
+                MyButton(
+                  icon: Icons.arrow_forward,
+                  text: '前往第6页',
+                  onPressed: () => Get.toNamed(Routes.page6),
+                  size: 80.w,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
