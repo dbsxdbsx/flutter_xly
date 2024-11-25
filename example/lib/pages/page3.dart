@@ -68,9 +68,10 @@ class Page3Controller extends GetxController {
   }
 
   void showBottomMenu() {
-    MyBottomMenu.show(
+    MyDialogSheet.showBottom(
       height: 300.h,
-      child: MyBottomMenuContent(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
