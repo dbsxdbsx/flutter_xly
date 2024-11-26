@@ -51,19 +51,32 @@ class Page6View extends GetView<Page6Controller> {
   Widget _buildBasicEditors() {
     return Column(
       children: [
-        MyTextEditor(
-          textController: controller.basicController,
-          label: '基础输入',
-          hint: '请输入文本',
-          clearable: true,
-        ),
-        SizedBox(height: 16.h),
-        MyTextEditor(
-          textController: controller.numberController,
-          label: '数字输入',
-          hint: '请输入数字',
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        Row(
+          children: [
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(right: 8.w),
+                child: MyTextEditor(
+                  textController: controller.basicController,
+                  label: '基础输入',
+                  hint: '请输入文本',
+                  clearable: true,
+                ),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(left: 8.w),
+                child: MyTextEditor(
+                  textController: controller.numberController,
+                  label: '数字输入',
+                  hint: '请输入数字',
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                ),
+              ),
+            ),
+          ],
         ),
         SizedBox(height: 16.h),
         MyTextEditor(
@@ -118,20 +131,20 @@ class Page6View extends GetView<Page6Controller> {
       children: [
         MyTextEditor(
           textController: controller.styledController1,
-          label: '圆角输入框',
-          hint: '自定义圆角和边框',
-          borderRadius: 25.r,
+          label: '自定义样式输入框',
+          hint: '自定义样式输入框',
+          clearable: true,
+          onCleared: () => MyToast.show('清除了自定义样式输入框的内容'),
+          borderRadius: 50.r,
           borderWidth: 2,
           backgroundColor: Colors.blue[50],
           focusedBorderColor: Colors.blue,
-          clearable: true,
         ),
         SizedBox(height: 16.h),
         MyTextEditor(
           textController: controller.styledController2,
-          label: '错误状态',
-          hint: '显示错误信息',
-          errorText: '这是一条错误信息',
+          label: '自定义边框颜色',
+          hint: '红色边框示例',
           normalBorderColor: Colors.red,
           enabledBorderColor: Colors.red,
           focusedBorderColor: Colors.red,
@@ -139,9 +152,8 @@ class Page6View extends GetView<Page6Controller> {
         SizedBox(height: 16.h),
         MyTextEditor(
           textController: controller.styledController3,
-          label: '帮助文本',
-          hint: '带有帮助说明',
-          helperText: '这是一条帮助说明文本',
+          label: '自定义标签颜色',
+          hint: '绿色标签示例',
           labelColor: Colors.green,
           focusedBorderColor: Colors.green,
         ),

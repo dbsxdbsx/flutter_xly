@@ -3,108 +3,140 @@ import 'package:flutter/services.dart';
 import 'package:xly/xly.dart';
 
 class MyTextEditor extends GetView<MyTextEditorController> {
+  // Core properties
   final TextEditingController textController;
   final String label;
   final String? hint;
-  final TextInputType? keyboardType;
-  final bool isDense;
-  final double? labelFontSize;
-  final double? textFontSize;
-  final double? hintFontSize;
-  final double? inSetVerticalPadding;
-  final double? inSetHorizontalPadding;
-  final List<TextInputFormatter>? inputFormatters;
+  final bool enabled;
+  final bool readOnly;
+  final bool clearable;
+  final VoidCallback? onCleared;
   final ValueChanged<String>? onChanged;
-  final int? maxLines;
-  final double? height;
-  final Color normalBorderColor;
-  final Color enabledBorderColor;
-  final Color focusedBorderColor;
-  final FloatingLabelBehavior floatingLabelBehavior;
 
-  // 下拉列表相关属性
+  // Input properties
+  final TextInputType? keyboardType;
+  final List<TextInputFormatter>? inputFormatters;
+  final int? maxLines;
+  final TextAlign textAlign;
+  final TextAlignVertical? textAlignVertical;
+
+  // Dropdown properties
   final Future<List<String>> Function()? getDropDownOptions;
   final ValueChanged<String>? onOptionSelected;
   final Widget Function(String)? leadingBuilder;
   final String Function(String)? displayStringForOption;
   final bool Function(String option, String input)? filterOption;
-  final double? dropdownMaxHeight;
+  final EdgeInsetsGeometry? dropDownItemPadding;
   final Color? dropdownHighlightColor;
-  final bool enabled;
+  final double? dropdownMaxHeight;
 
-  // Add a unique identifier field
-  final String uniqueId;
-
-  final bool showScrollbar;
-
-  // 添加新的样式相关属性
-  final double? contentPadding;
+  // Style properties - Size
+  final double? height;
+  final double? labelFontSize;
+  final double? textFontSize;
+  final double? hintFontSize;
   final double? borderRadius;
   final double? borderWidth;
+  final double? contentPadding;
+  final double? inSetVerticalPadding;
+  final double? inSetHorizontalPadding;
+
+  // Style properties - Color
+  final Color normalBorderColor;
+  final Color enabledBorderColor;
+  final Color focusedBorderColor;
   final Color? backgroundColor;
   final Color? textColor;
   final Color? hintColor;
   final Color? labelColor;
+
+  // Style properties - Font Weight
   final FontWeight? labelFontWeight;
   final FontWeight? textFontWeight;
 
-  // 添加新的功能属性
-  final bool clearable;
-  final VoidCallback? onClear;
-  final bool readOnly;
-  final String? errorText;
-  final String? helperText;
-  final TextAlign textAlign;
-  final TextAlignVertical? textAlignVertical;
+  // Layout properties
+  final bool isDense;
+  final bool showScrollbar;
+  final FloatingLabelBehavior floatingLabelBehavior;
+
+  // Internal properties
+  final String uniqueId;
+
+  // Default style constants
+  static const double defaultLabelFontSize = 15.0;
+  static const double defaultTextFontSize = 12.0;
+  static const double defaultHintFontSize = 11.0;
+  static const double defaultIconSize = 23.0;
+  static const double defaultIconBoxSize = 32.0;
+  static const double defaultDropdownMaxHeight = 200.0;
+  static const double defaultHorizontalPadding = 4.0;
+  static const double defaultVerticalPadding = 8.0;
+  static const double defaultBorderRadius = 4.0;
+  static const double defaultDropdownItemHorizontalPadding = 8.0;
+  static const double defaultDropdownItemVerticalPadding = 12.0;
+  static const double defaultDropdownItemSpacing = 8.0;
+  static const double defaultTextEditorHeight = 48.0;
 
   @override
   String? get tag => uniqueId;
 
   MyTextEditor({
     super.key,
+    // Core properties
     required this.textController,
     required this.label,
     this.hint,
-    this.keyboardType,
-    this.isDense = true,
-    this.labelFontSize,
-    this.textFontSize,
-    this.hintFontSize,
-    this.inSetVerticalPadding,
-    this.inSetHorizontalPadding,
-    this.inputFormatters,
+    this.enabled = true,
+    this.readOnly = false,
+    this.clearable = false,
+    this.onCleared,
     this.onChanged,
+
+    // Input properties
+    this.keyboardType,
+    this.inputFormatters,
     this.maxLines = 1,
-    this.height,
-    this.normalBorderColor = const Color(0xFFE0E0E0),
-    this.enabledBorderColor = const Color(0xFFE0E0E0),
-    this.focusedBorderColor = const Color(0xFF64B5F6),
-    this.floatingLabelBehavior = FloatingLabelBehavior.always,
+    this.textAlign = TextAlign.start,
+    this.textAlignVertical,
+
+    // Dropdown properties
     this.getDropDownOptions,
     this.onOptionSelected,
     this.leadingBuilder,
     this.displayStringForOption,
     this.filterOption,
-    this.dropdownMaxHeight = 200,
+    this.dropDownItemPadding,
     this.dropdownHighlightColor,
-    this.enabled = true,
-    this.showScrollbar = true,
-    this.contentPadding,
+    this.dropdownMaxHeight = 200,
+
+    // Style properties - Size
+    this.height,
+    this.labelFontSize,
+    this.textFontSize,
+    this.hintFontSize,
     this.borderRadius,
     this.borderWidth,
+    this.contentPadding,
+    this.inSetVerticalPadding,
+    this.inSetHorizontalPadding,
+
+    // Style properties - Color
+    this.normalBorderColor = const Color(0xFFE0E0E0),
+    this.enabledBorderColor = const Color(0xFFE0E0E0),
+    this.focusedBorderColor = const Color(0xFF64B5F6),
     this.backgroundColor,
     this.textColor,
     this.hintColor,
     this.labelColor,
+
+    // Style properties - Font Weight
     this.labelFontWeight,
     this.textFontWeight,
-    this.clearable = false,
-    this.onClear,
-    this.readOnly = false,
-    this.errorText,
-    this.helperText,
-    this.textAlign = TextAlign.start,
-    this.textAlignVertical,
+
+    // Layout properties
+    this.isDense = true,
+    this.showScrollbar = true,
+    this.floatingLabelBehavior = FloatingLabelBehavior.always,
   }) : uniqueId = UniqueKey().toString() {
     Get.put(MyTextEditorController(), tag: uniqueId);
   }
@@ -197,67 +229,65 @@ class MyTextEditor extends GetView<MyTextEditorController> {
     BuildContext context, {
     VoidCallback? onSuffixIconTap,
   }) {
-    return SizedBox(
-      height: height,
-      child: Focus(
-        onKeyEvent: (node, event) {
-          if (!controller.isDropdownOpen) return KeyEventResult.ignored;
+    return Focus(
+      onKeyEvent: (node, event) {
+        if (!controller.isDropdownOpen) return KeyEventResult.ignored;
 
-          if (event is KeyDownEvent) {
-            switch (event.logicalKey) {
-              case LogicalKeyboardKey.arrowDown:
-              case LogicalKeyboardKey.arrowUp:
-              case LogicalKeyboardKey.enter:
-                // Let RawAutocomplete handle these keys when dropdown is open
-                return KeyEventResult.skipRemainingHandlers;
-              default:
-                return KeyEventResult.ignored;
-            }
+        if (event is KeyDownEvent) {
+          switch (event.logicalKey) {
+            case LogicalKeyboardKey.arrowDown:
+            case LogicalKeyboardKey.arrowUp:
+            case LogicalKeyboardKey.enter:
+              // Let RawAutocomplete handle these keys when dropdown is open
+              return KeyEventResult.skipRemainingHandlers;
+            default:
+              return KeyEventResult.ignored;
           }
-          return KeyEventResult.ignored;
+        }
+        return KeyEventResult.ignored;
+      },
+      child: TextField(
+        controller: textController,
+        focusNode: controller.focusNode,
+        enabled: enabled && !readOnly,
+        readOnly: readOnly,
+        keyboardType: keyboardType,
+        inputFormatters: inputFormatters,
+        onChanged: (value) {
+          controller.updateHasText(value);
+          onChanged?.call(value);
         },
-        child: TextField(
-          controller: textController,
-          focusNode: controller.focusNode,
-          enabled: enabled && !readOnly,
-          readOnly: readOnly,
-          keyboardType: keyboardType,
-          inputFormatters: inputFormatters,
-          onChanged: onChanged,
-          maxLines: maxLines,
-          textAlign: textAlign,
-          textAlignVertical: textAlignVertical,
-          style: TextStyle(
-            fontSize: textFontSize ?? 12.sp,
+        maxLines: maxLines,
+        textAlign: textAlign,
+        textAlignVertical: TextAlignVertical.center,
+        style: TextStyle(
+          fontSize: (textFontSize ?? defaultTextFontSize).sp,
+          height: 1.0,
+          color: textColor,
+          fontWeight: textFontWeight,
+        ),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: TextStyle(
+            fontSize: (labelFontSize ?? defaultLabelFontSize).sp,
+            color: enabled ? labelColor : Colors.grey,
+            fontWeight: labelFontWeight,
+          ),
+          hintText: hint,
+          hintStyle: TextStyle(
+            color: hintColor ?? Colors.grey[400],
+            fontSize: (hintFontSize ?? defaultHintFontSize).sp,
             height: 1.0,
-            color: textColor,
-            fontWeight: textFontWeight,
           ),
-          decoration: InputDecoration(
-            labelText: label,
-            labelStyle: TextStyle(
-              fontSize: labelFontSize ?? 15.sp,
-              color: enabled ? labelColor : Colors.grey,
-              fontWeight: labelFontWeight,
-            ),
-            hintText: hint,
-            hintStyle: TextStyle(
-              color: hintColor ?? Colors.grey[400],
-              fontSize: hintFontSize ?? 11.sp,
-              height: 1.0,
-            ),
-            errorText: errorText,
-            helperText: helperText,
-            isDense: isDense,
-            filled: backgroundColor != null,
-            fillColor: backgroundColor,
-            floatingLabelBehavior: floatingLabelBehavior,
-            contentPadding: _getContentPadding(),
-            border: _buildBorder(normalBorderColor),
-            enabledBorder: _buildBorder(enabledBorderColor),
-            focusedBorder: _buildBorder(focusedBorderColor),
-            suffixIcon: _buildSuffixIcon(onSuffixIconTap),
-          ),
+          isDense: true,
+          filled: backgroundColor != null,
+          fillColor: backgroundColor,
+          floatingLabelBehavior: floatingLabelBehavior,
+          contentPadding: _getEditorBoxContentPadding(),
+          border: _buildBorder(normalBorderColor),
+          enabledBorder: _buildBorder(enabledBorderColor),
+          focusedBorder: _buildBorder(focusedBorderColor),
+          suffixIcon: _buildSuffixIcon(onSuffixIconTap),
         ),
       ),
     );
@@ -266,34 +296,56 @@ class MyTextEditor extends GetView<MyTextEditorController> {
   Widget? _buildSuffixIcon(VoidCallback? onSuffixIconTap) {
     if (getDropDownOptions != null) {
       return SizedBox(
-        width: 32.w,
-        height: 32.h,
+        width: defaultIconBoxSize.w,
+        height: defaultIconBoxSize.h,
         child: Center(
           child: IconButton(
-            iconSize: 23.w,
+            iconSize: defaultIconSize.w,
             icon: const Icon(Icons.arrow_drop_down, color: Colors.grey),
             onPressed: onSuffixIconTap,
             padding: EdgeInsets.zero,
             constraints: BoxConstraints(
-              maxWidth: 32.w,
-              maxHeight: 32.h,
-              minWidth: 32.w,
-              minHeight: 32.h,
+              maxWidth: defaultIconBoxSize.w,
+              maxHeight: defaultIconBoxSize.h,
+              minWidth: defaultIconBoxSize.w,
+              minHeight: defaultIconBoxSize.h,
             ),
-            splashRadius: 16.r,
+            splashRadius: (defaultIconBoxSize / 2).r,
           ),
         ),
       );
     }
 
-    if (clearable && textController.text.isNotEmpty) {
-      return IconButton(
-        icon: const Icon(Icons.clear, color: Colors.grey),
-        onPressed: () {
-          textController.clear();
-          onClear?.call();
-        },
-      );
+    if (clearable) {
+      return Obx(() {
+        if (!controller.hasText) {
+          return const SizedBox.shrink();
+        }
+
+        return SizedBox(
+          width: defaultIconBoxSize.w,
+          height: defaultIconBoxSize.h,
+          child: Center(
+            child: IconButton(
+              iconSize: defaultIconSize.w,
+              icon: const Icon(Icons.clear, color: Colors.grey),
+              onPressed: () {
+                textController.clear();
+                controller.updateHasText('');
+                onCleared?.call();
+              },
+              padding: EdgeInsets.zero,
+              constraints: BoxConstraints(
+                maxWidth: defaultIconBoxSize.w,
+                maxHeight: defaultIconBoxSize.h,
+                minWidth: defaultIconBoxSize.w,
+                minHeight: defaultIconBoxSize.h,
+              ),
+              splashRadius: (defaultIconBoxSize / 2).r,
+            ),
+          ),
+        );
+      });
     }
 
     return null;
@@ -400,7 +452,6 @@ class MyTextEditor extends GetView<MyTextEditorController> {
     return MouseRegion(
       onEnter: (_) {
         controller.setHighlightedOption(option);
-        // 确保鼠标悬停时保持焦点
         FocusManager.instance.primaryFocus?.requestFocus();
       },
       child: InkWell(
@@ -409,18 +460,22 @@ class MyTextEditor extends GetView<MyTextEditorController> {
           color: isHighlighted
               ? (dropdownHighlightColor ?? Colors.blue.withOpacity(0.1))
               : null,
-          padding: _getContentPadding(),
+          padding: dropDownItemPadding ??
+              EdgeInsets.symmetric(
+                horizontal: defaultDropdownItemHorizontalPadding.w,
+                vertical: defaultDropdownItemVerticalPadding.h,
+              ),
           child: Row(
             children: [
               if (leadingBuilder != null) ...[
                 leadingBuilder!(option),
-                SizedBox(width: 8.w),
+                SizedBox(width: defaultDropdownItemSpacing.w),
               ],
               Expanded(
                 child: Text(
                   _displayStringForOption(option),
                   style: TextStyle(
-                    fontSize: textFontSize ?? 12.sp,
+                    fontSize: (textFontSize ?? defaultTextFontSize).sp,
                     color: isHighlighted ? Colors.blue[700] : null,
                   ),
                 ),
@@ -432,7 +487,11 @@ class MyTextEditor extends GetView<MyTextEditorController> {
     );
   }
 
-  EdgeInsetsGeometry _getContentPadding() {
+  EdgeInsetsGeometry _getEditorBoxContentPadding() {
+    final double verticalPadding =
+        ((defaultTextEditorHeight - (textFontSize ?? defaultTextFontSize)) / 2)
+            .h;
+
     if (inSetHorizontalPadding != null && inSetVerticalPadding != null) {
       return EdgeInsets.symmetric(
         horizontal: inSetHorizontalPadding!,
@@ -440,20 +499,26 @@ class MyTextEditor extends GetView<MyTextEditorController> {
       );
     }
     if (inSetHorizontalPadding != null) {
-      return EdgeInsets.symmetric(horizontal: inSetHorizontalPadding!);
+      return EdgeInsets.symmetric(
+        horizontal: inSetHorizontalPadding!,
+        vertical: verticalPadding,
+      );
     }
     if (inSetVerticalPadding != null) {
-      return EdgeInsets.symmetric(vertical: inSetVerticalPadding!);
+      return EdgeInsets.symmetric(
+        horizontal: defaultHorizontalPadding.w,
+        vertical: inSetVerticalPadding!,
+      );
     }
     return EdgeInsets.symmetric(
-      horizontal: 16.w,
-      vertical: 8.h,
+      vertical: verticalPadding,
+      horizontal: defaultHorizontalPadding.w,
     );
   }
 
   OutlineInputBorder _buildBorder(Color color) {
     return OutlineInputBorder(
-      borderRadius: BorderRadius.circular(4.r),
+      borderRadius: BorderRadius.circular(defaultBorderRadius.r),
       borderSide: BorderSide(color: color),
     );
   }
@@ -463,6 +528,7 @@ class MyTextEditorController extends GetxController {
   final _currentFocus = ''.obs;
   final _dropdownOpen = false.obs;
   final _highlightedOption = Rxn<String>();
+  final _hasText = false.obs;
 
   late final FocusNode focusNode;
 
@@ -495,4 +561,10 @@ class MyTextEditorController extends GetxController {
   void setHighlightedOption(String? option) =>
       _highlightedOption.value = option;
   String? get highlightedOption => _highlightedOption.value;
+
+  void updateHasText(String text) {
+    _hasText.value = text.isNotEmpty;
+  }
+
+  bool get hasText => _hasText.value;
 }
