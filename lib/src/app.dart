@@ -68,7 +68,7 @@ class MyApp extends StatelessWidget {
   final ThemeData? theme;
   final List<MyRoute> routes;
   final Widget Function(BuildContext, Widget?)? appBuilder;
-  final String appName;
+  final String? appName;
   final bool useOKToast;
   final bool dragToMoveArea;
   final bool showDebugTag;
@@ -90,7 +90,7 @@ class MyApp extends StatelessWidget {
     this.splash,
     required this.routes,
     this.appBuilder,
-    required this.appName,
+    this.appName,
     this.useOKToast = true,
     this.dragToMoveArea = true,
     this.showDebugTag = true,
@@ -110,7 +110,7 @@ class MyApp extends StatelessWidget {
     // 核心必需参数
     required Size designSize,
     required List<MyRoute> routes,
-    String appName = 'MyApp',
+    String? appName,
 
     // 路由和页面配置
     MySplash? splash,
@@ -130,7 +130,7 @@ class MyApp extends StatelessWidget {
     bool resizable = true,
     bool doubleClickToFullScreen = false,
 
-    // 窗口行为配��
+    // 窗口行为配置
     bool setTitleBarHidden = true,
     bool setWindowButtonVisibility = false,
     bool setSkipTaskbar = false,
@@ -211,7 +211,7 @@ class MyApp extends StatelessWidget {
 
   static Future<void> _initializeWindowManager(
     Size defaultSize,
-    String appName, {
+    String? appName, {
     bool setTitleBarHidden = true,
     bool setWindowButtonVisibility = false,
     bool setSkipTaskbar = false,
@@ -233,7 +233,11 @@ class MyApp extends StatelessWidget {
       await windowManager.setTitleBarStyle(TitleBarStyle.hidden,
           windowButtonVisibility: setWindowButtonVisibility);
     }
-    await windowManager.setTitle(appName);
+
+    if (appName != null) {
+      await windowManager.setTitle(appName);
+    }
+
     await windowManager.setSize(defaultSize);
     if (setAspectRatio) {
       await windowManager
@@ -266,7 +270,7 @@ class MyApp extends StatelessWidget {
     Widget app = GetMaterialApp(
       navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: showDebugTag,
-      title: appName,
+      title: appName ?? '',
       initialRoute: splash != null
           ? '/splash'
           : (routes.isNotEmpty ? routes.first.path : '/'),
@@ -459,7 +463,7 @@ class MyApp extends StatelessWidget {
     _globalTitleBarHidden.value = hidden;
     await windowManager.setTitleBarStyle(
       hidden ? TitleBarStyle.hidden : TitleBarStyle.normal,
-      windowButtonVisibility: false,  // 保持一致性
+      windowButtonVisibility: false, // 保持一致性
     );
   }
 }
