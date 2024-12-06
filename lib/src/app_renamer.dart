@@ -5,6 +5,9 @@ import 'package:xml/xml.dart' as xml;
 
 /// App重命名工具类
 class AppRenamer {
+  // 文件路径常量
+  static const String _mainDartFile = 'lib/main.dart';
+
   /// 命令行入口
   static Future<void> main(List<String> args) async {
     // 解析命令行参数
@@ -34,6 +37,9 @@ class AppRenamer {
       linuxName: appName,
       macName: appName,
     );
+
+    // 更新 main.dart
+    await _updateMainDartInitialize(appName);
   }
 
   /// 为指定平台设置不同的应用名称
@@ -206,7 +212,7 @@ class AppRenamer {
     }
   }
 
-  /// 将 Unicode 字符串编码为 Windows 可用的格式
+  /// 将 Unicode 字符串编为 Windows 可用的格式
   static String _encodeWindowsString(String input) {
     if (input.codeUnits.every((unit) => unit < 128)) {
       return input; // ASCII 字符直接返回
@@ -257,16 +263,6 @@ class AppRenamer {
   /// 打印成功消息
   static void _logSuccess(String platform, String name) {
     print('✅ 成功重命名 [$platform] 平台的应用为: "$name"');
-
-    if (platform == 'Windows') {
-      print('''
-📝 提示：要使任务栏和窗口标题也显示新名称，请在 MyApp.initialize 中设置 appName 参数：
-await MyApp.initialize(
-  appName: "$name",  // <-- 在这里设置应用名称
-  // ... 其他配置
-);
-''');
-    }
   }
 
   /// 打印错误消息
@@ -277,5 +273,57 @@ await MyApp.initialize(
   /// 打印跳过消息
   static void _logSkipped(String platform, String reason) {
     print('⏭️ 跳过 [$platform] 平台的重命名: $reason');
+  }
+
+  /// 修改 main.dart 中的 MyApp.initialize 配置
+  static Future<void> _updateMainDartInitialize(String name) async {
+    final mainFile = File(_mainDartFile);
+    if (!mainFile.existsSync()) {
+      _logSkipped(_mainDartFile, '找不到 $_mainDartFile 文件');
+      return;
+    }
+
+    try {
+      String content = await mainFile.readAsString();
+
+      // 查找 MyApp.initialize 调用
+      final initializeRegex = RegExp(r'MyApp\.initialize\(([\s\S]*?)\);');
+      final match = initializeRegex.firstMatch(content);
+
+      if (match == null) {
+        _logSkipped(_mainDartFile, '找不到 MyApp.initialize 调用');
+        return;
+      }
+
+      final initializeContent = match.group(1)!;
+
+      // 检查是否已经有 appName 参数，使用原始字符串避免转义问题
+      final appNameRegex = RegExp(r'''appName:\s*(['"]).*?\1''');
+      if (appNameRegex.hasMatch(initializeContent)) {
+        // 替换现有的 appName 值
+        content = content.replaceAll(
+          appNameRegex,
+          '''appName: "$name"'''
+        );
+      } else {
+        // 在第一个参数后添加 appName
+        content = content.replaceAll(
+          'MyApp.initialize(',
+          'MyApp.initialize(\n      appName: "$name",',
+        );
+      }
+
+      await mainFile.writeAsString(content);
+      print('✅ 已成功修改、格式化[$_mainDartFile] appName字段部分');
+
+      // 运行 dart format 命令格式化文件
+      try {
+        await Process.run('dart', ['format', mainFile.path]);
+      } catch (e) {
+        print('⚠️ 运行格式化命令失败: $e');
+      }
+    } catch (e) {
+      _logError(_mainDartFile, e.toString());
+    }
   }
 }
