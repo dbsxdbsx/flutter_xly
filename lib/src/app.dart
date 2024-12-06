@@ -130,7 +130,7 @@ class MyApp extends StatelessWidget {
     bool resizable = true,
     bool doubleClickToFullScreen = false,
 
-    // 窗口行为配置
+    // 窗口行为配��
     bool setTitleBarHidden = true,
     bool setWindowButtonVisibility = false,
     bool setSkipTaskbar = false,
@@ -228,6 +228,7 @@ class MyApp extends StatelessWidget {
     await windowManager.waitUntilReadyToShow();
     await windowManager.setPreventClose(false);
 
+    _globalTitleBarHidden.value = setTitleBarHidden;
     if (setTitleBarHidden) {
       await windowManager.setTitleBarStyle(TitleBarStyle.hidden,
           windowButtonVisibility: setWindowButtonVisibility);
@@ -415,6 +416,7 @@ class MyApp extends StatelessWidget {
   static final _globalEnableDoubleClickFullScreen = false.obs;
   static final _globalEnableResizable = false.obs;
   static final _globalEnableDraggable = true.obs;
+  static final _globalTitleBarHidden = true.obs;
 
   /// 获取当前双击最大化功能的状态
   static bool isDoubleClickFullScreenEnabled() {
@@ -445,6 +447,20 @@ class MyApp extends StatelessWidget {
   /// 设置窗口拖动功能的启用状态
   static Future<void> setDraggableEnabled(bool enabled) async {
     _globalEnableDraggable.value = enabled;
+  }
+
+  /// 获取当前标题栏的隐藏状态
+  static bool isTitleBarHidden() {
+    return _globalTitleBarHidden.value;
+  }
+
+  /// 设置标题栏的显示/隐藏状态
+  static Future<void> setTitleBarHidden(bool hidden) async {
+    _globalTitleBarHidden.value = hidden;
+    await windowManager.setTitleBarStyle(
+      hidden ? TitleBarStyle.hidden : TitleBarStyle.normal,
+      windowButtonVisibility: false,  // 保持一致性
+    );
   }
 }
 

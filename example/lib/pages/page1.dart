@@ -327,30 +327,47 @@ class Page1View extends GetView<Page1Controller> {
   }
 
   Widget _buildWindowControlSection() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    return Column(
       children: [
-        Expanded(
-          child: Obx(() => MyButton(
-                text: '允许拖动窗口: ${MyApp.isDraggableEnabled() ? "已开启" : "已关闭"}',
-                onPressed: controller.toggleDraggable,
-              )),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Expanded(
+              child: Obx(() => MyButton(
+                    text:
+                        '允许拖动窗口: ${MyApp.isDraggableEnabled() ? "已开启" : "已关闭"}',
+                    onPressed: controller.toggleDraggable,
+                  )),
+            ),
+            SizedBox(width: 16.w),
+            Expanded(
+              child: Obx(() => MyButton(
+                    text:
+                        '允许手动调整窗口尺寸: ${MyApp.isResizableEnabled() ? "已开启" : "已关闭"}',
+                    onPressed: controller.toggleWindowControls,
+                  )),
+            ),
+            SizedBox(width: 16.w),
+            Expanded(
+              child: Obx(() => MyButton(
+                    text:
+                        '允许双击最大化: ${MyApp.isDoubleClickFullScreenEnabled() ? "已开启" : "已关闭"}',
+                    onPressed: controller.toggleDoubleClickFullScreen,
+                  )),
+            ),
+          ],
         ),
-        SizedBox(width: 16.w),
-        Expanded(
-          child: Obx(() => MyButton(
-                text:
-                    '允许手动调整窗口尺寸: ${MyApp.isResizableEnabled() ? "已开启" : "已关闭"}',
-                onPressed: controller.toggleWindowControls,
-              )),
-        ),
-        SizedBox(width: 16.w),
-        Expanded(
-          child: Obx(() => MyButton(
-                text:
-                    '允许双击最大化: ${MyApp.isDoubleClickFullScreenEnabled() ? "已开启" : "已关闭"}',
-                onPressed: controller.toggleDoubleClickFullScreen,
-              )),
+        SizedBox(height: 16.h),
+        Row(
+          children: [
+            Expanded(
+              child: Obx(() => MyButton(
+                    text:
+                        '显示标题栏: ${controller.showTitleBar.value ? "已开启" : "已关闭"}',
+                    onPressed: controller.toggleTitleBar,
+                  )),
+            ),
+          ],
         ),
       ],
     );
@@ -481,6 +498,14 @@ class Page1Controller extends GetxController {
   final enableDoubleClickFullScreen =
       MyApp.isDoubleClickFullScreenEnabled().obs;
   final enableDraggable = MyApp.isDraggableEnabled().obs;
+  final showTitleBar = (!MyApp.isTitleBarHidden()).obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    // 初始化时获取当前标题栏状态
+    showTitleBar.value = !MyApp.isTitleBarHidden();
+  }
 
   void toggleMenuButtonState() {
     isMenuButtonActivated.value = !isMenuButtonActivated.value;
@@ -624,5 +649,16 @@ class Page1Controller extends GetxController {
       ),
       duration: const Duration(seconds: 3),
     );
+  }
+
+  void toggleTitleBar() async {
+    try {
+      final newState = !showTitleBar.value;
+      await MyApp.setTitleBarHidden(!newState);
+      showTitleBar.value = newState;
+      MyToast.show('标题栏${newState ? "已显示" : "已隐藏"}');
+    } catch (e) {
+      MyToast.showUpError('切换标题栏失败: $e');
+    }
   }
 }

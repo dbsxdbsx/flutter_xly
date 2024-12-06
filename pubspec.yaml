@@ -35,5 +35,5 @@ dev_dependencies:
 example: example
 
 executables:
-  xly_rename: rename
+  rename: rename
 

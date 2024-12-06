@@ -23,6 +23,25 @@
       "type": "dart",
       "flutterMode": "release",
       "program": "lib/main.dart"
+    },
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "cppdbg",
+      "request": "launch",
+      "args": [],
+      "stopAtEntry": false,
+      "externalConsole": true,
+      "cwd": "d:/DATA/BaiduSyncdisk/project/personal/xly_flutter_package/example/windows/runner",
+      "program": "d:/DATA/BaiduSyncdisk/project/personal/xly_flutter_package/example/windows/runner/build/Debug/outDebug",
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
     }
   ]
 }

@@ -1,5 +1,6 @@
+import 'dart:convert';
 import 'dart:io';
-import 'package:path/path.dart' as path;
+
 import 'package:xml/xml.dart' as xml;
 
 /// App重命名工具类
@@ -79,60 +80,139 @@ class AppRenamer {
 
   /// 修改 iOS 应用名称
   static Future<void> _renameIOS(String name) async {
-    final plistFile = File('ios/Runner/Info.plist');
-    if (!plistFile.existsSync()) return;
+    final plistPaths = [
+      'ios/Runner/Info.plist',
+      'ios/Runner/Info-Debug.plist',
+      'ios/Runner/Info-Release.plist'
+    ];
 
-    String content = await plistFile.readAsString();
-    content = _replacePlistValue(content, 'CFBundleName', name);
-    await plistFile.writeAsString(content);
+    for (final plistPath in plistPaths) {
+      final plistFile = File(plistPath);
+      if (!plistFile.existsSync()) continue;
+
+      final document = xml.XmlDocument.parse(await plistFile.readAsString());
+      var keys = document
+          .findElements('plist')
+          .first
+          .findElements('dict')
+          .first
+          .children;
+
+      // 移除由换行符生成的 XmlText 元素
+      keys.removeWhere((element) => element is xml.XmlText);
+
+      // 修改 CFBundleName 和 CFBundleDisplayName
+      for (int i = 0; i < keys.length; i++) {
+        if (keys[i].innerText == 'CFBundleName' ||
+            keys[i].innerText == 'CFBundleDisplayName') {
+          var value = xml.XmlElement(xml.XmlName('string'));
+          value.innerText = name;
+          keys.removeAt(i + 1);
+          keys.insert(i + 1, value);
+        }
+      }
+
+      await plistFile.writeAsString(document.toXmlString(pretty: true));
+    }
+    _logSuccess('iOS');
   }
 
   /// 修改 Web 应用名称
   static Future<void> _renameWeb(String name) async {
+    // 修改 index.html
     final htmlFile = File('web/index.html');
-    if (!htmlFile.existsSync()) return;
+    if (htmlFile.existsSync()) {
+      final document = xml.XmlDocument.parse(await htmlFile.readAsString());
+      final title = document.findAllElements('title').first;
+      title.children.clear();
+      title.children.add(xml.XmlText(name));
+      await htmlFile.writeAsString(document.toString());
+    }
 
-    final document = xml.XmlDocument.parse(await htmlFile.readAsString());
-    final title = document.findAllElements('title').first;
-    title.children.clear();
-    title.children.add(xml.XmlText(name));
-    await htmlFile.writeAsString(document.toString());
+    // 修改 manifest.json
+    final manifestFile = File('web/manifest.json');
+    if (manifestFile.existsSync()) {
+      final content = await manifestFile.readAsString();
+      final Map<String, dynamic> manifest = jsonDecode(content);
+
+      if (manifest.containsKey('name')) {
+        manifest['name'] = name;
+      }
+      if (manifest.containsKey('short_name')) {
+        manifest['short_name'] = name;
+      }
+
+      final encoder = const JsonEncoder.withIndent('  ');
+      await manifestFile.writeAsString(encoder.convert(manifest));
+    }
+    _logSuccess('Web');
   }
 
   /// 修改 Windows 应用名称
   static Future<void> _renameWindows(String name) async {
-    // 修改 main.cpp 中的窗口标题
-    final cppFile = File('windows/runner/main.cpp');
-    if (cppFile.existsSync()) {
-      String content = await cppFile.readAsString();
-      final regex = RegExp(r'window.SetTitle\(".*"\);');
-      content = content.replaceAll(regex, 'window.SetTitle("$name");');
-      await cppFile.writeAsString(content);
-    }
+    try {
+      // 修改 main.cpp
+      final cppFile = File('windows/runner/main.cpp');
+      if (cppFile.existsSync()) {
+        String content = await cppFile.readAsString();
 
-    // 修改 Runner.rc 中的应用信息
-    final rcFile = File('windows/runner/Runner.rc');
-    if (rcFile.existsSync()) {
-      String content = await rcFile.readAsString();
-
-      // 定义需要替换的值
-      final replacements = {
-        r'VALUE "FileDescription", ".*?"': 'VALUE "FileDescription", "$name"',
-        r'VALUE "InternalName", ".*?"': 'VALUE "InternalName", "$name"',
-        r'VALUE "OriginalFilename", ".*?"': 'VALUE "OriginalFilename", "$name.exe"',
-        r'VALUE "ProductName", ".*?"': 'VALUE "ProductName", "$name"',
-        // 可选：如果需要也修改公司名称
-        // r'VALUE "CompanyName", ".*?"': 'VALUE "CompanyName", "你的公司名"',
-      };
-
-      // 执行所有替换
-      for (final entry in replacements.entries) {
-        final regex = RegExp(entry.key);
-        content = content.replaceAll(regex, '${entry.value} "\\0"');
+        // 使用更精确的正则表达式，并确保正确处理 Unicode 字符串
+        final appNameLine = RegExp(r'if \(!window\.Create\(L"[^"]*"')
+            .firstMatch(content)
+            ?.group(0);
+        if (appNameLine != null) {
+          // 对于非 ASCII 字符，我们使用 UTF-16 编码的十六进制表示
+          final encodedName = _encodeWindowsString(name);
+          content = content.replaceAll(
+              appNameLine, 'if (!window.Create(L"$encodedName"');
+          await cppFile.writeAsString(content);
+        }
       }
 
-      await rcFile.writeAsString(content);
+      // 修改 Runner.rc
+      final rcFile = File('windows/runner/Runner.rc');
+      if (rcFile.existsSync()) {
+        String content = await rcFile.readAsString();
+
+        final replacements = {
+          r'VALUE "FileDescription", "[^"]*"':
+              'VALUE "FileDescription", "$name\\0"',
+          r'VALUE "InternalName", "[^"]*"': 'VALUE "InternalName", "$name\\0"',
+          r'VALUE "OriginalFilename", "[^"]*"':
+              'VALUE "OriginalFilename", "$name.exe\\0"',
+          r'VALUE "ProductName", "[^"]*"': 'VALUE "ProductName", "$name\\0"',
+        };
+
+        for (final entry in replacements.entries) {
+          final regex = RegExp(entry.key);
+          content = content.replaceAll(regex, entry.value);
+        }
+
+        await rcFile.writeAsString(content);
+      }
+      _logSuccess('Windows');
+    } catch (e) {
+      _logError('Windows', e.toString());
     }
+  }
+
+  /// 将 Unicode 字符串编码为 Windows 可用的格式
+  static String _encodeWindowsString(String input) {
+    if (input.codeUnits.every((unit) => unit < 128)) {
+      return input; // ASCII 字符直接返回
+    }
+
+    // 将非 ASCII 字符转换为 UTF-16 编码的形式
+    final buffer = StringBuffer();
+    for (final codeUnit in input.codeUnits) {
+      if (codeUnit < 128) {
+        buffer.write(String.fromCharCode(codeUnit));
+      } else {
+        // 使用 \u 转义序列
+        buffer.write('\\u${codeUnit.toRadixString(16).padLeft(4, '0')}');
+      }
+    }
+    return buffer.toString();
   }
 
   /// 修改 Linux 应用名称
@@ -142,7 +222,8 @@ class AppRenamer {
 
     String content = await ccFile.readAsString();
     final regex = RegExp(r'gtk_window_set_title\(window, ".*"\);');
-    content = content.replaceAll(regex, 'gtk_window_set_title(window, "$name");');
+    content =
+        content.replaceAll(regex, 'gtk_window_set_title(window, "$name");');
     await ccFile.writeAsString(content);
   }
 
@@ -159,6 +240,28 @@ class AppRenamer {
   /// 替换 plist 文件中的值
   static String _replacePlistValue(String content, String key, String value) {
     final keyRegex = RegExp('<key>$key</key>\\s*<string>.*?</string>');
-    return content.replaceAll(keyRegex, '<key>$key</key>\n\t<string>$value</string>');
+    return content.replaceAll(
+        keyRegex, '<key>$key</key>\n\t<string>$value</string>');
+  }
+
+  /// 打印成功消息
+  static void _logSuccess(String platform) {
+    print('✅ 成功重命名 [$platform] 平台的应用');
+
+    if (platform == 'Windows') {
+      print('''
+📝 提示：要使任务栏和窗口标题也显示新名称，请在 MyApp.initialize 中设置 appName 参数：
+
+await MyApp.initialize(
+  appName: "新应用名称",  // <-- 在这里设置应用名称
+  // ... 其他配置
+);
+''');
+    }
+  }
+
+  /// 打印错误消息
+  static void _logError(String platform, String error) {
+    print('❌ 重命名 [$platform] 平台应用时出错: $error');
   }
 }
