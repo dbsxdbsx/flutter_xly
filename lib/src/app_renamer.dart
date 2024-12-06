@@ -304,16 +304,11 @@ class AppRenamer {
 
       final initializeContent = match.group(1)!;
 
-      // 检查是否已经有 appName 参数（包括可能被注释的情况）
-      final appNameRegex = RegExp(r'''(?:\/\/\s*)?(appName:\s*(['"]).*?\2[^,\n]*(?:[,，][^\n]*?)?)''');
-      final appNameMatch = appNameRegex.firstMatch(initializeContent);
+      // 查找并移除所有的 appName 参数（包括注释的和未注释的）
+      final allAppNameRegex = RegExp(r'''^\s*(\/\/\s*)?appName:\s*(['"]).*?\2.*?(?=\s*[,，].*?\w+:|$)''', multiLine: true);
+      content = content.replaceAll(allAppNameRegex, '');
 
-      if (appNameMatch != null) {
-        // 如果找到了 appName，移除它及其后面的所有内容直到下一个有效参数
-        content = content.replaceAll(appNameMatch.group(0)!, '');
-      }
-
-      // 在 initialize 的开始位置添加 appName 参数
+      // 在 initialize 的开始位置添加新的 appName 参数
       content = content.replaceFirst(
         'MyApp.initialize(',
         'MyApp.initialize(\n      appName: "$name",',
