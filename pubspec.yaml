@@ -22,6 +22,7 @@ dependencies:
   oktoast: ^3.4.0
   flutter_inset_box_shadow: ^1.0.8
   url_launcher: ^6.2.5
+  rename_app: ^1.6.1
 
 
 

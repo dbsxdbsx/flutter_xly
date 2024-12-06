@@ -177,6 +177,27 @@ Widget buildRightMenu() {
     ],
   );
 }
+```
+
+## App重命名功能
+
+本包已集成 rename_app 功能，你可以直接使用以下命令来重命名应用：
+
+### 为所有平台设置相同名称
+```bash
+dart run rename_app:main all="新应用名称"
+```
+
+### 为不同平台设置不同名称
+```bash
+# 设置 Android 和 iOS 平台名称
+dart run rename_app:main android="Android版本" ios="iOS版本"
+
+# 为所有平台分别设置名称
+dart run rename_app:main android="Android版本" ios="iOS版本" web="Web版本" windows="Windows版本" linux="Linux版本" mac="Mac版本"
+```
+
+注意：重命名操作会修改项目配置文件，建议在进行重命名操作前先提交或备份当前代码。
 
 ## 完整示例
 
@@ -191,12 +212,12 @@ Widget buildRightMenu() {
 
 ## 注意事项
 
-- 确保在使用 XLY 包的功能之前已经正确初始化了应用。
+- 确保在使用 XLY 包的功能之前已经正确初始���了应用。
 - 某些功能可能需要额外的设置或权限，请参考具体组件的文档。
 
 ## 贡献
 
-欢迎提交问题和拉取请求。对于重大更改，请先开启一个问题讨论您想要更改的内容。
+欢迎提交问题和拉取请求。对于重大更改，请先开启一个问题讨论您想要改的内容。
 
 ## 许可证
 
