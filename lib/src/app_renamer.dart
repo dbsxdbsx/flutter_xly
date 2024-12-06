@@ -272,7 +272,7 @@ class AppRenamer {
 
   /// 打印跳过消息
   static void _logSkipped(String platform, String reason) {
-    print('⏭️ 跳过 [$platform] 平台的重命名: $reason');
+    print('⏭️  跳过 [$platform] 平台的重命名: $reason');
   }
 
   /// 修改 main.dart 中的 MyApp.initialize 配置
@@ -309,18 +309,20 @@ class AppRenamer {
       final appNameMatch = appNameRegex.firstMatch(initializeContent);
 
       if (appNameMatch != null) {
-        // 如果找到了 appName（无论是否被注释），替换整行，确保没有注释
-        content = content.replaceAll(
-          appNameMatch.group(0)!,
-          'appName: "$name"'
-        );
-      } else {
-        // 在第一个参数后添加 appName
-        content = content.replaceAll(
-          'MyApp.initialize(',
-          'MyApp.initialize(\n      appName: "$name",',
-        );
+        // 如果找到了 appName（无论是否被注释），先移除它
+        content = content.replaceAll(appNameMatch.group(0)!, '');
       }
+
+      // 在 initialize 的开始位置添加 appName 参数
+      content = content.replaceFirst(
+        'MyApp.initialize(',
+        'MyApp.initialize(\n      appName: "$name",',
+      );
+
+      // 清理可能产生的多余空行和逗号
+      content = content
+          .replaceAll(RegExp(r',(\s*,)+'), ',')  // 移除多余的逗号
+          .replaceAll(RegExp(r'\n\s*\n\s*\n'), '\n\n');  // 移除多余的空行
 
       await mainFile.writeAsString(content);
       print('✅ 已成功修改、格式化[$_mainDartFile] appName字段部分');
