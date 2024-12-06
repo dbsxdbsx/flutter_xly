@@ -119,33 +119,39 @@ class AppRenamer {
 
   /// 修改 Web 应用名称
   static Future<void> _renameWeb(String name) async {
-    // 修改 index.html
-    final htmlFile = File('web/index.html');
-    if (htmlFile.existsSync()) {
-      final document = xml.XmlDocument.parse(await htmlFile.readAsString());
-      final title = document.findAllElements('title').first;
-      title.children.clear();
-      title.children.add(xml.XmlText(name));
-      await htmlFile.writeAsString(document.toString());
-    }
+    try {
+      // 修改 index.html
+      final htmlFile = File('web/index.html');
+      if (htmlFile.existsSync()) {
+        String content = await htmlFile.readAsString();
 
-    // 修改 manifest.json
-    final manifestFile = File('web/manifest.json');
-    if (manifestFile.existsSync()) {
-      final content = await manifestFile.readAsString();
-      final Map<String, dynamic> manifest = jsonDecode(content);
+        // 使用正则表达式替换 title 标签内容
+        final titleRegex = RegExp(r'<title>.*?</title>');
+        content = content.replaceAll(titleRegex, '<title>$name</title>');
 
-      if (manifest.containsKey('name')) {
-        manifest['name'] = name;
-      }
-      if (manifest.containsKey('short_name')) {
-        manifest['short_name'] = name;
+        await htmlFile.writeAsString(content);
       }
 
-      final encoder = const JsonEncoder.withIndent('  ');
-      await manifestFile.writeAsString(encoder.convert(manifest));
+      // 修改 manifest.json
+      final manifestFile = File('web/manifest.json');
+      if (manifestFile.existsSync()) {
+        final content = await manifestFile.readAsString();
+        final Map<String, dynamic> manifest = jsonDecode(content);
+
+        if (manifest.containsKey('name')) {
+          manifest['name'] = name;
+        }
+        if (manifest.containsKey('short_name')) {
+          manifest['short_name'] = name;
+        }
+
+        final encoder = const JsonEncoder.withIndent('  ');
+        await manifestFile.writeAsString(encoder.convert(manifest));
+      }
+      _logSuccess('Web');
+    } catch (e) {
+      _logError('Web', e.toString());
     }
-    _logSuccess('Web');
   }
 
   /// 修改 Windows 应用名称
@@ -260,7 +266,7 @@ await MyApp.initialize(
     }
   }
 
-  /// 打印错误消息
+  /// 打���错误消息
   static void _logError(String platform, String error) {
     print('❌ 重命名 [$platform] 平台应用时出错: $error');
   }
