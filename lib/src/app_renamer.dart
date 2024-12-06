@@ -70,12 +70,16 @@ class AppRenamer {
   /// 修改 Android 应用名称
   static Future<void> _renameAndroid(String name) async {
     final manifestFile = File('android/app/src/main/AndroidManifest.xml');
-    if (!manifestFile.existsSync()) return;
+    if (!manifestFile.existsSync()) {
+      _logSkipped('Android', '找不到 AndroidManifest.xml 文件');
+      return;
+    }
 
     final document = xml.XmlDocument.parse(await manifestFile.readAsString());
     final application = document.findAllElements('application').first;
     application.setAttribute('android:label', name);
     await manifestFile.writeAsString(document.toString());
+    _logSuccess('Android', name);
   }
 
   /// 修改 iOS 应用名称
@@ -114,7 +118,7 @@ class AppRenamer {
 
       await plistFile.writeAsString(document.toXmlString(pretty: true));
     }
-    _logSuccess('iOS');
+    _logSuccess('iOS', name);
   }
 
   /// 修改 Web 应用名称
@@ -148,7 +152,7 @@ class AppRenamer {
         final encoder = const JsonEncoder.withIndent('  ');
         await manifestFile.writeAsString(encoder.convert(manifest));
       }
-      _logSuccess('Web');
+      _logSuccess('Web', name);
     } catch (e) {
       _logError('Web', e.toString());
     }
@@ -196,7 +200,7 @@ class AppRenamer {
 
         await rcFile.writeAsString(content);
       }
-      _logSuccess('Windows');
+      _logSuccess('Windows', name);
     } catch (e) {
       _logError('Windows', e.toString());
     }
@@ -251,23 +255,27 @@ class AppRenamer {
   }
 
   /// 打印成功消息
-  static void _logSuccess(String platform) {
-    print('✅ 成功重命名 [$platform] 平台的应用');
+  static void _logSuccess(String platform, String name) {
+    print('✅ 成功重命名 [$platform] 平台的应用为: "$name"');
 
     if (platform == 'Windows') {
       print('''
 📝 提示：要使任务栏和窗口标题也显示新名称，请在 MyApp.initialize 中设置 appName 参数：
-
 await MyApp.initialize(
-  appName: "新应用名称",  // <-- 在这里设置应用名称
+  appName: "$name",  // <-- 在这里设置应用名称
   // ... 其他配置
 );
 ''');
     }
   }
 
-  /// 打���错误消息
+  /// 打印错误消息
   static void _logError(String platform, String error) {
     print('❌ 重命名 [$platform] 平台应用时出错: $error');
+  }
+
+  /// 打印跳过消息
+  static void _logSkipped(String platform, String reason) {
+    print('⏭️ 跳过 [$platform] 平台的重命名: $reason');
   }
 }
