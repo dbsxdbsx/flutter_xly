@@ -286,24 +286,33 @@ class AppRenamer {
     try {
       String content = await mainFile.readAsString();
 
-      // 查找 MyApp.initialize 调用
-      final initializeRegex = RegExp(r'MyApp\.initialize\(([\s\S]*?)\);');
+      // 首先检查是否整个 MyApp.initialize 调用被注释
+      final commentedInitRegex = RegExp(r'^\s*\/\/.*MyApp\.initialize\(', multiLine: true);
+      if (commentedInitRegex.hasMatch(content)) {
+        _logSkipped(_mainDartFile, '找到的 MyApp.initialize 调用已被注释');
+        return;
+      }
+
+      // 查找未注释的 MyApp.initialize 调用
+      final initializeRegex = RegExp(r'(?<!\/\/\s*)MyApp\.initialize\(([\s\S]*?)\);');
       final match = initializeRegex.firstMatch(content);
 
       if (match == null) {
-        _logSkipped(_mainDartFile, '找不到 MyApp.initialize 调用');
+        _logSkipped(_mainDartFile, '找不到未注释的 MyApp.initialize 调用');
         return;
       }
 
       final initializeContent = match.group(1)!;
 
-      // 检查是否已经有 appName 参数，使用原始字符串避免转义问题
-      final appNameRegex = RegExp(r'''appName:\s*(['"]).*?\1''');
-      if (appNameRegex.hasMatch(initializeContent)) {
-        // 替换现有的 appName 值
+      // 检查是否已经有 appName 参数（包括可能被注释的情况）
+      final appNameRegex = RegExp(r'''(?:\/\/\s*)?(appName:\s*(['"]).*?\2)''');
+      final appNameMatch = appNameRegex.firstMatch(initializeContent);
+
+      if (appNameMatch != null) {
+        // 如果找到了 appName（无论是否被注释），替换整行，确保没有注释
         content = content.replaceAll(
-          appNameRegex,
-          '''appName: "$name"'''
+          appNameMatch.group(0)!,
+          'appName: "$name"'
         );
       } else {
         // 在第一个参数后添加 appName

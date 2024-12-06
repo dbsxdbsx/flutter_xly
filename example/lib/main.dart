@@ -14,7 +14,7 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await MyApp.initialize(
-    appName: "一21x吧",
+    appName: "测试exmapleApp名字",
     designSize: const Size(900, 700),
     setTitleBarHidden: false,
     routes: [
