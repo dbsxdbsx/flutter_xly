@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "测试dbsx应用\0" "\0"
+            VALUE "FileDescription", "fdsfs\0" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "测试dbsx应用\0" "\0"
+            VALUE "InternalName", "fdsfs\0" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2024 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "测试dbsx应用.exe\0" "\0"
-            VALUE "ProductName", "测试dbsx应用\0" "\0"
+            VALUE "OriginalFilename", "fdsfs.exe\0" "\0"
+            VALUE "ProductName", "fdsfs\0" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

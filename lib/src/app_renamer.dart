@@ -305,11 +305,11 @@ class AppRenamer {
       final initializeContent = match.group(1)!;
 
       // 检查是否已经有 appName 参数（包括可能被注释的情况）
-      final appNameRegex = RegExp(r'''(?:\/\/\s*)?(appName:\s*(['"]).*?\2)''');
+      final appNameRegex = RegExp(r'''(?:\/\/\s*)?(appName:\s*(['"]).*?\2[^,\n]*(?:[,，][^\n]*?)?)''');
       final appNameMatch = appNameRegex.firstMatch(initializeContent);
 
       if (appNameMatch != null) {
-        // 如果找到了 appName（无论是否被注释），先移除它
+        // 如果找到了 appName，移除它及其后面的所有内容直到下一个有效参数
         content = content.replaceAll(appNameMatch.group(0)!, '');
       }
 
@@ -319,9 +319,9 @@ class AppRenamer {
         'MyApp.initialize(\n      appName: "$name",',
       );
 
-      // 清理可能产生的多余空行和逗号
+      // 清理可能产生的多余空行和逗号（包括全角逗号）
       content = content
-          .replaceAll(RegExp(r',(\s*,)+'), ',')  // 移除多余的逗号
+          .replaceAll(RegExp(r'[,，](\s*[,，])+'), ',')  // 移除多余的逗号（包括全角逗号）
           .replaceAll(RegExp(r'\n\s*\n\s*\n'), '\n\n');  // 移除多余的空行
 
       await mainFile.writeAsString(content);

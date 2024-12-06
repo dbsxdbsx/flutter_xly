@@ -14,7 +14,7 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await MyApp.initialize(
-    appName: "测试dbsx应用",
+    appName: "fdsfs",
     setTitleBarHidden: false,
     designSize: const Size(900, 700),
     routes: [
