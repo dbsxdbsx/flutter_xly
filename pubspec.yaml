@@ -22,7 +22,8 @@ dependencies:
   oktoast: ^3.4.0
   flutter_inset_box_shadow: ^1.0.8
   url_launcher: ^6.2.5
-  rename_app: ^1.6.1
+  path: ^1.8.0
+  xml: ^6.5.0
 
 
 
@@ -32,4 +33,7 @@ dev_dependencies:
   flutter_lints: ^5.0.0
 
 example: example
+
+executables:
+  xly_rename: rename
 
