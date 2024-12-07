@@ -16,6 +16,7 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 8. 焦点管理(针对只能键盘或遥控操作的App很有用)
 9. 自定义文本编辑器(支持下拉建议和样式自定义)
 10. 自定义数字输入框(支持步进调节和范围控制)
+11. 跨平台工具类(支持文件操作、权限管理、窗口控制等)
 
 ## TODO
 My kai ji zi qi
@@ -227,6 +228,33 @@ Widget buildSpinBox() {
 }
 ```
 
+### 使用平台工具类
+```dart
+// 判断平台类型
+if (MyPlatform.isDesktopOs()) {
+  // 桌面平台特有操作
+  await MyPlatform.showWindow();
+} else if (MyPlatform.isMobileOs()) {
+  // 移动平台特有操作
+  final hasPermission = await MyPlatform.requestPermission(
+    Permission.storage,
+  );
+}
+
+// 文件操作
+final appDir = await MyPlatform.getAppDirectory();
+final file = await MyPlatform.getFile('example.txt');
+final assetFile = await MyPlatform.getFilePastedFromAssets('config.json');
+
+// 延迟显示组件
+Widget buildPingDisplay() {
+  return MyPlatform.buildDelayDisplay(
+    pingTimeFuture: Future.value(BigInt.from(150)),
+    fontSize: 14.0,
+  );
+}
+```
+
 ## App重命名功能
 
 本包已集成 rename_app 功能，你可以直接使用以下命令来重命名应用：
@@ -251,7 +279,7 @@ dart run rename_app:main android="Android版本" ios="iOS版本" web="Web版本"
 
 对于一个完整的示例，请参考Example页面。该示例展示了如何综合使用 xly 包中的各种功能，包括按钮、菜单、焦点管理和导航等。Example 页面提供了更详细的代码实现和实际运行效果，可以帮助您更好地理解和使用 xly 包的各项功能。
 
-您可以在项目的 `example` 目录下找到完整的示例代码。通过运行示例项目，您可以直观地体验 xly 包提供的��种组件和功能，并了解它们在实际应用中的使用方法。
+您可以在项目的 `example` 目录下找到完整的示例代码。通过运行示例项目，您可以直观地体验 xly 包提供的各种组件和功能，并了解它们在实际应用中的使用方法。
 
 ## splash Json动画资源
 
