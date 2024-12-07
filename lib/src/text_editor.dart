@@ -36,6 +36,7 @@ class MyTextEditor extends GetView<MyTextEditorController> {
   final EdgeInsetsGeometry? dropDownItemPadding;
   final Color? dropdownHighlightColor;
   final double? dropdownMaxHeight;
+  final int maxShowDropDownItems;
 
   // Style properties - Size
   final double? height;
@@ -83,6 +84,7 @@ class MyTextEditor extends GetView<MyTextEditorController> {
   static const double defaultDropdownItemVerticalPadding = 12.0;
   static const double defaultDropdownItemSpacing = 8.0;
   static const double defaultTextEditorHeight = 48.0;
+  static const double defaultDropdownItemHeight = 48.0;
 
   @override
   String? get tag => uniqueId;
@@ -118,6 +120,7 @@ class MyTextEditor extends GetView<MyTextEditorController> {
     this.dropDownItemPadding,
     this.dropdownHighlightColor,
     this.dropdownMaxHeight = 200,
+    this.maxShowDropDownItems = 5,
 
     // Style properties - Size
     this.height,
@@ -367,8 +370,14 @@ class MyTextEditor extends GetView<MyTextEditorController> {
     Iterable<String> options,
     double dropdownWidth,
   ) {
-    // Create a ScrollController for the dropdown list
     final scrollController = ScrollController();
+    final visibleOptions = options.take(maxShowDropDownItems).toList();
+
+    // 计算实际需要的高度
+    final double itemHeight = defaultDropdownItemHeight.h;
+    final double adaptiveHeight = itemHeight * visibleOptions.length;
+    final double maxHeight = dropdownMaxHeight ?? defaultDropdownMaxHeight.h;
+    final double finalHeight = adaptiveHeight.clamp(0, maxHeight);
 
     return Align(
       alignment: Alignment.topLeft,
@@ -376,18 +385,18 @@ class MyTextEditor extends GetView<MyTextEditorController> {
         elevation: 4.0,
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            maxHeight: dropdownMaxHeight ?? 200.h,
+            maxHeight: finalHeight,
             maxWidth: dropdownWidth,
             minWidth: dropdownWidth,
           ),
           child: Scrollbar(
-            controller: scrollController, // Add controller to Scrollbar
+            controller: scrollController,
             thumbVisibility: showScrollbar,
             child: _buildDropdownListContent(
               context,
               onSelected,
               options,
-              scrollController, // Pass controller to content builder
+              scrollController,
             ),
           ),
         ),
@@ -399,7 +408,7 @@ class MyTextEditor extends GetView<MyTextEditorController> {
     BuildContext context,
     void Function(String) onSelected,
     Iterable<String> options,
-    ScrollController scrollController, // Add ScrollController parameter
+    ScrollController scrollController,
   ) {
     return Focus(
       onKeyEvent: (node, event) {
@@ -438,12 +447,13 @@ class MyTextEditor extends GetView<MyTextEditorController> {
       },
       child: Obx(() {
         final highlighted = controller.highlightedOption;
+        final visibleOptions = options.take(maxShowDropDownItems).toList();
         return ListView.builder(
-          controller: scrollController, // Add controller to ListView
+          controller: scrollController,
           padding: EdgeInsets.zero,
-          itemCount: options.length,
+          itemCount: visibleOptions.length,
           itemBuilder: (context, index) => _buildDropdownItem(
-            options.elementAt(index),
+            visibleOptions[index],
             highlighted,
             onSelected,
           ),
@@ -467,6 +477,7 @@ class MyTextEditor extends GetView<MyTextEditorController> {
       child: InkWell(
         onTap: () => onSelected(option),
         child: Container(
+          height: defaultDropdownItemHeight.h,
           color: isHighlighted
               ? (dropdownHighlightColor ?? Colors.blue.withOpacity(0.1))
               : null,

@@ -101,9 +101,9 @@ class Page6View extends GetView<Page6Controller> {
       children: [
         MyTextEditor(
           textController: controller.colorController,
-          label: '颜色选择',
+          label: '颜色选择 (${controller.colorCount})',
           hint: '选择或输入颜色',
-          // maxShowDropDownItems: 6,
+          maxShowDropDownItems: 6,
           getDropDownOptions: controller.getColors,
           onOptionSelected: controller.onColorSelected,
           leadingBuilder: (option) => Container(
@@ -118,7 +118,7 @@ class Page6View extends GetView<Page6Controller> {
         SizedBox(height: 16.h),
         MyTextEditor(
           textController: controller.countryController,
-          label: '国家选择',
+          label: '国家选择 (${controller.countryCount})',
           hint: '选择或输入国家',
           getDropDownOptions: controller.getCountries,
           onOptionSelected: controller.onCountrySelected,
@@ -181,6 +181,10 @@ class Page6Controller extends GetxController {
   final styledController2 = TextEditingController();
   final styledController3 = TextEditingController();
 
+  // 选项数量
+  final colorCount = 30; // 颜色选项总数
+  final countryCount = 10; // 国家选项总数
+
   @override
   void onClose() {
     _disposeControllers();
@@ -228,7 +232,7 @@ class Page6Controller extends GetxController {
       '深灰色',
       '浅灰色',
       '青色',
-      '深青色',
+      '深青��',
       '琥珀色',
       '靛蓝色',
       '石灰色',
