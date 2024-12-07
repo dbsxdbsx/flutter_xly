@@ -287,14 +287,16 @@ class AppRenamer {
       String content = await mainFile.readAsString();
 
       // 首先检查是否整个 MyApp.initialize 调用被注释
-      final commentedInitRegex = RegExp(r'^\s*\/\/.*MyApp\.initialize\(', multiLine: true);
+      final commentedInitRegex =
+          RegExp(r'^\s*\/\/.*MyApp\.initialize\(', multiLine: true);
       if (commentedInitRegex.hasMatch(content)) {
         _logSkipped(_mainDartFile, '找到的 MyApp.initialize 调用已被注释');
         return;
       }
 
       // 查找未注释的 MyApp.initialize 调用
-      final initializeRegex = RegExp(r'(?<!\/\/\s*)MyApp\.initialize\(([\s\S]*?)\);');
+      final initializeRegex =
+          RegExp(r'(?<!\/\/\s*)MyApp\.initialize\(([\s\S]*?)\);');
       final match = initializeRegex.firstMatch(content);
 
       if (match == null) {
@@ -305,7 +307,9 @@ class AppRenamer {
       final initializeContent = match.group(1)!;
 
       // 查找并移除所有的 appName 参数（包括注释的和未注释的）
-      final allAppNameRegex = RegExp(r'''^\s*(\/\/\s*)?appName:\s*(['"]).*?\2.*?(?=\s*[,，].*?\w+:|$)''', multiLine: true);
+      final allAppNameRegex = RegExp(
+          r'''^\s*(\/\/\s*)?appName:\s*(['"]).*?\2.*?(?=\s*[,，].*?\w+:|$)''',
+          multiLine: true);
       content = content.replaceAll(allAppNameRegex, '');
 
       // 在 initialize 的开始位置添加新的 appName 参数
@@ -316,8 +320,8 @@ class AppRenamer {
 
       // 清理可能产生的多余空行和逗号（包括全角逗号）
       content = content
-          .replaceAll(RegExp(r'[,，](\s*[,，])+'), ',')  // 移除多余的逗号（包括全角逗号）
-          .replaceAll(RegExp(r'\n\s*\n\s*\n'), '\n\n');  // 移除多余的空行
+          .replaceAll(RegExp(r'[,，](\s*[,，])+'), ',') // 移除多余的逗号（包括全角逗号）
+          .replaceAll(RegExp(r'\n\s*\n\s*\n'), '\n\n'); // 移除多余的空行
 
       await mainFile.writeAsString(content);
       print('✅ 已成功修改、格式化[$_mainDartFile] appName字段部分');
