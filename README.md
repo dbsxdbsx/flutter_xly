@@ -17,9 +17,32 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 9. 自定义文本编辑器(支持下拉建议和样式自定义)
 10. 自定义数字输入框(支持步进调节和范围控制)
 11. 跨平台工具类(支持文件操作、权限管理、窗口控制等)
+12. 开机自启动管理(支持桌面和Android平台)
+
+## 内置依赖包
+
+使用本包后，您无需再单独导入以下包：
+
+### 已重导出的包（可直接使用）
+- `get: ^4.6.6` - GetX状态管理
+- `flutter_screenutil: ^5.9.3` - 屏幕适配
+
+### 内部使用的包（多数情况无需关心，本xly包有相应功能可直接使用）
+- `window_manager: ^0.4.2` - 窗口管理
+- `lottie: ^3.1.2` - Lottie动画
+- `path_provider: ^2.1.2` - 路径管理
+- `permission_handler: ^11.3.0` - 权限管理
+- `autostart_settings: ^0.1.4` - 自启动设置（Android）
+- `launch_at_startup: ^0.3.0` - 开机自启动（桌面）
+- `package_info_plus: ^8.0.0` - 应用信息
+- `oktoast: ^3.4.0` - Toast消息
+- `flutter_inset_box_shadow: ^1.0.8` - 内阴影
+- `url_launcher: ^6.2.5` - URL启动器
+- `path: ^1.8.0` - 路径操作
+- `xml: ^6.5.0` - XML解析
+- `icons_launcher: ^3.0.0` - 图标生成
 
 ## TODO
-My kai ji zi qi
 tray pop msg
 MyToggleBtn?
 permission功能？
@@ -254,6 +277,33 @@ Widget buildPingDisplay() {
   );
 }
 ```
+
+### 使用自启动管理
+```dart
+// 检查是否支持自启动功能
+if (MyAutoStart.isSupported()) {
+  // 启用开机自启动
+  final success = await MyAutoStart.setAutoStart(
+    true,
+    // 可选：指定桌面平台的包名
+    packageName: 'com.myapp.example',
+  );
+
+  if (success) {
+    print('设置开机自启动成功');
+  } else {
+    print('设置开机自启动失败');
+  }
+}
+
+// 禁用开机自启动
+await MyAutoStart.setAutoStart(false);
+```
+
+注意：
+- Web平台不支持此功能
+- Android平台会打开系统设置页面
+- 桌面平台需要提供正确的包名（可选）
 
 ## App重命名功能
 

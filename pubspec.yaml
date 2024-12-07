@@ -17,8 +17,6 @@ dependencies:
   flutter_screenutil: ^5.9.3
   window_manager: ^0.4.2
   lottie: ^3.1.2
-  path_provider: ^2.1.2
-  permission_handler: ^11.3.0
 
   # no need reexport
   oktoast: ^3.4.0
@@ -28,7 +26,11 @@ dependencies:
   xml: ^6.5.0
   icons_launcher: ^3.0.0
 
-
+  path_provider: ^2.1.2
+  permission_handler: ^11.3.0
+  autostart_settings: ^0.1.4
+  launch_at_startup: ^0.3.0
+  package_info_plus: ^8.0.0
 
 dev_dependencies:
   flutter_test:

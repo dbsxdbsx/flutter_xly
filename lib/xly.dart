@@ -21,3 +21,4 @@ export 'src/float_panel.dart';
 export 'src/url_launcher.dart';
 export 'src/text_editor.dart';
 export 'src/spin_box.dart';
+export 'src/auto_start.dart';
