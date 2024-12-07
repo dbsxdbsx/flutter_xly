@@ -13,25 +13,28 @@ class Page1View extends GetView<Page1Controller> {
         Scaffold(
           appBar: AppBar(title: const Text('第1页')),
           body: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.w),
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.w),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _buildSectionTitle('按钮测试'),
-                SizedBox(height: 12.h),
+                SizedBox(height: 8.h),
                 _buildButtonSection(),
-                SizedBox(height: 16.h),
+                SizedBox(height: 12.h),
                 _buildSectionTitle('菜单按钮测试'),
-                SizedBox(height: 12.h),
+                SizedBox(height: 8.h),
                 _buildMenuButtonSection(),
-                SizedBox(height: 16.h),
-                _buildSectionTitle('窗口控制测试'),
                 SizedBox(height: 12.h),
+                _buildSectionTitle('窗口控制测试'),
+                SizedBox(height: 8.h),
                 _buildWindowControlSection(),
-                SizedBox(height: 16.h),
-                _buildToastTestSection(),
-                const Spacer(),
+                SizedBox(height: 12.h),
+                Flexible(
+                  child: _buildToastTestSection(),
+                ),
+                SizedBox(height: 8.h),
                 _buildNavigationSection(),
+                SizedBox(height: 4.h),
               ],
             ),
           ),
@@ -375,10 +378,11 @@ class Page1View extends GetView<Page1Controller> {
 
   Widget _buildToastTestSection() {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _buildSectionTitle('Toast测试'),
-        SizedBox(height: 12.h),
+        SizedBox(height: 8.h),
         // 顶部Toast测试区域
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -387,7 +391,7 @@ class Page1View extends GetView<Page1Controller> {
               '顶部Toast',
               style: TextStyle(fontSize: 13.sp, color: Colors.grey[700]),
             ),
-            SizedBox(height: 6.h),
+            SizedBox(height: 4.h),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -415,7 +419,7 @@ class Page1View extends GetView<Page1Controller> {
             ),
           ],
         ),
-        SizedBox(height: 16.h),
+        SizedBox(height: 12.h),
         // 中间Toast测试区域
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -424,7 +428,7 @@ class Page1View extends GetView<Page1Controller> {
               '中间Toast',
               style: TextStyle(fontSize: 13.sp, color: Colors.grey[700]),
             ),
-            SizedBox(height: 6.h),
+            SizedBox(height: 4.h),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -443,7 +447,7 @@ class Page1View extends GetView<Page1Controller> {
                 ),
               ],
             ),
-            SizedBox(height: 6.h),
+            SizedBox(height: 4.h),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -464,7 +468,7 @@ class Page1View extends GetView<Page1Controller> {
             ),
           ],
         ),
-        SizedBox(height: 16.h),
+        SizedBox(height: 12.h),
         // 底部Toast测试区域
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -473,7 +477,7 @@ class Page1View extends GetView<Page1Controller> {
               '底部Toast',
               style: TextStyle(fontSize: 13.sp, color: Colors.grey[700]),
             ),
-            SizedBox(height: 6.h),
+            SizedBox(height: 4.h),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
