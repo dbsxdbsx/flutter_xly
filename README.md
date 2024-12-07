@@ -6,10 +6,10 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 
 当前，这个包提供了以下功能：
 
-1. 基于GetX的状态管理(不用再加入“get”包了)
-2. 基于ScreenUtil的屏幕适配(不用再加入“flutter_screenutil”包了)
-3. 基于window_manager的窗口管理(不用再加入“window_manager”包了)
-4. Toast消息显示(基于oktoast,不用再加入“oktoast”包了)
+1. 基于GetX的状态管理(不用再加入"get"包了)
+2. 基于ScreenUtil的屏幕适配(不用再加入"flutter_screenutil"包了)
+3. 基于window_manager的窗口管理(不用再加入"window_manager"包了)
+4. Toast消息显示(基于oktoast,不用再加入"oktoast"包了)
 5. 导航辅助函数
 6. 自定义按钮组件
 7. 自定义菜单组件
@@ -212,7 +212,7 @@ dart run rename_app:main android="Android版本" ios="iOS版本" web="Web版本"
 
 ## 注意事项
 
-- 确保在使用 XLY 包的功能之前已经正确初始���了应用。
+- 确保在使用 XLY 包的功能之前已经正确初始化了应用。
 - 某些功能可能需要额外的设置或权限，请参考具体组件的文档。
 
 ## 贡献
@@ -222,3 +222,7 @@ dart run rename_app:main android="Android版本" ios="iOS版本" web="Web版本"
 ## 许可证
 
 [MIT](https://choosealicense.com/licenses/mit/)
+
+## 图标生成功能
+
+本项目已集成 [`icons_launcher`](https://pub.dev/packages/icons_launcher) 包，可以方便地生成各种平台的应用图标。用户无需单独导入该包。
