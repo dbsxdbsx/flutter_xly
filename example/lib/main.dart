@@ -8,6 +8,7 @@ import 'pages/page3.dart';
 import 'pages/page4.dart';
 import 'pages/page5.dart';
 import 'pages/page6.dart';
+import 'pages/page7.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -48,6 +49,11 @@ void main() async {
         page: const Page6View(),
         controller: () => Page6Controller(),
       ),
+      MyRoute<Page7Controller>(
+        path: Routes.page7,
+        page: const Page7(),
+        controller: () => Page7Controller(),
+      ),
     ],
     splash: const MySplash(
       nextRoute: Routes.page1,
@@ -79,4 +85,5 @@ class Routes {
   static const String page4 = '/page4';
   static const String page5 = '/page5';
   static const String page6 = '/page6';
+  static const String page7 = '/page7';
 }

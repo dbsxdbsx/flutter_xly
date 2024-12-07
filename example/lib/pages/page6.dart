@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:xly/xly.dart';
 
+import '../main.dart';
+
 /// 文本编辑器测试页面
 class Page6View extends GetView<Page6Controller> {
   const Page6View({super.key});
@@ -13,36 +15,50 @@ class Page6View extends GetView<Page6Controller> {
       appBar: AppBar(
         title: Text('文本编辑器测试', style: TextStyle(fontSize: 18.sp)),
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.w),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSectionTitle('基础文本编辑器'),
-            SizedBox(height: 16.h),
-            _buildBasicEditors(),
-            SizedBox(height: 24.h),
-            _buildSectionTitle('带下拉列表的编辑器'),
-            SizedBox(height: 16.h),
-            _buildDropdownEditors(),
-            SizedBox(height: 24.h),
-            _buildSectionTitle('自定义样式编辑器'),
-            SizedBox(height: 16.h),
-            _buildStyledEditors(),
-            SizedBox(height: 24.h),
-            _buildBackButton(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBackButton() {
-    return Center(
-      child: MyButton(
-        icon: Icons.arrow_back,
-        text: '返回上一页',
-        onPressed: () => Get.back(),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.all(16.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildSectionTitle('基础文本编辑器'),
+                  SizedBox(height: 16.h),
+                  _buildBasicEditors(),
+                  SizedBox(height: 24.h),
+                  _buildSectionTitle('带下拉列表的编辑器'),
+                  SizedBox(height: 16.h),
+                  _buildDropdownEditors(),
+                  SizedBox(height: 24.h),
+                  _buildSectionTitle('自定义样式编辑器'),
+                  SizedBox(height: 16.h),
+                  _buildStyledEditors(),
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.all(16.w),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                MyButton(
+                  icon: Icons.arrow_back,
+                  text: '返回第5页',
+                  onPressed: () => Get.back(),
+                  size: 80.w,
+                ),
+                MyButton(
+                  icon: Icons.arrow_forward,
+                  text: '前往第7页',
+                  onPressed: () => Get.toNamed(Routes.page7),
+                  size: 80.w,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -232,7 +248,7 @@ class Page6Controller extends GetxController {
       '深灰色',
       '浅灰色',
       '青色',
-      '深青��',
+      '深青色',
       '琥珀色',
       '靛蓝色',
       '石灰色',
