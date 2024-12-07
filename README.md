@@ -14,6 +14,8 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 6. 自定义按钮组件
 7. 自定义菜单组件
 8. 焦点管理(针对只能键盘或遥控操作的App很有用)
+9. 自定义文本编辑器(支持下拉建议和样式自定义)
+10. 自定义数字输入框(支持步进调节和范围控制)
 
 ## TODO
 My kai ji zi qi
@@ -25,7 +27,7 @@ permission功能？
 
 ### 初始化应用
 
-```dart
+dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:xly/xly.dart';
@@ -181,6 +183,50 @@ Widget buildRightMenu() {
 }
 ```
 
+### 使用自定义文本编辑器
+```dart
+Widget buildTextEditor() {
+  return MyTextEditor(
+    textController: TextEditingController(),
+    label: '输入文本',
+    hint: '请输入...',
+    clearable: true,
+    onChanged: (value) => print('文本已更改: $value'),
+    getDropDownOptions: () async {
+      // 返回下拉建议列表
+      return ['选项1', '选项2', '选项3'];
+    },
+    onOptionSelected: (option) => print('选择了: $option'),
+    // 自定义样式
+    labelFontSize: 15.0,
+    textFontSize: 12.0,
+    borderRadius: 4.0,
+    focusedBorderColor: Colors.blue,
+  );
+}
+```
+
+### 使用自定义数字输入框
+```dart
+Widget buildSpinBox() {
+  return MySpinBox(
+    label: '数量',
+    initialValue: 0,
+    min: 0,
+    max: 100,
+    step: 1.0,
+    enableEdit: true,
+    suffix: '个',
+    onChanged: (value) => print('数值已更改: $value'),
+    // 自定义样式
+    labelFontSize: 15.0,
+    centerTextFontSize: 12.0,
+    spinIconSize: 13.0,
+    spinButtonSize: 28.0,
+  );
+}
+```
+
 ## App重命名功能
 
 本包已集成 rename_app 功能，你可以直接使用以下命令来重命名应用：
@@ -205,7 +251,7 @@ dart run rename_app:main android="Android版本" ios="iOS版本" web="Web版本"
 
 对于一个完整的示例，请参考Example页面。该示例展示了如何综合使用 xly 包中的各种功能，包括按钮、菜单、焦点管理和导航等。Example 页面提供了更详细的代码实现和实际运行效果，可以帮助您更好地理解和使用 xly 包的各项功能。
 
-您可以在项目的 `example` 目录下找到完整的示例代码。通过运行示例项目，您可以直观地体验 xly 包提供的各种组件和功能，并了解它们在实际应用中的使用方法。
+您可以在项目的 `example` 目录下找到完整的示例代码。通过运行示例项目，您可以直观地体验 xly 包提供的��种组件和功能，并了解它们在实际应用中的使用方法。
 
 ## splash Json动画资源
 
