@@ -2,6 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:xly/xly.dart';
 
+/// A customizable text editor widget with support for dropdown suggestions and styling options.
+///
+/// This widget provides a rich text editing experience with features like:
+/// * Dropdown suggestions
+/// * Custom styling
+/// * Clear button functionality
+/// * Focus management
 class MyTextEditor extends GetView<MyTextEditorController> {
   // Core properties
   final TextEditingController textController;
@@ -80,6 +87,9 @@ class MyTextEditor extends GetView<MyTextEditorController> {
   @override
   String? get tag => uniqueId;
 
+  /// Creates a text editor with customizable properties.
+  ///
+  /// The [textController] and [label] parameters are required.
   MyTextEditor({
     super.key,
     // Core properties
@@ -524,10 +534,18 @@ class MyTextEditor extends GetView<MyTextEditorController> {
   }
 }
 
+/// Controller for managing the text editor's state and functionality.
 class MyTextEditorController extends GetxController {
-  final _currentFocus = ''.obs;
-  final _dropdownOpen = false.obs;
+  /// Whether the text editor has focus
+  final _hasFocus = false.obs;
+
+  /// Whether the dropdown is currently open
+  final _isDropdownOpen = false.obs;
+
+  /// The currently highlighted dropdown option
   final _highlightedOption = Rxn<String>();
+
+  /// Whether the text editor contains any text
   final _hasText = false.obs;
 
   late final FocusNode focusNode;
@@ -552,11 +570,11 @@ class MyTextEditorController extends GetxController {
     }
   }
 
-  void setFocus(String key) => _currentFocus.value = key;
-  String get currentFocus => _currentFocus.value;
+  void setFocus(String key) => _hasFocus.value = true;
+  bool get hasFocus => _hasFocus.value;
 
-  void setDropdownOpen(bool open) => _dropdownOpen.value = open;
-  bool get isDropdownOpen => _dropdownOpen.value;
+  void setDropdownOpen(bool open) => _isDropdownOpen.value = open;
+  bool get isDropdownOpen => _isDropdownOpen.value;
 
   void setHighlightedOption(String? option) =>
       _highlightedOption.value = option;

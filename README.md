@@ -16,6 +16,8 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 8. 焦点管理(针对只能键盘或遥控操作的App很有用)
 
 ## TODO
+My kai ji zi qi
+tray pop msg
 MyToggleBtn?
 permission功能？
 

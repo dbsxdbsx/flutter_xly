@@ -1,7 +1,9 @@
+import 'package:flag/flag.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:xly/xly.dart';
 
+/// 文本编辑器测试页面
 class Page6View extends GetView<Page6Controller> {
   const Page6View({super.key});
 
@@ -28,15 +30,19 @@ class Page6View extends GetView<Page6Controller> {
             SizedBox(height: 16.h),
             _buildStyledEditors(),
             SizedBox(height: 24.h),
-            Center(
-              child: MyButton(
-                icon: Icons.arrow_back,
-                text: '返回上一页',
-                onPressed: () => Get.back(),
-              ),
-            ),
+            _buildBackButton(),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildBackButton() {
+    return Center(
+      child: MyButton(
+        icon: Icons.arrow_back,
+        text: '返回上一页',
+        onPressed: () => Get.back(),
       ),
     );
   }
@@ -97,8 +103,9 @@ class Page6View extends GetView<Page6Controller> {
           textController: controller.colorController,
           label: '颜色选择',
           hint: '选择或输入颜色',
+          // maxShowDropDownItems: 6,
           getDropDownOptions: controller.getColors,
-          onOptionSelected: (value) => controller.colorController.text = value,
+          onOptionSelected: controller.onColorSelected,
           leadingBuilder: (option) => Container(
             width: 20.w,
             height: 20.w,
@@ -114,12 +121,12 @@ class Page6View extends GetView<Page6Controller> {
           label: '国家选择',
           hint: '选择或输入国家',
           getDropDownOptions: controller.getCountries,
-          onOptionSelected: (value) =>
-              controller.countryController.text = value,
-          leadingBuilder: (option) => Icon(
-            Icons.flag,
-            size: 20.w,
-            color: Colors.blue,
+          onOptionSelected: controller.onCountrySelected,
+          leadingBuilder: (option) => Flag.fromCode(
+            controller.getCountryCode(option),
+            width: 24.w,
+            height: 24.w,
+            borderRadius: 4,
           ),
         ),
       ],
@@ -134,7 +141,7 @@ class Page6View extends GetView<Page6Controller> {
           label: '自定义样式输入框',
           hint: '自定义样式输入框',
           clearable: true,
-          onCleared: () => MyToast.show('清除了自定义样式输入框的内容'),
+          onCleared: controller.onStyled1Cleared,
           borderRadius: 50.r,
           borderWidth: 2,
           backgroundColor: Colors.blue[50],
@@ -162,7 +169,9 @@ class Page6View extends GetView<Page6Controller> {
   }
 }
 
+/// 文本编辑器测试页面控制器
 class Page6Controller extends GetxController {
+  // 文本控制器
   final basicController = TextEditingController();
   final numberController = TextEditingController();
   final multilineController = TextEditingController();
@@ -174,6 +183,11 @@ class Page6Controller extends GetxController {
 
   @override
   void onClose() {
+    _disposeControllers();
+    super.onClose();
+  }
+
+  void _disposeControllers() {
     basicController.dispose();
     numberController.dispose();
     multilineController.dispose();
@@ -182,46 +196,89 @@ class Page6Controller extends GetxController {
     styledController1.dispose();
     styledController2.dispose();
     styledController3.dispose();
-    super.onClose();
   }
 
+  // 回调方法
+  void onColorSelected(String value) => colorController.text = value;
+  void onCountrySelected(String value) => countryController.text = value;
+  void onStyled1Cleared() => MyToast.show('清除了自定义样式输入框的内容');
+
+  /// 获取颜色选项列表
   Future<List<String>> getColors() async {
     await Future.delayed(const Duration(milliseconds: 100));
     return [
       '红色',
+      '深红色',
+      '粉红色',
       '蓝色',
+      '深蓝色',
+      '浅蓝色',
       '绿色',
+      '深绿色',
+      '浅绿色',
       '黄色',
-      '紫色',
+      '金色',
       '橙色',
+      '紫色',
+      '深紫色',
       '粉色',
       '棕色',
+      '深棕色',
+      '灰色',
+      '深灰色',
+      '浅灰色',
+      '青色',
+      '深青色',
+      '琥珀色',
+      '靛蓝色',
+      '石灰色',
+      '栗色',
+      '橄榄绿',
+      '珊瑚色',
+      '天蓝色',
+      '蓝绿色',
     ];
   }
 
+  /// 根据颜色名称获取对应的Color对象
   Color getColorFromName(String name) {
-    switch (name) {
-      case '红色':
-        return Colors.red;
-      case '蓝色':
-        return Colors.blue;
-      case '绿色':
-        return Colors.green;
-      case '黄色':
-        return Colors.yellow;
-      case '紫色':
-        return Colors.purple;
-      case '橙色':
-        return Colors.orange;
-      case '粉色':
-        return Colors.pink;
-      case '棕色':
-        return Colors.brown;
-      default:
-        return Colors.grey;
-    }
+    const defaultColor = Colors.grey;
+    final colorMap = {
+      '红色': Colors.red,
+      '深红色': Colors.red[900],
+      '粉红色': Colors.red[200],
+      '蓝色': Colors.blue,
+      '深蓝色': Colors.blue[900],
+      '浅蓝色': Colors.blue[200],
+      '绿色': Colors.green,
+      '深绿色': Colors.green[900],
+      '浅绿色': Colors.green[200],
+      '黄色': Colors.yellow,
+      '金色': Colors.amber,
+      '橙色': Colors.orange,
+      '紫色': Colors.purple,
+      '深紫色': Colors.purple[900],
+      '粉色': Colors.pink,
+      '棕色': Colors.brown,
+      '深棕色': Colors.brown[900],
+      '灰色': Colors.grey,
+      '深灰色': Colors.grey[800],
+      '浅灰色': Colors.grey[300],
+      '青色': Colors.cyan,
+      '深青色': Colors.cyan[900],
+      '琥珀色': Colors.amber[700],
+      '靛蓝色': Colors.indigo,
+      '石灰色': Colors.lime,
+      '栗色': Colors.brown[600],
+      '橄榄绿': const Color(0xFF808000),
+      '珊瑚色': Colors.deepOrange[200],
+      '天蓝色': Colors.lightBlue,
+      '蓝绿色': Colors.teal,
+    };
+    return colorMap[name] ?? defaultColor;
   }
 
+  /// 获取国家选项列表
   Future<List<String>> getCountries() async {
     await Future.delayed(const Duration(milliseconds: 100));
     return [
@@ -236,5 +293,23 @@ class Page6Controller extends GetxController {
       '俄罗斯',
       '加拿大',
     ];
+  }
+
+  /// 根据国家名称获取对应的国家代码
+  FlagsCode getCountryCode(String countryName) {
+    final countryCodeMap = {
+      '中国': FlagsCode.CN,
+      '美国': FlagsCode.US,
+      '日本': FlagsCode.JP,
+      '韩国': FlagsCode.KR,
+      '英国': FlagsCode.GB,
+      '法国': FlagsCode.FR,
+      '德国': FlagsCode.DE,
+      '意大利': FlagsCode.IT,
+      '俄罗斯': FlagsCode.RU,
+      '加拿大': FlagsCode.CA,
+    };
+
+    return countryCodeMap[countryName] ?? FlagsCode.UN;
   }
 }
