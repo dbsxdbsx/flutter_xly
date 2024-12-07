@@ -51,7 +51,7 @@ permission功能？
 
 ### 初始化应用
 
-dart
+```dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:xly/xly.dart';
