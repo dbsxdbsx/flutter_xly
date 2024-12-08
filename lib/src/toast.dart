@@ -31,7 +31,11 @@ class MyToast {
     bool stackToasts = true,
     Duration animationDuration = const Duration(milliseconds: 500),
     Curve animationCurve = Curves.easeOutCubic,
+    bool hideSpinner = true,
   }) {
+    if (hideSpinner) {
+      dismissAllToast(showAnim: false);
+    }
     showToast(
       message,
       dismissOtherToast: !stackToasts,

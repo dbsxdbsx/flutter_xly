@@ -324,7 +324,7 @@ class Page1View extends GetView<Page1Controller> {
       MyMenuItem(
         icon: Icons.color_lens,
         text: '主题设置',
-        onTap: () => MyToast.show('打开主题设置'),
+        onTap: () => MyToast.show('打��主题设置'),
       ),
     ];
   }
@@ -383,12 +383,12 @@ class Page1View extends GetView<Page1Controller> {
       children: [
         _buildSectionTitle('Toast测试'),
         SizedBox(height: 8.h),
-        // 顶部Toast测试区域
+        // 顶部和底部Toast测试区域
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '顶部Toast',
+              '顶部/底部Toast',
               style: TextStyle(fontSize: 13.sp, color: Colors.grey[700]),
             ),
             SizedBox(height: 4.h),
@@ -397,22 +397,29 @@ class Page1View extends GetView<Page1Controller> {
               children: [
                 Expanded(
                   child: MyButton(
-                    text: '显示警告',
+                    text: '显示顶部警告',
                     onPressed: () => controller.showUpWarnToast(),
                   ),
                 ),
                 SizedBox(width: 12.w),
                 Expanded(
                   child: MyButton(
-                    text: '显示错误',
+                    text: '显示顶部错误',
                     onPressed: () => controller.showUpErrorToast(),
                   ),
                 ),
                 SizedBox(width: 12.w),
                 Expanded(
                   child: MyButton(
-                    text: '显示提示',
+                    text: '显示顶部提示',
                     onPressed: () => controller.showUpInfoToast(),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: MyButton(
+                    text: '显示底部提示',
+                    onPressed: () => controller.showBottomToast(),
                   ),
                 ),
               ],
@@ -453,29 +460,18 @@ class Page1View extends GetView<Page1Controller> {
               children: [
                 Expanded(
                   child: MyButton(
-                    text: '自动关闭加载(3秒)',
-                    onPressed: () => controller.showAutoCloseSpinner(),
+                    text: '测试Spinner+Toast',
+                    onPressed: () => controller.testSpinnerWithToast(),
                   ),
                 ),
                 SizedBox(width: 12.w),
                 Expanded(
                   child: MyButton(
-                    text: '关闭加载动画',
-                    onPressed: () => controller.hideSpinner(),
+                    text: '自动关闭加载(3秒)',
+                    onPressed: () => controller.showAutoCloseSpinner(),
                   ),
                 ),
               ],
-            ),
-          ],
-        ),
-        SizedBox(height: 12.h),
-        // 底部Toast测试区域
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '底部Toast',
-              style: TextStyle(fontSize: 13.sp, color: Colors.grey[700]),
             ),
             SizedBox(height: 4.h),
             Row(
@@ -483,8 +479,8 @@ class Page1View extends GetView<Page1Controller> {
               children: [
                 Expanded(
                   child: MyButton(
-                    text: '显示底部提示',
-                    onPressed: () => controller.showBottomToast(),
+                    text: '关闭加载动画',
+                    onPressed: () => controller.hideSpinner(),
                   ),
                 ),
               ],
@@ -664,5 +660,37 @@ class Page1Controller extends GetxController {
     } catch (e) {
       MyToast.showUpError('切换标题栏失败: $e');
     }
+  }
+
+  void testSpinnerWithToast() async {
+    // 显示加载动画
+    MyToast.showSpinner(
+      message: '正在加载数据...',
+      spinnerColor: Colors.blue,
+    );
+
+    // 模拟异步操作
+    await Future.delayed(const Duration(seconds: 2));
+
+    // 显示结果，spinner会自动隐藏
+    MyToast.show('数据加载完成！', hideSpinner: true);
+
+    await Future.delayed(const Duration(seconds: 1));
+
+    // 再次显示spinner
+    MyToast.showSpinner(
+      message: '继续处理数据...',
+      spinnerColor: Colors.orange,
+    );
+
+    await Future.delayed(const Duration(seconds: 2));
+
+    // 这次保持spinner显示
+    MyToast.show('处理完成，但保持加载动画！', hideSpinner: false);
+
+    await Future.delayed(const Duration(seconds: 1));
+
+    // 最后手动关闭spinner
+    MyToast.hideAll();
   }
 }
