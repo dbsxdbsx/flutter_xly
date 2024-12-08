@@ -28,7 +28,7 @@ class MyToast {
     double? radius,
     EdgeInsetsGeometry? textPadding,
     ToastPosition? position,
-    bool stackToasts = false,
+    bool stackToasts = true,
     Duration animationDuration = const Duration(milliseconds: 500),
     Curve animationCurve = Curves.easeOutCubic,
   }) {

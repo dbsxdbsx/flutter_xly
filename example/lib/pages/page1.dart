@@ -524,7 +524,7 @@ class Page1Controller extends GetxController {
     await Future.delayed(const Duration(seconds: 1));
     MyToast.show('这是一条测试Toast消息2');
     await Future.delayed(const Duration(seconds: 1));
-    MyToast.show('这是一条测试Toast消息3', stackToasts: true);
+    MyToast.show('这是一条测试Toast消息3', stackToasts: false);
   }
 
   void confirmExitApp() async {

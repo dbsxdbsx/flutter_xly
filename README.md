@@ -43,6 +43,9 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 - `icons_launcher: ^3.0.0` - 图标生成
 
 ## TODO
+float panel bar ：git stash pop?
+right menu 子菜单issue
+静默启动？
 tray pop msg
 MyToggleBtn?
 permission功能？
