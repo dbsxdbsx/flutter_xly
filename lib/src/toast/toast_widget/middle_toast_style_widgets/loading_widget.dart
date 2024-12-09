@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class LoadingWidget extends StatelessWidget {
   final String? message;
@@ -19,17 +20,17 @@ class LoadingWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.w),
       decoration: BoxDecoration(
-        color: backgroundColor ?? Colors.black54,
-        borderRadius: BorderRadius.circular(8),
+        color: backgroundColor ?? Colors.black87.withOpacity(0.7),
+        borderRadius: BorderRadius.circular(8.w),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           SizedBox(
-            width: spinnerSize ?? 40,
-            height: spinnerSize ?? 40,
+            width: spinnerSize ?? 32.sp,
+            height: spinnerSize ?? 32.sp,
             child: CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(
                 spinnerColor ?? Colors.white,
@@ -37,14 +38,15 @@ class LoadingWidget extends StatelessWidget {
             ),
           ),
           if (message != null) ...[
-            const SizedBox(height: 8),
+            SizedBox(height: 8.w),
             Text(
               message!,
               style: textStyle ??
-                  const TextStyle(
+                  TextStyle(
                     color: Colors.white,
-                    fontSize: 14,
+                    fontSize: 16.sp,
                   ),
+              textAlign: TextAlign.center,
             ),
           ],
         ],

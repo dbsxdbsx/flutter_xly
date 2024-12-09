@@ -1,37 +1,48 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-class InfoToastWidget extends StatelessWidget {
+class BaseToastWidget extends StatelessWidget {
   final String message;
   final TextStyle? textStyle;
   final Color? backgroundColor;
+  final double? radius;
+  final EdgeInsetsGeometry? padding;
+  final IconData? icon;
+  final Color? iconColor;
+  final double? iconSize;
 
-  const InfoToastWidget({
+  const BaseToastWidget({
     super.key,
     required this.message,
     this.textStyle,
     this.backgroundColor,
+    this.radius,
+    this.padding,
+    this.icon,
+    this.iconColor,
+    this.iconSize,
   });
 
   @override
   Widget build(BuildContext context) {
-    final defaultBackgroundColor = Colors.black87.withOpacity(0.7);
-
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.w),
+      padding:
+          padding ?? EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.w),
       decoration: BoxDecoration(
-        color: backgroundColor ?? defaultBackgroundColor,
-        borderRadius: BorderRadius.circular(8.w),
+        color: backgroundColor ?? Colors.black87.withOpacity(0.7),
+        borderRadius: BorderRadius.circular(radius ?? 8.w),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.info_outline,
-            color: Colors.blue,
-            size: 32.sp,
-          ),
-          SizedBox(height: 8.w),
+          if (icon != null) ...[
+            Icon(
+              icon!,
+              color: iconColor ?? Colors.white,
+              size: iconSize ?? 32.sp,
+            ),
+            SizedBox(height: 8.w),
+          ],
           Text(
             message,
             style: textStyle ??

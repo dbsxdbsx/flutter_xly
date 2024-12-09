@@ -109,45 +109,88 @@ class Routes {
 ```
 
 ### 显示 Toast 消息
-```dart
-// 基础用法
-MyToast.show('这是一条测试Toast消息');
 
-// 高级用法
+MyToast 提供了多种类型的消息提示：
+
+```dart
+// 1. 中间位置的状态提示（带图标）
+MyToast.showOk('操作成功完成！');     // 绿色对勾图标
+MyToast.showInfo('这是一条信息提示'); // 蓝色信息图标
+MyToast.showWarn('请检查输入数据');   // 黄色警告图标
+MyToast.showError('发生错误：无法连接服务器'); // 红色错误图标
+
+// 2. 顶部通知栏样式
+MyToast.showUpInfo('这是一条信息提示');  // 蓝色背景
+MyToast.showUpWarn('这是一条警告消息');  // 黄色背景
+MyToast.showUpError('这是一条错误消息');  // 红色背景
+
+// 3. 底部通知栏样式
+MyToast.showBottom(
+  '这是一条底部提示消息',
+  opacity: 0.9,               // 背景透明度
+  backgroundColor: Colors.black, // 自定义背景色
+  textColor: Colors.white,    // 自定义文字颜色
+);
+
+// 4. 基础 Toast（可自定义位置）
 MyToast.show(
   '这是一条自定义Toast消息',
   position: ToastPosition.center,  // 显示位置：top/center/bottom
   duration: Duration(seconds: 2),  // 显示时长
-  backgroundColor: Colors.black.withOpacity(0.7),  // 背景颜色
+  backgroundColor: Colors.black87.withOpacity(0.7),  // 背景颜色
   textStyle: TextStyle(fontSize: 16, color: Colors.white),  // 文本样式
   radius: 8.0,  // 圆角半径
   stackToasts: true,  // 是否堆叠显示
+  forever: false,     // 是否永久显示
   animationDuration: Duration(milliseconds: 500),  // 动画时长
   animationCurve: Curves.easeOutCubic,  // 动画曲线
 );
 
-// 显示警告消息
-MyToast.showUpWarn('这是一条警告消息');
-
-// 显示错误消息
-MyToast.showUpError('这是一条错误消息');
-
-// 显示信息提示
-MyToast.showUpInfo('这是一条信息提示');
-
-// 显示底部消息
-MyToast.showBottom('这是一条底部消息');
-
-// 显示加载动画
+// 5. 加载提示
+// 5.1 显示永久加载动画
 MyToast.showSpinner(
   message: '加载中...',
-  spinnerColor: Colors.blue,
+  spinnerColor: Colors.blue,  // 加载动画颜色
   backgroundColor: Colors.black.withOpacity(0.8),
+  textStyle: TextStyle(fontSize: 16, color: Colors.white),
 );
 
-// 隐藏所有Toast
+// 5.2 自动关闭的加载动画
+MyToast.showSpinner(
+  message: '加载中...',
+  duration: Duration(seconds: 3), // 3秒后自动关闭
+);
+
+// 5.3 加载完成后显示结果
+await MyToast.showLoadingThenToast(
+  loadingMessage: '正在加载数据...',
+  task: () async {
+    await Future.delayed(Duration(seconds: 1));
+    return (true, '数据加载完成！'); // 返回(成功状态, 提示消息)
+  },
+  spinnerColor: Colors.blue,
+  stackToasts: true,  // 是否堆叠显示结果消息
+  // 可选：自定义成功/警告/错误回调
+  onOk: (message) => MyToast.showBottom(message),
+  onWarn: (message) => MyToast.showUpWarn(message),
+  onError: (error) => MyToast.showUpError('错误：$error'),
+);
+
+// 6. 关闭所有显示的 Toast
 MyToast.hideAll();
+// 或延迟关闭
+MyToast.hideAll(1000); // 1秒后关闭
 ```
+
+Toast 特性：
+- 支持多种预设样式：成功、信息、警告、错误
+- 支持多个显示位置：顶部、中间、底部
+- 支持堆叠显示或替换显示
+- 支持自定义样式：背景色、文字样式、图标等
+- 支持加载动画显示
+- 支持异步任务加载提示
+- 支持自动关闭和手动关闭
+- 支持动画效果和自定义动画时长
 
 ### 使用自定义按钮
 ```dart
@@ -328,7 +371,7 @@ if (MyAutoStart.isSupported()) {
   );
 
   if (success) {
-    print('设置开机自���动成功');
+    print('设置开机自启动成功');
   } else {
     print('设置开机自启动失败');
   }
@@ -367,7 +410,7 @@ dart run rename_app:main android="Android版本" ios="iOS版本" web="Web版本"
 
 对于一个完整的示例，请参考Example页面。该示例展示了如何综合使用 xly 包中的各种功能，包括按钮、菜单、焦点管理和导航等。Example 页面提供了更详细的代码实现和实际运行效果，可以帮助您更好地理解和使用 xly 包的各项功能。
 
-您可以在项目的 `example` 目录下找��完整的示例代码。通过运行示例项目，您可以直观地体验 xly 包提供的各种组件和功能，并了解它们在实际应用中的使用方法。
+您可以在项目的 `example` 目录下找到完整的示例代码。通过运行示例项目，您可以直观地体验 xly 包提供的各种组件和功能，并了解它们在实际应用中的使用方法。
 
 ## splash Json动画资源
 

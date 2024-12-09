@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+import 'toast_widget/middle_toast_style_widgets/base_toast_widget.dart';
+import 'toast_widget/middle_toast_style_widgets/error_toast_widget.dart';
+import 'toast_widget/middle_toast_style_widgets/info_toast_widget.dart';
+import 'toast_widget/middle_toast_style_widgets/loading_widget.dart';
+import 'toast_widget/middle_toast_style_widgets/ok_toast_widget.dart';
+import 'toast_widget/middle_toast_style_widgets/warning_toast_widget.dart';
 import 'toast_widget/toast_core.dart';
-import 'toast_widget/widgets/error_toast_widget.dart';
-import 'toast_widget/widgets/info_toast_widget.dart';
-import 'toast_widget/widgets/loading_widget.dart';
-import 'toast_widget/widgets/ok_toast_widget.dart';
-import 'toast_widget/widgets/toast_widget.dart';
-import 'toast_widget/widgets/warning_toast_widget.dart';
 
 /// Toast显示位置枚举
 enum ToastPosition {
@@ -62,7 +62,7 @@ class MyToast extends StatelessWidget {
     Curve animationCurve = Curves.easeOutCubic,
   }) {
     Toast.show(
-      ToastWidget(
+      BaseToastWidget(
         message: message,
         textStyle: textStyle ?? TextStyle(fontSize: 25.sp, color: Colors.white),
         backgroundColor: backgroundColor ?? Colors.black87.withOpacity(0.7),

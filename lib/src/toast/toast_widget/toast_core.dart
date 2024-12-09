@@ -20,7 +20,6 @@ class Toast extends StatelessWidget {
   });
 
   static final RxList<_ToastEntry> _toasts = <_ToastEntry>[].obs;
-  static final _controller = Get.put(_ToastController());
 
   static void show(
     Widget widget, {
@@ -116,5 +115,3 @@ class _ToastEntry {
     this.key,
   });
 }
-
-class _ToastController extends GetxController {}
