@@ -304,8 +304,6 @@ class AppRenamer {
         return;
       }
 
-      final initializeContent = match.group(1)!;
-
       // 查找并移除所有的 appName 参数（包括注释的和未注释的）
       final allAppNameRegex = RegExp(
           r'''^\s*(\/\/\s*)?appName:\s*(['"]).*?\2.*?(?=\s*[,，].*?\w+:|$)''',

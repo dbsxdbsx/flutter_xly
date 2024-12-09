@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:launch_at_startup/launch_at_startup.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:xly/src/platform.dart';
-import 'package:xly/src/toast.dart';
+import 'package:xly/src/toast/toast.dart';
 
 /// 自启动管理类，提供跨平台的开机自启动功能
 class MyAutoStart {

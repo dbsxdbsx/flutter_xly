@@ -19,7 +19,6 @@ dependencies:
   lottie: ^3.1.2
 
   # no need reexport
-  oktoast: ^3.4.0
   flutter_inset_box_shadow: ^1.0.8
   url_launcher: ^6.2.5
   path: ^1.8.0

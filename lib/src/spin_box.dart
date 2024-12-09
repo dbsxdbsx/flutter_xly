@@ -102,7 +102,8 @@ class _MySpinBoxState extends State<MySpinBox> {
     required VoidCallback onTap,
   }) {
     final actualIconSize = widget.spinIconSize ?? MySpinBox.defaultIconSize;
-    final actualButtonSize = widget.spinButtonSize ?? MySpinBox.defaultButtonSize;
+    final actualButtonSize =
+        widget.spinButtonSize ?? MySpinBox.defaultButtonSize;
 
     return Material(
       type: MaterialType.transparency,
@@ -265,8 +266,8 @@ class _MySpinBoxState extends State<MySpinBox> {
                     child: Text(
                       widget.suffix!,
                       style: TextStyle(
-                        fontSize:
-                            widget.suffixFontSize ?? MySpinBox.defaultSuffixFontSize,
+                        fontSize: widget.suffixFontSize ??
+                            MySpinBox.defaultSuffixFontSize,
                         color: Colors.grey[700],
                       ),
                     ),
@@ -276,7 +277,8 @@ class _MySpinBoxState extends State<MySpinBox> {
           ),
           controller: _textController,
           style: TextStyle(
-            fontSize: widget.centerTextFontSize ?? MySpinBox.defaultCenterFontSize,
+            fontSize:
+                widget.centerTextFontSize ?? MySpinBox.defaultCenterFontSize,
             color: Colors.grey[800],
           ),
           textAlign: TextAlign.center,

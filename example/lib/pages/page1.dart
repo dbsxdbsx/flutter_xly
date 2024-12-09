@@ -441,6 +441,39 @@ class Page1View extends GetView<Page1Controller> {
               children: [
                 Expanded(
                   child: MyButton(
+                    text: '成功提示',
+                    onPressed: () => controller.showOkToast(),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: MyButton(
+                    text: '信息提示',
+                    onPressed: () => controller.showInfoToast(),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: MyButton(
+                    text: '警告提示',
+                    onPressed: () => controller.showWarnToast(),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: MyButton(
+                    text: '错误提示',
+                    onPressed: () => controller.showErrorToast(),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 8.h),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Expanded(
+                  child: MyButton(
                     text: '连续显示Toast',
                     onPressed: controller.showToast,
                   ),
@@ -460,7 +493,7 @@ class Page1View extends GetView<Page1Controller> {
               children: [
                 Expanded(
                   child: MyButton(
-                    text: '测试Spinner+Toast',
+                    text: '测试加载+完成',
                     onPressed: () => controller.testSpinnerWithToast(),
                   ),
                 ),
@@ -516,11 +549,19 @@ class Page1Controller extends GetxController {
   }
 
   void showToast() async {
-    MyToast.show('这是一条测试Toast消息1');
-    await Future.delayed(const Duration(seconds: 1));
-    MyToast.show('这是一条测试Toast消息2');
-    await Future.delayed(const Duration(seconds: 1));
-    MyToast.show('这是一条测试Toast消息3', stackToasts: false);
+    // 展示普通 toast 之间的堆叠效果
+    MyToast.show('第一条消息 (堆叠显示)');
+    await Future.delayed(const Duration(milliseconds: 500));
+    MyToast.show('第二条消息 (堆叠显示)');
+    await Future.delayed(const Duration(milliseconds: 500));
+    MyToast.show('第三条消息 (堆叠显示)');
+
+    await Future.delayed(const Duration(seconds: 2));
+
+    // 展示非堆叠效果
+    MyToast.show('新消息 (不堆叠)', stackToasts: false);
+    await Future.delayed(const Duration(milliseconds: 500));
+    MyToast.show('又一条新消息 (不堆叠)', stackToasts: false);
   }
 
   void confirmExitApp() async {
@@ -663,34 +704,78 @@ class Page1Controller extends GetxController {
   }
 
   void testSpinnerWithToast() async {
-    // 显示加载动画
-    MyToast.showSpinner(
-      message: '正在加载数据...',
+    // 场景1：使用默认提示
+    final success1 = await MyToast.showLoadingThenToast(
+      loadingMessage: '正在加载数据...',
+      task: () async {
+        await Future.delayed(const Duration(seconds: 1));
+        return (true, '数据加载完成！');
+      },
       spinnerColor: Colors.blue,
     );
+    debugPrint('task1加载结果: ${success1 ? "成功" : "失败"}');
 
-    // 模拟异步操作
-    await Future.delayed(const Duration(seconds: 2));
-
-    // 显示结果，spinner会自动隐藏
-    MyToast.show('数据加载完成！', hideSpinner: true);
-
-    await Future.delayed(const Duration(seconds: 1));
-
-    // 再次显示spinner
-    MyToast.showSpinner(
-      message: '继续处理数据...',
-      spinnerColor: Colors.orange,
+    // 场景2：自定义警告提示
+    final success2 = await MyToast.showLoadingThenToast(
+      stackToasts: true,
+      loadingMessage: '正在处理数据...',
+      task: () async {
+        await Future.delayed(const Duration(seconds: 1));
+        return (false, '数据格式不正确，请检查后重试');
+      },
+      spinnerColor: Colors.green,
+      onWarn: (message) {
+        MyToast.showUpWarn(message); // 使用顶部警告样式
+      },
     );
+    debugPrint('task2处理结果: ${success2 ? "成功" : "失败"}');
 
-    await Future.delayed(const Duration(seconds: 2));
+    // 场景3：自定义成功和错误提示
+    final success3 = await MyToast.showLoadingThenToast(
+      loadingMessage: '正在保存\n(不堆叠)\n...',
+      task: () async {
+        await Future.delayed(const Duration(seconds: 1));
+        if (DateTime.now().second % 2 == 0) {
+          throw Exception('网络连接错误');
+        }
+        return (true, '保存成功！');
+      },
+      spinnerColor: Colors.orange,
+      // onOk: (message) {
+      //   MyToast.showBottom(message); // 使用底部提示样式
+      // },
+      // onError: (error) {
+      //   MyToast.showUpError('保存失败：$error'); // 使用顶部错误样式
+      // },
+    );
+    debugPrint('task3保存结果: ${success3 ? "成功" : "失败"}');
+  }
 
-    // 这次保持spinner显示
-    MyToast.show('处理完成，但保持加载动画！', hideSpinner: false);
+  void showOkToast() {
+    MyToast.showOk(
+      '操作成功完成！',
+      backgroundColor: Colors.black87.withOpacity(0.8),
+    );
+  }
 
-    await Future.delayed(const Duration(seconds: 1));
+  void showWarnToast() {
+    MyToast.showWarn(
+      '请检查输入数据',
+      backgroundColor: Colors.black87.withOpacity(0.8),
+    );
+  }
 
-    // 最后手动关闭spinner
-    MyToast.hideAll();
+  void showErrorToast() {
+    MyToast.showError(
+      '发生错误：无法连接服务器',
+      backgroundColor: Colors.black87.withOpacity(0.8),
+    );
+  }
+
+  void showInfoToast() {
+    MyToast.showInfo(
+      '这是一条信息提示',
+      backgroundColor: Colors.black87.withOpacity(0.8),
+    );
   }
 }

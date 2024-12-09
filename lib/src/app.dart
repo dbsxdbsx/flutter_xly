@@ -3,65 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:oktoast/oktoast.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:xly/src/exit.dart';
 import 'package:xly/src/float_panel.dart';
 import 'package:xly/src/platform.dart';
 import 'package:xly/src/splash.dart';
-import 'package:xly/src/toast.dart';
-
-class MyRoute<T extends GetxController> {
-  final String path;
-  final Widget page;
-  final T Function() controller;
-
-  MyRoute({
-    required this.path,
-    required this.page,
-    required this.controller,
-  });
-
-  void registerController() {
-    Get.lazyPut<T>(controller);
-  }
-}
-
-class CustomDragArea extends StatelessWidget {
-  final Widget child;
-  final bool enableDoubleClickFullScreen;
-  final bool draggable;
-
-  const CustomDragArea({
-    super.key,
-    required this.child,
-    required this.enableDoubleClickFullScreen,
-    required this.draggable,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onPanStart: draggable
-          ? (details) async {
-              await windowManager.startDragging();
-            }
-          : null,
-      onDoubleTap: enableDoubleClickFullScreen
-          ? () async {
-              bool isMaximized = await windowManager.isMaximized();
-              if (isMaximized) {
-                await windowManager.restore();
-              } else {
-                await windowManager.maximize();
-              }
-            }
-          : null,
-      behavior: HitTestBehavior.translucent,
-      child: child,
-    );
-  }
-}
+import 'package:xly/src/toast/toast.dart';
 
 class MyApp extends StatelessWidget {
   final Size designSize;
@@ -69,7 +16,7 @@ class MyApp extends StatelessWidget {
   final List<MyRoute> routes;
   final Widget Function(BuildContext, Widget?)? appBuilder;
   final String? appName;
-  final bool useOKToast;
+  final bool useToast;
   final bool dragToMoveArea;
   final bool showDebugTag;
   final MySplash? splash;
@@ -91,7 +38,7 @@ class MyApp extends StatelessWidget {
     required this.routes,
     this.appBuilder,
     this.appName,
-    this.useOKToast = true,
+    this.useToast = true,
     this.dragToMoveArea = true,
     this.showDebugTag = true,
     this.keyToRollBack,
@@ -107,7 +54,7 @@ class MyApp extends StatelessWidget {
   });
 
   static Future<void> initialize({
-    // 核心必需参数
+    // 核必需参数
     required Size designSize,
     required List<MyRoute> routes,
     String? appName,
@@ -192,7 +139,7 @@ class MyApp extends StatelessWidget {
       routes: routes,
       appBuilder: appBuilder,
       appName: appName,
-      useOKToast: useOKToast,
+      useToast: useOKToast,
       dragToMoveArea: dragToMoveArea,
       showDebugTag: showDebugTag,
       splash: splash,
@@ -308,7 +255,7 @@ class MyApp extends StatelessWidget {
       locale: const Locale('zh', 'CN'),
     );
 
-    return useOKToast ? OKToast(child: app) : app;
+    return useToast ? MyToast(child: app) : app;
   }
 
   ThemeData _buildTheme() {
@@ -358,7 +305,7 @@ class MyApp extends StatelessWidget {
       final now = DateTime.now();
       final currentRoute = Get.currentRoute;
 
-      // 检查是否切换了路由或者超过了时间间隔
+      // 检查是否切换路由或者超过了时间间隔
       bool shouldResetTimer = lastRoute != currentRoute ||
           lastPressedTime == null ||
           now.difference(lastPressedTime!) > exitGapTime;
@@ -477,4 +424,56 @@ class VoidCallbackIntent extends Intent {
 class WindowSettings extends GetxController {
   static WindowSettings get to => Get.find();
   final enableDoubleClickFullScreen = false.obs;
+}
+
+class MyRoute<T extends GetxController> {
+  final String path;
+  final Widget page;
+  final T Function() controller;
+
+  MyRoute({
+    required this.path,
+    required this.page,
+    required this.controller,
+  });
+
+  void registerController() {
+    Get.lazyPut<T>(controller);
+  }
+}
+
+class CustomDragArea extends StatelessWidget {
+  final Widget child;
+  final bool enableDoubleClickFullScreen;
+  final bool draggable;
+
+  const CustomDragArea({
+    super.key,
+    required this.child,
+    required this.enableDoubleClickFullScreen,
+    required this.draggable,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onPanStart: draggable
+          ? (details) async {
+              await windowManager.startDragging();
+            }
+          : null,
+      onDoubleTap: enableDoubleClickFullScreen
+          ? () async {
+              bool isMaximized = await windowManager.isMaximized();
+              if (isMaximized) {
+                await windowManager.restore();
+              } else {
+                await windowManager.maximize();
+              }
+            }
+          : null,
+      behavior: HitTestBehavior.translucent,
+      child: child,
+    );
+  }
 }

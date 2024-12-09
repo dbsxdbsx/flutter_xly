@@ -9,7 +9,7 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 1. 基于GetX的状态管理(不用再加入"get"包了)
 2. 基于ScreenUtil的屏幕适配(不用再加入"flutter_screenutil"包了)
 3. 基于window_manager的窗口管理(不用再加入"window_manager"包了)
-4. Toast消息显示(基于oktoast,不用再加入"oktoast"包了)
+4. Toast消息显示(内置实现，支持自定义动画和样式)
 5. 导航辅助函数
 6. 自定义按钮组件
 7. 自定义菜单组件
@@ -35,7 +35,6 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 - `autostart_settings: ^0.1.4` - 自启动设置（Android）
 - `launch_at_startup: ^0.3.0` - 开机自启动（桌面）
 - `package_info_plus: ^8.0.0` - 应用信息
-- `oktoast: ^3.4.0` - Toast消息
 - `flutter_inset_box_shadow: ^1.0.8` - 内阴影
 - `url_launcher: ^6.2.5` - URL启动器
 - `path: ^1.8.0` - 路径操作
@@ -111,7 +110,43 @@ class Routes {
 
 ### 显示 Toast 消息
 ```dart
-toast('这是一条测试Toast消息');
+// 基础用法
+MyToast.show('这是一条测试Toast消息');
+
+// 高级用法
+MyToast.show(
+  '这是一条自定义Toast消息',
+  position: ToastPosition.center,  // 显示位置：top/center/bottom
+  duration: Duration(seconds: 2),  // 显示时长
+  backgroundColor: Colors.black.withOpacity(0.7),  // 背景颜色
+  textStyle: TextStyle(fontSize: 16, color: Colors.white),  // 文本样式
+  radius: 8.0,  // 圆角半径
+  stackToasts: true,  // 是否堆叠显示
+  animationDuration: Duration(milliseconds: 500),  // 动画时长
+  animationCurve: Curves.easeOutCubic,  // 动画曲线
+);
+
+// 显示警告消息
+MyToast.showUpWarn('这是一条警告消息');
+
+// 显示错误消息
+MyToast.showUpError('这是一条错误消息');
+
+// 显示信息提示
+MyToast.showUpInfo('这是一条信息提示');
+
+// 显示底部消息
+MyToast.showBottom('这是一条底部消息');
+
+// 显示加载动画
+MyToast.showSpinner(
+  message: '加载中...',
+  spinnerColor: Colors.blue,
+  backgroundColor: Colors.black.withOpacity(0.8),
+);
+
+// 隐藏所有Toast
+MyToast.hideAll();
 ```
 
 ### 使用自定义按钮
@@ -293,7 +328,7 @@ if (MyAutoStart.isSupported()) {
   );
 
   if (success) {
-    print('设置开机自启动成功');
+    print('设置开机自���动成功');
   } else {
     print('设置开机自启动失败');
   }
@@ -332,7 +367,7 @@ dart run rename_app:main android="Android版本" ios="iOS版本" web="Web版本"
 
 对于一个完整的示例，请参考Example页面。该示例展示了如何综合使用 xly 包中的各种功能，包括按钮、菜单、焦点管理和导航等。Example 页面提供了更详细的代码实现和实际运行效果，可以帮助您更好地理解和使用 xly 包的各项功能。
 
-您可以在项目的 `example` 目录下找到完整的示例代码。通过运行示例项目，您可以直观地体验 xly 包提供的各种组件和功能，并了解它们在实际应用中的使用方法。
+您可以在项目的 `example` 目录下找��完整的示例代码。通过运行示例项目，您可以直观地体验 xly 包提供的各种组件和功能，并了解它们在实际应用中的使用方法。
 
 ## splash Json动画资源
 
