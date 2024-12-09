@@ -2,6 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class BaseToastWidget extends StatelessWidget {
+  // 默认样式配置 - 使用 getter 以支持热重载
+  Color get defaultBackgroundColor => Colors.black87.withOpacity(0.75);
+  Color get defaultTextColor => Colors.white;
+  Color get defaultIconColor => Colors.white;
+  double get defaultIconSize => 32.sp;
+  double get defaultFontSize => 16.sp;
+  double get defaultBorderRadius => 8.w;
+  EdgeInsets get defaultPadding => EdgeInsets.symmetric(
+        horizontal: 24.w,
+        vertical: 16.w,
+      );
+
   final String message;
   final TextStyle? textStyle;
   final Color? backgroundColor;
@@ -26,11 +38,10 @@ class BaseToastWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding:
-          padding ?? EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.w),
+      padding: padding ?? defaultPadding,
       decoration: BoxDecoration(
-        color: backgroundColor ?? Colors.black87.withOpacity(0.7),
-        borderRadius: BorderRadius.circular(radius ?? 8.w),
+        color: backgroundColor ?? defaultBackgroundColor,
+        borderRadius: BorderRadius.circular(radius ?? defaultBorderRadius),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -38,8 +49,8 @@ class BaseToastWidget extends StatelessWidget {
           if (icon != null) ...[
             Icon(
               icon!,
-              color: iconColor ?? Colors.white,
-              size: iconSize ?? 32.sp,
+              color: iconColor ?? defaultIconColor,
+              size: iconSize ?? defaultIconSize,
             ),
             SizedBox(height: 8.w),
           ],
@@ -47,8 +58,8 @@ class BaseToastWidget extends StatelessWidget {
             message,
             style: textStyle ??
                 TextStyle(
-                  fontSize: 16.sp,
-                  color: Colors.white,
+                  fontSize: defaultFontSize,
+                  color: defaultTextColor,
                 ),
             textAlign: TextAlign.center,
           ),

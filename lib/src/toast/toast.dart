@@ -19,6 +19,38 @@ enum ToastPosition {
 
 /// MyToast 提供了一个统一的 Toast 显示组件
 class MyToast extends StatelessWidget {
+  // 添加常用样式配置
+  static const Duration _defaultDuration = Duration(seconds: 3);
+  static const Duration _defaultAnimationDuration = Duration(milliseconds: 500);
+  static const Curve _defaultAnimationCurve = Curves.easeOutCubic;
+
+  // 常用边距
+  static final EdgeInsets _defaultPadding = EdgeInsets.symmetric(
+    horizontal: 24.w,
+    vertical: 16.w,
+  );
+  static final EdgeInsets _defaultSnackBarPadding = EdgeInsets.symmetric(
+    horizontal: 15.w,
+    vertical: 10.w,
+  );
+  static final double _defaultMargin = 10.w;
+  static final double _defaultBorderRadius = 8.w;
+
+  // 常用文本样式
+  static final TextStyle _defaultTextStyle = TextStyle(
+    fontSize: 16.sp,
+    color: Colors.white,
+  );
+
+  // 常用背景色
+  static final Color _defaultBackgroundColor = Colors.black87.withOpacity(0.7);
+  static const Color _defaultErrorBackgroundColor = Color(0xFFFFEBEE);
+  static const Color _defaultErrorTextColor = Color(0xFFB71C1C);
+  static final Color _defaultInfoBackgroundColor = Colors.lightBlue[50]!;
+  static final Color _defaultInfoTextColor = Colors.lightBlue[900]!;
+  static final Color _defaultWarnBackgroundColor = Colors.amber[50]!;
+  static final Color _defaultWarnTextColor = Colors.amber[900]!;
+
   final Widget child;
 
   const MyToast({
@@ -58,25 +90,24 @@ class MyToast extends StatelessWidget {
     EdgeInsetsGeometry? textPadding,
     ToastPosition? position,
     bool stackToasts = true,
-    Duration animationDuration = const Duration(milliseconds: 500),
-    Curve animationCurve = Curves.easeOutCubic,
+    Duration? animationDuration,
+    Curve? animationCurve,
   }) {
     Toast.show(
       BaseToastWidget(
         message: message,
-        textStyle: textStyle ?? TextStyle(fontSize: 25.sp, color: Colors.white),
-        backgroundColor: backgroundColor ?? Colors.black87.withOpacity(0.7),
-        radius: radius ?? 20.0,
-        padding: textPadding ??
-            EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.w),
+        textStyle: textStyle ?? _defaultTextStyle,
+        backgroundColor: backgroundColor ?? _defaultBackgroundColor,
+        radius: radius ?? _defaultBorderRadius,
+        padding: textPadding ?? _defaultPadding,
       ),
       dismissOthers: !stackToasts,
       duration: forever == true
           ? const Duration(days: 365)
-          : duration ?? const Duration(seconds: 3),
+          : duration ?? _defaultDuration,
       alignment: _getAlignmentFromPosition(position ?? ToastPosition.center),
-      animationDuration: animationDuration,
-      animationCurve: animationCurve,
+      animationDuration: animationDuration ?? _defaultAnimationDuration,
+      animationCurve: animationCurve ?? _defaultAnimationCurve,
     );
 
     return const SizedBox.shrink();
@@ -104,19 +135,16 @@ class MyToast extends StatelessWidget {
       title,
       message,
       snackPosition: SnackPosition.TOP,
-      backgroundColor: Colors.amber[50],
-      colorText: Colors.amber[900],
-      duration: duration ?? const Duration(seconds: 2),
-      margin: EdgeInsets.all(10.w),
-      borderRadius: 8.w,
-      padding: EdgeInsets.symmetric(
-        horizontal: 15.w,
-        vertical: 10.w,
-      ),
+      backgroundColor: _defaultWarnBackgroundColor,
+      colorText: _defaultWarnTextColor,
+      duration: duration ?? _defaultDuration,
+      margin: EdgeInsets.all(_defaultMargin),
+      borderRadius: _defaultBorderRadius,
+      padding: _defaultSnackBarPadding,
       snackStyle: SnackStyle.FLOATING,
       isDismissible: true,
       dismissDirection: DismissDirection.horizontal,
-      forwardAnimationCurve: Curves.easeOutCubic,
+      forwardAnimationCurve: _defaultAnimationCurve,
       reverseAnimationCurve: Curves.easeInCubic,
     );
     return const SizedBox.shrink();
@@ -306,7 +334,7 @@ class MyToast extends StatelessWidget {
     return const SizedBox.shrink();
   }
 
-  /// 显��一个错误提示（用于异常错误）
+  /// 显示一个错误提示（用于异常错误）
   ///
   /// [message] 错误消息内容
   /// [textStyle] 文本样式
@@ -381,48 +409,82 @@ class MyToast extends StatelessWidget {
     required Future<(bool, String?)> Function() task,
     Color? spinnerColor,
     Color? backgroundColor,
-    bool stackToasts = true,
+    bool stackToasts = false, // NOTE: 对于加载ui，默认设为不堆叠，以符合使用习惯
     void Function(String)? onOk,
     void Function(String)? onWarn,
     void Function(String)? onError,
   }) async {
-    showSpinner(
-      message: loadingMessage,
-      spinnerColor: spinnerColor,
-      backgroundColor: backgroundColor,
+    // 为当前加载动画创建一个唯一的key
+    final spinnerKey = UniqueKey();
+
+    // 显示加载动画时也要考虑堆叠参数
+    Toast.show(
+      LoadingWidget(
+        message: loadingMessage,
+        spinnerColor: spinnerColor,
+        backgroundColor: backgroundColor ?? _defaultBackgroundColor,
+      ),
+      key: spinnerKey,  // 使用唯一的key
+      dismissOthers: !stackToasts, // 根据stackToasts决定是否关闭其他Toast
+      duration: const Duration(days: 365),
+      alignment: Alignment.center,
     );
 
     try {
       final (success, message) = await task();
-      hideAll();
+      if (!stackToasts) {
+        hideAll(); // 只有在不堆叠时才清除所有Toast
+      } else {
+        // 在堆叠模式下，只清除当前的加载动画
+        Toast.dismiss(spinnerKey);
+        // 添加一个小延迟，确保动画平滑
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
 
-      // 只有当message不为null时才显示toast
       if (message != null) {
         if (success) {
           if (onOk != null) {
             onOk(message);
           } else {
-            showOk(message,
-                backgroundColor: backgroundColor, stackToasts: stackToasts);
+            showOk(
+              message,
+              backgroundColor: backgroundColor ?? _defaultBackgroundColor,
+              stackToasts: stackToasts,
+            );
           }
         } else {
           if (onWarn != null) {
             onWarn(message);
           } else {
-            showWarn(message,
-                backgroundColor: backgroundColor, stackToasts: stackToasts);
+            showWarn(
+              message,
+              backgroundColor: backgroundColor ?? _defaultBackgroundColor,
+              stackToasts: stackToasts,
+            );
           }
         }
       }
 
       return success;
     } catch (e) {
-      hideAll();
-      if (onError != null) {
-        onError(e.toString());
+      if (!stackToasts) {
+        hideAll(); // 只有在不堆叠时才清除所有Toast
       } else {
-        showError('操作失败：$e',
-            backgroundColor: backgroundColor, stackToasts: stackToasts);
+        // 在堆叠模式下，只清除当前的加载动画
+        Toast.dismiss(spinnerKey);
+        // 添加一个小延迟，确保动画平滑
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+
+      final errorMessage = '操作失败：$e';
+      if (onError != null) {
+        onError(errorMessage);
+      } else {
+        showError(
+          errorMessage,
+          backgroundColor: backgroundColor ?? _defaultBackgroundColor,
+          stackToasts: stackToasts,
+        );
       }
       return false;
     }

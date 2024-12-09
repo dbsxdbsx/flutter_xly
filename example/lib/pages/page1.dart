@@ -396,21 +396,21 @@ class Page1View extends GetView<Page1Controller> {
               children: [
                 Expanded(
                   child: MyButton(
-                    text: '显示顶部警告',
+                    text: '显示顶部警告提示',
                     onPressed: () => controller.showUpWarnToast(),
                   ),
                 ),
                 SizedBox(width: 12.w),
                 Expanded(
                   child: MyButton(
-                    text: '显示顶部错误',
+                    text: '显示顶部错误提示',
                     onPressed: () => controller.showUpErrorToast(),
                   ),
                 ),
                 SizedBox(width: 12.w),
                 Expanded(
                   child: MyButton(
-                    text: '显示顶部提示',
+                    text: '显示顶部信息提示',
                     onPressed: () => controller.showUpInfoToast(),
                   ),
                 ),
@@ -683,7 +683,6 @@ class Page1Controller extends GetxController {
     MyToast.showSpinner(
       message: '永久加载中...',
       spinnerColor: Colors.blue,
-      backgroundColor: Colors.black.withOpacity(0.8),
       textStyle: TextStyle(
         fontSize: 16.sp,
         color: Colors.white,
@@ -700,7 +699,6 @@ class Page1Controller extends GetxController {
     MyToast.showSpinner(
       message: '加载中(3秒后自动关闭)...',
       spinnerColor: Colors.green,
-      backgroundColor: Colors.black.withOpacity(0.8),
       textStyle: TextStyle(
         fontSize: 16.sp,
         color: Colors.white,
@@ -772,28 +770,24 @@ class Page1Controller extends GetxController {
   void showOkToast() {
     MyToast.showOk(
       '操作成功完成！',
-      backgroundColor: Colors.black87.withOpacity(0.8),
     );
   }
 
   void showWarnToast() {
     MyToast.showWarn(
       '请检查输入数据',
-      backgroundColor: Colors.black87.withOpacity(0.8),
     );
   }
 
   void showErrorToast() {
     MyToast.showError(
       '发生错误：无法连接服务器',
-      backgroundColor: Colors.black87.withOpacity(0.8),
     );
   }
 
   void showInfoToast() {
     MyToast.showInfo(
       '这是一条信息提示',
-      backgroundColor: Colors.black87.withOpacity(0.8),
     );
   }
 
