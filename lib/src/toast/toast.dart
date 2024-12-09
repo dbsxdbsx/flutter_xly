@@ -306,7 +306,7 @@ class MyToast extends StatelessWidget {
     return const SizedBox.shrink();
   }
 
-  /// 显示一个错误提示（用于异常错误）
+  /// 显��一个错误提示（用于异常错误）
   ///
   /// [message] 错误消息内容
   /// [textStyle] 文本样式
@@ -366,91 +366,63 @@ class MyToast extends StatelessWidget {
     return const SizedBox.shrink();
   }
 
-  /// 显示一个加载动画，并在任务完成时显示Toast消息
+  /// 显示加载动画，执行任务后显示结果提示
   ///
-  /// [loadingMessage] 加载中显示的消息
-  /// [task] 需要执行的异步任务，返回(bool, String)元组
+  /// [loadingMessage] 加载过程中显示的消息
+  /// [task] 要执行的异步任务，返回 (bool, String?) 元组，bool表示是否成功，String为提示消息（为null时不显示toast）
   /// [spinnerColor] 加载动画的颜色
   /// [backgroundColor] 背景颜色
-  /// [textStyle] 文本样式
-  /// [toastDuration] 完成消息的显示时间
-  /// [stackToasts] 是否堆叠显示Toast消息
-  /// [onOk] 成功时的回调，如果不提供则显示默认成功提示
-  /// [onWarn] 未完成时的回调，如果不提供则显示默认警告提示
-  /// [onError] 错误处理回调，如果不提供则显示默认错误消息
+  /// [stackToasts] 是否堆叠显示Toast
+  /// [onOk] 自定义成功提示处理函数
+  /// [onWarn] 自定义警告提示处理函数
+  /// [onError] 自定义错误提示处理函数
   static Future<bool> showLoadingThenToast({
     required String loadingMessage,
-    required Future<(bool, String)> Function() task,
+    required Future<(bool, String?)> Function() task,
     Color? spinnerColor,
     Color? backgroundColor,
-    TextStyle? textStyle,
-    Duration? toastDuration,
-    bool stackToasts = false,
-    void Function(String message)? onOk,
-    void Function(String message)? onWarn,
-    void Function(dynamic error)? onError,
+    bool stackToasts = true,
+    void Function(String)? onOk,
+    void Function(String)? onWarn,
+    void Function(String)? onError,
   }) async {
-    final spinnerKey = UniqueKey();
-
-    Toast.show(
-      LoadingWidget(
-        message: loadingMessage,
-        spinnerColor: spinnerColor,
-        backgroundColor: backgroundColor,
-        textStyle: textStyle,
-      ),
-      key: spinnerKey,
-      dismissOthers: !stackToasts,
-      duration: const Duration(days: 365),
-      alignment: Alignment.center,
+    showSpinner(
+      message: loadingMessage,
+      spinnerColor: spinnerColor,
+      backgroundColor: backgroundColor,
     );
 
     try {
       final (success, message) = await task();
-      Toast.dismiss(spinnerKey);
-      await Future.delayed(const Duration(milliseconds: 100));
+      hideAll();
 
-      if (success) {
-        if (onOk != null) {
-          onOk(message);
+      // 只有当message不为null时才显示toast
+      if (message != null) {
+        if (success) {
+          if (onOk != null) {
+            onOk(message);
+          } else {
+            showOk(message,
+                backgroundColor: backgroundColor, stackToasts: stackToasts);
+          }
         } else {
-          showOk(
-            message,
-            textStyle: textStyle,
-            backgroundColor: backgroundColor,
-            duration: toastDuration,
-            stackToasts: stackToasts,
-          );
-        }
-      } else {
-        if (onWarn != null) {
-          onWarn(message);
-        } else {
-          showWarn(
-            message,
-            textStyle: textStyle,
-            backgroundColor: backgroundColor,
-            duration: toastDuration,
-            stackToasts: stackToasts,
-          );
+          if (onWarn != null) {
+            onWarn(message);
+          } else {
+            showWarn(message,
+                backgroundColor: backgroundColor, stackToasts: stackToasts);
+          }
         }
       }
 
       return success;
     } catch (e) {
-      Toast.dismiss(spinnerKey);
-      await Future.delayed(const Duration(milliseconds: 100));
-
+      hideAll();
       if (onError != null) {
-        onError(e);
+        onError(e.toString());
       } else {
-        showError(
-          '异常报错: $e',
-          textStyle: textStyle,
-          backgroundColor: backgroundColor,
-          duration: toastDuration,
-          stackToasts: stackToasts,
-        );
+        showError('操作失败：$e',
+            backgroundColor: backgroundColor, stackToasts: stackToasts);
       }
       return false;
     }

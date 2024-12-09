@@ -12,30 +12,30 @@ class Page1View extends GetView<Page1Controller> {
       children: [
         Scaffold(
           appBar: AppBar(title: const Text('第1页')),
-          body: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.w),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildSectionTitle('按钮测试'),
-                SizedBox(height: 8.h),
-                _buildButtonSection(),
-                SizedBox(height: 12.h),
-                _buildSectionTitle('菜单按钮测试'),
-                SizedBox(height: 8.h),
-                _buildMenuButtonSection(),
-                SizedBox(height: 12.h),
-                _buildSectionTitle('窗口控制测试'),
-                SizedBox(height: 8.h),
-                _buildWindowControlSection(),
-                SizedBox(height: 12.h),
-                Flexible(
-                  child: _buildToastTestSection(),
-                ),
-                SizedBox(height: 8.h),
-                _buildNavigationSection(),
-                SizedBox(height: 4.h),
-              ],
+          body: SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildSectionTitle('按钮测试'),
+                  SizedBox(height: 8.h),
+                  _buildButtonSection(),
+                  SizedBox(height: 12.h),
+                  _buildSectionTitle('菜单按钮测试'),
+                  SizedBox(height: 8.h),
+                  _buildMenuButtonSection(),
+                  SizedBox(height: 12.h),
+                  _buildSectionTitle('窗口控制测试'),
+                  SizedBox(height: 8.h),
+                  _buildWindowControlSection(),
+                  SizedBox(height: 12.h),
+                  _buildToastTestSection(),
+                  SizedBox(height: 8.h),
+                  _buildNavigationSection(),
+                  SizedBox(height: 8.h),
+                ],
+              ),
             ),
           ),
         ).showRightMenu(
@@ -324,7 +324,7 @@ class Page1View extends GetView<Page1Controller> {
       MyMenuItem(
         icon: Icons.color_lens,
         text: '主题设置',
-        onTap: () => MyToast.show('打��主题设置'),
+        onTap: () => MyToast.show('打开主题设置'),
       ),
     ];
   }
@@ -393,7 +393,6 @@ class Page1View extends GetView<Page1Controller> {
             ),
             SizedBox(height: 4.h),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Expanded(
                   child: MyButton(
@@ -437,7 +436,6 @@ class Page1View extends GetView<Page1Controller> {
             ),
             SizedBox(height: 4.h),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Expanded(
                   child: MyButton(
@@ -470,9 +468,9 @@ class Page1View extends GetView<Page1Controller> {
             ),
             SizedBox(height: 8.h),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Expanded(
+                  flex: 2, // 左边按钮占用2份空间
                   child: MyButton(
                     text: '连续显示Toast',
                     onPressed: controller.showToast,
@@ -480,9 +478,23 @@ class Page1View extends GetView<Page1Controller> {
                 ),
                 SizedBox(width: 12.w),
                 Expanded(
-                  child: MyButton(
-                    text: '显示永久加载',
-                    onPressed: () => controller.showPermanentSpinner(),
+                  flex: 2, // 右半边整体占用2份空间
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: MyButton(
+                          text: '显示永久加载',
+                          onPressed: () => controller.showPermanentSpinner(),
+                        ),
+                      ),
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        child: MyButton(
+                          text: '关闭加载动画',
+                          onPressed: () => controller.hideSpinner(),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -508,12 +520,18 @@ class Page1View extends GetView<Page1Controller> {
             ),
             SizedBox(height: 4.h),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Expanded(
                   child: MyButton(
-                    text: '关闭加载动画',
-                    onPressed: () => controller.hideSpinner(),
+                    text: '静默成功测试',
+                    onPressed: () => controller.testSilentSuccess(),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: MyButton(
+                    text: '静默失败测试',
+                    onPressed: () => controller.testSilentFailure(),
                   ),
                 ),
               ],
@@ -777,5 +795,29 @@ class Page1Controller extends GetxController {
       '这是一条信息提示',
       backgroundColor: Colors.black87.withOpacity(0.8),
     );
+  }
+
+  void testSilentSuccess() async {
+    final success = await MyToast.showLoadingThenToast(
+      loadingMessage: '正在执行静默（结果成功）的操作...',
+      task: () async {
+        await Future.delayed(const Duration(seconds: 1));
+        return (true, null); // 返回成功但不显示任何提示
+      },
+      spinnerColor: Colors.purple,
+    );
+    debugPrint('静默成功操作结果: ${success ? "成功" : "失败"}');
+  }
+
+  void testSilentFailure() async {
+    final success = await MyToast.showLoadingThenToast(
+      loadingMessage: '正在执行静默（结果失败）的操作...',
+      task: () async {
+        await Future.delayed(const Duration(seconds: 1));
+        return (false, null); // 返回失败但不显示任何提示
+      },
+      spinnerColor: Colors.orange,
+    );
+    debugPrint('静默失败操作结果: ${success ? "成功" : "失败"}');
   }
 }
