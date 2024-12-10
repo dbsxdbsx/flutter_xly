@@ -505,8 +505,8 @@ class Page1View extends GetView<Page1Controller> {
               children: [
                 Expanded(
                   child: MyButton(
-                    text: '测试加载+完成',
-                    onPressed: () => controller.testSpinnerWithToast(),
+                    text: '复合提示：加载+完成',
+                    onPressed: () => controller.testCompoundSpinnerThenToast(),
                   ),
                 ),
                 SizedBox(width: 12.w),
@@ -723,7 +723,7 @@ class Page1Controller extends GetxController {
     }
   }
 
-  void testSpinnerWithToast() async {
+  void testCompoundSpinnerThenToast() async {
     // 场景1：使用默认提示
     final success1 = await MyToast.showLoadingThenToast(
       loadingMessage: 'task1:正在加载数据...',
@@ -745,7 +745,7 @@ class Page1Controller extends GetxController {
       },
       spinnerColor: Colors.green,
       onWarn: (message) {
-        MyToast.showUpWarn(message); // 使用顶部警告样式
+        MyToast.showUpWarn("task2,自定义警告"); // 使用顶部警告样式
       },
     );
     debugPrint('task2结果: ${success2 ? "成功" : "失败"}');
@@ -764,9 +764,9 @@ class Page1Controller extends GetxController {
       // onOk: (message) {
       //   MyToast.showBottom(message); // 使用底部提示样式
       // },
-      // onError: (error) {
-      //   MyToast.showUpError('保存失败：$error'); // 使用顶部错误样式
-      // },
+      onError: (error) {
+        MyToast.showUpError('保存失败'); // 使用顶部错误样式
+      },
     );
     debugPrint('task3结果: ${success3 ? "成功" : "失败"}');
   }
