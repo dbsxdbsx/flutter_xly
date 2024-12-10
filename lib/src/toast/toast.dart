@@ -77,7 +77,7 @@ class MyToast extends StatelessWidget {
   /// [radius] 圆角半径
   /// [textPadding] 文本内边距
   /// [position] 显示位置
-  /// [stackToasts] 是否堆叠显示多条Toast
+  /// [stackPreviousToasts] 是否堆叠显示多条Toast
   /// [animationDuration] 动画持续时间
   /// [animationCurve] 动画曲线
   static Widget show(
@@ -89,7 +89,7 @@ class MyToast extends StatelessWidget {
     double? radius,
     EdgeInsetsGeometry? textPadding,
     ToastPosition? position,
-    bool stackToasts = true,
+    bool stackPreviousToasts = true,
     Duration? animationDuration,
     Curve? animationCurve,
   }) {
@@ -101,7 +101,7 @@ class MyToast extends StatelessWidget {
         radius: radius ?? _defaultBorderRadius,
         padding: textPadding ?? _defaultPadding,
       ),
-      dismissOthers: !stackToasts,
+      dismissOthers: !stackPreviousToasts,
       duration: forever == true
           ? const Duration(days: 365)
           : duration ?? _defaultDuration,
@@ -310,14 +310,14 @@ class MyToast extends StatelessWidget {
   /// [textStyle] 文本样式
   /// [backgroundColor] 背景颜色
   /// [duration] 显示持续时间
-  /// [stackToasts] 是否堆叠显示
+  /// [stackPreviousToasts] 是否堆叠显示
   /// [position] 显示位置
   static Widget showWarn(
     String message, {
     TextStyle? textStyle,
     Color? backgroundColor,
     Duration? duration,
-    bool stackToasts = true,
+    bool stackPreviousToasts = true,
     ToastPosition position = ToastPosition.center,
   }) {
     Toast.show(
@@ -327,7 +327,7 @@ class MyToast extends StatelessWidget {
         backgroundColor: backgroundColor,
       ),
       duration: duration ?? const Duration(seconds: 3),
-      dismissOthers: !stackToasts,
+      dismissOthers: !stackPreviousToasts,
       alignment: _getAlignmentFromPosition(position),
     );
 
@@ -340,14 +340,14 @@ class MyToast extends StatelessWidget {
   /// [textStyle] 文本样式
   /// [backgroundColor] 背景颜色
   /// [duration] 显示持续时间
-  /// [stackToasts] 是否堆叠显示
+  /// [stackPreviousToasts] 是否堆叠显示
   /// [position] 显示位置
   static Widget showError(
     String message, {
     TextStyle? textStyle,
     Color? backgroundColor,
     Duration? duration,
-    bool stackToasts = true,
+    bool stackPreviousToasts = true,
     ToastPosition position = ToastPosition.center,
   }) {
     Toast.show(
@@ -357,7 +357,7 @@ class MyToast extends StatelessWidget {
         backgroundColor: backgroundColor,
       ),
       duration: duration ?? const Duration(seconds: 3),
-      dismissOthers: !stackToasts,
+      dismissOthers: !stackPreviousToasts,
       alignment: _getAlignmentFromPosition(position),
     );
 
@@ -370,14 +370,14 @@ class MyToast extends StatelessWidget {
   /// [textStyle] 文本样式
   /// [backgroundColor] 背景颜色
   /// [duration] 显示持续时间
-  /// [stackToasts] 是否堆叠显示
+  /// [stackPreviousToasts] 是否堆叠显示
   /// [position] 显示位置
   static Widget showOk(
     String message, {
     TextStyle? textStyle,
     Color? backgroundColor,
     Duration? duration,
-    bool stackToasts = true,
+    bool stackPreviousToasts = true,
     ToastPosition position = ToastPosition.center,
   }) {
     Toast.show(
@@ -387,7 +387,7 @@ class MyToast extends StatelessWidget {
         backgroundColor: backgroundColor,
       ),
       duration: duration ?? const Duration(seconds: 3),
-      dismissOthers: !stackToasts,
+      dismissOthers: !stackPreviousToasts,
       alignment: _getAlignmentFromPosition(position),
     );
 
@@ -400,7 +400,7 @@ class MyToast extends StatelessWidget {
   /// [task] 要执行的异步任务，返回 (bool, String?) 元组，bool表示是否成功，String为提示消息（为null时不显示toast）
   /// [spinnerColor] 加载动画的颜色
   /// [backgroundColor] 背景颜色
-  /// [stackToasts] 是否堆叠显示Toast
+  /// [stackPreviousToasts] 是否堆叠显示Toast
   /// [onOk] 自定义成功提示处理函数
   /// [onWarn] 自定义警告提示处理函数
   /// [onError] 自定义错误提示处理函数
@@ -409,7 +409,7 @@ class MyToast extends StatelessWidget {
     required Future<(bool, String?)> Function() task,
     Color? spinnerColor,
     Color? backgroundColor,
-    bool stackToasts = false, // NOTE: 对于加载ui，默认设为不堆叠，以符合使用习惯
+    bool stackPreviousToasts = true,
     void Function(String)? onOk,
     void Function(String)? onWarn,
     void Function(String)? onError,
@@ -417,49 +417,55 @@ class MyToast extends StatelessWidget {
     // 为当前加载动画创建一个唯一的key
     final spinnerKey = UniqueKey();
 
-    // 显示加载动画时也要考虑堆叠参数
+    // 显示加载动画
     Toast.show(
       LoadingWidget(
         message: loadingMessage,
         spinnerColor: spinnerColor,
         backgroundColor: backgroundColor ?? _defaultBackgroundColor,
       ),
-      key: spinnerKey,  // 使用唯一的key
-      dismissOthers: !stackToasts, // 根据stackToasts决定是否关闭其他Toast
+      key: spinnerKey,
+      dismissOthers: !stackPreviousToasts,
       duration: const Duration(days: 365),
       alignment: Alignment.center,
     );
 
     try {
       final (success, message) = await task();
-      if (!stackToasts) {
-        hideAll(); // 只有在不堆叠时才清除所有Toast
-      } else {
-        // 在堆叠模式下，只清除当前的加载动画
-        Toast.dismiss(spinnerKey);
-        // 添加一个小延迟，确保动画平滑
-        await Future.delayed(const Duration(milliseconds: 100));
-      }
 
+      // 移除加载动画
+      Toast.dismiss(spinnerKey);
+      // 添加短暂延迟确保动画平滑过渡
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      // 只在消息不为 null 时显示结果 toast
       if (message != null) {
         if (success) {
           if (onOk != null) {
             onOk(message);
           } else {
-            showOk(
-              message,
-              backgroundColor: backgroundColor ?? _defaultBackgroundColor,
-              stackToasts: stackToasts,
+            Toast.show(
+              OkToastWidget(
+                message: message,
+                backgroundColor: backgroundColor ?? _defaultBackgroundColor,
+              ),
+              dismissOthers: !stackPreviousToasts,
+              duration: message.isEmpty ? const Duration(milliseconds: 800) : const Duration(seconds: 3),
+              alignment: Alignment.center,
             );
           }
         } else {
           if (onWarn != null) {
             onWarn(message);
           } else {
-            showWarn(
-              message,
-              backgroundColor: backgroundColor ?? _defaultBackgroundColor,
-              stackToasts: stackToasts,
+            Toast.show(
+              WarningToastWidget(
+                message: message,
+                backgroundColor: backgroundColor ?? _defaultBackgroundColor,
+              ),
+              dismissOthers: !stackPreviousToasts,
+              duration: message.isEmpty ? const Duration(milliseconds: 800) : const Duration(seconds: 3),
+              alignment: Alignment.center,
             );
           }
         }
@@ -467,23 +473,22 @@ class MyToast extends StatelessWidget {
 
       return success;
     } catch (e) {
-      if (!stackToasts) {
-        hideAll(); // 只有在不堆叠时才清除所有Toast
-      } else {
-        // 在堆叠模式下，只清除当前的加载动画
-        Toast.dismiss(spinnerKey);
-        // 添加一个小延迟，确保动画平滑
-        await Future.delayed(const Duration(milliseconds: 100));
-      }
+      // 移除加载动画
+      Toast.dismiss(spinnerKey);
+      await Future.delayed(const Duration(milliseconds: 100));
 
-      final errorMessage = '操作失败：$e';
+      final errorMessage = e.toString();
       if (onError != null) {
         onError(errorMessage);
       } else {
-        showError(
-          errorMessage,
-          backgroundColor: backgroundColor ?? _defaultBackgroundColor,
-          stackToasts: stackToasts,
+        Toast.show(
+          ErrorToastWidget(
+            message: errorMessage,
+            backgroundColor: backgroundColor ?? _defaultBackgroundColor,
+          ),
+          dismissOthers: !stackPreviousToasts,
+          duration: errorMessage.isEmpty ? const Duration(milliseconds: 800) : const Duration(seconds: 3),
+          alignment: Alignment.center,
         );
       }
       return false;
@@ -496,14 +501,14 @@ class MyToast extends StatelessWidget {
   /// [textStyle] 文本样式
   /// [backgroundColor] 背景颜色
   /// [duration] 显示持续时间
-  /// [stackToasts] 是否堆叠显示
+  /// [stackPreviousToasts] 是否堆叠显示
   /// [position] 显示位置
   static Widget showInfo(
     String message, {
     TextStyle? textStyle,
     Color? backgroundColor,
     Duration? duration,
-    bool stackToasts = true,
+    bool stackPreviousToasts = true,
     ToastPosition position = ToastPosition.center,
   }) {
     Toast.show(
@@ -513,7 +518,7 @@ class MyToast extends StatelessWidget {
         backgroundColor: backgroundColor,
       ),
       duration: duration ?? const Duration(seconds: 3),
-      dismissOthers: !stackToasts,
+      dismissOthers: !stackPreviousToasts,
       alignment: _getAlignmentFromPosition(position),
     );
 

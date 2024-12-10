@@ -577,9 +577,9 @@ class Page1Controller extends GetxController {
     await Future.delayed(const Duration(seconds: 2));
 
     // 展示非堆叠效果
-    MyToast.show('新消息 (不堆叠)', stackToasts: false);
+    MyToast.show('新消息 (不堆叠)', stackPreviousToasts: false);
     await Future.delayed(const Duration(milliseconds: 500));
-    MyToast.show('又一条新消息 (不堆叠)', stackToasts: false);
+    MyToast.show('又一条新消息 (不堆叠)', stackPreviousToasts: false);
   }
 
   void confirmExitApp() async {
@@ -675,7 +675,7 @@ class Page1Controller extends GetxController {
   void showBottomToast() {
     MyToast.showBottom(
       '这是一条底部提示消息',
-      opacity: 0.9,
+      // opacity: 0.9,
     );
   }
 
@@ -722,39 +722,39 @@ class Page1Controller extends GetxController {
   void testSpinnerWithToast() async {
     // 场景1：使用默认提示
     final success1 = await MyToast.showLoadingThenToast(
-      loadingMessage: '正在加载数据...',
+      loadingMessage: 'task1:正在加载数据...',
       task: () async {
         await Future.delayed(const Duration(seconds: 1));
-        return (true, '数据加载完成！');
+        return (true, 'task1结果:数据加载完成！');
       },
       spinnerColor: Colors.blue,
     );
-    debugPrint('task1加载结果: ${success1 ? "成功" : "失败"}');
+    debugPrint('task1结果:${success1 ? "成功" : "失败"}');
 
     // 场景2：自定义警告提示
     final success2 = await MyToast.showLoadingThenToast(
-      stackToasts: true,
-      loadingMessage: '正在处理数据...',
+      loadingMessage: 'task2结果:正在处理数据...',
       task: () async {
         await Future.delayed(const Duration(seconds: 1));
-        return (false, '数据格式不正确，请检查后重试');
+        return (false, 'task2结果:数据格式不正确，请检查后重试');
       },
       spinnerColor: Colors.green,
       onWarn: (message) {
         MyToast.showUpWarn(message); // 使用顶部警告样式
       },
     );
-    debugPrint('task2处理结果: ${success2 ? "成功" : "失败"}');
+    debugPrint('task2结果: ${success2 ? "成功" : "失败"}');
 
     // 场景3：自定义成功和错误提示
     final success3 = await MyToast.showLoadingThenToast(
-      loadingMessage: '正在保存\n(不堆叠)\n...',
+      stackPreviousToasts: false,
+      loadingMessage: 'task3:正在保存\n(不堆叠)\n...',
       task: () async {
         await Future.delayed(const Duration(seconds: 1));
         if (DateTime.now().second % 2 == 0) {
-          throw Exception('网络连接错误');
+          throw Exception('task3结果:网络连接错误');
         }
-        return (true, '保存成功！');
+        return (true, 'task3结果:保存成功！');
       },
       spinnerColor: Colors.orange,
       // onOk: (message) {
@@ -764,7 +764,7 @@ class Page1Controller extends GetxController {
       //   MyToast.showUpError('保存失败：$error'); // 使用顶部错误样式
       // },
     );
-    debugPrint('task3保存结果: ${success3 ? "成功" : "失败"}');
+    debugPrint('task3结果: ${success3 ? "成功" : "失败"}');
   }
 
   void showOkToast() {
@@ -808,7 +808,7 @@ class Page1Controller extends GetxController {
       loadingMessage: '正在执行静默（结果失败）的操作...',
       task: () async {
         await Future.delayed(const Duration(seconds: 1));
-        return (false, null); // 返回失败但不显示任何提示
+        return (false, ""); // 返回失败但不显示任何提示
       },
       spinnerColor: Colors.orange,
     );

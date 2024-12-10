@@ -46,23 +46,24 @@ class BaseToastWidget extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (icon != null) ...[
+          if (icon != null)
             Icon(
               icon!,
               color: iconColor ?? defaultIconColor,
               size: iconSize ?? defaultIconSize,
             ),
-            SizedBox(height: 8.w),
+          if (message.isNotEmpty) ...[
+            if (icon != null) SizedBox(height: 8.w),
+            Text(
+              message,
+              style: textStyle ??
+                  TextStyle(
+                    fontSize: defaultFontSize,
+                    color: defaultTextColor,
+                  ),
+              textAlign: TextAlign.center,
+            ),
           ],
-          Text(
-            message,
-            style: textStyle ??
-                TextStyle(
-                  fontSize: defaultFontSize,
-                  color: defaultTextColor,
-                ),
-            textAlign: TextAlign.center,
-          ),
         ],
       ),
     );
