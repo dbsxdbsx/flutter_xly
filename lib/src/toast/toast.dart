@@ -89,7 +89,7 @@ class MyToast extends StatelessWidget {
     double? radius,
     EdgeInsetsGeometry? textPadding,
     ToastPosition? position,
-    bool stackPreviousToasts = true,
+    bool stackPreviousToasts = false,
     Duration? animationDuration,
     Curve? animationCurve,
   }) {
@@ -309,7 +309,7 @@ class MyToast extends StatelessWidget {
   /// [message] 警告消息内容
   /// [textStyle] 文本样式
   /// [backgroundColor] 背景颜色
-  /// [duration] 显示持续时间
+  /// [duration] ��示持续时间
   /// [stackPreviousToasts] 是否堆叠显示
   /// [position] 显示位置
   static Widget showWarn(
@@ -317,7 +317,7 @@ class MyToast extends StatelessWidget {
     TextStyle? textStyle,
     Color? backgroundColor,
     Duration? duration,
-    bool stackPreviousToasts = true,
+    bool stackPreviousToasts = false,
     ToastPosition position = ToastPosition.center,
   }) {
     Toast.show(
@@ -347,7 +347,7 @@ class MyToast extends StatelessWidget {
     TextStyle? textStyle,
     Color? backgroundColor,
     Duration? duration,
-    bool stackPreviousToasts = true,
+    bool stackPreviousToasts = false,
     ToastPosition position = ToastPosition.center,
   }) {
     Toast.show(
@@ -377,7 +377,7 @@ class MyToast extends StatelessWidget {
     TextStyle? textStyle,
     Color? backgroundColor,
     Duration? duration,
-    bool stackPreviousToasts = true,
+    bool stackPreviousToasts = false,
     ToastPosition position = ToastPosition.center,
   }) {
     Toast.show(
@@ -409,7 +409,7 @@ class MyToast extends StatelessWidget {
     required Future<(bool, String?)> Function() task,
     Color? spinnerColor,
     Color? backgroundColor,
-    bool stackPreviousToasts = true,
+    bool stackPreviousToasts = false,
     void Function(String)? onOk,
     void Function(String)? onWarn,
     void Function(String)? onError,
@@ -508,7 +508,7 @@ class MyToast extends StatelessWidget {
     TextStyle? textStyle,
     Color? backgroundColor,
     Duration? duration,
-    bool stackPreviousToasts = true,
+    bool stackPreviousToasts = false,
     ToastPosition position = ToastPosition.center,
   }) {
     Toast.show(

@@ -568,18 +568,22 @@ class Page1Controller extends GetxController {
 
   void showToast() async {
     // 展示普通 toast 之间的堆叠效果
-    MyToast.show('第一条消息 (堆叠显示)');
+    MyToast.show('第一条消息');
     await Future.delayed(const Duration(milliseconds: 500));
-    MyToast.show('第二条消息 (堆叠显示)');
+    MyToast.show('第二条消息', stackPreviousToasts: true);
     await Future.delayed(const Duration(milliseconds: 500));
-    MyToast.show('第三条消息 (堆叠显示)');
+    MyToast.show('第三条消息', stackPreviousToasts: true);
 
     await Future.delayed(const Duration(seconds: 2));
 
     // 展示非堆叠效果
-    MyToast.show('新消息 (不堆叠)', stackPreviousToasts: false);
+    MyToast.show(
+      '新消息 (不堆叠)',
+    );
     await Future.delayed(const Duration(milliseconds: 500));
-    MyToast.show('又一条新消息 (不堆叠)', stackPreviousToasts: false);
+    MyToast.show(
+      '又一条新消息 (不堆叠)',
+    );
   }
 
   void confirmExitApp() async {
@@ -733,6 +737,7 @@ class Page1Controller extends GetxController {
 
     // 场景2：自定义警告提示
     final success2 = await MyToast.showLoadingThenToast(
+      stackPreviousToasts: true,
       loadingMessage: 'task2结果:正在处理数据...',
       task: () async {
         await Future.delayed(const Duration(seconds: 1));
@@ -747,7 +752,6 @@ class Page1Controller extends GetxController {
 
     // 场景3：自定义成功和错误提示
     final success3 = await MyToast.showLoadingThenToast(
-      stackPreviousToasts: false,
       loadingMessage: 'task3:正在保存\n(不堆叠)\n...',
       task: () async {
         await Future.delayed(const Duration(seconds: 1));
