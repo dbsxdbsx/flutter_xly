@@ -309,7 +309,7 @@ class MyToast extends StatelessWidget {
   /// [message] 警告消息内容
   /// [textStyle] 文本样式
   /// [backgroundColor] 背景颜色
-  /// [duration] ��示持续时间
+  /// [duration] 显示持续时间
   /// [stackPreviousToasts] 是否堆叠显示
   /// [position] 显示位置
   static Widget showWarn(
@@ -450,7 +450,9 @@ class MyToast extends StatelessWidget {
                 backgroundColor: backgroundColor ?? _defaultBackgroundColor,
               ),
               dismissOthers: !stackPreviousToasts,
-              duration: message.isEmpty ? const Duration(milliseconds: 800) : const Duration(seconds: 3),
+              duration: message.isEmpty
+                  ? const Duration(milliseconds: 800)
+                  : const Duration(seconds: 3),
               alignment: Alignment.center,
             );
           }
@@ -464,7 +466,9 @@ class MyToast extends StatelessWidget {
                 backgroundColor: backgroundColor ?? _defaultBackgroundColor,
               ),
               dismissOthers: !stackPreviousToasts,
-              duration: message.isEmpty ? const Duration(milliseconds: 800) : const Duration(seconds: 3),
+              duration: message.isEmpty
+                  ? const Duration(milliseconds: 800)
+                  : const Duration(seconds: 3),
               alignment: Alignment.center,
             );
           }
@@ -487,7 +491,9 @@ class MyToast extends StatelessWidget {
             backgroundColor: backgroundColor ?? _defaultBackgroundColor,
           ),
           dismissOthers: !stackPreviousToasts,
-          duration: errorMessage.isEmpty ? const Duration(milliseconds: 800) : const Duration(seconds: 3),
+          duration: errorMessage.isEmpty
+              ? const Duration(milliseconds: 800)
+              : const Duration(seconds: 3),
           alignment: Alignment.center,
         );
       }
