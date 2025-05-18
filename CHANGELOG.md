@@ -1,3 +1,7 @@
+## 0.5.1
+
+- 修复`flutter_inset_box_shadow`依赖问题，更新为`flutter_inset_shadow`[git: 00fdbe0]
+
 ## 0.4.0
 
 * 新增MyBottomMenu组件
