@@ -35,7 +35,7 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 - `autostart_settings: ^0.1.4` - 自启动设置（Android）
 - `launch_at_startup: ^0.3.0` - 开机自启动（桌面）
 - `package_info_plus: ^8.0.0` - 应用信息
-- `flutter_inset_box_shadow: ^1.0.8` - 内阴影
+- `flutter_inset_shadow: ^2.0.3` - 内阴影
 - `url_launcher: ^6.2.5` - URL启动器
 - `path: ^1.8.0` - 路径操作
 - `xml: ^6.5.0` - XML解析
