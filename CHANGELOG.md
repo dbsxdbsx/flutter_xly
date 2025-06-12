@@ -1,3 +1,7 @@
+## 0.5.2
+
+- 修复README.md中底部菜单示例代码错误，将`MyBottomMenu.show()`更正为`MyDialogSheet.showBottom()`
+
 ## 0.5.1
 
 - 修复`flutter_inset_box_shadow`依赖问题，更新为`flutter_inset_shadow`[git: 00fdbe0]

@@ -269,9 +269,11 @@ MyDialog.showIos(
 
 ### 使用底部菜单
 ```dart
-MyBottomMenu.show(
+MyDialogSheet.showBottom(
   child: Text('这是一个测试底部菜单'),
-  style: MyMenuStyle(shadowRatio: 0.2),
+  height: 300.h,
+  backgroundColor: Colors.white,
+  borderRadius: 20.r,
 );
 ```
 
