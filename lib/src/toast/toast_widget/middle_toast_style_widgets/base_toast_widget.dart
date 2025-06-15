@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class BaseToastWidget extends StatelessWidget {
   // 默认样式配置 - 使用 getter 以支持热重载
-  Color get defaultBackgroundColor => Colors.black87.withOpacity(0.75);
+  Color get defaultBackgroundColor => Colors.black87.withValues(alpha: 0.75);
   Color get defaultTextColor => Colors.white;
   Color get defaultIconColor => Colors.white;
   double get defaultIconSize => 32.sp;

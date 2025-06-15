@@ -50,8 +50,8 @@ class MyIcon extends StatelessWidget {
       splashRadius: effectiveRadius * 0.8,
       icon: iconWidget,
       onPressed: onPressed,
-      splashColor: splashColor ?? Colors.grey.withOpacity(0.3),
-      hoverColor: hoverColor ?? Colors.grey.withOpacity(0.1),
+      splashColor: splashColor ?? Colors.grey.withValues(alpha: 0.3),
+      hoverColor: hoverColor ?? Colors.grey.withValues(alpha: 0.1),
     );
   }
 }

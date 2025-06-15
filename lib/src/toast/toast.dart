@@ -43,11 +43,8 @@ class MyToast extends StatelessWidget {
   );
 
   // 常用背景色
-  static final Color _defaultBackgroundColor = Colors.black87.withOpacity(0.7);
-  static const Color _defaultErrorBackgroundColor = Color(0xFFFFEBEE);
-  static const Color _defaultErrorTextColor = Color(0xFFB71C1C);
-  static final Color _defaultInfoBackgroundColor = Colors.lightBlue[50]!;
-  static final Color _defaultInfoTextColor = Colors.lightBlue[900]!;
+  static final Color _defaultBackgroundColor =
+      Colors.black87.withValues(alpha: 0.7);
   static final Color _defaultWarnBackgroundColor = Colors.amber[50]!;
   static final Color _defaultWarnTextColor = Colors.amber[900]!;
 
@@ -232,7 +229,7 @@ class MyToast extends StatelessWidget {
         'opacity must be between 0.0 and 1.0');
 
     final baseColor = backgroundColor ?? const Color(0xFF222222);
-    final finalColor = baseColor.withOpacity(opacity);
+    final finalColor = baseColor.withValues(alpha: opacity);
 
     Get.showSnackbar(
       GetSnackBar(

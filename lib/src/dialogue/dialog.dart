@@ -95,7 +95,7 @@ class MyDialog {
       dialog,
       barrierDismissible: true,
       barrierColor: barrierOpacity != null
-          ? Colors.black.withOpacity(barrierOpacity)
+          ? Colors.black.withValues(alpha: barrierOpacity)
           : null,
     );
     return result ?? MyDialogChosen.canceled;
@@ -130,7 +130,7 @@ class MyDialog {
           onPressed: onLeftPressed,
           style: ButtonStyle(
             overlayColor: leftButtonColor != null
-                ? WidgetStateProperty.all(leftButtonColor.withOpacity(0.1))
+                ? WidgetStateProperty.all(leftButtonColor.withValues(alpha: 0.1))
                 : null,
           ),
           child: Text(
@@ -142,7 +142,7 @@ class MyDialog {
           onPressed: onRightPressed,
           style: ButtonStyle(
             overlayColor: rightButtonColor != null
-                ? WidgetStateProperty.all(rightButtonColor.withOpacity(0.1))
+                ? WidgetStateProperty.all(rightButtonColor.withValues(alpha: 0.1))
                 : null,
           ),
           child: Text(

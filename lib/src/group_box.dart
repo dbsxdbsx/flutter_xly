@@ -36,7 +36,7 @@ class MyGroupBox extends StatelessWidget {
           decoration: style == SectionBorderStyle.inset
               ? BoxDecoration(
                   border: Border.all(
-                      color: borderColor.withOpacity(0.5),
+                      color: borderColor.withValues(alpha: 0.5),
                       width: borderWidth.w),
                   borderRadius: BorderRadius.circular(borderRadius.r),
                   boxShadow: [
@@ -45,7 +45,7 @@ class MyGroupBox extends StatelessWidget {
                       offset: Offset(borderWidth.w, borderWidth.w),
                     ),
                     BoxShadow(
-                      color: borderColor.withOpacity(0.5),
+                      color: borderColor.withValues(alpha: 0.5),
                       offset: Offset(-borderWidth.w, -borderWidth.w),
                     ),
                   ],

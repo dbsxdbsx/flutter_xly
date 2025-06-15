@@ -22,7 +22,7 @@ class LoadingWidget extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.w),
       decoration: BoxDecoration(
-        color: backgroundColor ?? Colors.black87.withOpacity(0.7),
+        color: backgroundColor ?? Colors.black87.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(8.w),
       ),
       child: Column(

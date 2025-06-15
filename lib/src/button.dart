@@ -105,7 +105,7 @@ class MyButton extends StatelessWidget {
             boxShadow: [
               if (elevation > 0)
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
+                  color: Colors.black.withValues(alpha: 0.3),
                   blurRadius: elevation,
                   offset: Offset(0, elevation / 2),
                 ),
@@ -149,7 +149,7 @@ class MyButton extends StatelessWidget {
         gradient: gradient,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 4.w,
             offset: Offset(2.w, 2.w),
           ),

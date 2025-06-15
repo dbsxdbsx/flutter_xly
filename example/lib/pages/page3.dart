@@ -125,7 +125,7 @@ class Page3Controller extends GetxController {
             width: 60.w,
             height: 60.w,
             decoration: BoxDecoration(
-              color: Colors.blue.withOpacity(0.1),
+              color: Colors.blue.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(15.r),
             ),
             child: Icon(icon, size: 30.sp, color: Colors.blue),

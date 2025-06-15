@@ -31,10 +31,10 @@ class MyMenuButton extends StatefulWidget {
   });
 
   @override
-  _MyMenuButtonState createState() => _MyMenuButtonState();
+  MyMenuButtonState createState() => MyMenuButtonState();
 }
 
-class _MyMenuButtonState extends State<MyMenuButton> {
+class MyMenuButtonState extends State<MyMenuButton> {
   double _distance = 0.0;
   double _blur = 0.0;
   bool _isDeepPressed = false;
@@ -118,13 +118,6 @@ class _MyMenuButtonState extends State<MyMenuButton> {
   }
 
   Future<void> _showMenu(BuildContext context, Offset position) async {
-    final RenderBox overlay =
-        Overlay.of(context).context.findRenderObject() as RenderBox;
-    final RelativeRect positionRect = RelativeRect.fromRect(
-      Rect.fromPoints(position, position),
-      Offset.zero & overlay.size,
-    );
-
     try {
       await MyMenu.show(
         context,

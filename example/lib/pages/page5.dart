@@ -97,9 +97,9 @@ class Page5View extends GetView<Page5Controller> {
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(8.r),
-          border: Border.all(color: color.withOpacity(0.3)),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Row(
           children: [
@@ -122,7 +122,7 @@ class Page5View extends GetView<Page5Controller> {
                     url,
                     style: TextStyle(
                       fontSize: 14.sp,
-                      color: color.withOpacity(0.8),
+                      color: color.withValues(alpha: 0.8),
                     ),
                   ),
                 ],
@@ -130,7 +130,7 @@ class Page5View extends GetView<Page5Controller> {
             ),
             Icon(
               Icons.open_in_new,
-              color: color.withOpacity(0.7),
+              color: color.withValues(alpha: 0.7),
               size: 20.sp,
             ),
           ],

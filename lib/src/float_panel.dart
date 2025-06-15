@@ -90,17 +90,17 @@ class MyFloatPanel extends StatefulWidget {
   }) : borderRadius = borderRadius ?? BorderRadius.circular(30);
 
   @override
-  _MyFloatPanelState createState() => _MyFloatPanelState();
+  MyFloatPanelState createState() => MyFloatPanelState();
 }
 
-class _MyFloatPanelState extends State<MyFloatPanel>
+class MyFloatPanelState extends State<MyFloatPanel>
     with TickerProviderStateMixin {
   PanelState _panelState = PanelState.closed;
   double _xOffset = 0.0;
   double _yOffset = 0.0;
   IconData _panelIcon = Icons.add;
   late AnimationController _animationController;
-  late Animation<double> _animation;
+
   bool _isMainButtonHovered = false;
   late List<bool> _isCustomButtonHovered;
   late Size _lastScreenSize;
@@ -130,10 +130,7 @@ class _MyFloatPanelState extends State<MyFloatPanel>
       duration: Duration(
           milliseconds: widget.panelAnimDuration), // 使用 panelAnimDuration
     );
-    _animation = CurvedAnimation(
-      parent: _animationController,
-      curve: widget.dockAnimCurve,
-    );
+
     _isCustomButtonHovered = List.generate(widget.items.length, (_) => false);
     _lastScreenSize = Size.zero;
     if (widget.initialPosition != null) {
@@ -313,22 +310,6 @@ class _MyFloatPanelState extends State<MyFloatPanel>
     _dockAnimationController.forward();
   }
 
-  void _animatePosition(double targetX, double targetY) {
-    _animationController.reset();
-    _animation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeInOut, // 使用更平滑的缓动曲线
-      ),
-    )..addListener(() {
-        setState(() {
-          _xOffset = lerpDouble(_xOffset, targetX, _animation.value)!;
-          _yOffset = lerpDouble(_yOffset, targetY, _animation.value)!;
-        });
-      });
-    _animationController.forward();
-  }
-
   void _constrainPosition() {
     final size = MediaQuery.of(context).size;
     final panelHeight = _panelHeight();
@@ -491,8 +472,6 @@ class _MyFloatPanelState extends State<MyFloatPanel>
     return widget.panelWidth.w;
   }
 
-  double get _hiddenWidth => widget.panelWidth.w / 2; // 隐藏半
-
   // 在 _MyFloatPanelState 类中添加一个新方法
   void _adjustPanelPosition() {
     final size = MediaQuery.of(context).size;
@@ -545,10 +524,13 @@ extension ColorBrightness on Color {
     assert(1 <= percent && percent <= 100);
     var p = percent / 100;
     return Color.fromARGB(
-      alpha,
-      red + ((255 - red) * p).round(),
-      green + ((255 - green) * p).round(),
-      blue + ((255 - blue) * p).round(),
+      (a * 255.0).round() & 0xff,
+      ((r * 255.0).round() & 0xff) +
+          ((255 - ((r * 255.0).round() & 0xff)) * p).round(),
+      ((g * 255.0).round() & 0xff) +
+          ((255 - ((g * 255.0).round() & 0xff)) * p).round(),
+      ((b * 255.0).round() & 0xff) +
+          ((255 - ((b * 255.0).round() & 0xff)) * p).round(),
     );
   }
 
@@ -556,10 +538,10 @@ extension ColorBrightness on Color {
     assert(1 <= percent && percent <= 100);
     var p = percent / 100;
     return Color.fromARGB(
-      alpha,
-      (red * (1 - p)).round(),
-      (green * (1 - p)).round(),
-      (blue * (1 - p)).round(),
+      (a * 255.0).round() & 0xff,
+      (((r * 255.0).round() & 0xff) * (1 - p)).round(),
+      (((g * 255.0).round() & 0xff) * (1 - p)).round(),
+      (((b * 255.0).round() & 0xff) * (1 - p)).round(),
     );
   }
 }

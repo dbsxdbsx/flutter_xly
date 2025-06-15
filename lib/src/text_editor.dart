@@ -479,7 +479,7 @@ class MyTextEditor extends GetView<MyTextEditorController> {
         child: Container(
           height: defaultDropdownItemHeight.h,
           color: isHighlighted
-              ? (dropdownHighlightColor ?? Colors.blue.withOpacity(0.1))
+              ? (dropdownHighlightColor ?? Colors.blue.withValues(alpha: 0.1))
               : null,
           padding: dropDownItemPadding ??
               EdgeInsets.symmetric(

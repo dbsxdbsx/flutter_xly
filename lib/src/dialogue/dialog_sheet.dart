@@ -210,7 +210,7 @@ class _CenterDialogSheet extends StatelessWidget {
                     },
                     style: ButtonStyle(
                       overlayColor: WidgetStateProperty.all(
-                        Colors.black54.withOpacity(0.1),
+                        Colors.black54.withValues(alpha: 0.1),
                       ),
                     ),
                     child: Text(
@@ -225,7 +225,7 @@ class _CenterDialogSheet extends StatelessWidget {
                     onPressed: onConfirm,
                     style: ButtonStyle(
                       overlayColor: WidgetStateProperty.all(
-                        Colors.blue.withOpacity(0.1),
+                        Colors.blue.withValues(alpha: 0.1),
                       ),
                     ),
                     child: Text(
@@ -249,7 +249,8 @@ class _CenterDialogSheet extends StatelessWidget {
         maxHeight: dialogMaxHeight.h,
       ),
       decoration: ShapeDecoration(
-        color: Theme.of(context).dialogBackgroundColor,
+        color: Theme.of(context).dialogTheme.backgroundColor ??
+            Theme.of(context).colorScheme.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(
             _getAdaptiveSize(context, 28.0).r,

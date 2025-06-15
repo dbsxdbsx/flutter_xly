@@ -64,27 +64,6 @@ class MyMenu {
     _addRouteListener(context);
   }
 
-  static Widget _buildMenuOverlay(
-    BuildContext context,
-    Offset position,
-    List<MyMenuElement> menuElements,
-    MyMenuPopStyle animationStyle,
-    MyMenuStyle style,
-  ) {
-    return _MenuOverlay(
-      position: position,
-      menuElements: menuElements,
-      animationStyle: animationStyle,
-      style: style,
-      onItemSelected: (item) {
-        if (item.onTap != null) {
-          _closeMenu();
-          Future.microtask(item.onTap!);
-        }
-      },
-    );
-  }
-
   static Size calculateMenuSize(
       List<MyMenuElement> menuElements, MyMenuStyle style) {
     double maxWidth = 0.0;
@@ -113,24 +92,17 @@ class MyMenu {
     return Size(maxWidth, totalHeight);
   }
 
-  static Offset _adjustMenuPosition(
-      RenderBox overlay, Size menuSize, Offset clickPosition) {
-    final screenSize = overlay.size;
-    return Offset(
-      clickPosition.dx + menuSize.width > screenSize.width
-          ? clickPosition.dx - menuSize.width
-          : clickPosition.dx,
-      clickPosition.dy + menuSize.height > screenSize.height
-          ? clickPosition.dy - menuSize.height
-          : clickPosition.dy,
-    );
-  }
-
   static void _addRouteListener(BuildContext context) {
-    ModalRoute.of(context)?.addScopedWillPopCallback(() async {
-      _closeMenu();
-      return false;
-    });
+    // 使用 PopScope 替代已弃用的 addScopedWillPopCallback
+    // 注意：这里我们不直接使用 PopScope，而是通过监听路由变化来处理
+    final route = ModalRoute.of(context);
+    if (route != null) {
+      route.addLocalHistoryEntry(LocalHistoryEntry(
+        onRemove: () {
+          _closeMenu();
+        },
+      ));
+    }
   }
 
   static void _closeMenu() {
@@ -270,7 +242,6 @@ class _MenuOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final screenSize = MediaQuery.of(context).size;
         final menuSize = MyMenu.calculateMenuSize(menuElements, style);
         final adjustedPosition = MyMenu.calculateMenuPosition(
           context,
@@ -376,7 +347,7 @@ class _MyMenuWidget extends StatelessWidget {
             borderRadius: BorderRadius.circular(style.borderRadius.r),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.2 * style.shadowRatio),
+                color: Colors.black.withValues(alpha: 0.2 * style.shadowRatio),
                 blurRadius: 10.r * style.shadowRatio,
                 spreadRadius: 2.r * style.shadowRatio,
               ),
@@ -389,10 +360,11 @@ class _MyMenuWidget extends StatelessWidget {
                   sigmaX: style.blurSigma.r, sigmaY: style.blurSigma.r),
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withValues(alpha: 0.8),
                   borderRadius: BorderRadius.circular(style.borderRadius.r),
                   border: Border.all(
-                    color: Colors.grey.withOpacity(0.3 * style.shadowRatio),
+                    color:
+                        Colors.grey.withValues(alpha: 0.3 * style.shadowRatio),
                     width: 1.w * style.shadowRatio,
                   ),
                 ),
@@ -432,9 +404,9 @@ class _MyMenuWidget extends StatelessWidget {
             _handleMenuItemHover(context, item);
           }
         },
-        highlightColor: style.focusColor.withOpacity(0.1),
-        splashColor: style.focusColor.withOpacity(0.05),
-        hoverColor: style.focusColor.withOpacity(0.05),
+        highlightColor: style.focusColor.withValues(alpha: 0.1),
+        splashColor: style.focusColor.withValues(alpha: 0.05),
+        hoverColor: style.focusColor.withValues(alpha: 0.05),
         child: _SubMenuBuilder(
           item: item,
           style: style,
@@ -587,7 +559,6 @@ class MyMenuDivider extends MyMenuElement {
     this.thicknessMultiplier = 0.7,
   });
 
-  @override
   Widget build(BuildContext context) {
     return Padding(
       padding: margin,
