@@ -1,3 +1,14 @@
+## 0.6.0 (2025-06-16)
+
+- 新增窗口停靠功能：`MyApp.dockToCorner()`方法，支持窗口停靠到屏幕四个角落
+- 新增`WindowCorner`枚举，定义窗口停靠位置（topLeft、topRight、bottomLeft、bottomRight）
+- 集成`screen_retriever`依赖，用于获取屏幕信息和工作区域
+- 窗口停靠功能自动检测任务栏位置，确保窗口不被遮挡
+- 支持Windows、macOS、Linux桌面平台的窗口停靠
+- 更新README.md，添加窗口停靠功能的详细文档和使用示例
+- 在示例页面添加窗口停靠测试按钮，方便功能验证
+- 将`window_manager`和`screen_retriever`移至已重导出包列表
+
 ## 0.5.3
 
 - 修复所有60个诊断消息（错误、警告、信息、提示）
