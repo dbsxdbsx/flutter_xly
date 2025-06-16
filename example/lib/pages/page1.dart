@@ -372,6 +372,40 @@ class Page1View extends GetView<Page1Controller> {
             ),
           ],
         ),
+        SizedBox(height: 16.h),
+        // 窗口停靠按钮
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Expanded(
+              child: MyButton(
+                text: '停靠到左上角',
+                onPressed: controller.dockToTopLeft,
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: MyButton(
+                text: '停靠到右上角',
+                onPressed: controller.dockToTopRight,
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: MyButton(
+                text: '停靠到左下角',
+                onPressed: controller.dockToBottomLeft,
+              ),
+            ),
+            SizedBox(width: 12.w),
+            Expanded(
+              child: MyButton(
+                text: '停靠到右下角',
+                onPressed: controller.dockToBottomRight,
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -817,5 +851,45 @@ class Page1Controller extends GetxController {
       spinnerColor: Colors.orange,
     );
     debugPrint('静默失败操作结果: ${success ? "成功" : "失败"}');
+  }
+
+  /// 停靠窗口到左上角
+  void dockToTopLeft() async {
+    final success = await MyApp.dockToCorner(WindowCorner.topLeft);
+    if (success) {
+      MyToast.show('窗口已停靠到左上角');
+    } else {
+      MyToast.showUpError('停靠窗口失败');
+    }
+  }
+
+  /// 停靠窗口到右上角
+  void dockToTopRight() async {
+    final success = await MyApp.dockToCorner(WindowCorner.topRight);
+    if (success) {
+      MyToast.show('窗口已停靠到右上角');
+    } else {
+      MyToast.showUpError('停靠窗口失败');
+    }
+  }
+
+  /// 停靠窗口到左下角
+  void dockToBottomLeft() async {
+    final success = await MyApp.dockToCorner(WindowCorner.bottomLeft);
+    if (success) {
+      MyToast.show('窗口已停靠到左下角');
+    } else {
+      MyToast.showUpError('停靠窗口失败');
+    }
+  }
+
+  /// 停靠窗口到右下角
+  void dockToBottomRight() async {
+    final success = await MyApp.dockToCorner(WindowCorner.bottomRight);
+    if (success) {
+      MyToast.show('窗口已停靠到右下角');
+    } else {
+      MyToast.showUpError('停靠窗口失败');
+    }
   }
 }

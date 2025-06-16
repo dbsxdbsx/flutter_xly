@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:xly/src/exit.dart';
 import 'package:xly/src/float_panel.dart';
@@ -413,6 +414,106 @@ class MyApp extends StatelessWidget {
       windowButtonVisibility: false, // 保持一致性
     );
   }
+
+  /// 停靠窗口到指定角落
+  ///
+  /// [corner] 要停靠到的角落位置
+  /// 返回 true 表示停靠成功，false 表示停靠失败
+  ///
+  /// 此方法会自动检测屏幕工作区域，避开任务栏
+  static Future<bool> dockToCorner(WindowCorner corner) async {
+    if (!MyPlatform.isDesktop) return false;
+
+    try {
+      final display = await screenRetriever.getPrimaryDisplay();
+      if (display.visiblePosition == null || display.visibleSize == null) {
+        return false;
+      }
+
+      final windowSize = await windowManager.getSize();
+      final workArea = display.visibleSize!;
+      final workAreaPosition = display.visiblePosition!;
+
+      // 获取DPI缩放因子来修正位置精度
+      final scaleFactor = display.scaleFactor ?? 1.0;
+
+      // 计算边框偏移量（Windows窗口可能有不可见边框）
+      // 在高DPI环境下，通常需要微调更多像素来达到完美贴边
+      // 根据用户反馈，增加偏移量以获得更好的贴边效果
+      final edgeOffset = scaleFactor > 1.0 ? 16.0 / scaleFactor : 10.0;
+
+      // 顶部边缘需要额外的偏移，因为Windows标题栏区域的处理方式不同
+      // final topEdgeOffset = scaleFactor > 1.0 ? 20.0 / scaleFactor : 14.0;
+      debugPrint("""scaleFactor: $scaleFactor, edgeOffset: $edgeOffset""");
+      final topEdgeOffset = edgeOffset - 0.95 * edgeOffset;
+
+      late Offset position;
+      switch (corner) {
+        case WindowCorner.topLeft:
+          position = Offset(
+            workAreaPosition.dx - edgeOffset,
+            workAreaPosition.dy - topEdgeOffset,
+          );
+          break;
+        case WindowCorner.topRight:
+          position = Offset(
+            workAreaPosition.dx +
+                workArea.width -
+                windowSize.width +
+                edgeOffset,
+            workAreaPosition.dy - topEdgeOffset,
+          );
+          break;
+        case WindowCorner.bottomLeft:
+          position = Offset(
+            workAreaPosition.dx - edgeOffset,
+            workAreaPosition.dy +
+                workArea.height -
+                windowSize.height +
+                edgeOffset,
+          );
+          break;
+        case WindowCorner.bottomRight:
+          position = Offset(
+            workAreaPosition.dx +
+                workArea.width -
+                windowSize.width +
+                edgeOffset,
+            workAreaPosition.dy +
+                workArea.height -
+                windowSize.height +
+                edgeOffset,
+          );
+          break;
+      }
+
+      // 确保位置值是整数，避免亚像素定位问题
+      final adjustedPosition = Offset(
+        position.dx.roundToDouble(),
+        position.dy.roundToDouble(),
+      );
+
+      await windowManager.setPosition(adjustedPosition);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+}
+
+/// 窗口角落位置枚举
+enum WindowCorner {
+  /// 左上角
+  topLeft,
+
+  /// 右上角
+  topRight,
+
+  /// 左下角
+  bottomLeft,
+
+  /// 右下角
+  bottomRight,
 }
 
 class VoidCallbackIntent extends Intent {

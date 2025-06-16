@@ -1,6 +1,6 @@
 name: xly
 description: "A Test Flutter Package， DO NOT USE IT at present"
-version: 0.5.3
+version: 0.6.0
 
 environment:
   sdk: ^3.5.3
@@ -16,6 +16,7 @@ dependencies:
   get: ^4.6.6
   flutter_screenutil: ^5.9.3
   window_manager: ^0.4.2
+  screen_retriever: ^0.2.0
   lottie: ^3.1.2
 
   # no need reexport

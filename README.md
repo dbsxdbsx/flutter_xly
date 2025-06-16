@@ -9,15 +9,17 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 1. 基于GetX的状态管理(不用再加入"get"包了)
 2. 基于ScreenUtil的屏幕适配(不用再加入"flutter_screenutil"包了)
 3. 基于window_manager的窗口管理(不用再加入"window_manager"包了)
-4. Toast消息显示(内置实现，支持自定义动画和样式)
-5. 导航辅助函数
-6. 自定义按钮组件
-7. 自定义菜单组件
-8. 焦点管理(针对只能键盘或遥控操作的App很有用)
-9. 自定义文本编辑器(支持下拉建议和样式自定义)
-10. 自定义数字输入框(支持步进调节和范围控制)
-11. 跨平台工具类(支持文件操作、权限管理、窗口控制等)
-12. 开机自启动管理(支持桌面和Android平台)
+4. 基于screen_retriever的屏幕信息获取(不用再加入"screen_retriever"包了)
+5. Toast消息显示(内置实现，支持自定义动画和样式)
+6. 导航辅助函数
+7. 自定义按钮组件
+8. 自定义菜单组件
+9. 焦点管理(针对只能键盘或遥控操作的App很有用)
+10. 自定义文本编辑器(支持下拉建议和样式自定义)
+11. 自定义数字输入框(支持步进调节和范围控制)
+12. 跨平台工具类(支持文件操作、权限管理、窗口控制等)
+13. 开机自启动管理(支持桌面和Android平台)
+14. 窗口停靠功能(支持停靠到屏幕四个角落，自动避开任务栏)
 
 ## 内置依赖包
 
@@ -26,9 +28,10 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 ### 已重导出的包（可直接使用）
 - `get: ^4.6.6` - GetX状态管理
 - `flutter_screenutil: ^5.9.3` - 屏幕适配
+- `window_manager: ^0.4.2` - 窗口管理
+- `screen_retriever: ^0.2.0` - 屏幕信息获取
 
 ### 内部使用的包（多数情况无需关心，本xly包有相应功能可直接使用）
-- `window_manager: ^0.4.2` - 窗口管理
 - `lottie: ^3.1.2` - Lottie动画
 - `path_provider: ^2.1.2` - 路径管理
 - `permission_handler: ^11.3.0` - 权限管理
@@ -360,6 +363,38 @@ Widget buildPingDisplay() {
   );
 }
 ```
+
+### 使用窗口停靠功能
+
+窗口停靠功能允许您将应用窗口快速移动到屏幕的四个角落，并自动避开任务栏：
+
+```dart
+// 停靠窗口到左上角
+final success = await MyApp.dockToCorner(WindowCorner.topLeft);
+if (success) {
+  print('窗口已停靠到左上角');
+} else {
+  print('停靠失败');
+}
+
+// 停靠窗口到右上角
+await MyApp.dockToCorner(WindowCorner.topRight);
+
+// 停靠窗口到左下角
+await MyApp.dockToCorner(WindowCorner.bottomLeft);
+
+// 停靠窗口到右下角
+await MyApp.dockToCorner(WindowCorner.bottomRight);
+```
+
+窗口停靠功能特性：
+- 🎯 **精确停靠**: 窗口会精确停靠到屏幕的四个角落
+- 📏 **任务栏感知**: 自动检测任务栏位置，确保窗口不被遮挡
+- 🔧 **跨平台兼容**: 支持Windows、macOS、Linux桌面平台
+- ⚡ **简单易用**: 一行代码完成停靠操作
+- 🛡️ **错误处理**: 内部处理所有异常，返回操作结果
+
+注意：此功能仅在桌面平台（Windows、macOS、Linux）上可用。
 
 ### 使用自启动管理
 ```dart
