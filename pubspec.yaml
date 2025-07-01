@@ -1,6 +1,6 @@
 name: xly
 description: "A Test Flutter Package， DO NOT USE IT at present"
-version: 0.6.0
+version: 0.7.0
 
 environment:
   sdk: ^3.5.3
