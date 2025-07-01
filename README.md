@@ -2,7 +2,7 @@
 
 XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。虽然目前仍在开发中，但已经可以在项目中使用许多实用功能。
 
-## 功能
+## 功能（Features）
 
 当前，这个包提供了以下功能：
 
@@ -10,16 +10,18 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 2. 基于ScreenUtil的屏幕适配(不用再加入"flutter_screenutil"包了)
 3. 基于window_manager的窗口管理(不用再加入"window_manager"包了)
 4. 基于screen_retriever的屏幕信息获取(不用再加入"screen_retriever"包了)
-5. Toast消息显示(内置实现，支持自定义动画和样式)
-6. 导航辅助函数
-7. 自定义按钮组件
-8. 自定义菜单组件
-9. 焦点管理(针对只能键盘或遥控操作的App很有用)
-10. 自定义文本编辑器(支持下拉建议和样式自定义)
-11. 自定义数字输入框(支持步进调节和范围控制)
-12. 跨平台工具类(支持文件操作、权限管理、窗口控制等)
-13. 开机自启动管理(支持桌面和Android平台)
-14. 窗口停靠功能(支持停靠到屏幕四个角落，自动避开任务栏)
+5. 基于shared_preferences的本地存储(不用再加入"shared_preferences"包了)
+6. Toast消息显示(内置实现，支持自定义动画和样式)
+7. 导航辅助函数
+8. 自定义按钮组件
+9. 自定义菜单组件
+10. 焦点管理(针对只能键盘或遥控操作的App很有用)
+11. 自定义文本编辑器(支持下拉建议和样式自定义)
+12. 自定义数字输入框(支持步进调节和范围控制)
+13. 跨平台工具类(支持文件操作、权限管理、窗口控制等)
+14. 开机自启动管理(支持桌面和Android平台)
+15. 窗口停靠功能(支持停靠到屏幕四个角落，自动避开任务栏)
+16. 服务管理系统(确保服务在ScreenUtil初始化后注册，避免.sp等扩展方法返回无限值)
 
 ## 内置依赖包
 
@@ -30,6 +32,7 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 - `flutter_screenutil: ^5.9.3` - 屏幕适配
 - `window_manager: ^0.4.2` - 窗口管理
 - `screen_retriever: ^0.2.0` - 屏幕信息获取
+- `shared_preferences: ^2.2.2` - 本地存储
 
 ### 内部使用的包（多数情况无需关心，本xly包有相应功能可直接使用）
 - `lottie: ^3.1.2` - Lottie动画
@@ -44,7 +47,7 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 - `xml: ^6.5.0` - XML解析
 - `icons_launcher: ^3.0.0` - 图标生成
 
-## TODO
+## 待办事项（TODOs）
 float panel bar ：git stash pop?
 right menu 子菜单issue
 静默启动？
@@ -52,7 +55,19 @@ tray pop msg
 MyToggleBtn?
 permission功能？
 
-## 使用示例
+## 注意事项（Notes）
+
+### 初始化顺序与配置覆盖
+`MyApp.initialize`的配置应用顺序遵循以下核心原则：
+1. **`MyApp.initialize`的直接参数**：方法调用时直接传入的配置，如`designSize`、`exitInfoText`等。
+2. **`services`列表中的服务**：在`services`列表中注册的`GetxService`。
+3. **路由**：通过`routes`参数配置的页面和控制器。
+
+这种顺序意味着**服务（`services`）中加载的设置会覆盖`MyApp.initialize`方法中直接传入的同名参数**。例如，如果一个服务从本地存储中加载了持久化的主题设置，它将覆盖`MyApp.initialize`中设置的默认主题。
+
+这是一个有意为之的设计，目的是为了让用户的个性化、持久化设置拥有更高的优先级，从而提供更符合直觉的用户体验。
+
+## 使用示例（Examples）
 
 ### 初始化应用
 
@@ -68,6 +83,19 @@ import 'pages/page3.dart';
 void main() async {
   await MyApp.initialize(
     designSize: const Size(800, 600),
+
+    // 服务配置 - 确保在ScreenUtil初始化后注册，避免.sp等扩展方法返回无限值
+    services: [
+      MyService<YourCustomService>(
+        service: () => YourCustomService(),
+        permanent: true,  // 永久服务
+      ),
+      MyService<AnotherService>(
+        service: () => AnotherService(),
+        fenix: true,      // 懒加载服务，支持自动重建
+      ),
+    ],
+
     splash: const MySplash(
       nextRoute: Routes.page1,
       lottieAssetPath: 'assets/animation/splash_loading.json',
@@ -110,6 +138,94 @@ class Routes {
   static const String page3 = '/page3';
 }
 ```
+
+### 服务管理系统
+
+XLY包提供了服务管理系统，确保GetX服务在ScreenUtil初始化后注册，避免在服务中使用`.sp`、`.w`等扩展方法时返回无限值的问题。
+
+#### 基本用法
+
+```dart
+void main() async {
+  await MyApp.initialize(
+    designSize: const Size(800, 600),
+
+    // 在services参数中注册服务
+    services: [
+      // 永久服务 - 应用启动时立即创建并保持到应用结束
+      MyService<YourService>(
+        service: () => YourService(),
+        permanent: true,
+      ),
+
+      // 懒加载服务 - 首次使用时创建
+      MyService<DataService>(
+        service: () => DataService(),
+        fenix: false,  // 默认值，服务被删除后不会自动重建
+      ),
+
+      // 凤凰服务 - 支持自动重建
+      MyService<NetworkService>(
+        service: () => NetworkService(),
+        fenix: true,   // 服务被删除后会在下次使用时自动重建
+      ),
+
+      // 带标签的服务 - 支持同一类型的多个实例
+      MyService<CacheService>(
+        service: () => CacheService('user_cache'),
+        tag: 'user',
+        permanent: true,
+      ),
+      MyService<CacheService>(
+        service: () => CacheService('app_cache'),
+        tag: 'app',
+        permanent: true,
+      ),
+    ],
+
+    routes: [...],
+  );
+}
+```
+
+#### 自定义服务示例
+
+```dart
+class MyCustomService extends GetxService {
+  static MyCustomService get to => Get.find();
+
+  final counter = 0.obs;
+  late SharedPreferences _prefs;
+
+  @override
+  Future<void> onInit() async {
+    super.onInit();
+    // 在这里可以安全使用ScreenUtil扩展方法
+    final fontSize = 16.sp;  // 不会返回无限值
+
+    _prefs = await SharedPreferences.getInstance();
+    counter.value = _prefs.getInt('counter') ?? 0;
+  }
+
+  void increment() async {
+    counter.value++;
+    await _prefs.setInt('counter', counter.value);
+  }
+}
+```
+
+#### 服务配置选项
+
+- `permanent: true` - 永久服务，应用启动时立即创建并保持到应用结束
+- `fenix: true` - 凤凰服务，支持自动重建（当服务被删除后，下次使用时会自动重新创建）
+- `tag: 'custom_tag'` - 服务标签，支持同一类型的多个实例
+
+#### 重要说明
+
+1. **初始化时机**: 服务会在ScreenUtil初始化**之后**、runApp**之前**注册
+2. **避免无限值**: 在服务的`onInit()`方法中可以安全使用`.sp`、`.w`等扩展方法
+3. **向后兼容**: `services`参数是可选的，现有代码无需修改
+4. **GetX兼容**: 完全兼容GetX的所有服务管理功能
 
 ### 显示 Toast 消息
 

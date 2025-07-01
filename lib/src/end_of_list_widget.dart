@@ -140,8 +140,10 @@ class MyEndOfListWidget extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Colors.grey[300]!.withValues(alpha: isLeft ? lowGradient : highGradient),
-            Colors.grey[300]!.withValues(alpha: isLeft ? highGradient : lowGradient),
+            Colors.grey[300]!
+                .withValues(alpha: isLeft ? lowGradient : highGradient),
+            Colors.grey[300]!
+                .withValues(alpha: isLeft ? highGradient : lowGradient),
           ],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,

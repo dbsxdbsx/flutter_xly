@@ -346,7 +346,7 @@ class Page1View extends GetView<Page1Controller> {
             Expanded(
               child: Obx(() => MyButton(
                     text:
-                        '允许手动调整窗口尺寸: ${MyApp.isResizableEnabled() ? "已开启" : "已关闭"}',
+                        '允许手动调整窗口尺寸: ${controller.isWindowControlEnabled.value ? "已开启" : "已关闭"}',
                     onPressed: controller.toggleWindowControls,
                   )),
             ),
@@ -590,6 +590,43 @@ class Page1Controller extends GetxController {
     super.onInit();
     // 初始化时获取当前标题栏状态
     showTitleBar.value = !MyApp.isTitleBarHidden();
+
+    // 从ExampleService同步拖动设置状态
+    _syncDraggableState();
+    // 从ExampleService同步可调整大小的状态
+    _syncResizableState();
+  }
+
+  /// 从ExampleService同步拖动设置状态
+  void _syncDraggableState() {
+    try {
+      final exampleService = ExampleService.to;
+      // 监听ExampleService中的拖动设置变化
+      exampleService.windowDraggable.listen((isDraggable) {
+        enableDraggable.value = isDraggable;
+      });
+      // 初始化时同步状态
+      enableDraggable.value = exampleService.windowDraggable.value;
+    } catch (e) {
+      // 如果ExampleService还没有初始化，使用MyApp的状态
+      enableDraggable.value = MyApp.isDraggableEnabled();
+    }
+  }
+
+  /// 从ExampleService同步可调整大小的状态
+  void _syncResizableState() {
+    try {
+      final exampleService = ExampleService.to;
+      // 监听ExampleService中的可调整大小设置变化
+      exampleService.windowResizable.listen((isResizable) {
+        isWindowControlEnabled.value = isResizable;
+      });
+      // 初始化时同步状态
+      isWindowControlEnabled.value = exampleService.windowResizable.value;
+    } catch (e) {
+      // 如果ExampleService还没有初始化，使用MyApp的状态
+      isWindowControlEnabled.value = MyApp.isResizableEnabled();
+    }
   }
 
   void toggleMenuButtonState() {
@@ -658,12 +695,12 @@ class Page1Controller extends GetxController {
 
   void toggleWindowControls() async {
     // 获取当前状态的反状态
-    final newState = !MyApp.isResizableEnabled();
+    final newState = !isWindowControlEnabled.value;
 
-    // 设置新状态
-    await MyApp.setResizableEnabled(newState);
+    // 通过ExampleService设置新状态，以实现持久化
+    await ExampleService.to.setWindowResizable(newState);
 
-    // 更新本地状态以保持UI同步
+    // 更新本地状态以保持UI同步（实际上会被listen回调覆盖，但为了即时响应可以保留）
     isWindowControlEnabled.value = newState;
 
     // 显示提示
@@ -690,6 +727,9 @@ class Page1Controller extends GetxController {
 
     // 设置新状态
     await MyApp.setDraggableEnabled(newState);
+
+    // 同时保存到ExampleService以持久化设置
+    await ExampleService.to.setWindowDraggable(newState);
 
     // 更新本地状态以保持UI同步
     enableDraggable.value = newState;
@@ -759,7 +799,8 @@ class Page1Controller extends GetxController {
 
   void testCompoundSpinnerThenToast() async {
     // 场景1：使用默认提示
-    final success1 = await MyToast.showLoadingThenToast(
+    // 场景1：使用默认提示
+    await MyToast.showLoadingThenToast(
       loadingMessage: 'task1:正在加载数据...',
       task: () async {
         await Future.delayed(const Duration(seconds: 1));
@@ -767,10 +808,9 @@ class Page1Controller extends GetxController {
       },
       spinnerColor: Colors.blue,
     );
-    debugPrint('task1结果:${success1 ? "成功" : "失败"}');
 
     // 场景2：自定义警告提示
-    final success2 = await MyToast.showLoadingThenToast(
+    await MyToast.showLoadingThenToast(
       stackPreviousToasts: true,
       loadingMessage: 'task2结果:正在处理数据...',
       task: () async {
@@ -782,10 +822,9 @@ class Page1Controller extends GetxController {
         MyToast.showUpWarn("task2,自定义警告"); // 使用顶部警告样式
       },
     );
-    debugPrint('task2结果: ${success2 ? "成功" : "失败"}');
 
     // 场景3：自定义成功和错误提示
-    final success3 = await MyToast.showLoadingThenToast(
+    await MyToast.showLoadingThenToast(
       loadingMessage: 'task3:正在保存\n(不堆叠)\n...',
       task: () async {
         await Future.delayed(const Duration(seconds: 1));
@@ -802,7 +841,6 @@ class Page1Controller extends GetxController {
         MyToast.showUpError('保存失败'); // 使用顶部错误样式
       },
     );
-    debugPrint('task3结果: ${success3 ? "成功" : "失败"}');
   }
 
   void showOkToast() {
@@ -830,7 +868,7 @@ class Page1Controller extends GetxController {
   }
 
   void testSilentSuccess() async {
-    final success = await MyToast.showLoadingThenToast(
+    await MyToast.showLoadingThenToast(
       loadingMessage: '正在执行静默（结果成功）的操作...',
       task: () async {
         await Future.delayed(const Duration(seconds: 1));
@@ -838,11 +876,10 @@ class Page1Controller extends GetxController {
       },
       spinnerColor: Colors.purple,
     );
-    debugPrint('静默成功操作结果: ${success ? "成功" : "失败"}');
   }
 
   void testSilentFailure() async {
-    final success = await MyToast.showLoadingThenToast(
+    await MyToast.showLoadingThenToast(
       loadingMessage: '正在执行静默（结果失败）的操作...',
       task: () async {
         await Future.delayed(const Duration(seconds: 1));
@@ -850,7 +887,6 @@ class Page1Controller extends GetxController {
       },
       spinnerColor: Colors.orange,
     );
-    debugPrint('静默失败操作结果: ${success ? "成功" : "失败"}');
   }
 
   /// 停靠窗口到左上角

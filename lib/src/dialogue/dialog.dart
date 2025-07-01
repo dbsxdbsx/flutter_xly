@@ -130,7 +130,8 @@ class MyDialog {
           onPressed: onLeftPressed,
           style: ButtonStyle(
             overlayColor: leftButtonColor != null
-                ? WidgetStateProperty.all(leftButtonColor.withValues(alpha: 0.1))
+                ? WidgetStateProperty.all(
+                    leftButtonColor.withValues(alpha: 0.1))
                 : null,
           ),
           child: Text(
@@ -142,7 +143,8 @@ class MyDialog {
           onPressed: onRightPressed,
           style: ButtonStyle(
             overlayColor: rightButtonColor != null
-                ? WidgetStateProperty.all(rightButtonColor.withValues(alpha: 0.1))
+                ? WidgetStateProperty.all(
+                    rightButtonColor.withValues(alpha: 0.1))
                 : null,
           ),
           child: Text(

@@ -15,6 +15,7 @@ class MyApp extends StatelessWidget {
   final Size designSize;
   final ThemeData? theme;
   final List<MyRoute> routes;
+  final List<MyService>? services;
   final Widget Function(BuildContext, Widget?)? appBuilder;
   final String? appName;
   final bool useToast;
@@ -37,6 +38,7 @@ class MyApp extends StatelessWidget {
     this.theme,
     this.splash,
     required this.routes,
+    this.services,
     this.appBuilder,
     this.appName,
     this.useToast = true,
@@ -59,6 +61,9 @@ class MyApp extends StatelessWidget {
     required Size designSize,
     required List<MyRoute> routes,
     String? appName,
+
+    // 服务配置
+    List<MyService>? services,
 
     // 路由和页面配置
     MySplash? splash,
@@ -129,15 +134,18 @@ class MyApp extends StatelessWidget {
       }
     }
 
-    // 初始化时设置全局状态
+    // 1. 应用直接参数作为基础配置
     _globalEnableResizable.value = resizable;
     _globalEnableDoubleClickFullScreen.value = doubleClickToFullScreen;
     _globalEnableDraggable.value = draggable;
 
+    // 2. 准备服务，但不立即注册。注册操作将推迟到UI构建阶段，以确保ScreenUtil等依赖项已准备就绪。
+    // 3. 在所有配置应用完毕后，设置路由并运行应用
     runApp(MyApp._(
       designSize: designSize,
       theme: theme,
       routes: routes,
+      services: services, // 保持 services 的传递，以备其他用途
       appBuilder: appBuilder,
       appName: appName,
       useToast: useOKToast,
@@ -210,7 +218,16 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ScreenUtilInit(
       designSize: designSize,
-      builder: (context, child) => _buildApp(context),
+      builder: (context, child) {
+        // 在ScreenUtil初始化后，但在任何页面构建前，注册所有服务。
+        // 这确保了服务可以安全地使用ScreenUtil，同时其配置能在路由和页面加载前生效。
+        if (services != null) {
+          for (final service in services!) {
+            service.registerService();
+          }
+        }
+        return _buildApp(context);
+      },
     );
   }
 
@@ -540,6 +557,31 @@ class MyRoute<T extends GetxController> {
 
   void registerController() {
     Get.lazyPut<T>(controller);
+  }
+}
+
+/// 服务注册类，用于在ScreenUtil初始化后注册GetX服务
+class MyService<T> {
+  final T Function() service;
+  final bool permanent;
+  final bool fenix;
+  final String? tag;
+
+  MyService({
+    required this.service,
+    this.permanent = false,
+    this.fenix = false,
+    this.tag,
+  });
+
+  void registerService() {
+    if (permanent) {
+      Get.put<T>(service(), permanent: true, tag: tag);
+    } else if (fenix) {
+      Get.lazyPut<T>(service, fenix: true, tag: tag);
+    } else {
+      Get.lazyPut<T>(service, tag: tag);
+    }
   }
 }
 
