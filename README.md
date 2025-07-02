@@ -22,6 +22,8 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 14. 开机自启动管理(支持桌面和Android平台)
 15. 窗口停靠功能(支持停靠到屏幕四个角落，自动避开任务栏)
 16. 服务管理系统(确保服务在ScreenUtil初始化后注册，避免.sp等扩展方法返回无限值)
+17. 全局UI构建器(`appBuilder`)(支持在应用顶层添加自定义组件，如全局浮动按钮)
+18. 可拖拽浮动操作栏(`MyFloatBar`)(一个可拖动、可停靠、可展开的浮动操作栏)
 
 ## 内置依赖包
 
@@ -512,7 +514,73 @@ await MyApp.dockToCorner(WindowCorner.bottomRight);
 
 注意：此功能仅在桌面平台（Windows、macOS、Linux）上可用。
 
-### 使用自启动管理
+ ### 使用 appBuilder 添加全局浮动栏
+
+ `MyApp.initialize` 提供了一个 `appBuilder` 参数，允许您在应用的顶层UI上包裹自定义组件。这对于实现全局浮动导航栏、消息通知等功能非常有用。
+
+ `MyFloatBar` 是一个可拖动、可停靠、可展开的浮动操作栏，可以与 `appBuilder` 结合使用。
+
+ ```dart
+ // main.dart
+ void main() async {
+   await MyApp.initialize(
+     // ... 其他配置
+     services: [
+       // 为FloatBar注册控制器
+       MyService<FloatBarNavController>(
+         service: () => FloatBarNavController(),
+         permanent: true,
+       ),
+     ],
+     appBuilder: (context, child) {
+       // 使用Stack将FloatBar覆盖在应用内容之上
+       return Stack(
+         children: [
+           child!, // child是原始的应用页面
+           getFloatBar(), // 自定义的FloatBar
+         ],
+       );
+     },
+   );
+ }
+
+ // float_bar_navigation.dart
+
+ /// 获取FloatBar组件
+ Widget getFloatBar() {
+   final ctrl = Get.find<FloatBarNavController>();
+   return Obx(
+     () => MyFloatBar(
+       barWidthInput: 60,
+       backgroundColor: const Color(0xFF222222),
+       buttons: ctrl.buttons.toList(),
+       onPressed: (index) {
+         // 处理按钮点击事件
+         if (index == 0) {
+           // 打开导航菜单
+         } else if (index == 1) {
+           // 最小化窗口
+           windowManager.minimize();
+         } else if (index == 2) {
+           // 退出应用
+           showExitConfirmDialog();
+         }
+       },
+     ),
+   );
+ }
+
+ /// FloatBar导航控制器
+ class FloatBarNavController extends GetxController {
+   final buttons = <MyFloatBarButton>[
+     MyFloatBarButton(icon: Icons.menu),          // 导航菜单按钮
+     MyFloatBarButton(icon: CupertinoIcons.minus), // 最小化窗口按钮
+     MyFloatBarButton(icon: CupertinoIcons.xmark_circle), // 退出应用按钮
+   ].obs;
+ }
+ ```
+
+ ### 使用自启动管理
 ```dart
 // 检查是否支持自启动功能
 if (MyAutoStart.isSupported()) {
