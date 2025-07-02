@@ -1,7 +1,9 @@
 import 'package:example/main.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:example/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:xly/xly.dart';
+
+import '../services/example_service.dart';
 
 class Page1View extends GetView<Page1Controller> {
   const Page1View({super.key});
@@ -42,43 +44,6 @@ class Page1View extends GetView<Page1Controller> {
           context: context,
           menuElements: _buildRightMenuItems(),
           style: const MyMenuStyle(shadowRatio: 0.2),
-        ),
-        MyFloatPanel(
-          panelWidth: 60,
-          backgroundColor: const Color(0xFF222222),
-          panelShape: PanelShape.rectangle,
-          borderRadius: BorderRadius.circular(10),
-          dockType: DockType.outside,
-          panelButtonColor: Colors.blueGrey,
-          customButtonColor: Colors.grey,
-          dockActivate: true,
-          items: [
-            MyFloatPanelItem(
-              icon: CupertinoIcons.news,
-              onPressed: () => controller.onToolButtonPressed('新游戏按钮被点击'),
-            ),
-            MyFloatPanelItem(
-              icon: CupertinoIcons.person,
-              onPressed: () => controller.onToolButtonPressed('新AI按钮被点击'),
-            ),
-            MyFloatPanelItem(
-              icon: CupertinoIcons.settings,
-              onPressed: () => controller.getSettingSheet(context),
-            ),
-            MyFloatPanelItem(
-              icon: CupertinoIcons.link,
-              onPressed: () => controller.onToolButtonPressed('新链接按钮被点击'),
-            ),
-            MyFloatPanelItem(
-              icon: CupertinoIcons.minus,
-              onPressed: () => controller.minimizeWindow(),
-            ),
-            MyFloatPanelItem.divider(), // 添加分隔符
-            MyFloatPanelItem(
-              icon: CupertinoIcons.xmark_circle,
-              onPressed: () => controller.showExitConfirmation(context),
-            ),
-          ],
         ),
       ],
     );
@@ -658,15 +623,8 @@ class Page1Controller extends GetxController {
   }
 
   void confirmExitApp() async {
-    final result = await MyDialog.show(
-      content: const Text('确定要退出应用吗？'),
-      leftButtonText: '取消',
-      rightButtonText: '确定',
-    );
-
-    if (result == MyDialogChosen.right) {
-      await MyApp.exit();
-    }
+    // 复用FloatBar中的退出确认对话框
+    await showExitConfirmDialog();
   }
 
   void onToolButtonPressed(String message) {

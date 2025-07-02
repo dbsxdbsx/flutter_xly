@@ -6,7 +6,6 @@ import 'package:get/get.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:xly/src/exit.dart';
-import 'package:xly/src/float_panel.dart';
 import 'package:xly/src/platform.dart';
 import 'package:xly/src/splash.dart';
 import 'package:xly/src/toast/toast.dart';
@@ -28,7 +27,7 @@ class MyApp extends StatelessWidget {
   final String backInfoText;
   final Transition pageTransitionStyle;
   final Duration pageTransitionDuration;
-  final MyFloatPanel? globalFloatPanel;
+
   final GlobalKey<NavigatorState>? navigatorKey;
   final bool enableDoubleClickFullScreen;
   final bool draggable;
@@ -50,7 +49,6 @@ class MyApp extends StatelessWidget {
     this.backInfoText = '再按一次返回上一页',
     this.pageTransitionStyle = Transition.fade,
     this.pageTransitionDuration = const Duration(milliseconds: 300),
-    this.globalFloatPanel,
     this.navigatorKey,
     this.enableDoubleClickFullScreen = false,
     this.draggable = true,
@@ -67,10 +65,13 @@ class MyApp extends StatelessWidget {
 
     // 路由和页面配置
     MySplash? splash,
-    Widget Function(BuildContext, Widget?)? appBuilder,
     Transition pageTransitionStyle = Transition.fade,
     Duration pageTransitionDuration = const Duration(milliseconds: 300),
     GlobalKey<NavigatorState>? navigatorKey,
+
+    // UI自定义配置
+    Widget Function(BuildContext, Widget?)?
+        appBuilder, // 应用构建器，用于自定义UI层级（如添加FloatBar、全局遮罩等）
 
     // 窗口基础配置
     Size? minimumSize,
@@ -94,7 +95,6 @@ class MyApp extends StatelessWidget {
     ThemeData? theme,
     bool showDebugTag = true,
     bool dragToMoveArea = true,
-    MyFloatPanel? globalFloatPanel,
 
     // 其他功能配置
     LogicalKeyboardKey? keyToRollBack,
@@ -158,7 +158,6 @@ class MyApp extends StatelessWidget {
       backInfoText: backInfoText,
       pageTransitionStyle: pageTransitionStyle,
       pageTransitionDuration: pageTransitionDuration,
-      globalFloatPanel: globalFloatPanel,
       navigatorKey: navigatorKey,
       enableDoubleClickFullScreen: doubleClickToFullScreen,
       draggable: draggable,
@@ -236,17 +235,8 @@ class MyApp extends StatelessWidget {
       navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: showDebugTag,
       title: appName ?? '',
-      initialRoute: splash != null
-          ? '/splash'
-          : (routes.isNotEmpty ? routes.first.path : '/'),
+      initialRoute: routes.isNotEmpty ? routes.first.path : '/',
       getPages: [
-        if (splash != null)
-          GetPage(
-            name: '/splash',
-            page: () => splash!,
-            transition: Transition.fade,
-            transitionDuration: Duration.zero,
-          ),
         ...routes.map((route) => GetPage(
               name: route.path,
               page: () => route.page,
@@ -288,23 +278,31 @@ class MyApp extends StatelessWidget {
     Widget processedChild = _buildMediaQueryWrapper(context, child);
     processedChild = _buildSafeArea(processedChild);
 
+    // 应用用户自定义的UI构建器
     if (appBuilder != null) {
       processedChild = appBuilder!(context, processedChild);
     }
 
     processedChild = _buildKeyboardShortcuts(processedChild);
 
-    // 如果提供了全局浮动面板，则添加它
-    if (globalFloatPanel != null) {
-      processedChild = Stack(
-        children: [
-          processedChild,
-          globalFloatPanel!,
-        ],
-      );
-    }
+    // 将拖动区域包裹在最外层，确保在启动屏期间也能拖动
+    return Obx(() => CustomDragArea(
+          enableDoubleClickFullScreen: _globalEnableDoubleClickFullScreen.value,
+          draggable: _globalEnableDraggable.value,
+          child: Stack(
+            children: [
+              // 底层内容
+              processedChild,
 
-    return processedChild;
+              // 顶层启动屏
+              if (splash != null && !isSplashFinished.value)
+                Visibility(
+                  visible: !isSplashFinished.value,
+                  child: splash!,
+                ),
+            ],
+          ),
+        ));
   }
 
   Widget _buildMediaQueryWrapper(BuildContext context, Widget? child) {
@@ -368,12 +366,7 @@ class MyApp extends StatelessWidget {
 
   Widget _buildSafeArea(Widget child) {
     return SafeArea(
-      child: Obx(() => CustomDragArea(
-            enableDoubleClickFullScreen:
-                _globalEnableDoubleClickFullScreen.value,
-            draggable: _globalEnableDraggable.value,
-            child: child,
-          )),
+      child: child,
     );
   }
 
@@ -382,6 +375,7 @@ class MyApp extends StatelessWidget {
     await exitApp();
   }
 
+  static final isSplashFinished = false.obs;
   static final _globalEnableDoubleClickFullScreen = false.obs;
   static final _globalEnableResizable = false.obs;
   static final _globalEnableDraggable = true.obs;

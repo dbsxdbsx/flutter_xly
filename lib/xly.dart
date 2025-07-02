@@ -19,7 +19,7 @@ export 'src/end_of_list_widget.dart';
 export 'src/group_box.dart';
 export 'src/card.dart';
 export 'src/list.dart';
-export 'src/float_panel.dart';
+export 'src/float_bar.dart';
 export 'src/url_launcher.dart';
 export 'src/text_editor.dart';
 export 'src/spin_box.dart';

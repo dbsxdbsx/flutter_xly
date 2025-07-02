@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
 import 'package:lottie/lottie.dart';
+import 'package:xly/src/app.dart';
 
 class MySplash extends StatefulWidget {
   final String nextRoute;
@@ -44,9 +44,10 @@ class _MySplashState extends State<MySplash> {
 
   void _navigateToNextRoute() {
     Timer(widget.splashDuration, () {
-      Get.offNamed(
-        widget.nextRoute,
-      );
+      // 通知App启动屏已结束
+      MyApp.isSplashFinished.value = true;
+      // 导航操作不再需要，因为主路由会自动显示
+      // Get.offNamed(widget.nextRoute);
     });
   }
 
