@@ -1,3 +1,9 @@
+## 0.8.0 - 2025-07-02
+
+### Added
+- 新增 `appBuilder` 参数，允许在 `MyXlyApp` 顶层注入全局UI组件。
+- 新增 `MyFloatBar` 组件，一个可拖拽的浮动操作栏，可结合 `appBuilder` 使用。
+
 ## 0.7.0 (2025-07-01)
 
 - **重构**：优化 `MyApp.initialize` 初始化逻辑，确立了“直接参数 -> 服务 -> 路由”的配置应用顺序，解决了因UI依赖（如 `flutter_screenutil`）初始化时机不当而导致的 `LateInitializationError`。
