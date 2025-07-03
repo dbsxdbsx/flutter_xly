@@ -32,6 +32,10 @@ class Page1View extends GetView<Page1Controller> {
                   SizedBox(height: 8.h),
                   _buildWindowControlSection(),
                   SizedBox(height: 12.h),
+                  _buildSectionTitle('智能停靠测试（边缘+角落）'),
+                  SizedBox(height: 8.h),
+                  _buildEdgeDockingSection(),
+                  SizedBox(height: 12.h),
                   _buildToastTestSection(),
                   SizedBox(height: 8.h),
                   _buildNavigationSection(),
@@ -110,6 +114,27 @@ class Page1View extends GetView<Page1Controller> {
         MyButton(
           text: '切换菜单按钮状态',
           onPressed: controller.toggleMenuButtonState,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEdgeDockingSection() {
+    return Column(
+      children: [
+        Obx(() => MyButton(
+              text:
+                  '智能停靠${controller.enableSmartDocking.value ? "已开启" : "已禁用"}',
+              onPressed: controller.toggleSmartEdgeDocking,
+            )),
+        SizedBox(height: 8.h),
+        Text(
+          '启用后，拖动窗口到屏幕边缘或角落附近松开鼠标即可自动停靠\n系统会智能判断进行边缘停靠还是角落停靠',
+          style: TextStyle(
+            fontSize: 12.sp,
+            color: Colors.grey[600],
+          ),
+          textAlign: TextAlign.center,
         ),
       ],
     );
@@ -549,6 +574,7 @@ class Page1Controller extends GetxController {
       MyApp.isDoubleClickFullScreenEnabled().obs;
   final enableDraggable = MyApp.isDraggableEnabled().obs;
   final showTitleBar = (!MyApp.isTitleBarHidden()).obs;
+  final enableSmartDocking = MyApp.isSmartDockingEnabled().obs;
 
   @override
   void onInit() {
@@ -884,6 +910,25 @@ class Page1Controller extends GetxController {
       MyToast.show('窗口已停靠到右下角');
     } else {
       MyToast.showUpError('停靠窗口失败');
+    }
+  }
+
+  /// 切换智能停靠机制
+  void toggleSmartEdgeDocking() async {
+    final newState = !enableSmartDocking.value;
+
+    await MyApp.setSmartEdgeDocking(
+      enabled: newState,
+      visibleWidth: 10.0, // 停靠时可见10像素，角落停靠会自动使用更大区域
+    );
+
+    // 更新响应式变量
+    enableSmartDocking.value = newState;
+
+    if (newState) {
+      MyToast.show('智能停靠已启用\n拖动窗口到屏幕边缘或角落试试！');
+    } else {
+      MyToast.show('智能停靠已禁用');
     }
   }
 }

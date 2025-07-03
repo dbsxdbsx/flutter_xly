@@ -21,6 +21,8 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 13. 跨平台工具类(支持文件操作、权限管理、窗口控制等)
 14. 开机自启动管理(支持桌面和Android平台)
 15. 窗口停靠功能(支持停靠到屏幕四个角落，自动避开任务栏)
+16. 边缘停靠功能(类似QQ的窗口边缘隐藏和鼠标悬停显示功能)
+17. 智能边缘停靠机制(自动检测窗口拖拽到边缘并触发停靠)
 16. 服务管理系统(确保服务在ScreenUtil初始化后注册，避免.sp等扩展方法返回无限值)
 17. 全局UI构建器(`appBuilder`)(支持在应用顶层添加自定义组件，如全局浮动按钮)
 18. 可拖拽浮动操作栏(`MyFloatBar`)(一个可拖动、可停靠、可展开的浮动操作栏)
@@ -511,6 +513,104 @@ await MyApp.dockToCorner(WindowCorner.bottomRight);
 - 🔧 **跨平台兼容**: 支持Windows、macOS、Linux桌面平台
 - ⚡ **简单易用**: 一行代码完成停靠操作
 - 🛡️ **错误处理**: 内部处理所有异常，返回操作结果
+
+### 使用边缘停靠功能（类似QQ）
+
+边缘停靠功能允许您将窗口停靠到屏幕边缘，大部分隐藏，只留一小部分可见，类似腾讯QQ的停靠行为：
+
+```dart
+// 启用左边缘停靠，可见宽度为8像素
+final success = await MyApp.enableSimpleEdgeDocking(
+  edge: WindowEdge.left,
+  visibleWidth: 8.0,
+);
+
+if (success) {
+  print('边缘停靠已启用');
+}
+
+// 启用其他边缘停靠
+await MyApp.enableSimpleEdgeDocking(edge: WindowEdge.right);
+await MyApp.enableSimpleEdgeDocking(edge: WindowEdge.top);
+await MyApp.enableSimpleEdgeDocking(edge: WindowEdge.bottom);
+
+// 手动切换停靠窗口的展开/收缩状态
+await MyApp.toggleDockedWindow();
+
+// 手动展开停靠的窗口
+await MyApp.expandDockedWindow();
+
+// 手动收缩窗口到停靠位置
+await MyApp.collapseDockedWindow();
+
+// 禁用边缘停靠功能
+MyApp.disableEdgeDocking();
+```
+
+边缘停靠功能特性：
+- 🎯 **智能停靠**: 窗口停靠到屏幕边缘，只留小部分可见
+- 🖱️ **交互友好**: 点击可见部分可展开/收缩窗口
+- 📏 **可调节**: 支持自定义可见宽度
+- 🔧 **跨平台**: 支持Windows、macOS、Linux桌面平台
+- ⚡ **简单控制**: 提供手动控制方法
+- 🛡️ **安全可靠**: 内部异常处理，操作安全
+
+### 使用智能停靠机制
+
+智能停靠是一个更高级的功能，它会自动检测用户拖拽窗口的行为，当窗口的某部分被拖拽超出屏幕边界时，自动触发停靠。系统会智能判断是进行边缘停靠还是角落停靠：
+
+```dart
+// 启用智能停靠机制
+await MyApp.setSmartEdgeDocking(
+  enabled: true,
+  visibleWidth: 8.0,      // 停靠时可见宽度
+);
+
+// 检查智能停靠状态
+bool isEnabled = MyApp.isSmartDockingEnabled();
+
+// 禁用智能停靠
+await MyApp.setSmartEdgeDocking(enabled: false);
+```
+
+智能停靠特性：
+- 🧠 **智能检测**: 自动检测窗口拖拽行为和位置
+- 🎯 **边界触发**: 窗口部分超出屏幕边界时自动停靠
+- 📐 **智能选择**: 自动判断边缘停靠或角落停靠
+  - 窗口同时超出两个相邻边界时，触发**角落停靠**（如左上角）
+  - 窗口只超出一个边界时，触发**边缘停靠**（如左边缘）
+- 👁️ **可见区域优化**: 角落停靠时露出更大的可见区域，便于鼠标悬停
+- ⏱️ **延迟触发**: 窗口停止移动后延迟触发，避免误操作
+- 🔄 **动态切换**: 可以在不同边缘/角落间自由切换停靠
+- 🛡️ **状态管理**: 自动管理停靠状态，避免冲突
+- 🎭 **两步式行为**: 先对齐到目标位置，再根据鼠标位置智能隐藏/显示
+
+### 功能对比：`dockToCorner` vs 智能停靠
+
+| 功能 | `dockToCorner` | 智能停靠 (`setSmartEdgeDocking`) |
+|------|----------------|----------------------------------|
+| **触发方式** | 手动调用API | 自动检测拖拽行为 |
+| **行为模式** | 仅对齐到角落，不隐藏 | 先对齐，后根据鼠标智能隐藏 |
+| **适用场景** | 简单的窗口定位 | 类似QQ的智能停靠体验 |
+| **鼠标交互** | 无 | 鼠标悬停显示，离开隐藏 |
+| **使用复杂度** | 简单 | 自动化，无需手动管理 |
+
+```dart
+// 简单对齐到角落（不隐藏）
+await MyApp.dockToCorner(WindowCorner.topLeft);
+
+// vs
+
+// 智能停靠（自动检测 + 智能隐藏）
+await MyApp.setSmartEdgeDocking(enabled: true);
+```
+
+**重要更新**：智能角落停靠行为已优化！现在当拖拽到屏幕角落时，窗口会：
+1. 🎯 **先对齐到角落** - 与边缘停靠行为保持一致
+2. 👁️ **再智能隐藏** - 鼠标离开时才隐藏到角落
+3. 🔄 **鼠标交互** - 悬停显示完整窗口，离开后隐藏
+
+这确保了角落停靠与边缘停靠具有一致的用户体验。
 
 注意：此功能仅在桌面平台（Windows、macOS、Linux）上可用。
 
