@@ -6,12 +6,7 @@ import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'platform.dart';
-
-/// 窗口边缘枚举
-enum WindowEdge { left, right, top, bottom }
-
-/// 窗口角落枚举
-enum WindowCorner { topLeft, topRight, bottomLeft, bottomRight }
+import 'window_enums.dart';
 
 /// 智能停靠管理器
 ///

@@ -12,45 +12,7 @@ import 'package:xly/src/platform.dart';
 import 'package:xly/src/smart_dock_manager.dart';
 import 'package:xly/src/splash.dart';
 import 'package:xly/src/toast/toast.dart';
-
-/// 窗口角落位置枚举
-enum WindowCorner {
-  /// 左上角
-  topLeft,
-
-  /// 右上角
-  topRight,
-
-  /// 左下角
-  bottomLeft,
-
-  /// 右下角
-  bottomRight,
-}
-
-/// 窗口边缘位置枚举
-enum WindowEdge {
-  /// 左边缘
-  left,
-
-  /// 右边缘
-  right,
-
-  /// 上边缘
-  top,
-
-  /// 下边缘
-  bottom,
-}
-
-/// 窗口停靠类型枚举
-enum WindowDockType {
-  /// 边缘停靠
-  edge,
-
-  /// 角落停靠
-  corner,
-}
+import 'package:xly/src/window_enums.dart';
 
 class VoidCallbackIntent extends Intent {
   final VoidCallback callback;

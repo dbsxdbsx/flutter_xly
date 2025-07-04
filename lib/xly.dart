@@ -6,7 +6,8 @@ export 'package:screen_retriever/screen_retriever.dart';
 export 'package:shared_preferences/shared_preferences.dart';
 
 // xly diy widgets
-export 'src/app.dart' show MyApp, MyRoute, MyService, WindowCorner, WindowEdge;
+export 'src/app.dart' show MyApp, MyRoute, MyService;
+export 'src/window_enums.dart' show WindowCorner, WindowEdge;
 export 'src/navigation.dart' show goToPage;
 export 'src/toast/lib.dart';
 export 'src/button.dart';
