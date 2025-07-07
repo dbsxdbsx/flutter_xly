@@ -709,23 +709,17 @@ await MyAutoStart.setAutoStart(false);
 
 ## App重命名功能
 
-本包已集成 rename_app 功能，你可以直接使用以下命令来重命名应用：
+本包集成了应用重命名功能，支持一键重命名所有平台的应用名称：
 
-### 为所有平台设置相同名称
 ```bash
-dart run rename_app:main all="新应用名称"
+# 为所有平台设置相同名称
+dart run xly:rename all="新应用名称"
+
+# 为不同平台设置不同名称
+dart run xly:rename android="Android版本" ios="iOS版本" windows="Windows版本"
 ```
 
-### 为不同平台设置不同名称
-```bash
-# 设置 Android 和 iOS 平台名称
-dart run rename_app:main android="Android版本" ios="iOS版本"
-
-# 为所有平台分别设置名称
-dart run rename_app:main android="Android版本" ios="iOS版本" web="Web版本" windows="Windows版本" linux="Linux版本" mac="Mac版本"
-```
-
-注意：重命名操作会修改项目配置文件，建议在进行重命名操作前先提交或备份当前代码。
+详细使用说明和注意事项请参考：[tool/README.md](tool/README.md)
 
 ## 完整示例
 

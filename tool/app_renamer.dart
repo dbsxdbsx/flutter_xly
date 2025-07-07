@@ -1,10 +1,24 @@
+// ignore_for_file: avoid_print
+
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:xml/xml.dart' as xml;
 
 /// App重命名工具类
+///
+/// ⚠️ 警告：此类仅供命令行工具使用，不应在Flutter应用代码中导入！
+///
+/// 使用方式：
+/// ```bash
+/// dart run xly:rename all="应用名称"
+/// ```
+///
+/// 如果你在Flutter代码中看到此导入，请立即移除：
+/// ```dart
+/// // ❌ 错误用法 - 不要这样做！
+/// import 'package:xly/src/app_renamer.dart';
+/// ```
 class AppRenamer {
   // 文件路径常量
   static const String _mainDartFile = 'lib/main.dart';
@@ -263,17 +277,17 @@ class AppRenamer {
 
   /// 打印成功消息
   static void _logSuccess(String platform, String name) {
-    debugPrint('✅ 成功重命名 [$platform] 平台的应用为: "$name"');
+    print('✅ 成功重命名 [$platform] 平台的应用为: "$name"');
   }
 
   /// 打印错误消息
   static void _logError(String platform, String error) {
-    debugPrint('❌ 重命名 [$platform] 平台应用时出错: $error');
+    print('❌ 重命名 [$platform] 平台应用时出错: $error');
   }
 
   /// 打印跳过消息
   static void _logSkipped(String platform, String reason) {
-    debugPrint('⏭️  跳过 [$platform] 平台的重命名: $reason');
+    print('⏭️  跳过 [$platform] 平台的重命名: $reason');
   }
 
   /// 修改 main.dart 中的 MyApp.initialize 配置
@@ -323,13 +337,13 @@ class AppRenamer {
           .replaceAll(RegExp(r'\n\s*\n\s*\n'), '\n\n'); // 移除多余的空行
 
       await mainFile.writeAsString(content);
-      debugPrint('✅ 已成功修改、格式化[$_mainDartFile] appName字段部分');
+      print('✅ 已成功修改、格式化[$_mainDartFile] appName字段部分');
 
       // 运行 dart format 命令格式化文件
       try {
         await Process.run('dart', ['format', mainFile.path]);
       } catch (e) {
-        debugPrint('⚠️ 运行格式化命令失败: $e');
+        print('⚠️ 运行格式化命令失败: $e');
       }
     } catch (e) {
       _logError(_mainDartFile, e.toString());

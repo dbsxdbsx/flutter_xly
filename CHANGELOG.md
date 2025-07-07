@@ -1,3 +1,20 @@
+## 0.9.1 - 2025-07-08
+
+### Fixed
+- 修复应用重命名工具的 Flutter 依赖问题，移除了对 `dart:ui` 的依赖
+- 将 `app_renamer.dart` 从 `lib/src/` 移动到 `tool/` 目录，防止用户误导入
+- 替换 `debugPrint` 为 `print`，确保命令行工具正常运行
+
+### Enhanced
+- 优化应用重命名工具的项目结构，提高代码组织性
+- 完善文档说明，添加详细的使用指南和注意事项
+- 在 `tool/README.md` 中添加对原始 rename_app 项目的鸣谢
+
+### Documentation
+- 简化根目录 README.md 中的重命名功能介绍
+- 创建专门的 `tool/README.md` 文档，详细说明开发工具的使用方法
+- 更新示例项目文档，统一命令格式
+
 ## 0.9.0 - 2025-07-03
 
 ### Added

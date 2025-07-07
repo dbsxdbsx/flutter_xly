@@ -16,7 +16,7 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   await MyApp.initialize(
-    appName: "myPackageApp",
+    appName: "XLY示例应用",
     setTitleBarHidden: false,
     designSize: const Size(900, 700),
     services: [

@@ -18,4 +18,6 @@ dart run xly:rename android="Android版本" ios="iOS版本"
 dart run xly:rename android="Android版本" ios="iOS版本" web="Web版本" windows="Windows版本" linux="Linux版本" mac="Mac版本"
 ```
 
-注意：重命名操作会修改项目配置文件，建议在进行重命名操作前先提交或备份当前代码。
+**重要提醒**：
+- 重命名操作会修改项目配置文件，建议在进行重命名操作前先提交或备份当前代码
+- 此功能仅供命令行使用，请勿在 Flutter 代码中导入相关实现文件
