@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "XLY示例应用\0" "\0"
+            VALUE "FileDescription", "示例App\0" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "XLY示例应用\0" "\0"
+            VALUE "InternalName", "示例App\0" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2024 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "XLY示例应用.exe\0" "\0"
-            VALUE "ProductName", "XLY示例应用\0" "\0"
+            VALUE "OriginalFilename", "示例App.exe\0" "\0"
+            VALUE "ProductName", "示例App\0" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
