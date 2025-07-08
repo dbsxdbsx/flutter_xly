@@ -1,3 +1,25 @@
+## 0.9.2 - 2025-07-08
+
+### Added
+- 新增应用图标生成工具，支持一键为所有平台生成应用图标
+- 新增 `bin/generate.dart` 命令行入口，提供简洁的 `dart run xly:generate icon="图像路径"` 语法
+- 新增 `tool/icon_generator.dart` 核心图标生成工具类
+- 支持 PNG、JPEG、JPG 格式的输入图像
+- 自动检测项目中存在的平台并生成对应图标：Android、iOS、Windows、macOS、Linux、Web
+- 为 example 项目生成了完整的图标资源文件作为使用示例
+
+### Enhanced
+- 图标生成工具自动创建必要的目录结构和配置文件
+- 支持多种尺寸规格，确保各平台图标符合官方规范
+- iOS 图标自动移除 alpha 通道，符合 App Store 要求
+- Windows 平台生成 ICO 格式图标，包含多种尺寸
+- 建议源图标尺寸 1024x1024 像素或更大，确保最佳质量
+
+### Documentation
+- 更新 README.md，添加应用图标生成功能的详细说明
+- 更新 tool/README.md，补充图标生成工具的使用方法和特性介绍
+- 提供清晰的命令示例和支持格式说明
+
 ## 0.9.1 - 2025-07-08
 
 ### Fixed
