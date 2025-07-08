@@ -719,6 +719,33 @@ dart run xly:rename all="新应用名称"
 dart run xly:rename android="Android版本" ios="iOS版本" windows="Windows版本"
 ```
 
+### 应用图标生成
+
+本包还提供了简化版的图标生成工具，支持一键为所有平台生成应用图标：
+
+```bash
+# 从单个源图标生成所有平台的图标
+dart run xly:generate icon="path/to/your/icon.png"
+```
+
+**支持的平台：**
+- Android (多种密度的mipmap图标)
+- iOS (包含所有尺寸规格，自动移除alpha通道)
+- Windows (ICO格式，包含多种尺寸)
+- macOS (包含Contents.json配置)
+- Linux (256x256 PNG)
+- Web (包含favicon和PWA图标)
+
+**特性：**
+- 自动检测项目中存在的平台
+- 支持PNG、JPEG、JPG格式输入
+- 自动创建必要的目录结构
+- 生成平台特定的配置文件
+- 建议源图标尺寸：1024x1024像素或更大
+
+**更多自定义需求：**
+如需更高级的图标配置（如Android自适应图标、iOS深色/着色变体等），请使用原始的 [icons_launcher](https://pub.dev/packages/icons_launcher) 包。
+
 详细使用说明和注意事项请参考：[tool/README.md](tool/README.md)
 
 ## 完整示例

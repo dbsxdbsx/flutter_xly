@@ -26,6 +26,8 @@ dependencies:
   path: ^1.8.0
   xml: ^6.5.0
   icons_launcher: ^3.0.0
+  image: ^4.5.3
+  args: ^2.6.0
 
   path_provider: ^2.1.2
   permission_handler: ^11.3.0
@@ -42,3 +44,4 @@ example: example
 
 executables:
   rename: rename
+  generate: generate
