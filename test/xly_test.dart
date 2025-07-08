@@ -1,8 +1,9 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:xly/xly.dart';
+
 void main() {
-  // test('adds one to input values', () {
-  //   final calculator = Calculator();
-  //   expect(calculator.addOne(2), 3);
-  //   expect(calculator.addOne(-7), -6);
-  //   expect(calculator.addOne(0), 1);
-  // });
+  test('GetStorage should be exported from xly package', () {
+    // 测试GetStorage类是否可以从xly包中访问
+    expect(GetStorage, isNotNull);
+  });
 }

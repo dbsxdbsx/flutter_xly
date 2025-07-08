@@ -1,3 +1,20 @@
+## 0.9.3 - 2025-07-08
+
+### Breaking Changes
+- **重要变更**：将本地存储从 `SharedPreferences` 替换为 `GetStorage`
+- 移除 `shared_preferences` 依赖，新增 `get_storage` 依赖
+- 更新所有相关代码示例和文档，使用 `GetStorage` API
+
+### Enhanced
+- `MyApp.initialize()` 现在自动初始化 `GetStorage`，新增 `initializeGetStorage` 参数（默认为 true）
+- 简化了本地存储的使用方式，提供更好的类型安全和响应式特性
+- 优化了示例服务中的存储逻辑，移除了重复的初始化代码
+
+### Documentation
+- 更新 README.md 中的所有 `SharedPreferences` 示例为 `GetStorage`
+- 更新功能列表，将"基于shared_preferences的本地存储"改为"基于GetStorage的本地存储"
+- 更新依赖包列表，将 `shared_preferences` 替换为 `get_storage`
+
 ## 0.9.2 - 2025-07-08
 
 ### Added

@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:xly/src/exit.dart';
@@ -199,12 +200,16 @@ class MyApp extends StatelessWidget {
     bool ensureScreenSize = true,
     bool initializeWidgetsBinding = true,
     bool initializeWindowManager = true,
+    bool initializeGetStorage = true,
   }) async {
     if (ensureScreenSize) {
       await ScreenUtil.ensureScreenSize();
     }
     if (initializeWidgetsBinding) {
       WidgetsFlutterBinding.ensureInitialized();
+    }
+    if (initializeGetStorage) {
+      await GetStorage.init();
     }
 
     if (MyPlatform.isDesktop) {

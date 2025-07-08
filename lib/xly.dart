@@ -3,7 +3,7 @@ export 'package:flutter_screenutil/flutter_screenutil.dart';
 export 'package:get/get.dart';
 export 'package:window_manager/window_manager.dart';
 export 'package:screen_retriever/screen_retriever.dart';
-export 'package:shared_preferences/shared_preferences.dart';
+export 'package:get_storage/get_storage.dart';
 
 // xly diy widgets
 export 'src/app.dart' show MyApp, MyRoute, MyService;

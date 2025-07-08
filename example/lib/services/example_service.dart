@@ -6,21 +6,22 @@ class ExampleService extends GetxService {
 
   final windowDraggable = true.obs;
   final windowResizable = false.obs;
+  late GetStorage _storage;
 
   @override
   Future<void> onInit() async {
     super.onInit();
 
-    // 初始化SharedPreferences
-    final prefs = await SharedPreferences.getInstance();
+    // 初始化GetStorage（MyApp.initialize已经调用了GetStorage.init()）
+    _storage = GetStorage();
 
     // 恢复窗口可拖动状态
-    final savedDraggable = prefs.getBool('window_draggable') ?? true;
+    final savedDraggable = _storage.read('window_draggable') ?? true;
     windowDraggable.value = savedDraggable;
     await MyApp.setDraggableEnabled(savedDraggable);
 
     // 恢复窗口可调整大小状态
-    final savedResizable = prefs.getBool('window_resizable') ?? true;
+    final savedResizable = _storage.read('window_resizable') ?? true;
     windowResizable.value = savedResizable;
     await MyApp.setResizableEnabled(savedResizable);
   }
@@ -29,15 +30,13 @@ class ExampleService extends GetxService {
     windowDraggable.value = enabled;
     await MyApp.setDraggableEnabled(enabled);
 
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('window_draggable', enabled);
+    await _storage.write('window_draggable', enabled);
   }
 
   Future<void> setWindowResizable(bool enabled) async {
     windowResizable.value = enabled;
     await MyApp.setResizableEnabled(enabled);
 
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('window_resizable', enabled);
+    await _storage.write('window_resizable', enabled);
   }
 }

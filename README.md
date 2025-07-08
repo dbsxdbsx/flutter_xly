@@ -10,7 +10,7 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 2. 基于ScreenUtil的屏幕适配(不用再加入"flutter_screenutil"包了)
 3. 基于window_manager的窗口管理(不用再加入"window_manager"包了)
 4. 基于screen_retriever的屏幕信息获取(不用再加入"screen_retriever"包了)
-5. 基于shared_preferences的本地存储(不用再加入"shared_preferences"包了)
+5. 基于GetStorage的本地存储(不用再加入"get_storage"包了)
 6. Toast消息显示(内置实现，支持自定义动画和样式)
 7. 导航辅助函数
 8. 自定义按钮组件
@@ -36,7 +36,7 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 - `flutter_screenutil: ^5.9.3` - 屏幕适配
 - `window_manager: ^0.4.2` - 窗口管理
 - `screen_retriever: ^0.2.0` - 屏幕信息获取
-- `shared_preferences: ^2.2.2` - 本地存储
+- `get_storage: ^2.1.1` - 本地存储
 
 ### 内部使用的包（多数情况无需关心，本xly包有相应功能可直接使用）
 - `lottie: ^3.1.2` - Lottie动画
@@ -199,7 +199,7 @@ class MyCustomService extends GetxService {
   static MyCustomService get to => Get.find();
 
   final counter = 0.obs;
-  late SharedPreferences _prefs;
+  late GetStorage _storage;
 
   @override
   Future<void> onInit() async {
@@ -207,13 +207,14 @@ class MyCustomService extends GetxService {
     // 在这里可以安全使用ScreenUtil扩展方法
     final fontSize = 16.sp;  // 不会返回无限值
 
-    _prefs = await SharedPreferences.getInstance();
-    counter.value = _prefs.getInt('counter') ?? 0;
+    // 初始化GetStorage（MyApp.initialize已经调用了GetStorage.init()）
+    _storage = GetStorage();
+    counter.value = _storage.read('counter') ?? 0;
   }
 
   void increment() async {
     counter.value++;
-    await _prefs.setInt('counter', counter.value);
+    await _storage.write('counter', counter.value);
   }
 }
 ```
