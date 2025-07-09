@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -125,6 +126,9 @@ class MyCardList extends StatefulWidget {
   // Add new parameter for scroll control
   final int? indexToScroll;
 
+  // 7. 状态回调
+  final void Function(MyCardListState)? onStateCreated;
+
   const MyCardList({
     super.key,
     // 1. 核心内容
@@ -159,6 +163,9 @@ class MyCardList extends StatefulWidget {
     // 6. 附加组件
     this.footer,
     this.indexToScroll,
+
+    // 7. 状态回调
+    this.onStateCreated,
   });
 
   @override
@@ -167,7 +174,9 @@ class MyCardList extends StatefulWidget {
 
 class MyCardListState extends State<MyCardList> {
   final ScrollController _scrollController = ScrollController();
-  final GlobalKey _listViewKey = GlobalKey();
+  // 使用全局唯一的计数器确保每个实例的 GlobalKey 都是唯一的
+  static int _globalInstanceCounter = 0;
+  late final GlobalKey _listViewKey;
 
   // 暴露命令式滚动方法
   void scrollToIndex(
@@ -206,15 +215,27 @@ class MyCardListState extends State<MyCardList> {
 
   // 添加私有方法生成稳定的 key
   ValueKey _generateStableKey(int index) {
-    // 使用 hashCode 来确保 key 的唯一性
-    final keyString = '${widget.itemCount}_$index'.hashCode.toString();
+    // 使用实例哈希码和索引确保 key 的唯一性，避免不同列表实例间的冲突
+    final keyString = '${hashCode}_${widget.itemCount}_$index';
     return ValueKey('card_$keyString');
   }
 
   @override
   void initState() {
     super.initState();
+    // 使用随机数和时间戳确保 GlobalKey 的绝对唯一性
+    final random = Random();
+    final timestamp = DateTime.now().microsecondsSinceEpoch;
+    final randomId = random.nextInt(999999);
+    final instanceId = ++_globalInstanceCounter;
+
+    _listViewKey = GlobalKey(
+      debugLabel: 'card_list_${instanceId}_${timestamp}_${randomId}_$hashCode',
+    );
     _scrollController.addListener(_onScroll);
+
+    // 通知外部 state 已创建
+    widget.onStateCreated?.call(this);
   }
 
   @override

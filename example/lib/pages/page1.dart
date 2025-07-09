@@ -625,7 +625,7 @@ class Page1Controller extends GetxController {
   }
 
   void goToPage2() {
-    goToPage(Routes.page2);
+    goToPage(MyRoutes.page2);
   }
 
   void showToast() async {

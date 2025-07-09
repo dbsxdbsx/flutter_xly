@@ -23,9 +23,10 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 15. 窗口停靠功能(支持停靠到屏幕四个角落，自动避开任务栏)
 16. 边缘停靠功能(类似QQ的窗口边缘隐藏和鼠标悬停显示功能)
 17. 智能边缘停靠机制(自动检测窗口拖拽到边缘并触发停靠)
-16. 服务管理系统(确保服务在ScreenUtil初始化后注册，避免.sp等扩展方法返回无限值)
-17. 全局UI构建器(`appBuilder`)(支持在应用顶层添加自定义组件，如全局浮动按钮)
-18. 可拖拽浮动操作栏(`MyFloatBar`)(一个可拖动、可停靠、可展开的浮动操作栏)
+18. 服务管理系统(确保服务在ScreenUtil初始化后注册，避免.sp等扩展方法返回无限值)
+19. 全局UI构建器(`appBuilder`)(支持在应用顶层添加自定义组件，如全局浮动按钮)
+20. 可拖拽浮动操作栏(`MyFloatBar`)(一个可拖动、可停靠、可展开的浮动操作栏)
+21. 自适应侧边栏导航(`MyScaffold`)(根据屏幕尺寸自动切换抽屉/侧边栏/底部导航)
 
 ## 内置依赖包
 
@@ -70,6 +71,7 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 这种顺序意味着**服务（`services`）中加载的设置会覆盖`MyApp.initialize`方法中直接传入的同名参数**。例如，如果一个服务从本地存储中加载了持久化的主题设置，它将覆盖`MyApp.initialize`中设置的默认主题。
 
 这是一个有意为之的设计，目的是为了让用户的个性化、持久化设置拥有更高的优先级，从而提供更符合直觉的用户体验。
+
 
 ## 使用示例（Examples）
 
@@ -719,6 +721,73 @@ dart run xly:rename all="新应用名称"
 # 为不同平台设置不同名称
 dart run xly:rename android="Android版本" ios="iOS版本" windows="Windows版本"
 ```
+
+### 使用自适应侧边栏导航
+
+`MyScaffold` 提供了根据屏幕尺寸自动切换的导航体验：
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:xly/xly.dart';
+
+class NavigationController extends GetxController {
+  var currentIndex = 0.obs;
+
+  void switchToPage(int index) {
+    currentIndex.value = index;
+  }
+}
+
+class MyHomePage extends StatelessWidget {
+  final controller = Get.put(NavigationController());
+
+  final List<Widget> pages = [
+    Center(child: Text('首页内容')),
+    Center(child: Text('设置内容')),
+    Center(child: Text('关于内容')),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return MyScaffold(
+      appBar: AppBar(title: Text('我的应用')),
+      drawer: [
+        AdaptiveNavigationItem(
+          icon: Icon(Icons.home),
+          label: '首页',
+          onTap: () => controller.switchToPage(0),
+        ),
+        AdaptiveNavigationItem(
+          icon: Icon(Icons.settings),
+          label: '设置',
+          onTap: () => controller.switchToPage(1),
+          badgeCount: 2, // 可选的徽章数量
+        ),
+        AdaptiveNavigationItem(
+          icon: Icon(Icons.info),
+          label: '关于',
+          onTap: () => controller.switchToPage(2),
+        ),
+      ],
+      body: Obx(() => pages[controller.currentIndex.value]),
+
+      // 可选配置
+      useBottomNavigationOnSmall: false, // 小屏幕使用抽屉而非底部导航
+      smallBreakpoint: 600.0,           // 小屏幕断点
+      largeBreakpoint: 840.0,           // 大屏幕断点
+      drawerWidthRatio: 0.88,           // 抽屉宽度比例
+    );
+  }
+}
+```
+
+**特性说明：**
+- **小屏幕**：显示抽屉式导航或底部导航栏
+- **中等屏幕**：显示收缩的图标式侧边栏
+- **大屏幕**：显示完整的展开式侧边栏（图标+文字）
+- **自动适配**：根据屏幕宽度自动切换显示模式
+- **灵活配置**：支持自定义断点、抽屉宽度等参数
 
 ### 应用图标生成
 

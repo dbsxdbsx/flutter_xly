@@ -229,10 +229,10 @@ class Page2Controller extends GetxController {
   final focusController = Get.put(XlyFocusController());
 
   void goToPage1() {
-    goToPage(Routes.page1);
+    goToPage(MyRoutes.page1);
   }
 
   void goToPage3() {
-    goToPage(Routes.page3);
+    goToPage(MyRoutes.page3);
   }
 }

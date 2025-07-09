@@ -1,0 +1,262 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_adaptive_scaffold/flutter_adaptive_scaffold.dart';
+
+/// 自适应根脚手架
+///
+/// 根据屏幕尺寸自动切换显示模式：
+/// - 小屏幕：传统抽屉式导航或底部导航栏
+/// - 中等屏幕：收缩的图标式侧边栏
+/// - 大屏幕：完整的展开式侧边栏
+///
+/// 使用方式类似传统Flutter Scaffold，但增加了自适应导航功能：
+/// ```dart
+/// MyScaffold(
+///   appBar: AppBar(title: Text('My App')),
+///   drawer: [
+///     AdaptiveNavigationItem(
+///       icon: Icon(Icons.home),
+///       label: '首页',
+///       onTap: () => controller.switchToPage(0),
+///     ),
+///   ],
+///   body: Obx(() => pages[controller.currentIndex]),
+/// )
+/// ```
+class MyScaffold extends StatefulWidget {
+  /// 导航项列表（可选）
+  /// 当提供时，会根据屏幕尺寸显示为抽屉、侧边栏或底部导航栏
+  final List<AdaptiveNavigationItem>? drawer;
+
+  /// 导航项列表（已废弃，请使用drawer参数）
+  @Deprecated('使用drawer参数代替。此参数将在未来版本中移除。')
+  final List<AdaptiveNavigationItem>? items;
+
+  /// 页面列表（已废弃）
+  @Deprecated('不再需要pages参数。请在body中处理页面切换逻辑。此参数将在未来版本中移除。')
+  final List<Widget>? pages;
+
+  /// 主体内容
+  /// 类似传统Scaffold的body参数
+  final Widget? body;
+
+  /// 侧边栏底部额外内容（可选）
+  final Widget? sidebarTrailing;
+
+  /// 是否在小屏幕使用底部导航栏而不是抽屉
+  final bool useBottomNavigationOnSmall;
+
+  /// 应用栏（可选）
+  final PreferredSizeWidget? appBar;
+
+  /// 浮动操作按钮（可选）
+  final Widget? floatingActionButton;
+
+  /// 抽屉宽度比例（相对于屏幕宽度）
+  final double drawerWidthRatio;
+
+  /// 小屏幕断点宽度（默认600px）
+  final double smallBreakpoint;
+
+  /// 大屏幕断点宽度（默认840px）
+  final double largeBreakpoint;
+
+  /// 初始选中的导航项索引
+  final int initialSelectedIndex;
+
+  /// 获取实际使用的导航项列表
+  List<AdaptiveNavigationItem>? get _effectiveDrawer => drawer ?? items;
+
+  const MyScaffold({
+    super.key,
+    this.drawer,
+    @Deprecated('使用drawer参数代替') this.items,
+    @Deprecated('不再需要pages参数') this.pages,
+    this.body,
+    this.sidebarTrailing,
+    this.useBottomNavigationOnSmall = false,
+    this.appBar,
+    this.floatingActionButton,
+    this.drawerWidthRatio = 0.88,
+    this.smallBreakpoint = 600.0,
+    this.largeBreakpoint = 840.0,
+    this.initialSelectedIndex = 0,
+  }) : assert(
+          drawer == null || items == null,
+          '不能同时提供drawer和items参数，请使用drawer参数。',
+        );
+
+  @override
+  State<MyScaffold> createState() => _MyScaffoldState();
+}
+
+class _MyScaffoldState extends State<MyScaffold> {
+  late int _selectedIndex;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.initialSelectedIndex;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final effectiveDrawer = widget._effectiveDrawer;
+
+    // 如果没有导航项，直接返回简单的Scaffold
+    if (effectiveDrawer == null || effectiveDrawer.isEmpty) {
+      return Scaffold(
+        key: _scaffoldKey,
+        appBar: widget.appBar,
+        floatingActionButton: widget.floatingActionButton,
+        body: widget.body,
+      );
+    }
+
+    // 转换为NavigationDestination
+    final destinations =
+        effectiveDrawer.map((item) => item.toNavigationDestination()).toList();
+
+    // 判断当前屏幕尺寸
+    final isSmallScreen = screenWidth < widget.smallBreakpoint;
+
+    // 统一的onDestinationSelected处理逻辑
+    void handleDestinationSelected(int index) {
+      setState(() {
+        _selectedIndex = index;
+      });
+      if (index < effectiveDrawer.length) {
+        effectiveDrawer[index].onTap?.call();
+      }
+    }
+
+    // 中大屏幕的布局
+    final adaptiveLayout = AdaptiveLayout(
+      primaryNavigation: SlotLayout(
+        config: <Breakpoint, SlotLayoutConfig>{
+          // 中等屏幕：收缩的侧边栏（仅图标）
+          Breakpoints.medium: SlotLayout.from(
+            key: const Key('primaryNavigation'),
+            builder: (_) => AdaptiveScaffold.standardNavigationRail(
+              selectedIndex: _selectedIndex,
+              onDestinationSelected: handleDestinationSelected,
+              destinations: destinations
+                  .map((dest) => AdaptiveScaffold.toRailDestination(dest))
+                  .toList(),
+            ),
+          ),
+          // 大屏幕：展开的侧边栏（图标+文字+额外内容）
+          Breakpoints.large: SlotLayout.from(
+            key: const Key('primaryNavigationLarge'),
+            builder: (_) => AdaptiveScaffold.standardNavigationRail(
+              extended: true,
+              selectedIndex: _selectedIndex,
+              onDestinationSelected: handleDestinationSelected,
+              destinations: destinations
+                  .map((dest) => AdaptiveScaffold.toRailDestination(dest))
+                  .toList(),
+              trailing: widget.sidebarTrailing,
+            ),
+          ),
+        },
+      ),
+      body: SlotLayout(
+        config: <Breakpoint, SlotLayoutConfig>{
+          Breakpoints.standard: SlotLayout.from(
+            key: const Key('body'),
+            inAnimation: AdaptiveScaffold.fadeIn,
+            outAnimation: AdaptiveScaffold.fadeOut,
+            builder: (_) => widget.body ?? const SizedBox.shrink(),
+          ),
+        },
+      ),
+    );
+
+    return Scaffold(
+      key: _scaffoldKey,
+      appBar: widget.appBar,
+      floatingActionButton: widget.floatingActionButton,
+
+      // 小屏幕时显示抽屉（如果不使用底部导航栏）
+      drawer: isSmallScreen && !widget.useBottomNavigationOnSmall
+          ? Drawer(
+              width:
+                  (screenWidth * widget.drawerWidthRatio).clamp(200.0, 304.0),
+              child: NavigationRail(
+                extended: true,
+                selectedIndex: _selectedIndex,
+                destinations: destinations
+                    .map((dest) => AdaptiveScaffold.toRailDestination(dest))
+                    .toList(),
+                onDestinationSelected: (index) {
+                  _scaffoldKey.currentState?.closeDrawer();
+                  handleDestinationSelected(index);
+                },
+                trailing: widget.sidebarTrailing,
+              ),
+            )
+          : null,
+
+      // 根据屏幕尺寸选择body
+      body: isSmallScreen
+          ? (widget.body ?? const SizedBox.shrink())
+          : adaptiveLayout,
+
+      // 小屏幕底部导航栏（可选）
+      bottomNavigationBar: isSmallScreen && widget.useBottomNavigationOnSmall
+          ? NavigationBar(
+              selectedIndex: _selectedIndex,
+              destinations: destinations,
+              onDestinationSelected: handleDestinationSelected,
+            )
+          : null,
+    );
+  }
+}
+
+/// 自适应导航项
+class AdaptiveNavigationItem {
+  /// 图标
+  final Widget icon;
+
+  /// 选中时的图标（可选）
+  final Widget? selectedIcon;
+
+  /// 标签文本
+  final String label;
+
+  /// 点击回调
+  final VoidCallback? onTap;
+
+  /// 通知徽章数量（可选）
+  final int? badgeCount;
+
+  const AdaptiveNavigationItem({
+    required this.icon,
+    this.selectedIcon,
+    required this.label,
+    this.onTap,
+    this.badgeCount,
+  });
+
+  /// 转换为Flutter标准的NavigationDestination
+  NavigationDestination toNavigationDestination() {
+    Widget iconWidget = icon;
+
+    // 如果有徽章数量，添加徽章
+    if (badgeCount != null && badgeCount! > 0) {
+      iconWidget = Badge(
+        isLabelVisible: true,
+        label: Text('$badgeCount'),
+        child: icon,
+      );
+    }
+
+    return NavigationDestination(
+      icon: iconWidget,
+      selectedIcon: selectedIcon,
+      label: label,
+    );
+  }
+}

@@ -31,43 +31,43 @@ void main() async {
     ],
     routes: [
       MyRoute<Page1Controller>(
-        path: Routes.page1,
+        path: MyRoutes.page1,
         page: const Page1View(),
         controller: () => Page1Controller(),
       ),
       MyRoute<Page2Controller>(
-        path: Routes.page2,
+        path: MyRoutes.page2,
         page: const Page2View(),
         controller: () => Page2Controller(),
       ),
       MyRoute<Page3Controller>(
-        path: Routes.page3,
+        path: MyRoutes.page3,
         page: const Page3View(),
         controller: () => Page3Controller(),
       ),
       MyRoute<Page4Controller>(
-        path: Routes.page4,
+        path: MyRoutes.page4,
         page: const Page4View(),
         controller: () => Page4Controller(),
       ),
       MyRoute<Page5Controller>(
-        path: Routes.page5,
+        path: MyRoutes.page5,
         page: const Page5View(),
         controller: () => Page5Controller(),
       ),
       MyRoute<Page6Controller>(
-        path: Routes.page6,
+        path: MyRoutes.page6,
         page: const Page6View(),
         controller: () => Page6Controller(),
       ),
       MyRoute<Page7Controller>(
-        path: Routes.page7,
+        path: MyRoutes.page7,
         page: const Page7(),
         controller: () => Page7Controller(),
       ),
     ],
     splash: const MySplash(
-      nextRoute: Routes.page1,
+      nextRoute: MyRoutes.page1,
       lottieAssetPath: 'assets/animation/splash_loading.json',
       appTitle: '😜My Awesome App😜',
       backgroundColor: Colors.blueGrey,
@@ -87,10 +87,56 @@ void main() async {
     exitInfoText: '自定义: 再按一次退出App',
     backInfoText: '自定义: 再按一次返回上一页',
     appBuilder: (context, child) {
-      return Stack(
-        children: [
-          child!,
-          getFloatBar(),
+      return MyScaffold(
+        body: Stack(
+          children: [
+            child!,
+            getFloatBar(),
+          ],
+        ),
+        drawer: [
+          AdaptiveNavigationItem(
+            icon: const Icon(Icons.home),
+            selectedIcon: const Icon(Icons.home_filled),
+            label: '第1页',
+            onTap: () => Get.toNamed(MyRoutes.page1),
+          ),
+          AdaptiveNavigationItem(
+            icon: const Icon(Icons.widgets),
+            selectedIcon: const Icon(Icons.widgets_outlined),
+            label: '第2页',
+            onTap: () => Get.toNamed(MyRoutes.page2),
+          ),
+          AdaptiveNavigationItem(
+            icon: const Icon(Icons.menu),
+            selectedIcon: const Icon(Icons.menu_open),
+            label: '第3页',
+            onTap: () => Get.toNamed(MyRoutes.page3),
+          ),
+          AdaptiveNavigationItem(
+            icon: const Icon(Icons.view_list),
+            selectedIcon: const Icon(Icons.list),
+            label: '第4页',
+            onTap: () => Get.toNamed(MyRoutes.page4),
+          ),
+          AdaptiveNavigationItem(
+            icon: const Icon(Icons.link),
+            selectedIcon: const Icon(Icons.link_outlined),
+            label: 'URL启动器',
+            onTap: () => Get.toNamed(MyRoutes.page5),
+          ),
+          AdaptiveNavigationItem(
+            icon: const Icon(Icons.edit),
+            selectedIcon: const Icon(Icons.edit_outlined),
+            label: '文本编辑器',
+            onTap: () => Get.toNamed(MyRoutes.page6),
+          ),
+          AdaptiveNavigationItem(
+            icon: const Icon(Icons.tune),
+            selectedIcon: const Icon(Icons.tune_outlined),
+            label: 'SpinBox',
+            onTap: () => Get.toNamed(MyRoutes.page7),
+          ),
         ],
       );
     },
@@ -98,7 +144,7 @@ void main() async {
 }
 
 /// 应用路由定义
-class Routes {
+class MyRoutes {
   static const String page1 = '/page1';
   static const String page2 = '/page2';
   static const String page3 = '/page3';

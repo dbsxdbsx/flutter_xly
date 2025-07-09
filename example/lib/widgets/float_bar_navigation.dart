@@ -51,13 +51,13 @@ Widget getFloatBar() {
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _buildPageButton(context, '第1页', Routes.page1),
-                    _buildPageButton(context, '第2页', Routes.page2),
-                    _buildPageButton(context, '第3页', Routes.page3),
-                    _buildPageButton(context, '第4页', Routes.page4),
-                    _buildPageButton(context, '第5页', Routes.page5),
-                    _buildPageButton(context, '第6页', Routes.page6),
-                    _buildPageButton(context, '第7页', Routes.page7),
+                    _buildPageButton(context, '第1页', MyRoutes.page1),
+                    _buildPageButton(context, '第2页', MyRoutes.page2),
+                    _buildPageButton(context, '第3页', MyRoutes.page3),
+                    _buildPageButton(context, '第4页', MyRoutes.page4),
+                    _buildPageButton(context, '第5页', MyRoutes.page5),
+                    _buildPageButton(context, '第6页', MyRoutes.page6),
+                    _buildPageButton(context, '第7页', MyRoutes.page7),
                   ],
                 ),
                 actions: [

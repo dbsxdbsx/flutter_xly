@@ -1,5 +1,4 @@
 import 'package:example/main.dart';
-
 import 'package:flutter/material.dart';
 import 'package:xly/xly.dart';
 
@@ -83,7 +82,8 @@ class Page4View extends GetView<Page4Controller> {
                       child: MyGroupBox(
                         title: '不可拖动列表',
                         child: MyCardList(
-                          key: controller.listKey,
+                          onStateCreated: (state) =>
+                              controller._cardListState = state,
                           indexToScroll: controller.enableAutoScroll.value &&
                                   controller.selectedCardIndex.value != -1
                               ? controller.selectedCardIndex.value
@@ -225,7 +225,7 @@ class Page4View extends GetView<Page4Controller> {
                     MyButton(
                       icon: Icons.arrow_forward,
                       text: '前往第5页',
-                      onPressed: () => Get.toNamed(Routes.page5),
+                      onPressed: () => Get.toNamed(MyRoutes.page5),
                       size: 80.w,
                     ),
                   ],
@@ -284,8 +284,8 @@ class Page4Controller extends GetxController {
   final selectedCardIndex = (-1).obs;
   final enableAutoScroll = false.obs;
 
-  // 添加 GlobalKey
-  final listKey = GlobalKey<MyCardListState>();
+  // MyCardList 的引用，用于访问滚动方法
+  MyCardListState? _cardListState;
 
   @override
   void onInit() {
@@ -383,7 +383,7 @@ class Page4Controller extends GetxController {
   // 添加强制滚动方法
   void forceScrollToIndex() {
     if (selectedCardIndex.value >= 0) {
-      listKey.currentState?.scrollToIndex(
+      _cardListState?.scrollToIndex(
         selectedCardIndex.value,
         duration: const Duration(milliseconds: 300),
         alignment: 0.5, // 居中对齐

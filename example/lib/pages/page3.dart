@@ -71,7 +71,7 @@ class Page3Controller extends GetxController {
   }
 
   void goToPage1() {
-    goToPage(Routes.page1);
+    goToPage(MyRoutes.page1);
   }
 
   void showBottomSheet() {
@@ -139,7 +139,7 @@ class Page3Controller extends GetxController {
   }
 
   void goToPage4() {
-    Get.toNamed(Routes.page4);
+    Get.toNamed(MyRoutes.page4);
   }
 
   void showCenterDialog() {

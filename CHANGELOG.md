@@ -1,3 +1,22 @@
+## 0.10.0 - 2025-07-09
+
+### Added
+- 新增自适应侧边栏导航组件 `MyScaffold`
+- 根据屏幕尺寸自动切换显示模式：小屏幕使用抽屉或底部导航，中屏幕使用收缩侧边栏，大屏幕使用展开侧边栏
+- 支持类似传统Flutter Scaffold的API设计，提供 `drawer`、`body`、`appBar` 等参数
+- 支持自定义断点宽度、抽屉宽度比例等配置选项
+- 支持导航项徽章显示和侧边栏底部额外内容
+- 新增 `AdaptiveNavigationItem` 类用于定义导航项
+
+### Enhanced
+- 更新功能列表，新增"自适应侧边栏导航"功能说明
+- 优化示例项目，展示自适应导航的使用方式
+- 改进 `MyList` 组件的GlobalKey重复问题处理
+
+### Documentation
+- 更新 README.md，新增自适应侧边栏导航功能介绍
+- 为 `MyScaffold` 组件提供详细的文档注释和使用示例
+
 ## 0.9.3 - 2025-07-08
 
 ### Breaking Changes

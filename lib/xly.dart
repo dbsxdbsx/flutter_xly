@@ -26,3 +26,4 @@ export 'src/text_editor.dart';
 export 'src/spin_box.dart';
 export 'src/auto_start.dart';
 export 'src/platform.dart' show MyPlatform;
+export 'src/scaffold.dart';

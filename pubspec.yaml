@@ -1,6 +1,6 @@
 name: xly
 description: "A Test Flutter Package， DO NOT USE IT at present"
-version: 0.9.3
+version: 0.10.0
 
 environment:
   sdk: ^3.5.3
@@ -21,6 +21,7 @@ dependencies:
   get_storage: ^2.1.1
 
   # no need reexport
+  flutter_adaptive_scaffold: ^0.1.7+1
   flutter_inset_shadow: ^2.0.3
   url_launcher: ^6.2.5
   path: ^1.8.0
