@@ -322,6 +322,7 @@ class Page1View extends GetView<Page1Controller> {
   Widget _buildWindowControlSection() {
     return Column(
       children: [
+        // 第一行：拖动和手动调整尺寸
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
@@ -340,12 +341,26 @@ class Page1View extends GetView<Page1Controller> {
                     onPressed: controller.toggleWindowControls,
                   )),
             ),
-            SizedBox(width: 16.w),
+          ],
+        ),
+        SizedBox(height: 12.h),
+        // 第二行：双击最大化和比例调整
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
             Expanded(
               child: Obx(() => MyButton(
                     text:
                         '允许双击最大化: ${MyApp.isDoubleClickFullScreenEnabled() ? "已开启" : "已关闭"}',
                     onPressed: controller.toggleDoubleClickFullScreen,
+                  )),
+            ),
+            SizedBox(width: 16.w),
+            Expanded(
+              child: Obx(() => MyButton(
+                    text:
+                        '窗口比例调整: ${controller.enableAspectRatio.value ? "已开启" : "已关闭"}',
+                    onPressed: controller.toggleAspectRatio,
                   )),
             ),
           ],
@@ -575,6 +590,7 @@ class Page1Controller extends GetxController {
   final enableDraggable = MyApp.isDraggableEnabled().obs;
   final showTitleBar = (!MyApp.isTitleBarHidden()).obs;
   final enableSmartDocking = MyApp.isSmartDockingEnabled().obs;
+  final enableAspectRatio = MyApp.isAspectRatioEnabled().obs;
 
   @override
   void onInit() {
@@ -930,5 +946,20 @@ class Page1Controller extends GetxController {
     } else {
       MyToast.show('智能停靠已禁用');
     }
+  }
+
+  /// 切换窗口比例调整功能
+  void toggleAspectRatio() async {
+    // 获取当前状态的反状态
+    final newState = !MyApp.isAspectRatioEnabled();
+
+    // 设置新状态
+    await MyApp.setAspectRatioEnabled(newState);
+
+    // 更新本地状态以保持UI同步
+    enableAspectRatio.value = newState;
+
+    // 显示提示
+    MyToast.show('窗口比例调整${newState ? "已启用" : "已禁用"}');
   }
 }

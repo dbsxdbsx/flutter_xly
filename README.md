@@ -18,15 +18,22 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 10. 焦点管理(针对只能键盘或遥控操作的App很有用)
 11. 自定义文本编辑器(支持下拉建议和样式自定义)
 12. 自定义数字输入框(支持步进调节和范围控制)
-13. 跨平台工具类(支持文件操作、权限管理、窗口控制等)
-14. 开机自启动管理(支持桌面和Android平台)
-15. 窗口停靠功能(支持停靠到屏幕四个角落，自动避开任务栏)
-16. 边缘停靠功能(类似QQ的窗口边缘隐藏和鼠标悬停显示功能)
-17. 智能边缘停靠机制(自动检测窗口拖拽到边缘并触发停靠)
-18. 服务管理系统(确保服务在ScreenUtil初始化后注册，避免.sp等扩展方法返回无限值)
-19. 全局UI构建器(`appBuilder`)(支持在应用顶层添加自定义组件，如全局浮动按钮)
-20. 可拖拽浮动操作栏(`MyFloatBar`)(一个可拖动、可停靠、可展开的浮动操作栏)
-21. 自适应侧边栏导航(`MyScaffold`)(根据屏幕尺寸自动切换抽屉/侧边栏/底部导航)
+13. 列表组件(`MyList`和`MyCardList`)(支持拖拽重排序、滑动删除、加载更多等功能)
+14. 卡片组件(`MyCard`)(支持leading/trailing、点击事件、拖拽、滑动删除等)
+15. 分组框组件(`MyGroupBox`)(带标题的分组容器，支持多种边框样式)
+16. 列表底部状态组件(`MyEndOfListWidget`)(支持加载中、错误重试、到底提示等状态)
+17. 增强图标按钮(`MyIcon`)(支持悬停效果、工具提示、自定义样式)
+18. URL启动器组件(`MyUrlLauncher`)(包装任意Widget使其可点击打开链接)
+19. 跨平台工具类(支持文件操作、权限管理、窗口控制等)
+20. 开机自启动管理(支持桌面和Android平台)
+21. 窗口停靠功能(支持停靠到屏幕四个角落，自动避开任务栏)
+22. 边缘停靠功能(类似QQ的窗口边缘隐藏和鼠标悬停显示功能)
+23. 智能边缘停靠机制(自动检测窗口拖拽到边缘并触发停靠)
+24. 服务管理系统(确保服务在ScreenUtil初始化后注册，避免.sp等扩展方法返回无限值)
+25. 全局UI构建器(`appBuilder`)(支持在应用顶层添加自定义组件，如全局浮动按钮)
+26. 可拖拽浮动操作栏(`MyFloatBar`)(一个可拖动、可停靠、可展开的浮动操作栏)
+27. 自适应侧边栏导航(`MyScaffold`)(根据屏幕尺寸自动切换抽屉/侧边栏/底部导航)
+28. 窗口比例调整控制(支持动态启用/禁用窗口固定比例调整功能)
 
 ## 内置依赖包
 
@@ -460,6 +467,203 @@ Widget buildSpinBox() {
 }
 ```
 
+### 使用列表组件
+
+#### MyList - 基础列表组件
+```dart
+Widget buildMyList() {
+  final items = ['项目1', '项目2', '项目3', '项目4'];
+  final scrollController = ScrollController();
+
+  return MyList<String>(
+    items: items,
+    scrollController: scrollController,
+    showScrollbar: true,
+    isDraggable: true, // 启用拖拽重排序
+    onCardReordered: (oldIndex, newIndex) {
+      // 处理拖拽重排序
+      if (oldIndex < newIndex) newIndex--;
+      final item = items.removeAt(oldIndex);
+      items.insert(newIndex, item);
+    },
+    itemBuilder: (context, index) {
+      return ListTile(
+        title: Text(items[index]),
+        key: ValueKey(items[index]), // 拖拽时需要key
+      );
+    },
+    footer: Text('列表底部内容'), // 可选的底部组件
+  );
+}
+```
+
+#### MyCardList - 高级卡片列表组件
+```dart
+Widget buildMyCardList() {
+  return MyCardList(
+    itemCount: 10,
+    showScrollbar: true,
+
+    // 卡片内容构建器
+    cardBody: (index) => Text('卡片内容 $index'),
+    cardLeading: (index) => Icon(Icons.star),
+    cardTrailing: (index) => Icon(Icons.arrow_forward_ios),
+
+    // 交互事件
+    onCardPressed: (index) => print('点击了卡片 $index'),
+    onCardReordered: (oldIndex, newIndex) {
+      print('拖拽: $oldIndex -> $newIndex');
+    },
+    onSwipeDelete: (index) => print('滑动删除卡片 $index'),
+    onLoadMore: () async {
+      // 加载更多数据
+      await Future.delayed(Duration(seconds: 1));
+    },
+
+    // 卡片样式
+    cardHeight: 60.0,
+    cardColor: Colors.white,
+    cardHoverColor: Colors.grey[100],
+    cardElevation: 2.0,
+    cardBorderRadius: BorderRadius.circular(8.0),
+
+    // 底部组件
+    footer: MyEndOfListWidget(
+      isLoading: false,
+      hasError: false,
+      hasMoreData: false,
+      onRetry: () => print('重试加载'),
+    ),
+  );
+}
+```
+
+### 使用卡片组件
+```dart
+Widget buildMyCard() {
+  return MyCard(
+    // 核心内容
+    child: Text('卡片主要内容'),
+    leading: Icon(Icons.star),
+    trailing: Icon(Icons.arrow_forward_ios),
+
+    // 交互事件
+    onPressed: () => print('卡片被点击'),
+
+    // 拖拽和滑动删除
+    isDraggable: true,
+    enableSwipeToDelete: true,
+    onSwipeDeleted: () => print('卡片被滑动删除'),
+
+    // 样式自定义
+    height: 60.0,
+    cardColor: Colors.white,
+    cardHoverColor: Colors.grey[100],
+    cardSplashColor: Colors.blue[100],
+    cardElevation: 2.0,
+    cardBorderRadius: BorderRadius.circular(12.0),
+
+    // 布局控制
+    padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+    margin: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+    leadingAndBodySpacing: 12.0,
+  );
+}
+```
+
+### 使用分组框组件
+```dart
+Widget buildMyGroupBox() {
+  return MyGroupBox(
+    title: '设置选项',
+    child: Column(
+      children: [
+        ListTile(title: Text('选项1')),
+        ListTile(title: Text('选项2')),
+        ListTile(title: Text('选项3')),
+      ],
+    ),
+
+    // 样式自定义
+    borderColor: Colors.blue,
+    titleColor: Colors.blue,
+    borderWidth: 1.5,
+    borderRadius: 8.0,
+    style: SectionBorderStyle.normal, // 或 SectionBorderStyle.inset
+    titleStyle: TextStyle(
+      fontSize: 14,
+      fontWeight: FontWeight.bold,
+    ),
+  );
+}
+```
+
+### 使用列表底部状态组件
+```dart
+Widget buildEndOfListWidget() {
+  return MyEndOfListWidget(
+    isLoading: false,
+    hasError: false,
+    hasMoreData: false,
+    onRetry: () => print('重试加载'),
+
+    // 自定义文本
+    loadingText: '正在加载更多...',
+    errorText: '加载失败，请重试',
+    deadLineText: '我是有底线的',
+    subDeadLineText: '已经到底啦，休息一下吧',
+
+    // 自定义样式
+    icon: Icons.sentiment_satisfied_alt,
+    dividerFontSize: 12,
+    dividerColor: Colors.grey,
+    textFontSize: 12,
+    textColor: Colors.grey,
+
+    // 是否用于Sliver列表
+    useSliver: false,
+  );
+}
+```
+
+### 使用增强图标按钮
+```dart
+Widget buildMyIcon() {
+  return MyIcon(
+    icon: Icons.settings,
+    iconColor: Colors.blue,
+    size: 24.0,
+    tooltip: '设置',
+    onPressed: () => print('图标被点击'),
+
+    // 悬停效果
+    hoverShadowRadius: 20.0,
+    hoverColor: Colors.blue.withOpacity(0.1),
+    splashColor: Colors.blue.withOpacity(0.3),
+  );
+}
+```
+
+### 使用URL启动器组件
+```dart
+Widget buildUrlLauncher() {
+  return MyUrlLauncher(
+    url: 'https://www.example.com',
+    child: Container(
+      padding: EdgeInsets.all(12.0),
+      decoration: BoxDecoration(
+        color: Colors.blue,
+        borderRadius: BorderRadius.circular(8.0),
+      ),
+      child: Text(
+        '点击访问网站',
+        style: TextStyle(color: Colors.white),
+      ),
+    ),
+  );
+}
+```
+
 ### 使用平台工具类
 ```dart
 // 判断平台类型
@@ -616,6 +820,64 @@ await MyApp.setSmartEdgeDocking(enabled: true);
 这确保了角落停靠与边缘停靠具有一致的用户体验。
 
 注意：此功能仅在桌面平台（Windows、macOS、Linux）上可用。
+
+### 窗口控制API
+
+XLY包提供了一系列窗口控制API，允许您动态管理窗口的各种行为特性：
+
+#### 窗口比例调整控制
+
+控制窗口是否按固定比例调整大小：
+
+```dart
+// 启用窗口比例调整（窗口将保持初始宽高比）
+await MyApp.setAspectRatioEnabled(true);
+
+// 禁用窗口比例调整（窗口可以自由调整为任意比例）
+await MyApp.setAspectRatioEnabled(false);
+
+// 检查当前比例调整状态
+bool isEnabled = MyApp.isAspectRatioEnabled();
+```
+
+**特性说明：**
+- 🔒 **比例锁定**: 启用时窗口将保持初始设计尺寸的宽高比
+- 🔓 **自由调整**: 禁用时窗口可以调整为任意比例
+- ⚙️ **动态切换**: 可以在运行时动态启用或禁用
+- 🎯 **智能计算**: 基于当前窗口尺寸自动计算并应用比例
+- 🖥️ **桌面专用**: 仅在桌面平台（Windows、macOS、Linux）上可用
+
+**初始化配置：**
+
+您也可以在`MyApp.initialize()`中设置默认的比例调整行为：
+
+```dart
+await MyApp.initialize(
+  designSize: const Size(900, 700),
+  setAspectRatioEnabled: true,  // 默认启用比例调整
+  // ... 其他配置
+);
+```
+
+#### 其他窗口控制API
+
+```dart
+// 窗口大小调整控制
+await MyApp.setResizableEnabled(true);   // 允许调整窗口大小
+bool canResize = MyApp.isResizableEnabled();
+
+// 窗口拖动控制
+await MyApp.setDraggableEnabled(true);   // 允许拖动窗口
+bool canDrag = MyApp.isDraggableEnabled();
+
+// 双击最大化控制
+await MyApp.setDoubleClickFullScreenEnabled(true);  // 允许双击最大化
+bool canDoubleClick = MyApp.isDoubleClickFullScreenEnabled();
+
+// 标题栏显示控制
+await MyApp.setTitleBarHidden(false);    // 显示标题栏
+bool isHidden = MyApp.isTitleBarHidden();
+```
 
  ### 使用 appBuilder 添加全局浮动栏
 

@@ -1,3 +1,19 @@
+## 0.10.1 - 2025-07-09
+
+### Added
+- 新增窗口比例调整控制功能：`MyApp.setAspectRatioEnabled()` 和 `MyApp.isAspectRatioEnabled()`
+- 在 `MyApp.initialize()` 中新增 `setAspectRatioEnabled` 参数，默认值为 `true`
+- 支持动态启用/禁用窗口固定比例调整，提供更灵活的窗口管理体验
+
+### Enhanced
+- 更新功能列表，新增"窗口比例调整控制"功能说明
+- 在示例页面1中新增窗口比例调整切换按钮，方便用户测试该功能
+- 优化窗口控制按钮布局，将原来的3个按钮重新排列为2行，提升界面美观性
+
+### Documentation
+- 更新 README.md，新增窗口控制API部分，详细介绍窗口比例调整功能
+- 为窗口比例调整功能提供完整的使用示例和特性说明
+
 ## 0.10.0 - 2025-07-09
 
 ### Added

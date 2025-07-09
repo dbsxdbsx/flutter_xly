@@ -183,6 +183,7 @@ class MyApp extends StatelessWidget {
     bool setSkipTaskbar = false,
     bool setMaximizable = true,
     bool setAspectRatio = true,
+    bool setAspectRatioEnabled = true,
 
     // UI和主题配置
     ThemeData? theme,
@@ -225,7 +226,7 @@ class MyApp extends StatelessWidget {
           centerWindow: centerWindow,
           focusWindow: focusWindow,
           showWindow: showWindow,
-          setAspectRatio: setAspectRatio,
+          setAspectRatio: setAspectRatio && setAspectRatioEnabled,
           minimumSize: minimumSize,
         );
       }
@@ -235,6 +236,8 @@ class MyApp extends StatelessWidget {
     _globalEnableResizable.value = resizable;
     _globalEnableDoubleClickFullScreen.value = doubleClickToFullScreen;
     _globalEnableDraggable.value = draggable;
+    _globalEnableAspectRatio.value = setAspectRatioEnabled;
+    _globalEnableAspectRatio.value = setAspectRatioEnabled;
 
     // 2. 准备服务，但不立即注册。注册操作将推迟到UI构建阶段，以确保ScreenUtil等依赖项已准备就绪。
     // 3. 在所有配置应用完毕后，设置路由并运行应用
@@ -477,6 +480,7 @@ class MyApp extends StatelessWidget {
   static final _globalEnableResizable = false.obs;
   static final _globalEnableDraggable = true.obs;
   static final _globalTitleBarHidden = true.obs;
+  static final _globalEnableAspectRatio = true.obs;
 
   /// 获取当前双击最大化功能的状态
   static bool isDoubleClickFullScreenEnabled() {
@@ -521,6 +525,27 @@ class MyApp extends StatelessWidget {
       hidden ? TitleBarStyle.hidden : TitleBarStyle.normal,
       windowButtonVisibility: false, // 保持一致性
     );
+  }
+
+  /// 获取当前窗口比例调整功能的状态
+  static bool isAspectRatioEnabled() {
+    return _globalEnableAspectRatio.value;
+  }
+
+  /// 设置窗口比例调整功能的启用状态
+  static Future<void> setAspectRatioEnabled(bool enabled) async {
+    _globalEnableAspectRatio.value = enabled;
+    if (MyPlatform.isDesktop) {
+      if (enabled) {
+        // 获取当前窗口大小并设置比例
+        final currentSize = await windowManager.getSize();
+        await windowManager
+            .setAspectRatio(currentSize.width / currentSize.height);
+      } else {
+        // 移除比例限制，设置为0表示无限制
+        await windowManager.setAspectRatio(0);
+      }
+    }
   }
 
   /// 停靠窗口到指定角落（简单对齐，不隐藏）
