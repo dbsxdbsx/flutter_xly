@@ -1,3 +1,11 @@
+## 0.10.2 - 2025-07-12
+
+### Documentation
+- 改进Toast功能文档说明，明确区分普通模式和堆叠模式的差异
+- 修正README中Toast参数名称不一致问题（`stackToasts` → `stackPreviousToasts`）
+- 新增Toast显示模式对比示例，帮助用户理解"连续显示Toast"的实现原理
+- 优化Toast特性列表，突出显示两种显示模式的区别和使用场景
+
 ## 0.10.1 - 2025-07-09
 
 ### Added

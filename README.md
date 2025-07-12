@@ -273,11 +273,23 @@ MyToast.show(
   backgroundColor: Colors.black87.withOpacity(0.7),  // 背景颜色
   textStyle: TextStyle(fontSize: 16, color: Colors.white),  // 文本样式
   radius: 8.0,  // 圆角半径
-  stackToasts: true,  // 是否堆叠显示
+  stackPreviousToasts: true,  // 是否堆叠显示
   forever: false,     // 是否永久显示
   animationDuration: Duration(milliseconds: 500),  // 动画时长
   animationCurve: Curves.easeOutCubic,  // 动画曲线
 );
+
+// 4.1 Toast显示模式对比
+// 普通模式（默认）- 新Toast替换旧Toast
+MyToast.show('第一条消息');
+MyToast.show('第二条消息'); // 会替换第一条消息
+
+// 连续堆叠模式 - 多条Toast同时显示
+MyToast.show('第一条消息');
+await Future.delayed(Duration(milliseconds: 500));
+MyToast.show('第二条消息', stackPreviousToasts: true); // 与第一条同时显示
+await Future.delayed(Duration(milliseconds: 500));
+MyToast.show('第三条消息', stackPreviousToasts: true); // 三条消息堆叠显示
 
 // 5. 加载提示
 // 5.1 显示永久加载动画
@@ -302,7 +314,7 @@ await MyToast.showLoadingThenToast(
     return (true, '数据加载完成！'); // 返回(成功状态, 提示消息)
   },
   spinnerColor: Colors.blue,
-  stackToasts: true,  // 是否堆叠显示结果消息
+  stackPreviousToasts: true,  // 是否堆叠显示结果消息
   // 可选：自定义成功/警告/错误回调
   onOk: (message) => MyToast.showBottom(message),
   onWarn: (message) => MyToast.showUpWarn(message),
@@ -318,7 +330,9 @@ MyToast.hideAll(1000); // 1秒后关闭
 Toast 特性：
 - 支持多种预设样式：成功、信息、警告、错误
 - 支持多个显示位置：顶部、中间、底部
-- 支持堆叠显示或替换显示
+- **支持两种显示模式**：
+  - **普通模式**：新Toast替换旧Toast（默认行为）
+  - **堆叠模式**：多条Toast同时显示，形成视觉堆叠效果
 - 支持自定义样式：背景色、文字样式、图标等
 - 支持加载动画显示
 - 支持异步任务加载提示
