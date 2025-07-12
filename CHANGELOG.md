@@ -1,3 +1,11 @@
+## 0.10.3 - 2025-07-12
+
+### Fixed
+- 修正README中平台检测方法的错误调用方式
+- 将 `MyPlatform.isDesktopOs()` 更正为 `MyPlatform.isDesktop`
+- 将 `MyPlatform.isMobileOs()` 更正为 `MyPlatform.isMobile`
+- 确保文档示例与实际API保持一致
+
 ## 0.10.2 - 2025-07-12
 
 ### Documentation

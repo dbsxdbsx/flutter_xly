@@ -681,10 +681,10 @@ Widget buildUrlLauncher() {
 ### 使用平台工具类
 ```dart
 // 判断平台类型
-if (MyPlatform.isDesktopOs()) {
+if (MyPlatform.isDesktop) {
   // 桌面平台特有操作
   await MyPlatform.showWindow();
-} else if (MyPlatform.isMobileOs()) {
+} else if (MyPlatform.isMobile) {
   // 移动平台特有操作
   final hasPermission = await MyPlatform.requestPermission(
     Permission.storage,
