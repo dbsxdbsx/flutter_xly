@@ -20,6 +20,45 @@ class MyPlatform {
   static bool get isMobile =>
       !kIsWeb && (Platform.isAndroid || Platform.isIOS || Platform.isFuchsia);
 
+  /// 判断是否为Web平台
+  static bool get isWeb => kIsWeb;
+
+  // === 桌面平台细分检测 ===
+
+  /// 判断是否为Windows平台
+  static bool get isWindows => !kIsWeb && Platform.isWindows;
+
+  /// 判断是否为macOS平台
+  static bool get isMacOS => !kIsWeb && Platform.isMacOS;
+
+  /// 判断是否为Linux平台
+  static bool get isLinux => !kIsWeb && Platform.isLinux;
+
+  // === 移动平台细分检测 ===
+
+  /// 判断是否为Android平台
+  static bool get isAndroid => !kIsWeb && Platform.isAndroid;
+
+  /// 判断是否为iOS平台
+  static bool get isIOS => !kIsWeb && Platform.isIOS;
+
+  /// 判断是否为Fuchsia平台
+  static bool get isFuchsia => !kIsWeb && Platform.isFuchsia;
+
+  /// 获取当前平台名称
+  ///
+  /// 返回当前运行平台的友好名称
+  static String get platformName {
+    if (kIsWeb) return 'Web';
+    if (Platform.isWindows) return 'Windows';
+    if (Platform.isMacOS) return 'macOS';
+    if (Platform.isLinux) return 'Linux';
+    if (Platform.isAndroid) return 'Android';
+    if (Platform.isIOS) return 'iOS';
+    if (Platform.isFuchsia) return 'Fuchsia';
+    return 'Unknown';
+  }
+
   /// 请求指定权限
   ///
   /// [permission] 需要请求的权限

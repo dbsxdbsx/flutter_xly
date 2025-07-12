@@ -24,7 +24,7 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 16. 列表底部状态组件(`MyEndOfListWidget`)(支持加载中、错误重试、到底提示等状态)
 17. 增强图标按钮(`MyIcon`)(支持悬停效果、工具提示、自定义样式)
 18. URL启动器组件(`MyUrlLauncher`)(包装任意Widget使其可点击打开链接)
-19. 跨平台工具类(支持文件操作、权限管理、窗口控制等)
+19. 跨平台工具类(支持文件操作、权限管理、窗口控制、细粒度平台检测等)
 20. 开机自启动管理(支持桌面和Android平台)
 21. 窗口停靠功能(支持停靠到屏幕四个角落，自动避开任务栏)
 22. 边缘停靠功能(类似QQ的窗口边缘隐藏和鼠标悬停显示功能)
@@ -680,7 +680,7 @@ Widget buildUrlLauncher() {
 
 ### 使用平台工具类
 ```dart
-// 判断平台类型
+// 通用平台类型判断
 if (MyPlatform.isDesktop) {
   // 桌面平台特有操作
   await MyPlatform.showWindow();
@@ -690,6 +690,31 @@ if (MyPlatform.isDesktop) {
     Permission.storage,
   );
 }
+
+// 细粒度平台检测
+if (MyPlatform.isWindows) {
+  // Windows特有操作
+  print('运行在Windows平台');
+} else if (MyPlatform.isMacOS) {
+  // macOS特有操作
+  print('运行在macOS平台');
+} else if (MyPlatform.isLinux) {
+  // Linux特有操作
+  print('运行在Linux平台');
+} else if (MyPlatform.isAndroid) {
+  // Android特有操作
+  print('运行在Android平台');
+} else if (MyPlatform.isIOS) {
+  // iOS特有操作
+  print('运行在iOS平台');
+} else if (MyPlatform.isWeb) {
+  // Web平台特有操作
+  print('运行在Web平台');
+}
+
+// 获取平台名称
+String platform = MyPlatform.platformName;
+print('当前平台：$platform'); // 输出：当前平台：Windows
 
 // 文件操作
 final appDir = await MyPlatform.getAppDirectory();

@@ -1,3 +1,26 @@
+## 0.11.0 - 2025-07-12
+
+### Added
+- 新增细粒度平台检测功能到MyPlatform类
+- 新增 `MyPlatform.isWeb` - 检测Web平台
+- 新增 `MyPlatform.isWindows` - 检测Windows平台
+- 新增 `MyPlatform.isMacOS` - 检测macOS平台
+- 新增 `MyPlatform.isLinux` - 检测Linux平台
+- 新增 `MyPlatform.isAndroid` - 检测Android平台
+- 新增 `MyPlatform.isIOS` - 检测iOS平台
+- 新增 `MyPlatform.isFuchsia` - 检测Fuchsia平台
+- 新增 `MyPlatform.platformName` - 获取当前平台友好名称
+- 在示例应用中新增平台信息显示组件，位于自适应侧边栏底部
+
+### Enhanced
+- 完善平台检测功能的单元测试覆盖
+- 更新README文档，展示细粒度平台检测的使用方法
+- 优化示例应用的平台信息展示，采用类似系统信息面板的设计风格
+
+### Documentation
+- 更新功能列表，强调跨平台工具类支持细粒度平台检测
+- 新增完整的平台检测使用示例和API说明
+
 ## 0.10.3 - 2025-07-12
 
 ### Fixed

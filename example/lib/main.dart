@@ -11,6 +11,7 @@ import 'pages/page6.dart';
 import 'pages/page7.dart';
 import 'services/example_service.dart';
 import 'widgets/float_bar_navigation.dart';
+import 'widgets/platform_info_widget.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -138,6 +139,12 @@ void main() async {
             onTap: () => Get.toNamed(MyRoutes.page7),
           ),
         ],
+        sidebarTrailing: const Expanded(
+          child: Align(
+            alignment: Alignment.bottomCenter,
+            child: PlatformInfoWidget(),
+          ),
+        ),
       );
     },
   );
