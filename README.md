@@ -69,6 +69,7 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 
 ## 注意事项（Notes）
 
+
 ### 初始化顺序与配置覆盖
 `MyApp.initialize`的配置应用顺序遵循以下核心原则：
 1. **`MyApp.initialize`的直接参数**：方法调用时直接传入的配置，如`designSize`、`exitInfoText`等。
@@ -400,27 +401,287 @@ goToPage(context, Routes.page2);
 ```
 
 ### 显示对话框
+
+#### 基础用法
 ```dart
-MyDialog.show(
-  content: '这是一个测试对话框',
-  onLeftButtonPressed: () => toast('选择了左按钮'),
-  onRightButtonPressed: () => toast('选择了右按钮'),
+// 1. 简单确认对话框
+final result = await MyDialog.show(
+  content: const Text('确定要删除这个文件吗？'),
 );
 
-MyDialog.showIos(
-  content: '这是一个测试对话框',
-  onLeftButtonPressed: () => toast('选择了左按钮'),
-  onRightButtonPressed: () => toast('选择了右按钮'),
+// 处理用户选择
+switch (result) {
+  case MyDialogChosen.left:
+    print('用户点击了取消');
+    break;
+  case MyDialogChosen.right:
+    print('用户点击了确定');
+    break;
+  case MyDialogChosen.canceled:
+    print('用户点击了对话框外部或按了返回键');
+    break;
+}
+
+// 2. 带回调的对话框
+MyDialog.show(
+  content: const Text('这是一个测试对话框'),
+  onLeftButtonPressed: () => MyToast.show('选择了取消'),
+  onRightButtonPressed: () => MyToast.show('选择了确定'),
 );
 ```
 
-### 使用底部菜单
+#### 自定义样式
 ```dart
+// 3. 完全自定义的对话框
+MyDialog.show(
+  title: '警告',
+  content: const Text('此操作不可撤销，确定继续吗？'),
+  leftButtonText: '我再想想',
+  rightButtonText: '立即执行',
+  backgroundColor: Colors.grey[100],
+  titleColor: Colors.red,
+  leftButtonColor: Colors.grey,
+  rightButtonColor: Colors.red,
+  borderRadius: 15.0,
+  elevation: 8.0,
+  barrierOpacity: 0.7,
+);
+
+// 4. 复杂内容的对话框
+MyDialog.show(
+  title: '用户信息',
+  content: Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      const CircleAvatar(
+        radius: 30,
+        child: Icon(Icons.person, size: 30),
+      ),
+      const SizedBox(height: 16),
+      const Text('张三'),
+      const Text('高级开发工程师'),
+      const SizedBox(height: 8),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.phone),
+            onPressed: () => MyToast.show('拨打电话'),
+          ),
+          IconButton(
+            icon: const Icon(Icons.email),
+            onPressed: () => MyToast.show('发送邮件'),
+          ),
+        ],
+      ),
+    ],
+  ),
+  leftButtonText: '关闭',
+  rightButtonText: '编辑',
+);
+```
+
+#### iOS风格对话框
+```dart
+// 5. iOS风格对话框（适用于iOS平台或需要iOS风格的场景）
+MyDialog.showIos(
+  title: '提示',
+  content: const Text('这是iOS风格的对话框'),
+  leftButtonText: '取消',
+  rightButtonText: '确定',
+  leftButtonColor: CupertinoColors.systemGrey,
+  rightButtonColor: CupertinoColors.systemBlue,
+);
+```
+
+#### 实用示例
+```dart
+// 6. 退出确认对话框
+Future<void> showExitConfirmDialog() async {
+  final result = await MyDialog.show(
+    title: '退出应用',
+    content: const Text('确定要退出应用吗？'),
+    leftButtonText: '取消',
+    rightButtonText: '退出',
+    rightButtonColor: Colors.red,
+  );
+
+  if (result == MyDialogChosen.right) {
+    await MyApp.exit();
+  }
+}
+
+// 7. 输入确认对话框
+Future<void> showDeleteConfirmDialog(String fileName) async {
+  final result = await MyDialog.show(
+    title: '删除文件',
+    content: Text('确定要删除文件 "$fileName" 吗？\n此操作不可撤销。'),
+    leftButtonText: '取消',
+    rightButtonText: '删除',
+    rightButtonColor: Colors.red,
+    titleColor: Colors.red,
+  );
+
+  if (result == MyDialogChosen.right) {
+    // 执行删除操作
+    MyToast.showSuccess('文件已删除');
+  }
+}
+```
+
+### 使用底部弹出菜单和中心对话框
+
+#### 底部弹出菜单 (MyDialogSheet.showBottom)
+```dart
+// 1. 简单底部菜单
 MyDialogSheet.showBottom(
-  child: Text('这是一个测试底部菜单'),
+  child: const Text('这是一个简单的底部菜单'),
+  height: 200.h,
+);
+
+// 2. 自定义样式的底部菜单
+MyDialogSheet.showBottom(
+  child: Container(
+    padding: EdgeInsets.all(20.w),
+    child: Column(
+      children: [
+        Text('选择操作', style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold)),
+        SizedBox(height: 20.h),
+        ListTile(
+          leading: const Icon(Icons.edit),
+          title: const Text('编辑'),
+          onTap: () {
+            Get.back();
+            MyToast.show('选择了编辑');
+          },
+        ),
+        ListTile(
+          leading: const Icon(Icons.share),
+          title: const Text('分享'),
+          onTap: () {
+            Get.back();
+            MyToast.show('选择了分享');
+          },
+        ),
+        ListTile(
+          leading: const Icon(Icons.delete, color: Colors.red),
+          title: const Text('删除', style: TextStyle(color: Colors.red)),
+          onTap: () {
+            Get.back();
+            MyToast.show('选择了删除');
+          },
+        ),
+      ],
+    ),
+  ),
   height: 300.h,
   backgroundColor: Colors.white,
   borderRadius: 20.r,
+);
+
+// 3. 带返回值的底部菜单
+Future<String?> showActionSheet() async {
+  return await MyDialogSheet.showBottom<String>(
+    child: Column(
+      children: [
+        ListTile(
+          title: const Text('拍照'),
+          onTap: () => Get.back(result: 'camera'),
+        ),
+        ListTile(
+          title: const Text('从相册选择'),
+          onTap: () => Get.back(result: 'gallery'),
+        ),
+        ListTile(
+          title: const Text('取消'),
+          onTap: () => Get.back(),
+        ),
+      ],
+    ),
+    height: 200.h,
+  );
+}
+
+// 使用示例
+final action = await showActionSheet();
+if (action != null) {
+  MyToast.show('选择了: $action');
+}
+```
+
+#### 中心对话框 (MyDialogSheet.show)
+```dart
+// 4. 简单中心对话框
+MyDialogSheet.show(
+  title: '设置',
+  content: const Text('这是一个中心对话框'),
+  onConfirm: () {
+    MyToast.show('确认操作');
+    Get.back();
+  },
+);
+
+// 5. 复杂内容的中心对话框
+MyDialogSheet.show(
+  title: '用户设置',
+  content: Column(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      SwitchListTile(
+        title: const Text('接收通知'),
+        value: true,
+        onChanged: (value) => MyToast.show('通知设置: $value'),
+      ),
+      SwitchListTile(
+        title: const Text('自动更新'),
+        value: false,
+        onChanged: (value) => MyToast.show('自动更新: $value'),
+      ),
+      ListTile(
+        leading: const Icon(Icons.language),
+        title: const Text('语言设置'),
+        trailing: const Text('中文'),
+        onTap: () => MyToast.show('打开语言设置'),
+      ),
+    ],
+  ),
+  confirmText: '保存',
+  exitText: '取消',
+  onConfirm: () {
+    MyToast.showSuccess('设置已保存');
+    Get.back();
+  },
+  onExit: () {
+    MyToast.show('取消设置');
+    Get.back();
+  },
+);
+
+// 6. 自定义样式的中心对话框
+MyDialogSheet.show(
+  title: '重要提醒',
+  titleFontSize: 20.sp,
+  centerTitle: true,
+  content: Container(
+    padding: EdgeInsets.all(16.w),
+    decoration: BoxDecoration(
+      color: Colors.yellow[50],
+      borderRadius: BorderRadius.circular(8.r),
+      border: Border.all(color: Colors.orange),
+    ),
+    child: Row(
+      children: [
+        Icon(Icons.warning, color: Colors.orange, size: 24.sp),
+        SizedBox(width: 12.w),
+        const Expanded(
+          child: Text('这是一个重要的系统提醒，请仔细阅读。'),
+        ),
+      ],
+    ),
+  ),
+  contentPadding: EdgeInsets.all(20.w),
+  confirmText: '我知道了',
+  exitText: '稍后提醒',
 );
 ```
 

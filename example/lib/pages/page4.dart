@@ -26,11 +26,14 @@ class Page4View extends GetView<Page4Controller> {
                         // style: SectionBorderStyle.inset,
                         child: MyCardList(
                           itemCount: controller.draggableCards.length,
-                          cardLeading: (index) => Icon(
-                            Icons.drag_indicator,
-                            size: 24.w,
-                            color: Colors.blue[700],
-                          ),
+                          cardLeading: (index) =>
+                              Obx(() => controller.showDragHandle.value
+                                  ? Icon(
+                                      Icons.drag_indicator,
+                                      size: 24.w,
+                                      color: Colors.blue[700],
+                                    )
+                                  : const SizedBox.shrink()),
                           cardBody: (index) => Text(
                             controller.draggableCards[index],
                             style: TextStyle(fontSize: 14.sp),
@@ -167,6 +170,19 @@ class Page4View extends GetView<Page4Controller> {
                       text: '可拖动列表数量',
                       size: 80.w,
                     ),
+                    Obx(() => MyButton(
+                          onPressed: () {
+                            controller.showDragHandle.value =
+                                !controller.showDragHandle.value;
+                            MyToast.show(controller.showDragHandle.value
+                                ? '已显示拖拽手柄'
+                                : '已隐藏拖拽手柄');
+                          },
+                          text: controller.showDragHandle.value
+                              ? '隐藏拖拽手柄'
+                              : '显示拖拽手柄',
+                          size: 80.w,
+                        )),
                     Row(
                       children: [
                         MyButton(
@@ -283,6 +299,7 @@ class Page4Controller extends GetxController {
   final staticListState = ListState().obs;
   final selectedCardIndex = (-1).obs;
   final enableAutoScroll = false.obs;
+  final showDragHandle = true.obs;
 
   // MyCardList 的引用，用于访问滚动方法
   MyCardListState? _cardListState;
