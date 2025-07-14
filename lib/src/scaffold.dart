@@ -64,7 +64,7 @@ class MyScaffold extends StatefulWidget {
   final int initialSelectedIndex;
 
   /// 获取实际使用的导航项列表
-  List<AdaptiveNavigationItem>? get _effectiveDrawer => drawer ?? items;
+  List<AdaptiveNavigationItem>? get _effectiveDrawer => drawer;
 
   const MyScaffold({
     super.key,

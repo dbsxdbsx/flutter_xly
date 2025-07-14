@@ -10,7 +10,7 @@ import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:xly/src/exit.dart';
 import 'package:xly/src/platform.dart';
-import 'package:xly/src/smart_dock_manager.dart';
+import 'package:xly/src/smart_dock/smart_dock_manager.dart';
 import 'package:xly/src/splash.dart';
 import 'package:xly/src/toast/toast.dart';
 import 'package:xly/src/window_enums.dart';

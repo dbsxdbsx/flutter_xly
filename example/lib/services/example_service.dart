@@ -6,6 +6,7 @@ class ExampleService extends GetxService {
 
   final windowDraggable = true.obs;
   final windowResizable = false.obs;
+  final smartDocking = false.obs;
   late GetStorage _storage;
 
   @override
@@ -24,6 +25,14 @@ class ExampleService extends GetxService {
     final savedResizable = _storage.read('window_resizable') ?? true;
     windowResizable.value = savedResizable;
     await MyApp.setResizableEnabled(savedResizable);
+
+    // 恢复智能停靠状态
+    final savedSmartDocking = _storage.read('smart_docking') ?? false;
+    smartDocking.value = savedSmartDocking;
+    await MyApp.setSmartEdgeDocking(
+      enabled: savedSmartDocking,
+      visibleWidth: 10.0,
+    );
   }
 
   Future<void> setWindowDraggable(bool enabled) async {
@@ -38,5 +47,15 @@ class ExampleService extends GetxService {
     await MyApp.setResizableEnabled(enabled);
 
     await _storage.write('window_resizable', enabled);
+  }
+
+  Future<void> setSmartDocking(bool enabled) async {
+    smartDocking.value = enabled;
+    await MyApp.setSmartEdgeDocking(
+      enabled: enabled,
+      visibleWidth: 10.0,
+    );
+
+    await _storage.write('smart_docking', enabled);
   }
 }

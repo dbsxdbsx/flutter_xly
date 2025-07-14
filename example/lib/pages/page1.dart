@@ -602,6 +602,8 @@ class Page1Controller extends GetxController {
     _syncDraggableState();
     // 从ExampleService同步可调整大小的状态
     _syncResizableState();
+    // 从ExampleService同步智能停靠状态
+    _syncSmartDockingState();
   }
 
   /// 从ExampleService同步拖动设置状态
@@ -633,6 +635,22 @@ class Page1Controller extends GetxController {
     } catch (e) {
       // 如果ExampleService还没有初始化，使用MyApp的状态
       isWindowControlEnabled.value = MyApp.isResizableEnabled();
+    }
+  }
+
+  /// 从ExampleService同步智能停靠状态
+  void _syncSmartDockingState() {
+    try {
+      final exampleService = ExampleService.to;
+      // 监听ExampleService中的智能停靠设置变化
+      exampleService.smartDocking.listen((isSmartDockingEnabled) {
+        enableSmartDocking.value = isSmartDockingEnabled;
+      });
+      // 初始化时同步状态
+      enableSmartDocking.value = exampleService.smartDocking.value;
+    } catch (e) {
+      // 如果ExampleService还没有初始化，使用MyApp的状态
+      enableSmartDocking.value = MyApp.isSmartDockingEnabled();
     }
   }
 
@@ -933,12 +951,10 @@ class Page1Controller extends GetxController {
   void toggleSmartEdgeDocking() async {
     final newState = !enableSmartDocking.value;
 
-    await MyApp.setSmartEdgeDocking(
-      enabled: newState,
-      visibleWidth: 10.0, // 停靠时可见10像素，角落停靠会自动使用更大区域
-    );
+    // 同时保存到ExampleService以持久化设置
+    await ExampleService.to.setSmartDocking(newState);
 
-    // 更新响应式变量
+    // 更新本地状态以保持UI同步
     enableSmartDocking.value = newState;
 
     if (newState) {
