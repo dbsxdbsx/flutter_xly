@@ -5,6 +5,7 @@ import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../window_enums.dart';
+import 'taskbar_detector.dart';
 
 /// 停靠检测结果
 class DockDetectionResult {
@@ -82,16 +83,19 @@ class DockDetector {
       }
 
       final windowSize = await windowManager.getSize();
-      final workArea = display.visibleSize!;
-      final workAreaPosition = display.visiblePosition!;
 
-      // 计算窗口超出屏幕边界的距离
-      final leftOverflow = workAreaPosition.dx - windowPosition.dx;
+      // 检测taskbar信息以获取完整屏幕边界
+      final taskbarInfo = await TaskbarDetector.detectTaskbar();
+      final fullScreenSize = taskbarInfo.fullScreenSize;
+      final fullScreenPosition = taskbarInfo.fullScreenPosition;
+
+      // 计算窗口超出完整屏幕边界的距离（而不是工作区域边界）
+      final leftOverflow = fullScreenPosition.dx - windowPosition.dx;
       final rightOverflow = (windowPosition.dx + windowSize.width) -
-          (workAreaPosition.dx + workArea.width);
-      final topOverflow = workAreaPosition.dy - windowPosition.dy;
+          (fullScreenPosition.dx + fullScreenSize.width);
+      final topOverflow = fullScreenPosition.dy - windowPosition.dy;
       final bottomOverflow = (windowPosition.dy + windowSize.height) -
-          (workAreaPosition.dy + workArea.height);
+          (fullScreenPosition.dy + fullScreenSize.height);
 
       // 如果启用了角落停靠，优先检测角落
       if (enableCornerDocking) {
@@ -230,10 +234,10 @@ class DockDetector {
     Offset currentPosition,
     double visibleWidth,
   ) async {
-    final display = await screenRetriever.getPrimaryDisplay();
     final windowSize = await windowManager.getSize();
-    final workArea = display.visibleSize!;
-    final workAreaPosition = display.visiblePosition!;
+
+    // 检测taskbar信息
+    final taskbarInfo = await TaskbarDetector.detectTaskbar();
 
     // 计算对齐位置（只调整溢出的轴，保持另一轴的当前位置）
     Offset alignedPosition;
@@ -241,54 +245,99 @@ class DockDetector {
 
     switch (edge) {
       case WindowEdge.left:
-        final clampedY = currentPosition.dy.clamp(
-          workAreaPosition.dy,
-          workAreaPosition.dy + workArea.height - windowSize.height,
-        );
-        alignedPosition = Offset(workAreaPosition.dx, clampedY);
-        hiddenPosition = Offset(
-          alignedPosition.dx - windowSize.width + visibleWidth,
-          alignedPosition.dy,
-        );
+        // Y轴clamp：使用完整屏幕边界，忽略任务栏
+        final minY = taskbarInfo.fullScreenPosition.dy;
+        final maxY = taskbarInfo.fullScreenPosition.dy +
+            taskbarInfo.fullScreenSize.height -
+            windowSize.height;
+
+        final clampedY = currentPosition.dy.clamp(minY, maxY);
+
+        // 简化逻辑：直接对齐到真正的屏幕边缘，忽略任务栏
+        final alignX = taskbarInfo.fullScreenPosition.dx;
+
+        alignedPosition = Offset(alignX, clampedY);
+
+        debugPrint('左边缘停靠 - 对齐到屏幕边缘X: $alignX');
+
+        // 隐藏位置：隐藏到真正的屏幕边缘（完整屏幕边界）
+        final hiddenX =
+            taskbarInfo.fullScreenPosition.dx - windowSize.width + visibleWidth;
+
+        hiddenPosition = Offset(hiddenX, alignedPosition.dy);
         break;
       case WindowEdge.right:
-        final clampedY = currentPosition.dy.clamp(
-          workAreaPosition.dy,
-          workAreaPosition.dy + workArea.height - windowSize.height,
-        );
-        alignedPosition = Offset(
-          workAreaPosition.dx + workArea.width - windowSize.width,
-          clampedY,
-        );
-        hiddenPosition = Offset(
-          alignedPosition.dx + windowSize.width - visibleWidth,
-          alignedPosition.dy,
-        );
+        // Y轴clamp：使用完整屏幕边界，忽略任务栏
+        final minY = taskbarInfo.fullScreenPosition.dy;
+        final maxY = taskbarInfo.fullScreenPosition.dy +
+            taskbarInfo.fullScreenSize.height -
+            windowSize.height;
+
+        final clampedY = currentPosition.dy.clamp(minY, maxY);
+
+        // 简化逻辑：直接对齐到真正的屏幕边缘，忽略任务栏
+        final alignX = taskbarInfo.fullScreenPosition.dx +
+            taskbarInfo.fullScreenSize.width -
+            windowSize.width;
+
+        alignedPosition = Offset(alignX, clampedY);
+
+        debugPrint('右边缘停靠 - 对齐到屏幕边缘X: $alignX');
+
+        // 隐藏位置：隐藏到真正的屏幕边缘（完整屏幕边界）
+        final hiddenX = taskbarInfo.fullScreenPosition.dx +
+            taskbarInfo.fullScreenSize.width -
+            visibleWidth;
+
+        hiddenPosition = Offset(hiddenX, alignedPosition.dy);
         break;
       case WindowEdge.top:
-        final clampedX = currentPosition.dx.clamp(
-          workAreaPosition.dx,
-          workAreaPosition.dx + workArea.width - windowSize.width,
-        );
-        alignedPosition = Offset(clampedX, workAreaPosition.dy);
-        hiddenPosition = Offset(
-          alignedPosition.dx,
-          alignedPosition.dy - windowSize.height + visibleWidth,
-        );
+        // X轴clamp：使用完整屏幕边界，忽略任务栏
+        final minX = taskbarInfo.fullScreenPosition.dx;
+        final maxX = taskbarInfo.fullScreenPosition.dx +
+            taskbarInfo.fullScreenSize.width -
+            windowSize.width;
+
+        final clampedX = currentPosition.dx.clamp(minX, maxX);
+
+        // 简化逻辑：直接对齐到真正的屏幕边缘，忽略任务栏
+        final alignY = taskbarInfo.fullScreenPosition.dy;
+
+        alignedPosition = Offset(clampedX, alignY);
+
+        debugPrint('上边缘停靠 - 对齐到屏幕边缘Y: $alignY');
+
+        // 隐藏位置：隐藏到真正的屏幕边缘（完整屏幕边界）
+        final hiddenY = taskbarInfo.fullScreenPosition.dy -
+            windowSize.height +
+            visibleWidth;
+
+        hiddenPosition = Offset(alignedPosition.dx, hiddenY);
         break;
       case WindowEdge.bottom:
-        final clampedX = currentPosition.dx.clamp(
-          workAreaPosition.dx,
-          workAreaPosition.dx + workArea.width - windowSize.width,
-        );
-        alignedPosition = Offset(
-          clampedX,
-          workAreaPosition.dy + workArea.height - windowSize.height,
-        );
-        hiddenPosition = Offset(
-          alignedPosition.dx,
-          alignedPosition.dy + windowSize.height - visibleWidth,
-        );
+        // X轴clamp：使用完整屏幕边界，忽略任务栏
+        final minX = taskbarInfo.fullScreenPosition.dx;
+        final maxX = taskbarInfo.fullScreenPosition.dx +
+            taskbarInfo.fullScreenSize.width -
+            windowSize.width;
+
+        final clampedX = currentPosition.dx.clamp(minX, maxX);
+
+        // 简化逻辑：直接对齐到真正的屏幕边缘，忽略任务栏
+        final alignY = taskbarInfo.fullScreenPosition.dy +
+            taskbarInfo.fullScreenSize.height -
+            windowSize.height;
+
+        alignedPosition = Offset(clampedX, alignY);
+
+        debugPrint('下边缘停靠 - 对齐到屏幕边缘Y: $alignY');
+
+        // 隐藏位置：隐藏到真正的屏幕边缘（完整屏幕边界）
+        final hiddenY = taskbarInfo.fullScreenPosition.dy +
+            taskbarInfo.fullScreenSize.height -
+            visibleWidth;
+
+        hiddenPosition = Offset(alignedPosition.dx, hiddenY);
         break;
     }
 
@@ -306,10 +355,10 @@ class DockDetector {
     WindowCorner corner,
     double visibleSize,
   ) async {
-    final display = await screenRetriever.getPrimaryDisplay();
     final windowSize = await windowManager.getSize();
-    final workArea = display.visibleSize!;
-    final workAreaPosition = display.visiblePosition!;
+
+    // 检测taskbar信息
+    final taskbarInfo = await TaskbarDetector.detectTaskbar();
 
     // 计算对齐位置（完全对齐到角落）
     Offset alignedPosition;
@@ -321,44 +370,88 @@ class DockDetector {
 
     switch (corner) {
       case WindowCorner.topLeft:
-        alignedPosition = Offset(
-          workAreaPosition.dx,
-          workAreaPosition.dy,
-        );
-        hiddenPosition = Offset(
-          alignedPosition.dx - windowSize.width + cornerVisibleWidth,
-          alignedPosition.dy - windowSize.height + cornerVisibleHeight,
-        );
+        // 简化逻辑：直接对齐到屏幕角落，忽略任务栏
+        final alignX = taskbarInfo.fullScreenPosition.dx;
+        final alignY = taskbarInfo.fullScreenPosition.dy;
+
+        alignedPosition = Offset(alignX, alignY);
+
+        debugPrint('左上角停靠 - 对齐到屏幕角落: ($alignX, $alignY)');
+
+        // 隐藏位置：隐藏到真正的屏幕边缘（完整屏幕边界）
+        final hiddenX = taskbarInfo.fullScreenPosition.dx -
+            windowSize.width +
+            cornerVisibleWidth;
+        final hiddenY = taskbarInfo.fullScreenPosition.dy -
+            windowSize.height +
+            cornerVisibleHeight;
+
+        hiddenPosition = Offset(hiddenX, hiddenY);
         break;
       case WindowCorner.topRight:
-        alignedPosition = Offset(
-          workAreaPosition.dx + workArea.width - windowSize.width,
-          workAreaPosition.dy,
-        );
-        hiddenPosition = Offset(
-          alignedPosition.dx + windowSize.width - cornerVisibleWidth,
-          alignedPosition.dy - windowSize.height + cornerVisibleHeight,
-        );
+        // 简化逻辑：直接对齐到屏幕角落，忽略任务栏
+        final alignX = taskbarInfo.fullScreenPosition.dx +
+            taskbarInfo.fullScreenSize.width -
+            windowSize.width;
+        final alignY = taskbarInfo.fullScreenPosition.dy;
+
+        alignedPosition = Offset(alignX, alignY);
+
+        debugPrint('右上角停靠 - 对齐到屏幕角落: ($alignX, $alignY)');
+
+        // 隐藏位置：隐藏到真正的屏幕边缘（完整屏幕边界）
+        final hiddenX = taskbarInfo.fullScreenPosition.dx +
+            taskbarInfo.fullScreenSize.width -
+            cornerVisibleWidth;
+        final hiddenY = taskbarInfo.fullScreenPosition.dy -
+            windowSize.height +
+            cornerVisibleHeight;
+
+        hiddenPosition = Offset(hiddenX, hiddenY);
         break;
       case WindowCorner.bottomLeft:
-        alignedPosition = Offset(
-          workAreaPosition.dx,
-          workAreaPosition.dy + workArea.height - windowSize.height,
-        );
-        hiddenPosition = Offset(
-          alignedPosition.dx - windowSize.width + cornerVisibleWidth,
-          alignedPosition.dy + windowSize.height - cornerVisibleHeight,
-        );
+        // 简化逻辑：直接对齐到屏幕角落，忽略任务栏
+        final alignX = taskbarInfo.fullScreenPosition.dx;
+        final alignY = taskbarInfo.fullScreenPosition.dy +
+            taskbarInfo.fullScreenSize.height -
+            windowSize.height;
+
+        alignedPosition = Offset(alignX, alignY);
+
+        debugPrint('左下角停靠 - 对齐到屏幕角落: ($alignX, $alignY)');
+
+        // 隐藏位置：隐藏到真正的屏幕边缘（完整屏幕边界）
+        final hiddenX = taskbarInfo.fullScreenPosition.dx -
+            windowSize.width +
+            cornerVisibleWidth;
+        final hiddenY = taskbarInfo.fullScreenPosition.dy +
+            taskbarInfo.fullScreenSize.height -
+            cornerVisibleHeight;
+
+        hiddenPosition = Offset(hiddenX, hiddenY);
         break;
       case WindowCorner.bottomRight:
-        alignedPosition = Offset(
-          workAreaPosition.dx + workArea.width - windowSize.width,
-          workAreaPosition.dy + workArea.height - windowSize.height,
-        );
-        hiddenPosition = Offset(
-          alignedPosition.dx + windowSize.width - cornerVisibleWidth,
-          alignedPosition.dy + windowSize.height - cornerVisibleHeight,
-        );
+        // 简化逻辑：直接对齐到屏幕角落，忽略任务栏
+        final alignX = taskbarInfo.fullScreenPosition.dx +
+            taskbarInfo.fullScreenSize.width -
+            windowSize.width;
+        final alignY = taskbarInfo.fullScreenPosition.dy +
+            taskbarInfo.fullScreenSize.height -
+            windowSize.height;
+
+        alignedPosition = Offset(alignX, alignY);
+
+        debugPrint('右下角停靠 - 对齐到屏幕角落: ($alignX, $alignY)');
+
+        // 隐藏位置：隐藏到真正的屏幕边缘（完整屏幕边界）
+        final hiddenX = taskbarInfo.fullScreenPosition.dx +
+            taskbarInfo.fullScreenSize.width -
+            cornerVisibleWidth;
+        final hiddenY = taskbarInfo.fullScreenPosition.dy +
+            taskbarInfo.fullScreenSize.height -
+            cornerVisibleHeight;
+
+        hiddenPosition = Offset(hiddenX, hiddenY);
         break;
     }
 

@@ -60,12 +60,12 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 - `icons_launcher: ^3.0.0` - 图标生成
 
 ## 待办事项（TODOs）
+- add tray feature?tray pop msg?
 - the MySacffold is issued, make it a ppl like sidebar widget?
 - dialogsheet, into MyDialog or MyMenu?
 - floatBar大小不随host app窗口大小随动，stateManagement测试
 - right menu 子菜单issue
 - 静默启动？
-- tray pop msg
 - MyToggleBtn?
 - permission功能？
 
@@ -1120,6 +1120,14 @@ await MyApp.setSmartEdgeDocking(enabled: true);
 3. 🔄 **鼠标交互** - 悬停显示完整窗口，离开后隐藏
 
 这确保了角落停靠与边缘停靠具有一致的用户体验。
+
+**最新优化**：Taskbar智能对齐！现在智能停靠会自动检测任务栏位置：
+- 🎯 **智能检测**: 自动检测任务栏在屏幕的哪个边缘（左、右、上、下）
+- 📏 **外边缘对齐**: 当停靠边缘或角落的某个边缘有任务栏时，窗口会对齐到任务栏的外边缘而不是工作区域边缘
+- 🔄 **保持兼容**: `dockToCorner`功能保持原有行为（对齐到工作区域内侧）
+- 🖥️ **跨平台支持**: 支持不同操作系统的任务栏配置
+
+这样可以避免窗口被任务栏遮挡，提供更好的用户体验。
 
 注意：此功能仅在桌面平台（Windows、macOS、Linux）上可用。
 

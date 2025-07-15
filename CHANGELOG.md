@@ -1,3 +1,26 @@
+## 0.13.1 - 2025-07-15
+
+### Added
+- 新增自适应侧边栏实现指南文档 (.doc/adaptive_sidebar_implementation_guide.md)
+- 新增自适应侧边栏使用文档 (.doc/adaptive_sidebar_usage.md)
+- 新增MyScaffold的leading参数支持，允许自定义左侧组件
+- 新增MyScaffold的trailing参数支持，允许自定义右侧组件
+- 新增示例服务类ExampleService，展示服务层架构
+
+### Enhanced
+- 完善MyScaffold自适应侧边栏功能，优化不同屏幕尺寸下的表现
+- 改进MyScaffold在mini模式下的汉堡菜单图标显示逻辑
+- 优化示例页面的导航和布局，提升用户体验
+- 改进平台信息显示组件，增加更多系统信息展示
+- 完善README文档，新增自适应侧边栏相关文档链接
+
+### Fixed
+- 修复MyScaffold在不同模式切换时的UI一致性问题
+- 解决示例页面在不同屏幕尺寸下的布局适配问题
+- 修复智能隐藏dock功能的拖拽动画问题：增加拖拽完成检测，避免拖拽过程中过早触发对齐动画
+- 重大简化：智能隐藏dock功能现在直接对齐到真正的屏幕边缘/角落，完全忽略任务栏
+- 确保智能隐藏dock功能的拖拽对齐和鼠标悬停弹出位置一致性
+
 ## 0.13.0 - 2025-07-15
 
 ### Added
