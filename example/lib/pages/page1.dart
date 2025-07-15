@@ -12,36 +12,34 @@ class Page1View extends GetView<Page1Controller> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        Scaffold(
-          appBar: AppBar(title: const Text('第1页')),
-          body: SingleChildScrollView(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _buildSectionTitle('按钮测试'),
-                  SizedBox(height: 8.h),
-                  _buildButtonSection(),
-                  SizedBox(height: 12.h),
-                  _buildSectionTitle('菜单按钮测试'),
-                  SizedBox(height: 8.h),
-                  _buildMenuButtonSection(),
-                  SizedBox(height: 12.h),
-                  _buildSectionTitle('窗口控制测试'),
-                  SizedBox(height: 8.h),
-                  _buildWindowControlSection(),
-                  SizedBox(height: 12.h),
-                  _buildSectionTitle('智能停靠测试（边缘+角落）'),
-                  SizedBox(height: 8.h),
-                  _buildEdgeDockingSection(),
-                  SizedBox(height: 12.h),
-                  _buildToastTestSection(),
-                  SizedBox(height: 8.h),
-                  _buildNavigationSection(),
-                  SizedBox(height: 8.h),
-                ],
-              ),
+        SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildSectionTitle('按钮测试'),
+                SizedBox(height: 8.h),
+                _buildButtonSection(),
+                SizedBox(height: 12.h),
+                _buildSectionTitle('菜单按钮测试'),
+                SizedBox(height: 8.h),
+                _buildMenuButtonSection(),
+                SizedBox(height: 12.h),
+                _buildSectionTitle('窗口控制测试'),
+                SizedBox(height: 8.h),
+                _buildWindowControlSection(),
+                SizedBox(height: 12.h),
+                _buildSectionTitle('智能停靠测试（边缘+角落）'),
+                SizedBox(height: 8.h),
+                _buildEdgeDockingSection(),
+                SizedBox(height: 12.h),
+                _buildToastTestSection(),
+                SizedBox(height: 8.h),
+                _buildNavigationSection(),
+                // 减少底部边距，避免过多空白
+                SizedBox(height: 4.h),
+              ],
             ),
           ),
         ).showRightMenu(
@@ -431,34 +429,43 @@ class Page1View extends GetView<Page1Controller> {
               style: TextStyle(fontSize: 13.sp, color: Colors.grey[700]),
             ),
             SizedBox(height: 4.h),
-            Row(
+            // 分成两行显示，避免文字溢出
+            Column(
               children: [
-                Expanded(
-                  child: MyButton(
-                    text: '显示顶部警告提示',
-                    onPressed: () => controller.showUpWarnToast(),
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: MyButton(
+                        text: '顶部警告',
+                        onPressed: () => controller.showUpWarnToast(),
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: MyButton(
+                        text: '顶部错误',
+                        onPressed: () => controller.showUpErrorToast(),
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: MyButton(
-                    text: '显示顶部错误提示',
-                    onPressed: () => controller.showUpErrorToast(),
-                  ),
-                ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: MyButton(
-                    text: '显示顶部信息提示',
-                    onPressed: () => controller.showUpInfoToast(),
-                  ),
-                ),
-                SizedBox(width: 12.w),
-                Expanded(
-                  child: MyButton(
-                    text: '显示底部提示',
-                    onPressed: () => controller.showBottomToast(),
-                  ),
+                SizedBox(height: 8.h),
+                Row(
+                  children: [
+                    Expanded(
+                      child: MyButton(
+                        text: '顶部信息',
+                        onPressed: () => controller.showUpInfoToast(),
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: MyButton(
+                        text: '底部提示',
+                        onPressed: () => controller.showBottomToast(),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -604,6 +611,8 @@ class Page1Controller extends GetxController {
     _syncResizableState();
     // 从ExampleService同步智能停靠状态
     _syncSmartDockingState();
+    // 从ExampleService同步窗口比例调整状态
+    _syncAspectRatioState();
   }
 
   /// 从ExampleService同步拖动设置状态
@@ -651,6 +660,22 @@ class Page1Controller extends GetxController {
     } catch (e) {
       // 如果ExampleService还没有初始化，使用MyApp的状态
       enableSmartDocking.value = MyApp.isSmartDockingEnabled();
+    }
+  }
+
+  /// 从ExampleService同步窗口比例调整状态
+  void _syncAspectRatioState() {
+    try {
+      final exampleService = ExampleService.to;
+      // 监听ExampleService中的窗口比例调整设置变化
+      exampleService.aspectRatio.listen((isAspectRatioEnabled) {
+        enableAspectRatio.value = isAspectRatioEnabled;
+      });
+      // 初始化时同步状态
+      enableAspectRatio.value = exampleService.aspectRatio.value;
+    } catch (e) {
+      // 如果ExampleService还没有初始化，使用MyApp的状态
+      enableAspectRatio.value = MyApp.isAspectRatioEnabled();
     }
   }
 
@@ -967,10 +992,10 @@ class Page1Controller extends GetxController {
   /// 切换窗口比例调整功能
   void toggleAspectRatio() async {
     // 获取当前状态的反状态
-    final newState = !MyApp.isAspectRatioEnabled();
+    final newState = !enableAspectRatio.value;
 
-    // 设置新状态
-    await MyApp.setAspectRatioEnabled(newState);
+    // 同时保存到ExampleService以持久化设置
+    await ExampleService.to.setAspectRatio(newState);
 
     // 更新本地状态以保持UI同步
     enableAspectRatio.value = newState;

@@ -8,51 +8,46 @@ class Page5View extends GetView<Page5Controller> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('URL启动器测试', style: TextStyle(fontSize: 18.sp)),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.all(16.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '点击下面的链接测试URL启动器:',
-                    style:
-                        TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 20.h),
-                  _buildUrlSection(),
-                ],
-              ),
-            ),
-          ),
-          Padding(
+    return Column(
+      children: [
+        Expanded(
+          child: Padding(
             padding: EdgeInsets.all(16.w),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                MyButton(
-                  icon: Icons.arrow_back,
-                  text: '返回第4页',
-                  onPressed: () => Get.back(),
-                  size: 80.w,
+                Text(
+                  '点击下面的链接测试URL启动器:',
+                  style:
+                      TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
                 ),
-                MyButton(
-                  icon: Icons.arrow_forward,
-                  text: '前往第6页',
-                  onPressed: () => Get.toNamed(MyRoutes.page6),
-                  size: 80.w,
-                ),
+                SizedBox(height: 20.h),
+                _buildUrlSection(),
               ],
             ),
           ),
-        ],
-      ),
+        ),
+        Padding(
+          padding: EdgeInsets.all(16.w),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              MyButton(
+                icon: Icons.arrow_back,
+                text: '返回第4页',
+                onPressed: () => Get.back(),
+                size: 80.w,
+              ),
+              MyButton(
+                icon: Icons.arrow_forward,
+                text: '前往第6页',
+                onPressed: () => Get.toNamed(MyRoutes.page6),
+                size: 80.w,
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

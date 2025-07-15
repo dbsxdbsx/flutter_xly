@@ -60,6 +60,7 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 - `icons_launcher: ^3.0.0` - 图标生成
 
 ## 待办事项（TODOs）
+- the MySacffold is issued, make it a ppl like sidebar widget?
 - dialogsheet, into MyDialog or MyMenu?
 - floatBar大小不随host app窗口大小随动，stateManagement测试
 - right menu 子菜单issue

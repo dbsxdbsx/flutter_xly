@@ -7,30 +7,27 @@ class Page2View extends GetView<Page2Controller> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('第2页')),
-      body: Padding(
-        padding: EdgeInsets.all(16.w),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _buildSectionTitle('图标位置测试（普通样式）'),
-            SizedBox(height: 16.h),
-            _buildIconPositionTests(),
-            SizedBox(height: 24.h),
-            _buildSectionTitle('按钮形状测试'),
-            SizedBox(height: 16.h),
-            _buildShapeTests(),
-            SizedBox(height: 24.h),
-            _buildSectionTitle('其他样式测试'),
-            SizedBox(height: 16.h),
-            _buildOtherStyleTests(),
-            const Spacer(),
-            _buildFocusableText(),
-            SizedBox(height: 24.h),
-            _buildNavigationButtons(),
-          ],
-        ),
+    return Padding(
+      padding: EdgeInsets.all(16.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _buildSectionTitle('图标位置测试（普通样式）'),
+          SizedBox(height: 16.h),
+          _buildIconPositionTests(),
+          SizedBox(height: 24.h),
+          _buildSectionTitle('按钮形状测试'),
+          SizedBox(height: 16.h),
+          _buildShapeTests(),
+          SizedBox(height: 24.h),
+          _buildSectionTitle('其他样式测试'),
+          SizedBox(height: 16.h),
+          _buildOtherStyleTests(),
+          const Spacer(),
+          _buildFocusableText(),
+          SizedBox(height: 24.h),
+          _buildNavigationButtons(),
+        ],
       ),
     );
   }

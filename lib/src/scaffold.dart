@@ -40,7 +40,7 @@ class MyScaffold extends StatefulWidget {
   final Widget? body;
 
   /// 侧边栏底部额外内容（可选）
-  final Widget? sidebarTrailing;
+  final Widget? trailing;
 
   /// 是否在小屏幕使用底部导航栏而不是抽屉
   final bool useBottomNavigationOnSmall;
@@ -72,7 +72,7 @@ class MyScaffold extends StatefulWidget {
     @Deprecated('使用drawer参数代替') this.items,
     @Deprecated('不再需要pages参数') this.pages,
     this.body,
-    this.sidebarTrailing,
+    this.trailing,
     this.useBottomNavigationOnSmall = false,
     this.appBar,
     this.floatingActionButton,
@@ -131,7 +131,7 @@ class _MyScaffoldState extends State<MyScaffold> {
       }
     }
 
-    // 中大屏幕的布局
+    // 自适应布局，支持所有屏幕尺寸
     final adaptiveLayout = AdaptiveLayout(
       primaryNavigation: SlotLayout(
         config: <Breakpoint, SlotLayoutConfig>{
@@ -149,14 +149,11 @@ class _MyScaffoldState extends State<MyScaffold> {
           // 大屏幕：展开的侧边栏（图标+文字+额外内容）
           Breakpoints.large: SlotLayout.from(
             key: const Key('primaryNavigationLarge'),
-            builder: (_) => AdaptiveScaffold.standardNavigationRail(
-              extended: true,
+            builder: (context) => _CustomExtendedNavigationRail(
               selectedIndex: _selectedIndex,
               onDestinationSelected: handleDestinationSelected,
-              destinations: destinations
-                  .map((dest) => AdaptiveScaffold.toRailDestination(dest))
-                  .toList(),
-              trailing: widget.sidebarTrailing,
+              destinations: destinations,
+              trailing: widget.trailing,
             ),
           ),
         },
@@ -173,35 +170,73 @@ class _MyScaffoldState extends State<MyScaffold> {
       ),
     );
 
-    return Scaffold(
+    // 检查是否需要显示抽屉
+    final shouldShowDrawer =
+        isSmallScreen && !widget.useBottomNavigationOnSmall;
+
+    // 处理AppBar - 为非标准AppBar添加自定义汉堡包图标
+    PreferredSizeWidget? effectiveAppBar = widget.appBar;
+    if (shouldShowDrawer && widget.appBar != null && widget.appBar is! AppBar) {
+      // 对于非标准AppBar（如_DynamicAppBar），包装一个带汉堡包图标的容器
+      effectiveAppBar = PreferredSize(
+        preferredSize: widget.appBar!.preferredSize,
+        child: Stack(
+          children: [
+            widget.appBar!,
+            Positioned(
+              left: 0,
+              top: 0,
+              bottom: 0,
+              child: Container(
+                width: 56, // 标准AppBar leading宽度
+                alignment: Alignment.center,
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => _scaffoldKey.currentState?.openDrawer(),
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      alignment: Alignment.center,
+                      child: const Icon(
+                        Icons.menu,
+                        size: 24,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final scaffold = Scaffold(
       key: _scaffoldKey,
-      appBar: widget.appBar,
+      appBar: effectiveAppBar,
       floatingActionButton: widget.floatingActionButton,
 
       // 小屏幕时显示抽屉（如果不使用底部导航栏）
-      drawer: isSmallScreen && !widget.useBottomNavigationOnSmall
+      drawer: shouldShowDrawer
           ? Drawer(
               width:
                   (screenWidth * widget.drawerWidthRatio).clamp(200.0, 304.0),
-              child: NavigationRail(
-                extended: true,
+              child: _CustomExtendedNavigationRail(
                 selectedIndex: _selectedIndex,
-                destinations: destinations
-                    .map((dest) => AdaptiveScaffold.toRailDestination(dest))
-                    .toList(),
                 onDestinationSelected: (index) {
                   _scaffoldKey.currentState?.closeDrawer();
                   handleDestinationSelected(index);
                 },
-                trailing: widget.sidebarTrailing,
+                destinations: destinations,
+                trailing: widget.trailing,
               ),
             )
           : null,
 
-      // 根据屏幕尺寸选择body
-      body: isSmallScreen
-          ? (widget.body ?? const SizedBox.shrink())
-          : adaptiveLayout,
+      // 始终使用AdaptiveLayout以确保Overlay可用
+      body: adaptiveLayout,
 
       // 小屏幕底部导航栏（可选）
       bottomNavigationBar: isSmallScreen && widget.useBottomNavigationOnSmall
@@ -212,6 +247,19 @@ class _MyScaffoldState extends State<MyScaffold> {
             )
           : null,
     );
+
+    // 如果需要显示抽屉且有AppBar，包装一个Overlay以支持Tooltip
+    if (shouldShowDrawer && widget.appBar != null) {
+      return Overlay(
+        initialEntries: [
+          OverlayEntry(
+            builder: (context) => scaffold,
+          ),
+        ],
+      );
+    }
+
+    return scaffold;
   }
 }
 
@@ -257,6 +305,102 @@ class AdaptiveNavigationItem {
       icon: iconWidget,
       selectedIcon: selectedIcon,
       label: label,
+    );
+  }
+}
+
+/// 自定义的扩展NavigationRail，支持整行高亮
+class _CustomExtendedNavigationRail extends StatelessWidget {
+  const _CustomExtendedNavigationRail({
+    required this.selectedIndex,
+    required this.onDestinationSelected,
+    required this.destinations,
+    this.trailing,
+  });
+
+  final int selectedIndex;
+  final Function(int) onDestinationSelected;
+  final List<NavigationDestination> destinations;
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Container(
+      width: 256, // 固定宽度，类似extended NavigationRail
+      color: theme.navigationRailTheme.backgroundColor ?? colorScheme.surface,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 导航项列表
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+              itemCount: destinations.length,
+              itemBuilder: (context, index) {
+                final destination = destinations[index];
+                final isSelected = index == selectedIndex;
+
+                return Container(
+                  margin: const EdgeInsets.symmetric(vertical: 2),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? colorScheme.secondaryContainer
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () => onDestinationSelected(index),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        child: Row(
+                          children: [
+                            // 图标
+                            IconTheme(
+                              data: IconThemeData(
+                                color: isSelected
+                                    ? colorScheme.onSecondaryContainer
+                                    : colorScheme.onSurfaceVariant,
+                                size: 24,
+                              ),
+                              child:
+                                  isSelected && destination.selectedIcon != null
+                                      ? destination.selectedIcon!
+                                      : destination.icon,
+                            ),
+                            const SizedBox(width: 12),
+                            // 文字标签
+                            Expanded(
+                              child: Text(
+                                destination.label,
+                                style: theme.textTheme.labelLarge?.copyWith(
+                                  color: isSelected
+                                      ? colorScheme.onSecondaryContainer
+                                      : colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          // 底部额外内容
+          if (trailing != null) trailing!,
+        ],
+      ),
     );
   }
 }

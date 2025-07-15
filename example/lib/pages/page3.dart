@@ -1,5 +1,4 @@
 import 'package:example/main.dart';
-
 import 'package:flutter/material.dart';
 import 'package:xly/xly.dart';
 
@@ -8,40 +7,35 @@ class Page3View extends GetView<Page3Controller> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('第3页', style: TextStyle(fontSize: 18.sp)),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text('这是第3页的内容', style: TextStyle(fontSize: 16.sp)),
-                  SizedBox(height: 20.h),
-                  MyButton(
-                    text: '显示底部菜单',
-                    onPressed: controller.showBottomSheet,
-                    width: 200.w,
-                  ),
-                  SizedBox(height: 20.h),
-                  MyButton(
-                    text: '显示中心对话框',
-                    onPressed: controller.showCenterDialog,
-                    width: 200.w,
-                  ),
-                ],
-              ),
+    return Column(
+      children: [
+        Expanded(
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('这是第3页的内容', style: TextStyle(fontSize: 16.sp)),
+                SizedBox(height: 20.h),
+                MyButton(
+                  text: '显示底部菜单',
+                  onPressed: controller.showBottomSheet,
+                  width: 200.w,
+                ),
+                SizedBox(height: 20.h),
+                MyButton(
+                  text: '显示中心对话框',
+                  onPressed: controller.showCenterDialog,
+                  width: 200.w,
+                ),
+              ],
             ),
           ),
-          Padding(
-            padding: EdgeInsets.all(20.w),
-            child: _buildNavigationSection(),
-          ),
-        ],
-      ),
+        ),
+        Padding(
+          padding: EdgeInsets.all(20.w),
+          child: _buildNavigationSection(),
+        ),
+      ],
     );
   }
 

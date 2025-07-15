@@ -9,57 +9,52 @@ class Page7 extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetBuilder<Page7Controller>(
       init: Page7Controller(),
-      builder: (controller) => Scaffold(
-        appBar: AppBar(
-          title: Text('SpinBox 测试', style: TextStyle(fontSize: 18.sp)),
-        ),
-        body: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.all(16.w),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '基础用法',
-                      style: TextStyle(
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 16.h),
-                    _buildBasicSpinBoxes(controller),
-                    SizedBox(height: 32.h),
-                    Text(
-                      '自定义样式',
-                      style: TextStyle(
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 16.h),
-                    _buildStyledSpinBoxes(controller),
-                  ],
-                ),
-              ),
-            ),
-            Padding(
+      builder: (controller) => Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
               padding: EdgeInsets.all(16.w),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  MyButton(
-                    icon: Icons.arrow_back,
-                    text: '返回第6页',
-                    onPressed: () => Get.back(),
-                    size: 80.w,
+                  Text(
+                    '基础用法',
+                    style: TextStyle(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
+                  SizedBox(height: 16.h),
+                  _buildBasicSpinBoxes(controller),
+                  SizedBox(height: 32.h),
+                  Text(
+                    '自定义样式',
+                    style: TextStyle(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 16.h),
+                  _buildStyledSpinBoxes(controller),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+          Padding(
+            padding: EdgeInsets.all(16.w),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                MyButton(
+                  icon: Icons.arrow_back,
+                  text: '返回第6页',
+                  onPressed: () => Get.back(),
+                  size: 80.w,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

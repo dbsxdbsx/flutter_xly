@@ -7,6 +7,7 @@ class ExampleService extends GetxService {
   final windowDraggable = true.obs;
   final windowResizable = false.obs;
   final smartDocking = false.obs;
+  final aspectRatio = false.obs;
   late GetStorage _storage;
 
   @override
@@ -33,6 +34,11 @@ class ExampleService extends GetxService {
       enabled: savedSmartDocking,
       visibleWidth: 10.0,
     );
+
+    // 恢复窗口比例调整状态
+    final savedAspectRatio = _storage.read('aspect_ratio') ?? false;
+    aspectRatio.value = savedAspectRatio;
+    await MyApp.setAspectRatioEnabled(savedAspectRatio);
   }
 
   Future<void> setWindowDraggable(bool enabled) async {
@@ -57,5 +63,12 @@ class ExampleService extends GetxService {
     );
 
     await _storage.write('smart_docking', enabled);
+  }
+
+  Future<void> setAspectRatio(bool enabled) async {
+    aspectRatio.value = enabled;
+    await MyApp.setAspectRatioEnabled(enabled);
+
+    await _storage.write('aspect_ratio', enabled);
   }
 }

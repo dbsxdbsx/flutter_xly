@@ -7,250 +7,244 @@ class Page4View extends GetView<Page4Controller> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('第4页', style: TextStyle(fontSize: 18.sp)),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
-              child: Obx(
-                () => Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: MyGroupBox(
-                        title: '可拖动列表',
-                        // style: SectionBorderStyle.inset,
-                        child: MyCardList(
-                          itemCount: controller.draggableCards.length,
-                          cardLeading: (index) =>
-                              Obx(() => controller.showDragHandle.value
-                                  ? Icon(
-                                      Icons.drag_indicator,
-                                      size: 24.w,
-                                      color: Colors.blue[700],
-                                    )
-                                  : const SizedBox.shrink()),
-                          cardBody: (index) => Text(
-                            controller.draggableCards[index],
-                            style: TextStyle(fontSize: 14.sp),
-                          ),
-                          cardTrailing: (index) => Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              MyIcon(
-                                icon: Icons.edit,
-                                iconColor: Colors.blue[300],
-                                onPressed: () => _onEditCard(index),
-                              ),
-                              MyIcon(
-                                icon: Icons.star_border,
-                                iconColor: Colors.amber[300],
-                                onPressed: () => _onStarCard(index),
-                              ),
-                              MyIcon(
-                                icon: Icons.delete,
-                                iconColor: Colors.red[300],
-                                onPressed: () =>
-                                    controller.deleteDraggableCard(index),
-                              ),
-                            ],
-                          ),
-                          onCardReordered: controller.reorderCards,
-                          onCardPressed: (index) => _onCardPressed(
-                            controller.draggableCards[index],
-                            true,
-                          ),
-                          onSwipeDelete: (index) {
-                            MyToast.show(
-                                '即将删除：${controller.draggableCards[index]}');
-                            controller.deleteDraggableCard(index);
-                          },
-                          onLoadMore: () =>
-                              controller.loadMoreCards(isDraggable: true),
-                          showScrollbar: true,
-                          // cardMargin: EdgeInsets.symmetric(
-                          //     horizontal: 6.w, vertical: 2.h),
-                          cardSplashColor: (_) => Colors.black12,
-                          footer: _buildFooter(controller.draggableListState),
-                          // cardBorderRadius: BorderRadius.circular(48.r),
+    return Column(
+      children: [
+        Expanded(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
+            child: Obx(
+              () => Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: MyGroupBox(
+                      title: '可拖动列表',
+                      // style: SectionBorderStyle.inset,
+                      child: MyCardList(
+                        itemCount: controller.draggableCards.length,
+                        cardLeading: (index) =>
+                            Obx(() => controller.showDragHandle.value
+                                ? Icon(
+                                    Icons.drag_indicator,
+                                    size: 24.w,
+                                    color: Colors.blue[700],
+                                  )
+                                : const SizedBox.shrink()),
+                        cardBody: (index) => Text(
+                          controller.draggableCards[index],
+                          style: TextStyle(fontSize: 14.sp),
                         ),
+                        cardTrailing: (index) => Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            MyIcon(
+                              icon: Icons.edit,
+                              iconColor: Colors.blue[300],
+                              onPressed: () => _onEditCard(index),
+                            ),
+                            MyIcon(
+                              icon: Icons.star_border,
+                              iconColor: Colors.amber[300],
+                              onPressed: () => _onStarCard(index),
+                            ),
+                            MyIcon(
+                              icon: Icons.delete,
+                              iconColor: Colors.red[300],
+                              onPressed: () =>
+                                  controller.deleteDraggableCard(index),
+                            ),
+                          ],
+                        ),
+                        onCardReordered: controller.reorderCards,
+                        onCardPressed: (index) => _onCardPressed(
+                          controller.draggableCards[index],
+                          true,
+                        ),
+                        onSwipeDelete: (index) {
+                          MyToast.show(
+                              '即将删除：${controller.draggableCards[index]}');
+                          controller.deleteDraggableCard(index);
+                        },
+                        onLoadMore: () =>
+                            controller.loadMoreCards(isDraggable: true),
+                        showScrollbar: true,
+                        // cardMargin: EdgeInsets.symmetric(
+                        //     horizontal: 6.w, vertical: 2.h),
+                        cardSplashColor: (_) => Colors.black12,
+                        footer: _buildFooter(controller.draggableListState),
+                        // cardBorderRadius: BorderRadius.circular(48.r),
                       ),
                     ),
-                    SizedBox(width: 16.w),
-                    Expanded(
-                      child: MyGroupBox(
-                        title: '不可拖动列表',
-                        child: MyCardList(
-                          onStateCreated: (state) =>
-                              controller._cardListState = state,
-                          indexToScroll: controller.enableAutoScroll.value &&
-                                  controller.selectedCardIndex.value != -1
-                              ? controller.selectedCardIndex.value
-                              : null,
-                          cardLeading: (index) => Icon(
-                            Icons.download_outlined,
-                            size: 24.w,
-                            color: Colors.green[700],
-                          ),
-                          cardBody: (index) => Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                controller.staticCards[index],
-                                style: TextStyle(
-                                  fontSize: 14.sp,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              SizedBox(height: 4.h),
-                              Text(
-                                '这是一个静态卡片的描述信息',
-                                style: TextStyle(fontSize: 12.sp),
-                              ),
-                            ],
-                          ),
-                          cardTrailing: (index) => Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              MyIcon(
-                                icon: Icons.download,
-                                iconColor: Colors.green[300],
-                                onPressed: () => _onDownloadCard(index),
-                              ),
-                              MyIcon(
-                                icon: Icons.copy,
-                                iconColor: Colors.purple[300],
-                                onPressed: () => _onCopyCard(index),
-                              ),
-                            ],
-                          ),
-                          itemCount: controller.staticCards.length,
-                          showScrollbar: true,
-                          cardColor: (_) => Colors.green[50]!,
-                          cardMargin: (_) => EdgeInsets.symmetric(
-                            horizontal: 2.h,
-                            vertical: 2.h,
-                          ),
-                          cardPadding: (_) => EdgeInsets.only(right: 15.w),
-                          onSwipeDelete: (index) {
-                            MyToast.show(
-                                '即将删除：${controller.staticCards[index]}');
-                            controller.deleteStaticCard(index);
-                          },
-                          onCardPressed: (index) => _onCardPressed(
-                            controller.staticCards[index],
-                            false,
-                          ),
-                          onLoadMore: () =>
-                              controller.loadMoreCards(isDraggable: false),
-                          cardBorderRadius: (_) => BorderRadius.circular(8.r),
+                  ),
+                  SizedBox(width: 16.w),
+                  Expanded(
+                    child: MyGroupBox(
+                      title: '不可拖动列表',
+                      child: MyCardList(
+                        onStateCreated: (state) =>
+                            controller._cardListState = state,
+                        indexToScroll: controller.enableAutoScroll.value &&
+                                controller.selectedCardIndex.value != -1
+                            ? controller.selectedCardIndex.value
+                            : null,
+                        cardLeading: (index) => Icon(
+                          Icons.download_outlined,
+                          size: 24.w,
+                          color: Colors.green[700],
                         ),
+                        cardBody: (index) => Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              controller.staticCards[index],
+                              style: TextStyle(
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: 4.h),
+                            Text(
+                              '这是一个静态卡片的描述信息',
+                              style: TextStyle(fontSize: 12.sp),
+                            ),
+                          ],
+                        ),
+                        cardTrailing: (index) => Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            MyIcon(
+                              icon: Icons.download,
+                              iconColor: Colors.green[300],
+                              onPressed: () => _onDownloadCard(index),
+                            ),
+                            MyIcon(
+                              icon: Icons.copy,
+                              iconColor: Colors.purple[300],
+                              onPressed: () => _onCopyCard(index),
+                            ),
+                          ],
+                        ),
+                        itemCount: controller.staticCards.length,
+                        showScrollbar: true,
+                        cardColor: (_) => Colors.green[50]!,
+                        cardMargin: (_) => EdgeInsets.symmetric(
+                          horizontal: 2.h,
+                          vertical: 2.h,
+                        ),
+                        cardPadding: (_) => EdgeInsets.only(right: 15.w),
+                        onSwipeDelete: (index) {
+                          MyToast.show('即将删除：${controller.staticCards[index]}');
+                          controller.deleteStaticCard(index);
+                        },
+                        onCardPressed: (index) => _onCardPressed(
+                          controller.staticCards[index],
+                          false,
+                        ),
+                        onLoadMore: () =>
+                            controller.loadMoreCards(isDraggable: false),
+                        cardBorderRadius: (_) => BorderRadius.circular(8.r),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
-          Padding(
-            padding: EdgeInsets.all(16.w),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    MyButton(
-                      onPressed: () => MyToast.show(
-                          '可拖动列表项数量：${controller.draggableCards.length}'),
-                      text: '可拖动列表数量',
-                      size: 80.w,
-                    ),
-                    Obx(() => MyButton(
-                          onPressed: () {
-                            controller.showDragHandle.value =
-                                !controller.showDragHandle.value;
-                            MyToast.show(controller.showDragHandle.value
-                                ? '已显示拖拽手柄'
-                                : '已隐藏拖拽手柄');
-                          },
-                          text: controller.showDragHandle.value
-                              ? '隐藏拖拽手柄'
-                              : '显示拖拽手柄',
-                          size: 80.w,
-                        )),
-                    Row(
-                      children: [
-                        MyButton(
-                          onPressed: () => MyToast.show(
-                              '静态列表项数量：${controller.staticCards.length}'),
-                          text: '静态列表数量',
-                          size: 80.w,
-                        ),
-                        SizedBox(width: 8.w),
-                        // 添加复选框
-                        Obx(() => Checkbox(
-                              value: controller.enableAutoScroll.value,
-                              onChanged: (value) =>
-                                  controller.enableAutoScroll.value = value!,
+        ),
+        Padding(
+          padding: EdgeInsets.all(16.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  MyButton(
+                    onPressed: () => MyToast.show(
+                        '可拖动列表项数量：${controller.draggableCards.length}'),
+                    text: '可拖动列表数量',
+                    size: 80.w,
+                  ),
+                  Obx(() => MyButton(
+                        onPressed: () {
+                          controller.showDragHandle.value =
+                              !controller.showDragHandle.value;
+                          MyToast.show(controller.showDragHandle.value
+                              ? '已显示拖拽手柄'
+                              : '已隐藏拖拽手柄');
+                        },
+                        text: controller.showDragHandle.value
+                            ? '隐藏拖拽手柄'
+                            : '显示拖拽手柄',
+                        size: 80.w,
+                      )),
+                  Row(
+                    children: [
+                      MyButton(
+                        onPressed: () => MyToast.show(
+                            '静态列表项数量：${controller.staticCards.length}'),
+                        text: '静态列表数量',
+                        size: 80.w,
+                      ),
+                      SizedBox(width: 8.w),
+                      // 添加复选框
+                      Obx(() => Checkbox(
+                            value: controller.enableAutoScroll.value,
+                            onChanged: (value) =>
+                                controller.enableAutoScroll.value = value!,
+                          )),
+                      // 下拉列表
+                      SizedBox(
+                        width: 120.w,
+                        child: Obx(() => DropdownButtonFormField<int>(
+                              value: controller.selectedCardIndex.value == -1
+                                  ? null
+                                  : controller.selectedCardIndex.value,
+                              decoration: InputDecoration(
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 12.w, vertical: 8.h),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8.r),
+                                ),
+                                hintText: '跳转到...',
+                              ),
+                              items: List.generate(
+                                controller.staticCards.length,
+                                (index) => DropdownMenuItem(
+                                  value: index,
+                                  child: Text('第 ${index + 1} 项',
+                                      style: TextStyle(fontSize: 14.sp)),
+                                ),
+                              ),
+                              onChanged: controller.scrollToIndex,
                             )),
-                        // 下拉列表
-                        SizedBox(
-                          width: 120.w,
-                          child: Obx(() => DropdownButtonFormField<int>(
-                                value: controller.selectedCardIndex.value == -1
-                                    ? null
-                                    : controller.selectedCardIndex.value,
-                                decoration: InputDecoration(
-                                  contentPadding: EdgeInsets.symmetric(
-                                      horizontal: 12.w, vertical: 8.h),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8.r),
-                                  ),
-                                  hintText: '跳转到...',
-                                ),
-                                items: List.generate(
-                                  controller.staticCards.length,
-                                  (index) => DropdownMenuItem(
-                                    value: index,
-                                    child: Text('第 ${index + 1} 项',
-                                        style: TextStyle(fontSize: 14.sp)),
-                                  ),
-                                ),
-                                onChanged: controller.scrollToIndex,
-                              )),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                SizedBox(height: 16.h),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    MyButton(
-                      icon: Icons.arrow_back,
-                      text: '返回第3页',
-                      onPressed: () => Get.back(),
-                      size: 80.w,
-                    ),
-                    MyButton(
-                      icon: Icons.arrow_forward,
-                      text: '前往第5页',
-                      onPressed: () => Get.toNamed(MyRoutes.page5),
-                      size: 80.w,
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              SizedBox(height: 16.h),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  MyButton(
+                    icon: Icons.arrow_back,
+                    text: '返回第3页',
+                    onPressed: () => Get.back(),
+                    size: 80.w,
+                  ),
+                  MyButton(
+                    icon: Icons.arrow_forward,
+                    text: '前往第5页',
+                    onPressed: () => Get.toNamed(MyRoutes.page5),
+                    size: 80.w,
+                  ),
+                ],
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

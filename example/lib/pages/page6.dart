@@ -11,55 +11,50 @@ class Page6View extends GetView<Page6Controller> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('文本编辑器测试', style: TextStyle(fontSize: 18.sp)),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              padding: EdgeInsets.all(16.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildSectionTitle('基础文本编辑器'),
-                  SizedBox(height: 16.h),
-                  _buildBasicEditors(),
-                  SizedBox(height: 24.h),
-                  _buildSectionTitle('带下拉列表的编辑器'),
-                  SizedBox(height: 16.h),
-                  _buildDropdownEditors(),
-                  SizedBox(height: 24.h),
-                  _buildSectionTitle('自定义样式编辑器'),
-                  SizedBox(height: 16.h),
-                  _buildStyledEditors(),
-                ],
-              ),
-            ),
-          ),
-          Padding(
+    return Column(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
             padding: EdgeInsets.all(16.w),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                MyButton(
-                  icon: Icons.arrow_back,
-                  text: '返回第5页',
-                  onPressed: () => Get.back(),
-                  size: 80.w,
-                ),
-                MyButton(
-                  icon: Icons.arrow_forward,
-                  text: '前往第7页',
-                  onPressed: () => Get.toNamed(MyRoutes.page7),
-                  size: 80.w,
-                ),
+                _buildSectionTitle('基础文本编辑器'),
+                SizedBox(height: 16.h),
+                _buildBasicEditors(),
+                SizedBox(height: 24.h),
+                _buildSectionTitle('带下拉列表的编辑器'),
+                SizedBox(height: 16.h),
+                _buildDropdownEditors(),
+                SizedBox(height: 24.h),
+                _buildSectionTitle('自定义样式编辑器'),
+                SizedBox(height: 16.h),
+                _buildStyledEditors(),
               ],
             ),
           ),
-        ],
-      ),
+        ),
+        Padding(
+          padding: EdgeInsets.all(16.w),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              MyButton(
+                icon: Icons.arrow_back,
+                text: '返回第5页',
+                onPressed: () => Get.back(),
+                size: 80.w,
+              ),
+              MyButton(
+                icon: Icons.arrow_forward,
+                text: '前往第7页',
+                onPressed: () => Get.toNamed(MyRoutes.page7),
+                size: 80.w,
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

@@ -11,8 +11,8 @@ class PlatformInfoWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.all(16.w),
-      padding: EdgeInsets.all(12.w),
+      margin: EdgeInsets.all(8.w),
+      padding: EdgeInsets.all(6.w),
       decoration: BoxDecoration(
         color: Theme.of(context)
             .colorScheme
@@ -35,7 +35,7 @@ class PlatformInfoWidget extends StatelessWidget {
                 size: 16.sp,
                 color: Theme.of(context).colorScheme.primary,
               ),
-              SizedBox(width: 6.w),
+              SizedBox(width: 3.w),
               Text(
                 '系统信息',
                 style: TextStyle(
@@ -46,7 +46,7 @@ class PlatformInfoWidget extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: 4.h),
 
           // 当前平台信息
           _buildInfoRow(
@@ -54,7 +54,7 @@ class PlatformInfoWidget extends StatelessWidget {
             MyPlatform.platformName,
             context,
           ),
-          SizedBox(height: 4.h),
+          SizedBox(height: 2.h),
 
           _buildInfoRow(
             '类型',
@@ -67,7 +67,7 @@ class PlatformInfoWidget extends StatelessWidget {
                         : '未知',
             context,
           ),
-          SizedBox(height: 8.h),
+          SizedBox(height: 4.h),
 
           // 平台检测状态
           Text(
@@ -78,11 +78,11 @@ class PlatformInfoWidget extends StatelessWidget {
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
-          SizedBox(height: 6.h),
+          SizedBox(height: 3.h),
 
           Wrap(
-            spacing: 4.w,
-            runSpacing: 4.h,
+            spacing: 2.w,
+            runSpacing: 2.h,
             children: [
               _buildPlatformChip('Win', MyPlatform.isWindows, context),
               _buildPlatformChip('Mac', MyPlatform.isMacOS, context),
@@ -122,7 +122,7 @@ class PlatformInfoWidget extends StatelessWidget {
 
   Widget _buildPlatformChip(String name, bool isActive, BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+      padding: EdgeInsets.symmetric(horizontal: 3.w, vertical: 1.h),
       decoration: BoxDecoration(
         color: isActive
             ? Theme.of(context).colorScheme.primaryContainer

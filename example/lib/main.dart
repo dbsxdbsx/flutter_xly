@@ -89,6 +89,10 @@ void main() async {
     backInfoText: '自定义: 再按一次返回上一页',
     appBuilder: (context, child) {
       return MyScaffold(
+        appBar: AppBar(
+          title: const Text('测试应用'),
+          centerTitle: true,
+        ),
         body: Stack(
           children: [
             child!,
@@ -100,46 +104,60 @@ void main() async {
             icon: const Icon(Icons.home),
             selectedIcon: const Icon(Icons.home_filled),
             label: '第1页',
-            onTap: () => Get.toNamed(MyRoutes.page1),
+            onTap: () {
+              Get.toNamed(MyRoutes.page1);
+            },
           ),
           AdaptiveNavigationItem(
             icon: const Icon(Icons.widgets),
             selectedIcon: const Icon(Icons.widgets_outlined),
             label: '第2页',
-            onTap: () => Get.toNamed(MyRoutes.page2),
+            onTap: () {
+              Get.toNamed(MyRoutes.page2);
+            },
           ),
           AdaptiveNavigationItem(
             icon: const Icon(Icons.menu),
             selectedIcon: const Icon(Icons.menu_open),
             label: '第3页',
-            onTap: () => Get.toNamed(MyRoutes.page3),
+            onTap: () {
+              Get.toNamed(MyRoutes.page3);
+            },
           ),
           AdaptiveNavigationItem(
             icon: const Icon(Icons.view_list),
             selectedIcon: const Icon(Icons.list),
             label: '第4页',
-            onTap: () => Get.toNamed(MyRoutes.page4),
+            onTap: () {
+              Get.toNamed(MyRoutes.page4);
+            },
           ),
           AdaptiveNavigationItem(
             icon: const Icon(Icons.link),
             selectedIcon: const Icon(Icons.link_outlined),
             label: 'URL启动器',
-            onTap: () => Get.toNamed(MyRoutes.page5),
+            onTap: () {
+              Get.toNamed(MyRoutes.page5);
+            },
           ),
           AdaptiveNavigationItem(
             icon: const Icon(Icons.edit),
             selectedIcon: const Icon(Icons.edit_outlined),
             label: '文本编辑器',
-            onTap: () => Get.toNamed(MyRoutes.page6),
+            onTap: () {
+              Get.toNamed(MyRoutes.page6);
+            },
           ),
           AdaptiveNavigationItem(
             icon: const Icon(Icons.tune),
             selectedIcon: const Icon(Icons.tune_outlined),
             label: 'SpinBox',
-            onTap: () => Get.toNamed(MyRoutes.page7),
+            onTap: () {
+              Get.toNamed(MyRoutes.page7);
+            },
           ),
         ],
-        sidebarTrailing: const Expanded(
+        trailing: const Expanded(
           child: Align(
             alignment: Alignment.bottomCenter,
             child: PlatformInfoWidget(),
