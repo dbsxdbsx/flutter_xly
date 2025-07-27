@@ -12,6 +12,7 @@ import 'pages/page5.dart';
 import 'pages/page6.dart';
 import 'pages/page7.dart';
 import 'pages/page8.dart';
+import 'pages/page9.dart';
 import 'services/example_service.dart';
 import 'widgets/float_bar_navigation.dart';
 import 'widgets/platform_info_widget.dart';
@@ -23,8 +24,6 @@ void main() async {
     appName: "示例App",
     setTitleBarHidden: false,
     designSize: const Size(900, 700),
-    enableTray: true,
-    trayTooltip: "XLY 示例应用",
     services: [
       MyService<ExampleService>(
         service: () => ExampleService(),
@@ -40,7 +39,8 @@ void main() async {
       ),
       MyService<MyTray>(
         service: () => MyTray(
-          iconPath: "assets/icons/tray.ico",
+          // iconPath: "assets/icons/tray.ico",
+          tooltip: "XLY示例应用的托盘tooltip",
           menuItems: [
             MyTrayMenuItem(
               label: '恢复显示',
@@ -96,6 +96,11 @@ void main() async {
         page: const Page8View(),
         controller: () => Page8Controller(),
       ),
+      MyRoute<Page9Controller>(
+        path: MyRoutes.page9,
+        page: const Page9View(),
+        controller: () => Page9Controller(),
+      ),
     ],
     splash: const MySplash(
       nextRoute: MyRoutes.page1,
@@ -122,6 +127,8 @@ void main() async {
         appBar: AppBar(
           title: const Text('测试应用'),
           centerTitle: true,
+          backgroundColor: Colors.grey.withValues(alpha: 0.3),
+          elevation: 0,
         ),
         body: Stack(
           children: [
@@ -131,33 +138,33 @@ void main() async {
         ),
         drawer: [
           AdaptiveNavigationItem(
-            icon: const Icon(Icons.home),
-            selectedIcon: const Icon(Icons.home_filled),
-            label: '第1页',
+            icon: const Icon(Icons.dashboard_outlined),
+            selectedIcon: const Icon(Icons.dashboard),
+            label: '组件展示',
             onTap: () {
               Get.toNamed(MyRoutes.page1);
             },
           ),
           AdaptiveNavigationItem(
-            icon: const Icon(Icons.widgets),
-            selectedIcon: const Icon(Icons.widgets_outlined),
-            label: '第2页',
+            icon: const Icon(Icons.style_outlined),
+            selectedIcon: const Icon(Icons.style),
+            label: '样式测试',
             onTap: () {
               Get.toNamed(MyRoutes.page2);
             },
           ),
           AdaptiveNavigationItem(
-            icon: const Icon(Icons.menu),
-            selectedIcon: const Icon(Icons.menu_open),
-            label: '第3页',
+            icon: const Icon(Icons.layers_outlined),
+            selectedIcon: const Icon(Icons.layers),
+            label: '弹窗对话',
             onTap: () {
               Get.toNamed(MyRoutes.page3);
             },
           ),
           AdaptiveNavigationItem(
-            icon: const Icon(Icons.view_list),
-            selectedIcon: const Icon(Icons.list),
-            label: '第4页',
+            icon: const Icon(Icons.view_list_outlined),
+            selectedIcon: const Icon(Icons.view_list),
+            label: '列表管理',
             onTap: () {
               Get.toNamed(MyRoutes.page4);
             },
@@ -187,20 +194,23 @@ void main() async {
             },
           ),
           AdaptiveNavigationItem(
-            icon: const Icon(Icons.system_update_alt),
-            selectedIcon: const Icon(Icons.system_update_alt_outlined),
-            label: '托盘功能',
+            icon: const Icon(Icons.notifications),
+            selectedIcon: const Icon(Icons.notifications_active),
+            label: '通知功能测试',
             onTap: () {
               Get.toNamed(MyRoutes.page8);
             },
           ),
-        ],
-        trailing: const Expanded(
-          child: Align(
-            alignment: Alignment.bottomCenter,
-            child: PlatformInfoWidget(),
+          AdaptiveNavigationItem(
+            icon: const Icon(Icons.system_update_alt),
+            selectedIcon: const Icon(Icons.system_update_alt_outlined),
+            label: '托盘功能测试',
+            onTap: () {
+              Get.toNamed(MyRoutes.page9);
+            },
           ),
-        ),
+        ],
+        trailing: const PlatformInfoWidget(),
       );
     },
   );
@@ -216,4 +226,5 @@ class MyRoutes {
   static const String page6 = '/page6';
   static const String page7 = '/page7';
   static const String page8 = '/page8';
+  static const String page9 = '/page9';
 }

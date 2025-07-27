@@ -1,3 +1,27 @@
+## 0.14.1 - 2025-07-27
+
+### Breaking Changes
+- **重要架构清理**：完全移除 `MyApp.initialize` 中的托盘相关参数：
+  - 移除 `enableTray` 参数
+  - 移除 `trayIcon` 参数
+  - 移除 `trayTooltip` 参数
+  - 删除 `MyTrayWrapper` 组件文件
+- **唯一初始化方式**：现在托盘功能完全通过 `MyService<MyTray>` 管理，避免架构重复和参数冲突
+
+### Enhanced
+- **智能默认图标**：`MyTray` 构造函数的 `iconPath` 参数现在可选，为空时自动使用各平台的默认应用图标：
+  - Windows: `windows/runner/resources/app_icon.ico`
+  - macOS: `macos/Runner/Assets.xcassets/AppIcon.appiconset/app-icon-512@2x.png`
+  - Linux: `snap/gui/app_icon.png`
+- **早期错误检测**：当默认图标文件不存在时，应用将无法启动并显示详细错误信息和解决方案
+- **API简化**：`MyTray.setIcon()` 方法的参数现在可选，为空时使用默认应用图标
+- 更新示例应用，移除 `MyApp.initialize` 中的托盘参数，展示新的初始化方式
+
+### Documentation
+- 更新 `.doc/my_tray_design.md`，详细说明架构清理和智能默认图标功能
+- 更新 README.md，新增 MyTray 使用示例和特性说明
+- 强调唯一初始化方式的设计优势：避免配置冲突、架构清晰、职责单一
+
 ## 0.14.0 - 2025-07-27
 
 ### Added

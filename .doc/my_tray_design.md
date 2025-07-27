@@ -118,6 +118,15 @@ MyTray (GetxService)  ← 改为继承GetxService
 - ~~`MyTrayIconConfig`: 图标配置选项~~（已移除，简化设计）
 - ~~`MyTrayWrapper`: 托盘包装器组件~~（已移除，不再需要）
 
+### 架构清理说明
+**重要变更**：已完全移除 `MyApp.initialize` 中的托盘相关参数：
+- ~~`enableTray`~~（已移除）
+- ~~`trayIcon`~~（已移除）
+- ~~`trayTooltip`~~（已移除）
+- ~~`MyTrayWrapper`~~（已删除文件）
+
+**唯一初始化方式**：现在托盘功能完全通过 `MyService<MyTray>` 管理，避免了架构重复和参数冲突。
+
 ### 枚举定义
 ```dart
 enum MyTrayNotificationType {
@@ -277,21 +286,31 @@ myTray.setIcon("assets/tray_busy.png");     // 忙碌状态
 
 ### 核心变更
 1. **继承GetxService**: MyTray改为继承GetxService而非GetxController，确保全局生命周期管理
-2. **简化构造函数**: 只保留iconPath（必需）、tooltip（可选）、menuItems（可选）三个参数
+2. **简化构造函数**: 只保留iconPath（可选）、tooltip（可选）、menuItems（可选）三个参数
 3. **移除复杂配置**: 删除MyTrayIconConfig和MyTrayWrapper，简化API设计
 4. **职责分离**: MyApp.initialize只负责服务注册，不涉及托盘具体逻辑
+5. **架构清理**: 完全移除MyApp.initialize中的enableTray、trayIcon、trayTooltip参数，避免重复配置
 
 ### 设计优势
 - **完全可选**: 不需要托盘时完全不涉及，零影响
-- **简洁强制**: 只有iconPath是必需的，其他都有合理默认值
+- **架构清晰**: 唯一初始化方式，避免参数重复和配置冲突
+- **简洁易用**: iconPath可选（自动使用默认图标），其他参数都有合理默认值
 - **使用体验**: 一行注册，MyTray.to全功能访问
 - **生命周期**: 作为GetxService自动管理，永不被意外释放
 
 ### 最终API
 ```dart
-// 初始化
+// 初始化（唯一方式）
 MyService<MyTray>(
-  service: () => MyTray(iconPath: "assets/icon.png"),
+  service: () => MyTray(
+    // iconPath: "assets/icon.png",  // 可选：为空时自动使用默认应用图标
+    tooltip: "我的应用",              // 可选：悬停提示
+    menuItems: [                    // 可选：右键菜单
+      MyTrayMenuItem(label: '显示', onTap: () => MyTray.to.pop()),
+      MyTrayMenuItem.separator(),
+      MyTrayMenuItem(label: '退出', onTap: () => exit(0)),
+    ],
+  ),
 );
 
 // 使用
@@ -300,5 +319,11 @@ MyTray.to.pop();
 MyTray.to.notify("标题", "消息");
 MyTray.to.setIcon("new_icon.png");
 ```
+
+**架构优势**：
+- ✅ 唯一初始化方式，避免配置冲突
+- ✅ 完全可选，不需要时零影响
+- ✅ 参数简洁，智能默认值
+- ✅ 架构清晰，职责单一
 
 这个设计达到了最佳平衡：简洁易用、功能强大、架构清晰、生态一致。

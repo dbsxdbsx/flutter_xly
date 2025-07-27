@@ -138,12 +138,10 @@ class _MyScaffoldState extends State<MyScaffold> {
           // 中等屏幕：收缩的侧边栏（仅图标）
           Breakpoints.medium: SlotLayout.from(
             key: const Key('primaryNavigation'),
-            builder: (_) => AdaptiveScaffold.standardNavigationRail(
+            builder: (_) => _CustomCompactNavigationRail(
               selectedIndex: _selectedIndex,
               onDestinationSelected: handleDestinationSelected,
-              destinations: destinations
-                  .map((dest) => AdaptiveScaffold.toRailDestination(dest))
-                  .toList(),
+              destinations: destinations,
             ),
           ),
           // 大屏幕：展开的侧边栏（图标+文字+额外内容）
@@ -334,17 +332,17 @@ class _CustomExtendedNavigationRail extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 导航项列表
+          // 导航项列表 - 使用更大的垂直间距
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
               itemCount: destinations.length,
               itemBuilder: (context, index) {
                 final destination = destinations[index];
                 final isSelected = index == selectedIndex;
 
                 return Container(
-                  margin: const EdgeInsets.symmetric(vertical: 2),
+                  margin: const EdgeInsets.symmetric(vertical: 4), // 增加垂直间距
                   decoration: BoxDecoration(
                     color: isSelected
                         ? colorScheme.secondaryContainer
@@ -359,7 +357,7 @@ class _CustomExtendedNavigationRail extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16,
-                          vertical: 12,
+                          vertical: 16, // 增加垂直内边距
                         ),
                         child: Row(
                           children: [
@@ -397,8 +395,89 @@ class _CustomExtendedNavigationRail extends StatelessWidget {
               },
             ),
           ),
-          // 底部额外内容
-          if (trailing != null) trailing!,
+          // 底部额外内容 - 添加适当的内边距
+          if (trailing != null)
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: trailing!,
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 自定义的紧凑NavigationRail，用于中等屏幕（min模式）
+/// 只显示图标，菜单项从顶部开始排列，不预留汉堡菜单按钮空间
+class _CustomCompactNavigationRail extends StatelessWidget {
+  const _CustomCompactNavigationRail({
+    required this.selectedIndex,
+    required this.onDestinationSelected,
+    required this.destinations,
+  });
+
+  final int selectedIndex;
+  final Function(int) onDestinationSelected;
+  final List<NavigationDestination> destinations;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Container(
+      width: 72, // 标准NavigationRail的紧凑宽度
+      color: theme.navigationRailTheme.backgroundColor ?? colorScheme.surface,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // 导航项列表 - 添加顶部padding以匹配标准NavigationRail的行为
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.only(
+                  top: 8, bottom: 12), // 减少顶部padding，让菜单项更靠近顶部
+              itemCount: destinations.length,
+              itemBuilder: (context, index) {
+                final destination = destinations[index];
+                final isSelected = index == selectedIndex;
+
+                return Container(
+                  margin: const EdgeInsets.symmetric(vertical: 4),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: () => onDestinationSelected(index),
+                      child: Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? colorScheme.secondaryContainer
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Center(
+                          child: IconTheme(
+                            data: IconThemeData(
+                              color: isSelected
+                                  ? colorScheme.onSecondaryContainer
+                                  : colorScheme.onSurfaceVariant,
+                              size: 24,
+                            ),
+                            child:
+                                isSelected && destination.selectedIcon != null
+                                    ? destination.selectedIcon!
+                                    : destination.icon,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
         ],
       ),
     );

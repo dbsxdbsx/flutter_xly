@@ -9,7 +9,9 @@
 ///
 /// ## 设计理念
 /// - **完全可选**: 不需要托盘功能时完全不涉及
-/// - **简洁强制**: 只有iconPath是必需的，其他都可选
+/// - **唯一初始化**: 只通过MyService<MyTray>初始化，避免配置冲突
+/// - **智能默认**: iconPath可选，为空时自动查找默认应用图标
+/// - **早期检测**: 图标缺失时提供详细错误信息和解决方案
 /// - **全局服务**: 继承GetxService，享受全局生命周期管理
 /// - **统一访问**: 通过MyTray.to进行所有操作
 ///
@@ -19,7 +21,11 @@
 /// void main() async {
 ///   await MyApp.initialize(
 ///     services: [
-///       // 最简使用 - 只需图标路径
+///       // 最简使用 - 自动使用默认应用图标
+///       MyService<MyTray>(
+///         service: () => MyTray(),
+///       ),
+///       // 或指定自定义图标
 ///       MyService<MyTray>(
 ///         service: () => MyTray(iconPath: "assets/icon.png"),
 ///       ),
@@ -37,7 +43,7 @@
 /// ```dart
 /// MyService<MyTray>(
 ///   service: () => MyTray(
-///     iconPath: "assets/icon.png",        // 必需：托盘图标路径
+///     iconPath: "assets/icon.png",        // 可选：托盘图标路径，为空时使用默认应用图标
 ///     tooltip: "My App",                  // 可选：悬停提示
 ///     menuItems: [                        // 可选：右键菜单
 ///       MyTrayMenuItem(
@@ -53,6 +59,20 @@
 ///   ),
 /// );
 /// ```
+///
+/// ## 默认图标行为
+/// 当 `iconPath` 为空时，MyTray 会自动使用各平台的标准应用图标：
+///
+/// - **Windows**: `windows/runner/resources/app_icon.ico`
+/// - **macOS**: `macos/Runner/Assets.xcassets/AppIcon.appiconset/app-icon-512@2x.png`
+/// - **Linux**: `snap/gui/app_icon.png`
+///
+/// **重要**：如果对应平台的默认图标文件不存在，应用将**无法启动**并显示详细错误信息。
+///
+/// **解决方案**：
+/// 1. 【推荐】使用 `dart run xly:generate icon="source.png"` 自动生成所有平台图标
+/// 2. 手动放置图标文件到对应路径
+/// 3. 在构造函数中明确指定 `iconPath` 参数
 ///
 /// ## 运行时操作
 /// ```dart
@@ -85,5 +105,3 @@ library;
 
 export 'my_tray.dart';
 export 'tray_enums.dart';
-export 'tray_wrapper.dart';
-export 'windows_tray_api.dart';

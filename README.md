@@ -80,6 +80,7 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 - 提供完整的托盘图标管理、窗口最小化到托盘等功能
 - 遵循"无隐式消息"设计原则，只有用户明确操作时才显示反馈
 - 仅在桌面平台（Windows/macOS/Linux）可用
+- **智能默认图标**：`iconPath` 参数现在可选，为空时自动使用各平台的默认应用图标，图标缺失时提供详细错误信息和解决方案
 
 ### MyNotify 系统通知组件
 - 系统通知功能使用指南：[.doc/my_notify_usage_guide.md](.doc/my_notify_usage_guide.md)
@@ -358,6 +359,45 @@ Toast 特性：
 - 支持异步任务加载提示
 - 支持自动关闭和手动关闭
 - 支持动画效果和自定义动画时长
+
+### 使用系统托盘 (MyTray)
+
+MyTray 提供跨平台的系统托盘功能：
+
+```dart
+// 1. 在 main.dart 中注册服务（唯一初始化方式）
+void main() async {
+  await MyApp.initialize(
+    services: [
+      MyService<MyTray>(
+        service: () => MyTray(
+          // iconPath: "assets/icon.png",  // 可选：为空时自动使用默认应用图标
+          tooltip: "我的应用",              // 可选：悬停提示
+          menuItems: [                    // 可选：右键菜单
+            MyTrayMenuItem(label: '显示', onTap: () => MyTray.to.pop()),
+            MyTrayMenuItem.separator(),
+            MyTrayMenuItem(label: '退出', onTap: () => exit(0)),
+          ],
+        ),
+        permanent: true,
+      ),
+    ],
+  );
+}
+
+// 2. 使用托盘功能
+final myTray = MyTray.to;
+await myTray.notify("标题", "消息内容");
+await myTray.setIcon("new_icon.png");  // 可选参数，为空时使用默认图标
+await myTray.pop();  // 恢复窗口显示
+```
+
+MyTray 特性：
+- **唯一初始化方式**：只通过 `MyService<MyTray>` 初始化，避免配置冲突
+- **智能默认图标**：`iconPath` 可选，为空时自动查找默认应用图标
+- **早期检测**：图标缺失时提供详细错误信息和解决方案
+- **完全可选**：不需要托盘功能时完全不涉及，零影响
+- **架构清晰**：职责单一，生态一致
 
 ### 使用系统通知 (MyNotify)
 
