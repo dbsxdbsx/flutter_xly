@@ -1,3 +1,31 @@
+## 0.14.0 - 2025-07-27
+
+### Added
+- 新增系统托盘管理组件 `MyTray`，支持托盘图标、右键菜单、窗口最小化到托盘等功能
+- 新增系统通知管理组件 `MyNotify`，基于 `flutter_local_notifications` 封装的跨平台通知管理器
+- 新增托盘设计文档 (.doc/my_tray_design.md)，详细说明托盘功能的设计理念和使用方法
+- 新增通知使用指南 (.doc/my_notify_usage_guide.md)，提供完整的系统通知功能说明
+- 新增示例页面8 (page8.dart)，展示托盘和通知功能的完整使用示例
+- 新增托盘图标资源 (example/assets/icons/tray.ico)，为示例应用提供托盘图标
+
+### Enhanced
+- 完善 `MyApp` 类，新增对托盘和通知服务的支持
+- 优化示例应用的服务注册，展示托盘和通知功能的集成方式
+- 改进README文档，新增托盘和通知功能的详细介绍和使用示例
+- 更新功能列表，新增系统托盘管理和系统通知管理功能
+- 完善内置依赖包列表，新增 `tray_manager`、`flutter_local_notifications`、`timezone` 等依赖
+
+### Dependencies
+- 新增 `tray_manager: ^0.2.3` - 系统托盘管理
+- 新增 `flutter_local_notifications: ^19.4.0` - 本地通知
+- 新增 `timezone: ^0.10.0` - 时区处理
+
+### Documentation
+- MyTray 组件遵循"无隐式消息"设计原则，只有用户明确操作时才显示反馈
+- MyNotify 与 MyTray 职责分离：MyTray 专注托盘管理，MyNotify 专注系统通知
+- 托盘功能仅在桌面平台（Windows/macOS/Linux）可用
+- 通知功能支持所有平台：Android、iOS、macOS、Windows、Linux
+
 ## 0.13.1 - 2025-07-15
 
 ### Added

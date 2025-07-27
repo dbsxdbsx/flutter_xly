@@ -13,6 +13,7 @@ import 'package:xly/src/platform.dart';
 import 'package:xly/src/smart_dock/smart_dock_manager.dart';
 import 'package:xly/src/splash.dart';
 import 'package:xly/src/toast/toast.dart';
+import 'package:xly/src/tray/tray_wrapper.dart';
 import 'package:xly/src/window_enums.dart';
 
 class VoidCallbackIntent extends Intent {
@@ -124,6 +125,9 @@ class MyApp extends StatelessWidget {
   final GlobalKey<NavigatorState>? navigatorKey;
   final bool enableDoubleClickFullScreen;
   final bool draggable;
+  final bool enableTray;
+  final String? trayIcon;
+  final String? trayTooltip;
 
   const MyApp._({
     required this.designSize,
@@ -145,6 +149,9 @@ class MyApp extends StatelessWidget {
     this.navigatorKey,
     this.enableDoubleClickFullScreen = false,
     this.draggable = true,
+    this.enableTray = false,
+    this.trayIcon,
+    this.trayTooltip,
   });
 
   static Future<void> initialize({
@@ -196,6 +203,11 @@ class MyApp extends StatelessWidget {
     String backInfoText = '再按一次返回上一页',
     Duration exitGapTime = const Duration(seconds: 2),
     bool useOKToast = true,
+
+    // 托盘功能配置
+    bool enableTray = false,
+    String? trayIcon,
+    String? trayTooltip,
 
     // 初始化配置
     bool ensureScreenSize = true,
@@ -261,6 +273,9 @@ class MyApp extends StatelessWidget {
       navigatorKey: navigatorKey,
       enableDoubleClickFullScreen: doubleClickToFullScreen,
       draggable: draggable,
+      enableTray: enableTray,
+      trayIcon: trayIcon,
+      trayTooltip: trayTooltip,
     ));
   }
 
@@ -363,7 +378,21 @@ class MyApp extends StatelessWidget {
       locale: const Locale('zh', 'CN'),
     );
 
-    return useToast ? MyToast(child: app) : app;
+    // 包装 Toast
+    if (useToast) {
+      app = MyToast(child: app);
+    }
+
+    // 包装 Tray（如果启用）
+    if (enableTray) {
+      app = MyTrayWrapper(
+        defaultIcon: trayIcon,
+        defaultTooltip: trayTooltip,
+        child: app,
+      );
+    }
+
+    return app;
   }
 
   ThemeData _buildTheme() {

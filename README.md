@@ -34,6 +34,8 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 26. 可拖拽浮动操作栏(`MyFloatBar`)(一个可拖动、可停靠、可展开的浮动操作栏)
 27. 自适应侧边栏导航(`MyScaffold`)(根据屏幕尺寸自动切换抽屉/侧边栏/底部导航)
 28. 窗口比例调整控制(支持动态启用/禁用窗口固定比例调整功能)
+29. 系统托盘管理(`MyTray`)(支持托盘图标、右键菜单、窗口最小化到托盘等功能)
+30. 系统通知管理(`MyNotify`)(跨平台系统通知，支持即时通知、定时通知、多种通知类型)
 
 ## 内置依赖包
 
@@ -58,9 +60,11 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 - `path: ^1.8.0` - 路径操作
 - `xml: ^6.5.0` - XML解析
 - `icons_launcher: ^3.0.0` - 图标生成
+- `tray_manager: ^0.2.3` - 系统托盘管理
+- `flutter_local_notifications: ^19.4.0` - 本地通知
+- `timezone: ^0.10.0` - 时区处理
 
 ## 待办事项（TODOs）
-- add tray feature?tray pop msg?
 - the MySacffold is issued, make it a ppl like sidebar widget?
 - dialogsheet, into MyDialog or MyMenu?
 - floatBar大小不随host app窗口大小随动，stateManagement测试
@@ -71,6 +75,19 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 
 ## 注意事项（Notes）
 
+### MyTray 组件设计
+- 系统托盘功能组件设计文档：[.doc/my_tray_design.md](.doc/my_tray_design.md)
+- 提供完整的托盘图标管理、窗口最小化到托盘等功能
+- 遵循"无隐式消息"设计原则，只有用户明确操作时才显示反馈
+- 仅在桌面平台（Windows/macOS/Linux）可用
+
+### MyNotify 系统通知组件
+- 系统通知功能使用指南：[.doc/my_notify_usage_guide.md](.doc/my_notify_usage_guide.md)
+- 基于 `flutter_local_notifications` 包封装的跨平台通知管理器
+- 支持即时通知和定时通知，多种通知类型（信息、警告、错误、成功）
+- 自动处理权限管理和状态监控
+- 支持所有平台：Android、iOS、macOS、Windows、Linux
+- 与 MyTray 职责分离：MyTray 专注托盘管理，MyNotify 专注系统通知
 
 ### 初始化顺序与配置覆盖
 `MyApp.initialize`的配置应用顺序遵循以下核心原则：
@@ -341,6 +358,60 @@ Toast 特性：
 - 支持异步任务加载提示
 - 支持自动关闭和手动关闭
 - 支持动画效果和自定义动画时长
+
+### 使用系统通知 (MyNotify)
+
+MyNotify 提供跨平台的系统通知功能：
+
+```dart
+// 1. 在 main.dart 中注册服务
+void main() async {
+  await MyApp.initialize(
+    services: [
+      MyService<MyNotify>(
+        service: () => MyNotify(),
+        permanent: true,
+      ),
+    ],
+  );
+}
+
+// 2. 显示基础通知
+final myNotify = MyNotify.to;
+await myNotify.show("标题", "消息内容");
+
+// 3. 显示不同类型的通知
+await myNotify.show("信息", "这是一条信息通知", type: MyNotifyType.info);
+await myNotify.show("警告", "这是一条警告通知", type: MyNotifyType.warning);
+await myNotify.show("错误", "这是一条错误通知", type: MyNotifyType.error);
+await myNotify.show("成功", "这是一条成功通知", type: MyNotifyType.success);
+
+// 4. 定时通知
+final scheduledTime = DateTime.now().add(Duration(seconds: 5));
+await myNotify.schedule(
+  "定时通知",
+  "这是一条5秒后显示的通知",
+  scheduledTime,
+  type: MyNotifyType.info,
+);
+
+// 5. 权限管理
+bool granted = await myNotify.requestPermissions();
+bool hasPermission = myNotify.permissionGranted;
+bool isInitialized = myNotify.isInitialized;
+
+// 6. 通知管理
+await myNotify.cancel(0);        // 取消指定ID的通知
+await myNotify.cancelAll();      // 取消所有通知
+```
+
+MyNotify 特性：
+- **跨平台支持**：Android、iOS、macOS、Windows、Linux
+- **多种通知类型**：信息、警告、错误、成功，不同优先级和样式
+- **定时通知**：支持指定时间显示通知
+- **权限管理**：自动处理通知权限请求和状态监控
+- **通知管理**：支持取消单个或所有通知，获取待处理和活跃通知
+- **职责分离**：与 MyTray 分离，专注系统通知功能
 
 ### 使用自定义按钮
 ```dart

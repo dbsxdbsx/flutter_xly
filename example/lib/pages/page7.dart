@@ -43,13 +43,20 @@ class Page7 extends StatelessWidget {
           Padding(
             padding: EdgeInsets.all(16.w),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 MyButton(
                   icon: Icons.arrow_back,
                   text: '返回第6页',
                   onPressed: () => Get.back(),
                   size: 80.w,
+                ),
+                MyButton(
+                  icon: Icons.system_update_alt,
+                  text: '托盘功能',
+                  onPressed: () => Get.toNamed('/page8'),
+                  size: 80.w,
+                  backgroundColor: Colors.teal,
                 ),
               ],
             ),

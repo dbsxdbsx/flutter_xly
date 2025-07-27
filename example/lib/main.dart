@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:xly/xly.dart';
@@ -9,6 +11,7 @@ import 'pages/page4.dart';
 import 'pages/page5.dart';
 import 'pages/page6.dart';
 import 'pages/page7.dart';
+import 'pages/page8.dart';
 import 'services/example_service.dart';
 import 'widgets/float_bar_navigation.dart';
 import 'widgets/platform_info_widget.dart';
@@ -20,6 +23,8 @@ void main() async {
     appName: "示例App",
     setTitleBarHidden: false,
     designSize: const Size(900, 700),
+    enableTray: true,
+    trayTooltip: "XLY 示例应用",
     services: [
       MyService<ExampleService>(
         service: () => ExampleService(),
@@ -28,6 +33,26 @@ void main() async {
       MyService<FloatBarNavController>(
         service: () => FloatBarNavController(),
         permanent: true,
+      ),
+      MyService<MyNotify>(
+        service: () => MyNotify(),
+        permanent: true,
+      ),
+      MyService<MyTray>(
+        service: () => MyTray(
+          iconPath: "assets/icons/tray.ico",
+          menuItems: [
+            MyTrayMenuItem(
+              label: '恢复显示',
+              onTap: () => MyTray.to.pop(),
+            ),
+            const MyTrayMenuItem.separator(),
+            MyTrayMenuItem(
+              label: '退出应用',
+              onTap: () => exit(0),
+            ),
+          ],
+        ),
       ),
     ],
     routes: [
@@ -65,6 +90,11 @@ void main() async {
         path: MyRoutes.page7,
         page: const Page7(),
         controller: () => Page7Controller(),
+      ),
+      MyRoute<Page8Controller>(
+        path: MyRoutes.page8,
+        page: const Page8View(),
+        controller: () => Page8Controller(),
       ),
     ],
     splash: const MySplash(
@@ -156,6 +186,14 @@ void main() async {
               Get.toNamed(MyRoutes.page7);
             },
           ),
+          AdaptiveNavigationItem(
+            icon: const Icon(Icons.system_update_alt),
+            selectedIcon: const Icon(Icons.system_update_alt_outlined),
+            label: '托盘功能',
+            onTap: () {
+              Get.toNamed(MyRoutes.page8);
+            },
+          ),
         ],
         trailing: const Expanded(
           child: Align(
@@ -177,4 +215,5 @@ class MyRoutes {
   static const String page5 = '/page5';
   static const String page6 = '/page6';
   static const String page7 = '/page7';
+  static const String page8 = '/page8';
 }

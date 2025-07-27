@@ -1,6 +1,6 @@
 name: xly
 description: "A Test Flutter Package， DO NOT USE IT at present"
-version: 0.13.1
+version: 0.14.0
 
 environment:
   sdk: ^3.5.3
@@ -19,6 +19,11 @@ dependencies:
   screen_retriever: ^0.2.0
   lottie: ^3.1.2
   get_storage: ^2.1.1
+  ffi: ^2.1.3
+  win32: ^5.9.0
+  tray_manager: ^0.2.3
+  flutter_local_notifications: ^19.4.0
+  timezone: ^0.10.0
 
   # no need reexport
   flutter_adaptive_scaffold: ^0.1.7+1
@@ -29,7 +34,7 @@ dependencies:
   icons_launcher: ^3.0.0
   image: ^4.5.3
   args: ^2.6.0
-  ffi: ^2.1.0
+
 
   path_provider: ^2.1.2
   permission_handler: ^11.3.0

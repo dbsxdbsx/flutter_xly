@@ -28,3 +28,5 @@ export 'src/auto_start.dart';
 export 'src/platform.dart' show MyPlatform;
 export 'src/scaffold.dart';
 export 'src/smart_dock/smart_dock.dart';
+export 'src/tray/tray.dart';
+export 'src/notify/lib.dart';

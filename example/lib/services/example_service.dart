@@ -71,4 +71,9 @@ class ExampleService extends GetxService {
 
     await _storage.write('aspect_ratio', enabled);
   }
+
+  /// 退出应用
+  Future<void> exitApp() async {
+    await MyApp.exit();
+  }
 }
