@@ -24,6 +24,24 @@ void main() async {
     appName: "示例App",
     setTitleBarHidden: false,
     designSize: const Size(900, 700),
+
+    // 使用新的简化托盘配置方式
+    tray: MyTray(
+      // iconPath: "assets/icons/tray.ico",  // 可选：为空时自动使用默认应用图标
+      tooltip: "XLY示例应用的托盘tooltip",
+      menuItems: [
+        MyTrayMenuItem(
+          label: '恢复显示',
+          onTap: () => MyTray.to.pop(),
+        ),
+        const MyTrayMenuItem.separator(),
+        MyTrayMenuItem(
+          label: '退出应用',
+          onTap: () => exit(0),
+        ),
+      ],
+    ),
+
     services: [
       MyService<ExampleService>(
         service: () => ExampleService(),
@@ -36,23 +54,6 @@ void main() async {
       MyService<MyNotify>(
         service: () => MyNotify(),
         permanent: true,
-      ),
-      MyService<MyTray>(
-        service: () => MyTray(
-          // iconPath: "assets/icons/tray.ico",
-          tooltip: "XLY示例应用的托盘tooltip",
-          menuItems: [
-            MyTrayMenuItem(
-              label: '恢复显示',
-              onTap: () => MyTray.to.pop(),
-            ),
-            const MyTrayMenuItem.separator(),
-            MyTrayMenuItem(
-              label: '退出应用',
-              onTap: () => exit(0),
-            ),
-          ],
-        ),
       ),
     ],
     routes: [

@@ -66,8 +66,6 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 
 ## 待办事项（TODOs）
 
-- mYSCAFFOLD USE screenutils number
-- tray, use one parameter in ` MyApp.initialize` better than service?
 - tray and smart dock
 - compact style of ` MyRoute<Page7Controller>(`
 - add My prefix for `AdaptiveNavigationItem`?
@@ -379,24 +377,25 @@ Toast 特性：
 
 MyTray 提供跨平台的系统托盘功能：
 
+#### 推荐方式：使用tray参数（简化配置）
+
 ```dart
-// 1. 在 main.dart 中注册服务（唯一初始化方式）
+// 1. 在 main.dart 中使用tray参数（推荐方式）
 void main() async {
   await MyApp.initialize(
-    services: [
-      MyService<MyTray>(
-        service: () => MyTray(
-          // iconPath: "assets/icon.png",  // 可选：为空时自动使用默认应用图标
-          tooltip: "我的应用",              // 可选：悬停提示
-          menuItems: [                    // 可选：右键菜单
-            MyTrayMenuItem(label: '显示', onTap: () => MyTray.to.pop()),
-            MyTrayMenuItem.separator(),
-            MyTrayMenuItem(label: '退出', onTap: () => exit(0)),
-          ],
-        ),
-        permanent: true,
-      ),
-    ],
+    designSize: const Size(800, 600),
+    routes: [...],
+
+    // 简化的托盘配置
+    tray: MyTray(
+      // iconPath: "assets/icon.png",  // 可选：为空时自动使用默认应用图标
+      tooltip: "我的应用",              // 可选：悬停提示
+      menuItems: [                    // 可选：右键菜单
+        MyTrayMenuItem(label: '显示', onTap: () => MyTray.to.pop()),
+        MyTrayMenuItem.separator(),
+        MyTrayMenuItem(label: '退出', onTap: () => exit(0)),
+      ],
+    ),
   );
 }
 
@@ -407,12 +406,37 @@ await myTray.setIcon("new_icon.png");  // 可选参数，为空时使用默认�
 await myTray.pop();  // 恢复窗口显示
 ```
 
+#### 传统方式：使用services参数（向后兼容）
+
+```dart
+// 传统方式仍然支持，用于复杂场景或向后兼容
+void main() async {
+  await MyApp.initialize(
+    designSize: const Size(800, 600),
+    routes: [...],
+
+    services: [
+      MyService<MyTray>(
+        service: () => MyTray(
+          iconPath: "assets/icon.png",
+          tooltip: "我的应用",
+          menuItems: [...],
+        ),
+        permanent: true,
+      ),
+      // 其他服务...
+    ],
+  );
+}
+```
+
 MyTray 特性：
-- **唯一初始化方式**：只通过 `MyService<MyTray>` 初始化，避免配置冲突
+- **简化配置**：推荐使用 `tray` 参数，无需了解GetxService概念
+- **向后兼容**：传统的 `MyService<MyTray>` 方式仍然支持
 - **智能默认图标**：`iconPath` 可选，为空时自动查找默认应用图标
 - **早期检测**：图标缺失时提供详细错误信息和解决方案
 - **完全可选**：不需要托盘功能时完全不涉及，零影响
-- **架构清晰**：职责单一，生态一致
+- **配置优先级**：如果同时提供 `tray` 参数和 `services` 中的MyTray，`tray` 参数优先
 
 ### 使用系统通知 (MyNotify)
 

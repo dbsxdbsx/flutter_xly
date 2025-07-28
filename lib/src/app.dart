@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -13,6 +14,7 @@ import 'package:xly/src/platform.dart';
 import 'package:xly/src/smart_dock/smart_dock_manager.dart';
 import 'package:xly/src/splash.dart';
 import 'package:xly/src/toast/toast.dart';
+import 'package:xly/src/tray/my_tray.dart';
 import 'package:xly/src/window_enums.dart';
 
 class VoidCallbackIntent extends Intent {
@@ -156,6 +158,9 @@ class MyApp extends StatelessWidget {
     // 服务配置
     List<MyService>? services,
 
+    // 托盘配置 - 简化配置方式
+    MyTray? tray,
+
     // 路由和页面配置
     MySplash? splash,
     Transition pageTransitionStyle = Transition.fade,
@@ -239,13 +244,51 @@ class MyApp extends StatelessWidget {
     _globalEnableAspectRatio.value = setAspectRatioEnabled;
     _globalEnableAspectRatio.value = setAspectRatioEnabled;
 
-    // 2. 准备服务，但不立即注册。注册操作将推迟到UI构建阶段，以确保ScreenUtil等依赖项已准备就绪。
-    // 3. 在所有配置应用完毕后，设置路由并运行应用
+    // 2. 处理tray参数，自动转换为MyService
+    List<MyService> finalServices = services != null ? List.from(services) : [];
+
+    if (tray != null) {
+      // 检查services中是否已有MyTray服务
+      bool hasTrayService = finalServices.any((service) {
+        try {
+          return service.service() is MyTray;
+        } catch (e) {
+          // 如果service()调用失败，检查类型
+          return service.service.runtimeType.toString().contains('MyTray');
+        }
+      });
+
+      if (hasTrayService) {
+        // 如果services中已有MyTray，移除它并使用tray参数提供的配置
+        finalServices.removeWhere((service) {
+          try {
+            return service.service() is MyTray;
+          } catch (e) {
+            return service.service.runtimeType.toString().contains('MyTray');
+          }
+        });
+
+        if (kDebugMode) {
+          print('MyApp: 检测到services中已有MyTray配置，将使用tray参数提供的配置覆盖');
+        }
+      }
+
+      // 添加tray参数提供的MyTray服务
+      finalServices.add(
+        MyService<MyTray>(
+          service: () => tray,
+          permanent: true,
+        ),
+      );
+    }
+
+    // 3. 准备服务，但不立即注册。注册操作将推迟到UI构建阶段，以确保ScreenUtil等依赖项已准备就绪。
+    // 4. 在所有配置应用完毕后，设置路由并运行应用
     runApp(MyApp._(
       designSize: designSize,
       theme: theme,
       routes: routes,
-      services: services, // 保持 services 的传递，以备其他用途
+      services: finalServices, // 使用处理后的services列表
       appBuilder: appBuilder,
       appName: appName,
       useToast: useOKToast,

@@ -199,14 +199,6 @@ class Page9View extends GetView<Page9Controller> {
                   backgroundColor: Colors.grey,
                   width: double.infinity,
                 ),
-                SizedBox(height: 12.h),
-                MyButton(
-                  text: '恢复窗口',
-                  onPressed: controller.restoreWindow,
-                  icon: Icons.restore,
-                  backgroundColor: Colors.green,
-                  width: double.infinity,
-                ),
               ],
             ),
 

@@ -32,14 +32,39 @@ class MyTray extends GetxService with TrayListener, WindowListener {
 }
 ```
 
-#### 唯一初始化方式
+#### 推荐初始化方式：使用tray参数
 ```dart
 void main() async {
   await MyApp.initialize(
+    designSize: const Size(800, 600),
+    routes: [...],
+
+    // 推荐：使用tray参数（简化配置）
+    tray: MyTray(
+      iconPath: "assets/icon.png",  // 可选，为空时自动使用默认图标
+      tooltip: "My App",
+      menuItems: [
+        MyTrayMenuItem(label: '显示', onTap: () => MyTray.to.pop()),
+        MyTrayMenuItem.separator(),
+        MyTrayMenuItem(label: '退出', onTap: () => exit(0)),
+      ],
+    ),
+  );
+}
+```
+
+#### 传统初始化方式：使用services参数（向后兼容）
+```dart
+void main() async {
+  await MyApp.initialize(
+    designSize: const Size(800, 600),
+    routes: [...],
+
     services: [
       // 最简使用
       MyService<MyTray>(
         service: () => MyTray(iconPath: "assets/icon.png"),
+        permanent: true,
       ),
 
       // 完整配置
@@ -53,6 +78,7 @@ void main() async {
             MyTrayMenuItem(label: '退出', onTap: () => exit(0)),
           ],
         ),
+        permanent: true,
       ),
     ],
   );
