@@ -1,3 +1,20 @@
+## 0.14.2 - 2025-07-28 [3c6360c]
+
+### Enhanced
+- **简化MyTray配置**：在 `MyApp.initialize` 中添加 `tray` 参数，提供更简洁的托盘配置方式
+  - 新增 `tray: MyTray(...)` 参数，无需了解GetxService概念
+  - 保持向后兼容：传统的 `MyService<MyTray>` 方式仍然支持
+  - 配置优先级：如果同时提供 `tray` 参数和 `services` 中的MyTray，`tray` 参数优先
+- **用户体验改进**：降低新手使用门槛，与其他功能（如splash、theme等）的配置方式保持一致
+
+### Documentation
+- 更新README.md，展示新的简化配置方式，同时保留传统方式说明
+- 更新.doc/my_tray_design.md，添加推荐和传统两种初始化方式的对比
+- 更新example项目，使用新的简化配置方式
+
+### Fixed
+- 移除example/page9.dart中的"恢复窗口"按钮，简化界面
+
 ## 0.14.1 - 2025-07-27 [81957d6]
 
 ### Breaking Changes
