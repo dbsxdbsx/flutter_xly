@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_adaptive_scaffold/flutter_adaptive_scaffold.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 /// 自适应根脚手架
 ///
@@ -54,10 +55,10 @@ class MyScaffold extends StatefulWidget {
   /// 抽屉宽度比例（相对于屏幕宽度）
   final double drawerWidthRatio;
 
-  /// 小屏幕断点宽度（默认600px）
+  /// 小屏幕断点宽度（默认600.w）
   final double smallBreakpoint;
 
-  /// 大屏幕断点宽度（默认840px）
+  /// 大屏幕断点宽度（默认840.w）
   final double largeBreakpoint;
 
   /// 初始选中的导航项索引
@@ -186,20 +187,20 @@ class _MyScaffoldState extends State<MyScaffold> {
               top: 0,
               bottom: 0,
               child: Container(
-                width: 56, // 标准AppBar leading宽度
+                width: 56.w, // 标准AppBar leading宽度
                 alignment: Alignment.center,
                 child: Material(
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: () => _scaffoldKey.currentState?.openDrawer(),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(20.r),
                     child: Container(
-                      width: 40,
-                      height: 40,
+                      width: 40.w,
+                      height: 40.h,
                       alignment: Alignment.center,
-                      child: const Icon(
+                      child: Icon(
                         Icons.menu,
-                        size: 24,
+                        size: 24.w,
                       ),
                     ),
                   ),
@@ -220,7 +221,7 @@ class _MyScaffoldState extends State<MyScaffold> {
       drawer: shouldShowDrawer
           ? Drawer(
               width:
-                  (screenWidth * widget.drawerWidthRatio).clamp(200.0, 304.0),
+                  (screenWidth * widget.drawerWidthRatio).clamp(200.w, 304.w),
               child: _CustomExtendedNavigationRail(
                 selectedIndex: _selectedIndex,
                 onDestinationSelected: (index) {
@@ -294,7 +295,10 @@ class AdaptiveNavigationItem {
     if (badgeCount != null && badgeCount! > 0) {
       iconWidget = Badge(
         isLabelVisible: true,
-        label: Text('$badgeCount'),
+        label: Text(
+          '$badgeCount',
+          style: TextStyle(fontSize: 10.sp), // 响应式徽章字体大小
+        ),
         child: icon,
       );
     }
@@ -327,7 +331,7 @@ class _CustomExtendedNavigationRail extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Container(
-      width: 256, // 固定宽度，类似extended NavigationRail
+      width: 256.w, // 固定宽度，类似extended NavigationRail
       color: theme.navigationRailTheme.backgroundColor ?? colorScheme.surface,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -335,29 +339,29 @@ class _CustomExtendedNavigationRail extends StatelessWidget {
           // 导航项列表 - 使用更大的垂直间距
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+              padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 12.w),
               itemCount: destinations.length,
               itemBuilder: (context, index) {
                 final destination = destinations[index];
                 final isSelected = index == selectedIndex;
 
                 return Container(
-                  margin: const EdgeInsets.symmetric(vertical: 4), // 增加垂直间距
+                  margin: EdgeInsets.symmetric(vertical: 4.h), // 增加垂直间距
                   decoration: BoxDecoration(
                     color: isSelected
                         ? colorScheme.secondaryContainer
                         : Colors.transparent,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12.r),
                       onTap: () => onDestinationSelected(index),
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 16, // 增加垂直内边距
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16.w,
+                          vertical: 16.h, // 增加垂直内边距
                         ),
                         child: Row(
                           children: [
@@ -367,14 +371,14 @@ class _CustomExtendedNavigationRail extends StatelessWidget {
                                 color: isSelected
                                     ? colorScheme.onSecondaryContainer
                                     : colorScheme.onSurfaceVariant,
-                                size: 24,
+                                size: 24.w,
                               ),
                               child:
                                   isSelected && destination.selectedIcon != null
                                       ? destination.selectedIcon!
                                       : destination.icon,
                             ),
-                            const SizedBox(width: 12),
+                            SizedBox(width: 12.w),
                             // 文字标签
                             Expanded(
                               child: Text(
@@ -383,6 +387,7 @@ class _CustomExtendedNavigationRail extends StatelessWidget {
                                   color: isSelected
                                       ? colorScheme.onSecondaryContainer
                                       : colorScheme.onSurfaceVariant,
+                                  fontSize: 14.sp, // 显式设置响应式字体大小
                                 ),
                               ),
                             ),
@@ -398,7 +403,7 @@ class _CustomExtendedNavigationRail extends StatelessWidget {
           // 底部额外内容 - 添加适当的内边距
           if (trailing != null)
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12.w),
               child: trailing!,
             ),
         ],
@@ -426,7 +431,7 @@ class _CustomCompactNavigationRail extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Container(
-      width: 72, // 标准NavigationRail的紧凑宽度
+      width: 72.w, // 标准NavigationRail的紧凑宽度
       color: theme.navigationRailTheme.backgroundColor ?? colorScheme.surface,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -434,28 +439,28 @@ class _CustomCompactNavigationRail extends StatelessWidget {
           // 导航项列表 - 添加顶部padding以匹配标准NavigationRail的行为
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.only(
-                  top: 8, bottom: 12), // 减少顶部padding，让菜单项更靠近顶部
+              padding: EdgeInsets.only(
+                  top: 8.h, bottom: 12.h), // 减少顶部padding，让菜单项更靠近顶部
               itemCount: destinations.length,
               itemBuilder: (context, index) {
                 final destination = destinations[index];
                 final isSelected = index == selectedIndex;
 
                 return Container(
-                  margin: const EdgeInsets.symmetric(vertical: 4),
+                  margin: EdgeInsets.symmetric(vertical: 4.h),
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(16.r),
                       onTap: () => onDestinationSelected(index),
                       child: Container(
-                        width: 56,
-                        height: 56,
+                        width: 56.w,
+                        height: 56.h,
                         decoration: BoxDecoration(
                           color: isSelected
                               ? colorScheme.secondaryContainer
                               : Colors.transparent,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(16.r),
                         ),
                         child: Center(
                           child: IconTheme(
@@ -463,7 +468,7 @@ class _CustomCompactNavigationRail extends StatelessWidget {
                               color: isSelected
                                   ? colorScheme.onSecondaryContainer
                                   : colorScheme.onSurfaceVariant,
-                              size: 24,
+                              size: 24.w,
                             ),
                             child:
                                 isSelected && destination.selectedIcon != null

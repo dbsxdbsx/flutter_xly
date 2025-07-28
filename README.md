@@ -65,6 +65,15 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 - `timezone: ^0.10.0` - 时区处理
 
 ## 待办事项（TODOs）
+
+- mYSCAFFOLD USE screenutils number
+- tray, use one parameter in ` MyApp.initialize` better than service?
+- tray and smart dock
+- compact style of ` MyRoute<Page7Controller>(`
+- add My prefix for `AdaptiveNavigationItem`?
+- tray hide tray method after shown the tray?
+- tray left click to toggle show or hide?
+
 - the MySacffold is issued, make it a ppl like sidebar widget?
 - dialogsheet, into MyDialog or MyMenu?
 - floatBar大小不随host app窗口大小随动，stateManagement测试
@@ -89,6 +98,12 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 - 自动处理权限管理和状态监控
 - 支持所有平台：Android、iOS、macOS、Windows、Linux
 - 与 MyTray 职责分离：MyTray 专注托盘管理，MyNotify 专注系统通知
+
+### MyScaffold 响应式改进
+- 所有内部尺寸属性已全面使用ScreenUtil响应式单位（.w/.h/.r/.sp）
+- 包括边距、内边距、圆角、容器尺寸、图标大小、字体大小等
+- 菜单项文本和徽章文本现在支持响应式字体缩放
+- 提供更好的跨设备适配体验，在不同屏幕密度下保持一致的视觉效果
 
 ### 初始化顺序与配置覆盖
 `MyApp.initialize`的配置应用顺序遵循以下核心原则：
