@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:xly/xly.dart';
 
+import '../main.dart';
 import '../services/example_service.dart';
 
 class Page9Controller extends GetxController {
@@ -359,7 +360,7 @@ class Page9View extends GetView<Page9Controller> {
                 MyButton(
                   icon: Icons.arrow_back,
                   text: '返回第8页',
-                  onPressed: () => Get.back(),
+                  onPressed: () => Get.toNamed(MyRoutes.page8),
                   size: 80.w,
                 ),
               ],

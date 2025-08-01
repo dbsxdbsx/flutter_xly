@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_adaptive_scaffold/flutter_adaptive_scaffold.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 
 /// 自适应根脚手架
 ///
@@ -64,6 +67,14 @@ class MyScaffold extends StatefulWidget {
   /// 初始选中的导航项索引
   final int initialSelectedIndex;
 
+  /// 是否始终显示侧边栏滚动条
+  /// 默认为false，只在需要时显示
+  final bool alwaysShowScrollbar;
+
+  /// 是否自动滚动到选中的导航项
+  /// 默认为true，当路由变化时自动滚动让选中项可见
+  final bool autoScrollToSelected;
+
   /// 获取实际使用的导航项列表
   List<MyAdaptiveNavigationItem>? get _effectiveDrawer => drawer;
 
@@ -81,6 +92,8 @@ class MyScaffold extends StatefulWidget {
     this.smallBreakpoint = 600.0,
     this.largeBreakpoint = 840.0,
     this.initialSelectedIndex = 0,
+    this.alwaysShowScrollbar = false,
+    this.autoScrollToSelected = true,
   }) : assert(
           drawer == null || items == null,
           '不能同时提供drawer和items参数，请使用drawer参数。',
@@ -94,10 +107,143 @@ class _MyScaffoldState extends State<MyScaffold> {
   late int _selectedIndex;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
+  // 路由到索引的映射
+  final Map<String, int> _routeToIndexMap = {};
+
+  // 路由监听器
+  Timer? _routeTimer;
+  String? _lastRoute;
+
+  // 侧边栏滚动控制器
+  final ScrollController _drawerScrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
     _selectedIndex = widget.initialSelectedIndex;
+    _buildRouteMapping();
+
+    // 延迟同步，确保路由系统已初始化
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _syncWithCurrentRoute();
+      _setupRouteListener();
+    });
+  }
+
+  @override
+  void didUpdateWidget(MyScaffold oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // 当drawer项目发生变化时，重新构建映射
+    if (widget._effectiveDrawer != oldWidget._effectiveDrawer) {
+      _buildRouteMapping();
+      _syncWithCurrentRoute();
+    }
+  }
+
+  @override
+  void dispose() {
+    _routeTimer?.cancel();
+    _drawerScrollController.dispose();
+    super.dispose();
+  }
+
+  /// 设置路由监听器
+  void _setupRouteListener() {
+    // 使用高频定时检查，确保即时响应
+    _routeTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+
+      final currentRoute = Get.currentRoute;
+      if (currentRoute != _lastRoute) {
+        _lastRoute = currentRoute;
+        _syncWithCurrentRoute();
+      }
+    });
+  }
+
+  /// 构建路由到索引的映射
+  void _buildRouteMapping() {
+    _routeToIndexMap.clear();
+    final effectiveDrawer = widget._effectiveDrawer;
+
+    if (effectiveDrawer != null) {
+      for (int i = 0; i < effectiveDrawer.length; i++) {
+        final item = effectiveDrawer[i];
+        if (item.route != null) {
+          _routeToIndexMap[item.route!] = i;
+        }
+      }
+    }
+  }
+
+  /// 根据当前路由同步选中状态
+  void _syncWithCurrentRoute() {
+    try {
+      final currentRoute = Get.currentRoute;
+      final index = _routeToIndexMap[currentRoute];
+
+      if (index != null && index != _selectedIndex) {
+        setState(() {
+          _selectedIndex = index;
+        });
+
+        // 根据配置决定是否自动滚动到选中项
+        if (widget.autoScrollToSelected) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _scrollToSelectedItem();
+          });
+        }
+      }
+    } catch (e) {
+      // 如果Get路由系统还未初始化，忽略错误
+    }
+  }
+
+  /// 自动滚动到当前选中的导航项
+  void _scrollToSelectedItem() {
+    if (!mounted || _routeToIndexMap.isEmpty) return;
+
+    final selectedIndex = _selectedIndex;
+    final totalItems = widget._effectiveDrawer?.length ?? 0;
+
+    if (selectedIndex < 0 || selectedIndex >= totalItems) return;
+
+    // 检查ScrollController是否已附加且有有效的position
+    if (!_drawerScrollController.hasClients) return;
+
+    try {
+      // 计算每个导航项的高度（包含margin）
+      // Container margin: 4.h * 2 = 8.h
+      // Padding: 16.h * 2 = 32.h
+      // 图标和文字的高度大约: 24.h
+      final itemHeight = (8.h + 32.h + 24.h); // 约64.h
+
+      // 计算目标位置
+      final targetPosition = selectedIndex * itemHeight;
+
+      // 获取可视区域高度
+      final viewportHeight = _drawerScrollController.position.viewportDimension;
+
+      // 计算居中对齐的滚动位置
+      final centeredPosition =
+          targetPosition - (viewportHeight / 2) + (itemHeight / 2);
+
+      // 限制在有效范围内
+      final maxScrollExtent = _drawerScrollController.position.maxScrollExtent;
+      final clampedPosition = centeredPosition.clamp(0.0, maxScrollExtent);
+
+      // 平滑滚动到目标位置
+      _drawerScrollController.animateTo(
+        clampedPosition,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    } catch (e) {
+      // 如果滚动失败，忽略错误
+    }
   }
 
   @override
@@ -128,7 +274,14 @@ class _MyScaffoldState extends State<MyScaffold> {
         _selectedIndex = index;
       });
       if (index < effectiveDrawer.length) {
-        effectiveDrawer[index].onTap?.call();
+        final item = effectiveDrawer[index];
+
+        // 优先使用自定义onTap，如果没有则使用route自动导航
+        if (item.onTap != null) {
+          item.onTap!.call();
+        } else if (item.route != null) {
+          Get.toNamed(item.route!);
+        }
       }
     }
 
@@ -153,6 +306,8 @@ class _MyScaffoldState extends State<MyScaffold> {
               onDestinationSelected: handleDestinationSelected,
               destinations: destinations,
               trailing: widget.trailing,
+              scrollController: _drawerScrollController,
+              alwaysShowScrollbar: widget.alwaysShowScrollbar,
             ),
           ),
         },
@@ -230,6 +385,8 @@ class _MyScaffoldState extends State<MyScaffold> {
                 },
                 destinations: destinations,
                 trailing: widget.trailing,
+                scrollController: _drawerScrollController,
+                alwaysShowScrollbar: widget.alwaysShowScrollbar,
               ),
             )
           : null,
@@ -279,12 +436,17 @@ class MyAdaptiveNavigationItem {
   /// 通知徽章数量（可选）
   final int? badgeCount;
 
+  /// 关联的路由路径（可选）
+  /// 用于自动同步drawer选中状态与当前路由
+  final String? route;
+
   const MyAdaptiveNavigationItem({
     required this.icon,
     this.selectedIcon,
     required this.label,
     this.onTap,
     this.badgeCount,
+    this.route,
   });
 
   /// 转换为Flutter标准的NavigationDestination
@@ -318,12 +480,16 @@ class _CustomExtendedNavigationRail extends StatelessWidget {
     required this.onDestinationSelected,
     required this.destinations,
     this.trailing,
+    this.scrollController,
+    this.alwaysShowScrollbar = false,
   });
 
   final int selectedIndex;
   final Function(int) onDestinationSelected;
   final List<NavigationDestination> destinations;
   final Widget? trailing;
+  final ScrollController? scrollController;
+  final bool alwaysShowScrollbar;
 
   @override
   Widget build(BuildContext context) {
@@ -338,66 +504,71 @@ class _CustomExtendedNavigationRail extends StatelessWidget {
         children: [
           // 导航项列表 - 使用更大的垂直间距
           Expanded(
-            child: ListView.builder(
-              padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 12.w),
-              itemCount: destinations.length,
-              itemBuilder: (context, index) {
-                final destination = destinations[index];
-                final isSelected = index == selectedIndex;
+            child: Scrollbar(
+              controller: scrollController,
+              thumbVisibility: alwaysShowScrollbar,
+              child: ListView.builder(
+                controller: scrollController,
+                padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 12.w),
+                itemCount: destinations.length,
+                itemBuilder: (context, index) {
+                  final destination = destinations[index];
+                  final isSelected = index == selectedIndex;
 
-                return Container(
-                  margin: EdgeInsets.symmetric(vertical: 4.h), // 增加垂直间距
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? colorScheme.secondaryContainer
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
+                  return Container(
+                    margin: EdgeInsets.symmetric(vertical: 4.h), // 增加垂直间距
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? colorScheme.secondaryContainer
+                          : Colors.transparent,
                       borderRadius: BorderRadius.circular(12.r),
-                      onTap: () => onDestinationSelected(index),
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 16.w,
-                          vertical: 16.h, // 增加垂直内边距
-                        ),
-                        child: Row(
-                          children: [
-                            // 图标
-                            IconTheme(
-                              data: IconThemeData(
-                                color: isSelected
-                                    ? colorScheme.onSecondaryContainer
-                                    : colorScheme.onSurfaceVariant,
-                                size: 24.w,
-                              ),
-                              child:
-                                  isSelected && destination.selectedIcon != null
-                                      ? destination.selectedIcon!
-                                      : destination.icon,
-                            ),
-                            SizedBox(width: 12.w),
-                            // 文字标签
-                            Expanded(
-                              child: Text(
-                                destination.label,
-                                style: theme.textTheme.labelLarge?.copyWith(
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(12.r),
+                        onTap: () => onDestinationSelected(index),
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16.w,
+                            vertical: 16.h, // 增加垂直内边距
+                          ),
+                          child: Row(
+                            children: [
+                              // 图标
+                              IconTheme(
+                                data: IconThemeData(
                                   color: isSelected
                                       ? colorScheme.onSecondaryContainer
                                       : colorScheme.onSurfaceVariant,
-                                  fontSize: 14.sp, // 显式设置响应式字体大小
+                                  size: 24.w,
+                                ),
+                                child: isSelected &&
+                                        destination.selectedIcon != null
+                                    ? destination.selectedIcon!
+                                    : destination.icon,
+                              ),
+                              SizedBox(width: 12.w),
+                              // 文字标签
+                              Expanded(
+                                child: Text(
+                                  destination.label,
+                                  style: theme.textTheme.labelLarge?.copyWith(
+                                    color: isSelected
+                                        ? colorScheme.onSecondaryContainer
+                                        : colorScheme.onSurfaceVariant,
+                                    fontSize: 14.sp, // 显式设置响应式字体大小
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
           ),
           // 底部额外内容 - 添加适当的内边距

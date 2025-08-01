@@ -137,78 +137,60 @@ void main() async {
             getFloatBar(),
           ],
         ),
-        drawer: [
+        drawer: const [
           MyAdaptiveNavigationItem(
-            icon: const Icon(Icons.dashboard_outlined),
-            selectedIcon: const Icon(Icons.dashboard),
+            icon: Icon(Icons.dashboard_outlined),
+            selectedIcon: Icon(Icons.dashboard),
             label: '组件展示',
-            onTap: () {
-              Get.toNamed(MyRoutes.page1);
-            },
+            route: MyRoutes.page1,
           ),
           MyAdaptiveNavigationItem(
-            icon: const Icon(Icons.style_outlined),
-            selectedIcon: const Icon(Icons.style),
+            icon: Icon(Icons.style_outlined),
+            selectedIcon: Icon(Icons.style),
             label: '样式测试',
-            onTap: () {
-              Get.toNamed(MyRoutes.page2);
-            },
+            route: MyRoutes.page2,
           ),
           MyAdaptiveNavigationItem(
-            icon: const Icon(Icons.layers_outlined),
-            selectedIcon: const Icon(Icons.layers),
+            icon: Icon(Icons.layers_outlined),
+            selectedIcon: Icon(Icons.layers),
             label: '弹窗对话',
-            onTap: () {
-              Get.toNamed(MyRoutes.page3);
-            },
+            route: MyRoutes.page3,
           ),
           MyAdaptiveNavigationItem(
-            icon: const Icon(Icons.view_list_outlined),
-            selectedIcon: const Icon(Icons.view_list),
+            icon: Icon(Icons.view_list_outlined),
+            selectedIcon: Icon(Icons.view_list),
             label: '列表管理',
-            onTap: () {
-              Get.toNamed(MyRoutes.page4);
-            },
+            route: MyRoutes.page4,
           ),
           MyAdaptiveNavigationItem(
-            icon: const Icon(Icons.link),
-            selectedIcon: const Icon(Icons.link_outlined),
+            icon: Icon(Icons.link),
+            selectedIcon: Icon(Icons.link_outlined),
             label: 'URL启动器',
-            onTap: () {
-              Get.toNamed(MyRoutes.page5);
-            },
+            route: MyRoutes.page5,
           ),
           MyAdaptiveNavigationItem(
-            icon: const Icon(Icons.edit),
-            selectedIcon: const Icon(Icons.edit_outlined),
+            icon: Icon(Icons.edit),
+            selectedIcon: Icon(Icons.edit_outlined),
             label: '文本编辑器',
-            onTap: () {
-              Get.toNamed(MyRoutes.page6);
-            },
+            route: MyRoutes.page6,
           ),
           MyAdaptiveNavigationItem(
-            icon: const Icon(Icons.tune),
-            selectedIcon: const Icon(Icons.tune_outlined),
+            icon: Icon(Icons.tune),
+            selectedIcon: Icon(Icons.tune_outlined),
             label: '自定义编辑框',
-            onTap: () {
-              Get.toNamed(MyRoutes.page7);
-            },
+            route: MyRoutes.page7,
           ),
           MyAdaptiveNavigationItem(
-            icon: const Icon(Icons.notifications),
-            selectedIcon: const Icon(Icons.notifications_active),
+            icon: Icon(Icons.notifications),
+            selectedIcon: Icon(Icons.notifications_active),
             label: '通知功能测试',
-            onTap: () {
-              Get.toNamed(MyRoutes.page8);
-            },
+            route: MyRoutes.page8,
           ),
           MyAdaptiveNavigationItem(
-            icon: const Icon(Icons.system_update_alt),
-            selectedIcon: const Icon(Icons.system_update_alt_outlined),
+            icon: Icon(Icons.system_update_alt),
+            selectedIcon: Icon(Icons.system_update_alt_outlined),
             label: '托盘功能测试',
-            onTap: () {
-              Get.toNamed(MyRoutes.page9);
-            },
+            route: MyRoutes.page9,
           ),
         ],
         trailing: const PlatformInfoWidget(),

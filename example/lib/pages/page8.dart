@@ -251,7 +251,7 @@ class Page8View extends GetView<Page8Controller> {
                 MyButton(
                   icon: Icons.arrow_back,
                   text: '返回第7页',
-                  onPressed: () => Get.back(),
+                  onPressed: () => Get.toNamed(MyRoutes.page7),
                   size: 80.w,
                 ),
                 MyButton(

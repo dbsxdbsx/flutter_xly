@@ -230,7 +230,7 @@ class Page4View extends GetView<Page4Controller> {
                   MyButton(
                     icon: Icons.arrow_back,
                     text: '返回第3页',
-                    onPressed: () => Get.back(),
+                    onPressed: () => Get.toNamed(MyRoutes.page3),
                     size: 80.w,
                   ),
                   MyButton(

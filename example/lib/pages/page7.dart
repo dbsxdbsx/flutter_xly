@@ -1,3 +1,4 @@
+import 'package:example/main.dart';
 import 'package:flutter/material.dart';
 import 'package:xly/xly.dart';
 
@@ -48,15 +49,14 @@ class Page7 extends StatelessWidget {
                 MyButton(
                   icon: Icons.arrow_back,
                   text: '返回第6页',
-                  onPressed: () => Get.back(),
+                  onPressed: () => Get.toNamed(MyRoutes.page6),
                   size: 80.w,
                 ),
                 MyButton(
-                  icon: Icons.system_update_alt,
-                  text: '托盘功能',
-                  onPressed: () => Get.toNamed('/page8'),
+                  icon: Icons.arrow_forward,
+                  text: '前往第8页',
+                  onPressed: () => Get.toNamed(MyRoutes.page8),
                   size: 80.w,
-                  backgroundColor: Colors.teal,
                 ),
               ],
             ),

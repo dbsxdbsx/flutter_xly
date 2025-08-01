@@ -1495,7 +1495,14 @@ dart run xly:rename android="Android版本" ios="iOS版本" windows="Windows版�
 
 ### 使用自适应侧边栏导航
 
-`MyScaffold` 提供了根据屏幕尺寸自动切换的导航体验：
+`MyScaffold` 提供了根据屏幕尺寸自动切换的导航体验，并包含智能导航系统：
+
+#### 🎯 智能导航功能
+
+1. **自动路由同步** - 侧边栏选中状态与当前路由自动同步
+2. **简化导航API** - 只需指定`route`参数即可自动导航
+3. **智能自动滚动** - 选中项自动滚动到可视区域
+4. **可配置选项** - 灵活控制滚动条和自动滚动行为
 
 ```dart
 import 'package:flutter/material.dart';
@@ -1523,27 +1530,38 @@ class MyHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return MyScaffold(
       appBar: AppBar(title: Text('我的应用')),
+      // 智能导航配置
+      alwaysShowScrollbar: false,    // 控制滚动条显示（默认false）
+      autoScrollToSelected: true,    // 控制自动滚动（默认true）
+
       drawer: [
+        // 简化版本：只需指定route参数
         MyAdaptiveNavigationItem(
           icon: Icon(Icons.home),
           label: '首页',
-          onTap: () => controller.switchToPage(0),
+          route: '/page1',  // 自动导航到此路由
         ),
         MyAdaptiveNavigationItem(
           icon: Icon(Icons.settings),
           label: '设置',
-          onTap: () => controller.switchToPage(1),
+          route: '/page2',
           badgeCount: 2, // 可选的徽章数量
         ),
+        // 自定义版本：需要特殊逻辑时使用onTap
         MyAdaptiveNavigationItem(
           icon: Icon(Icons.info),
           label: '关于',
-          onTap: () => controller.switchToPage(2),
+          route: '/page3',
+          onTap: () {
+            // 自定义逻辑
+            controller.switchToPage(2);
+            Get.toNamed('/page3');
+          },
         ),
       ],
       body: Obx(() => pages[controller.currentIndex.value]),
 
-      // 可选配置
+      // 其他可选配置
       useBottomNavigationOnSmall: false, // 小屏幕使用抽屉而非底部导航
       smallBreakpoint: 600.0,           // 小屏幕断点
       largeBreakpoint: 840.0,           // 大屏幕断点
@@ -1553,12 +1571,18 @@ class MyHomePage extends StatelessWidget {
 }
 ```
 
-**特性说明：**
+**显示模式：**
 - **小屏幕**：显示抽屉式导航或底部导航栏
 - **中等屏幕**：显示收缩的图标式侧边栏
 - **大屏幕**：显示完整的展开式侧边栏（图标+文字）
-- **自动适配**：根据屏幕宽度自动切换显示模式
-- **灵活配置**：支持自定义断点、抽屉宽度等参数
+
+**智能功能：**
+- ✅ **自动路由同步**：无论通过什么方式导航，侧边栏状态都会自动同步
+- ✅ **简化API**：只需指定`route`参数，无需手写`onTap`回调
+- ✅ **智能滚动**：选中项自动滚动到可视区域，确保始终可见
+- ✅ **即时响应**：无延迟的界面更新和状态同步
+- ✅ **灵活配置**：可控制滚动条显示和自动滚动行为
+- ✅ **完全透明**：框架级功能，用户代码零改动
 
 ### 应用图标生成
 

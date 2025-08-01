@@ -35,7 +35,7 @@ class Page5View extends GetView<Page5Controller> {
               MyButton(
                 icon: Icons.arrow_back,
                 text: '返回第4页',
-                onPressed: () => Get.back(),
+                onPressed: () => Get.toNamed(MyRoutes.page4),
                 size: 80.w,
               ),
               MyButton(

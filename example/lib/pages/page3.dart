@@ -61,7 +61,7 @@ class Page3View extends GetView<Page3Controller> {
 
 class Page3Controller extends GetxController {
   void goToPage2() {
-    Get.back();
+    Get.toNamed(MyRoutes.page2);
   }
 
   void goToPage1() {
