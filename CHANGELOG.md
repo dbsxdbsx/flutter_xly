@@ -240,7 +240,7 @@
 - 支持类似传统Flutter Scaffold的API设计，提供 `drawer`、`body`、`appBar` 等参数
 - 支持自定义断点宽度、抽屉宽度比例等配置选项
 - 支持导航项徽章显示和侧边栏底部额外内容
-- 新增 `AdaptiveNavigationItem` 类用于定义导航项
+- 新增 `MyAdaptiveNavigationItem` 类用于定义导航项
 
 ### Enhanced
 - 更新功能列表，新增"自适应侧边栏导航"功能说明

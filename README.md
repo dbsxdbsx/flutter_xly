@@ -65,9 +65,6 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 - `timezone: ^0.10.0` - 时区处理
 
 ## 待办事项（TODOs）
-
-- add My prefix for `AdaptiveNavigationItem`?
-
 - the MySacffold is issued, make it a ppl like sidebar widget?
 - dialogsheet, into MyDialog or MyMenu?
 - floatBar大小不随host app窗口大小随动，stateManagement测试
@@ -1527,18 +1524,18 @@ class MyHomePage extends StatelessWidget {
     return MyScaffold(
       appBar: AppBar(title: Text('我的应用')),
       drawer: [
-        AdaptiveNavigationItem(
+        MyAdaptiveNavigationItem(
           icon: Icon(Icons.home),
           label: '首页',
           onTap: () => controller.switchToPage(0),
         ),
-        AdaptiveNavigationItem(
+        MyAdaptiveNavigationItem(
           icon: Icon(Icons.settings),
           label: '设置',
           onTap: () => controller.switchToPage(1),
           badgeCount: 2, // 可选的徽章数量
         ),
-        AdaptiveNavigationItem(
+        MyAdaptiveNavigationItem(
           icon: Icon(Icons.info),
           label: '关于',
           onTap: () => controller.switchToPage(2),

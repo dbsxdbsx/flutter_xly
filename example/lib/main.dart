@@ -138,7 +138,7 @@ void main() async {
           ],
         ),
         drawer: [
-          AdaptiveNavigationItem(
+          MyAdaptiveNavigationItem(
             icon: const Icon(Icons.dashboard_outlined),
             selectedIcon: const Icon(Icons.dashboard),
             label: '组件展示',
@@ -146,7 +146,7 @@ void main() async {
               Get.toNamed(MyRoutes.page1);
             },
           ),
-          AdaptiveNavigationItem(
+          MyAdaptiveNavigationItem(
             icon: const Icon(Icons.style_outlined),
             selectedIcon: const Icon(Icons.style),
             label: '样式测试',
@@ -154,7 +154,7 @@ void main() async {
               Get.toNamed(MyRoutes.page2);
             },
           ),
-          AdaptiveNavigationItem(
+          MyAdaptiveNavigationItem(
             icon: const Icon(Icons.layers_outlined),
             selectedIcon: const Icon(Icons.layers),
             label: '弹窗对话',
@@ -162,7 +162,7 @@ void main() async {
               Get.toNamed(MyRoutes.page3);
             },
           ),
-          AdaptiveNavigationItem(
+          MyAdaptiveNavigationItem(
             icon: const Icon(Icons.view_list_outlined),
             selectedIcon: const Icon(Icons.view_list),
             label: '列表管理',
@@ -170,7 +170,7 @@ void main() async {
               Get.toNamed(MyRoutes.page4);
             },
           ),
-          AdaptiveNavigationItem(
+          MyAdaptiveNavigationItem(
             icon: const Icon(Icons.link),
             selectedIcon: const Icon(Icons.link_outlined),
             label: 'URL启动器',
@@ -178,7 +178,7 @@ void main() async {
               Get.toNamed(MyRoutes.page5);
             },
           ),
-          AdaptiveNavigationItem(
+          MyAdaptiveNavigationItem(
             icon: const Icon(Icons.edit),
             selectedIcon: const Icon(Icons.edit_outlined),
             label: '文本编辑器',
@@ -186,7 +186,7 @@ void main() async {
               Get.toNamed(MyRoutes.page6);
             },
           ),
-          AdaptiveNavigationItem(
+          MyAdaptiveNavigationItem(
             icon: const Icon(Icons.tune),
             selectedIcon: const Icon(Icons.tune_outlined),
             label: 'SpinBox',
@@ -194,7 +194,7 @@ void main() async {
               Get.toNamed(MyRoutes.page7);
             },
           ),
-          AdaptiveNavigationItem(
+          MyAdaptiveNavigationItem(
             icon: const Icon(Icons.notifications),
             selectedIcon: const Icon(Icons.notifications_active),
             label: '通知功能测试',
@@ -202,7 +202,7 @@ void main() async {
               Get.toNamed(MyRoutes.page8);
             },
           ),
-          AdaptiveNavigationItem(
+          MyAdaptiveNavigationItem(
             icon: const Icon(Icons.system_update_alt),
             selectedIcon: const Icon(Icons.system_update_alt_outlined),
             label: '托盘功能测试',

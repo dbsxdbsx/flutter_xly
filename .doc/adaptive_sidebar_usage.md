@@ -25,18 +25,18 @@ class MyApp extends StatelessWidget {
     return MyScaffold(
       appBar: AppBar(title: Text('My App')),
       drawer: [
-        AdaptiveNavigationItem(
+        MyAdaptiveNavigationItem(
           icon: Icon(Icons.home),
           label: '首页',
           onTap: () => controller.switchToPage(0),
         ),
-        AdaptiveNavigationItem(
+        MyAdaptiveNavigationItem(
           icon: Icon(Icons.settings),
           label: '设置',
           badgeCount: 3, // 可选的徽章数量
           onTap: () => controller.switchToPage(1),
         ),
-        AdaptiveNavigationItem(
+        MyAdaptiveNavigationItem(
           icon: Icon(Icons.info),
           label: '关于',
           onTap: () => controller.switchToPage(2),
@@ -51,20 +51,20 @@ class MyApp extends StatelessWidget {
 ### 3. 创建导航项（详细配置）
 
 ```dart
-final List<AdaptiveNavigationItem> navigationItems = [
-  AdaptiveNavigationItem(
+final List<MyAdaptiveNavigationItem> navigationItems = [
+  MyAdaptiveNavigationItem(
     icon: const Icon(Icons.home),
     selectedIcon: const Icon(Icons.home_filled), // 可选的选中图标
     label: '首页',
     onTap: () => debugPrint('首页被点击'),
   ),
-  AdaptiveNavigationItem(
+  MyAdaptiveNavigationItem(
     icon: const Icon(Icons.settings),
     label: '设置',
     badgeCount: 3, // 可选的徽章数量
     onTap: () => debugPrint('设置被点击'),
   ),
-  AdaptiveNavigationItem(
+  MyAdaptiveNavigationItem(
     icon: const Icon(Icons.info),
     label: '关于',
     onTap: () => debugPrint('关于被点击'),
@@ -96,7 +96,7 @@ class _MyHomePageState extends State<MyHomePage> {
       final index = entry.key;
       final item = entry.value;
 
-      return AdaptiveNavigationItem(
+      return MyAdaptiveNavigationItem(
         icon: item.icon,
         label: item.label,
         badgeCount: item.badgeCount,
@@ -145,18 +145,18 @@ class MyHomePage extends StatelessWidget {
     return MyScaffold(
       appBar: AppBar(title: Text('我的应用')),
       drawer: [
-        AdaptiveNavigationItem(
+        MyAdaptiveNavigationItem(
           icon: Icon(Icons.home),
           selectedIcon: Icon(Icons.home_filled),
           label: '首页',
           onTap: () => controller.switchToPage(0),
         ),
-        AdaptiveNavigationItem(
+        MyAdaptiveNavigationItem(
           icon: Icon(Icons.settings),
           label: '设置',
           onTap: () => controller.switchToPage(1),
         ),
-        AdaptiveNavigationItem(
+        MyAdaptiveNavigationItem(
           icon: Icon(Icons.info),
           label: '关于',
           onTap: () => controller.switchToPage(2),
@@ -285,7 +285,7 @@ class MyController extends GetxController {
 
 MyScaffold(
   drawer: [
-    AdaptiveNavigationItem(
+    MyAdaptiveNavigationItem(
       icon: Icon(Icons.home),
       label: '首页',
       onTap: () => controller.currentIndex.value = 0,

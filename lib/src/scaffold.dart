@@ -14,7 +14,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 /// MyScaffold(
 ///   appBar: AppBar(title: Text('My App')),
 ///   drawer: [
-///     AdaptiveNavigationItem(
+///     MyAdaptiveNavigationItem(
 ///       icon: Icon(Icons.home),
 ///       label: '首页',
 ///       onTap: () => controller.switchToPage(0),
@@ -26,11 +26,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 class MyScaffold extends StatefulWidget {
   /// 导航项列表（可选）
   /// 当提供时，会根据屏幕尺寸显示为抽屉、侧边栏或底部导航栏
-  final List<AdaptiveNavigationItem>? drawer;
+  final List<MyAdaptiveNavigationItem>? drawer;
 
   /// 导航项列表（已废弃，请使用drawer参数）
   @Deprecated('使用drawer参数代替。此参数将在未来版本中移除。')
-  final List<AdaptiveNavigationItem>? items;
+  final List<MyAdaptiveNavigationItem>? items;
 
   /// 页面列表（已废弃）
   @Deprecated('不再需要pages参数。请在body中处理页面切换逻辑。此参数将在未来版本中移除。')
@@ -65,7 +65,7 @@ class MyScaffold extends StatefulWidget {
   final int initialSelectedIndex;
 
   /// 获取实际使用的导航项列表
-  List<AdaptiveNavigationItem>? get _effectiveDrawer => drawer;
+  List<MyAdaptiveNavigationItem>? get _effectiveDrawer => drawer;
 
   const MyScaffold({
     super.key,
@@ -263,7 +263,7 @@ class _MyScaffoldState extends State<MyScaffold> {
 }
 
 /// 自适应导航项
-class AdaptiveNavigationItem {
+class MyAdaptiveNavigationItem {
   /// 图标
   final Widget icon;
 
@@ -279,7 +279,7 @@ class AdaptiveNavigationItem {
   /// 通知徽章数量（可选）
   final int? badgeCount;
 
-  const AdaptiveNavigationItem({
+  const MyAdaptiveNavigationItem({
     required this.icon,
     this.selectedIcon,
     required this.label,
