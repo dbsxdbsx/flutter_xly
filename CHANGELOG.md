@@ -1,4 +1,41 @@
-## 0.14.3 - 2025-08-01
+## 0.15.0 - 2025-08-01
+
+### Added
+- **MyTray简化配置**：在MyApp.initialize中添加tray参数，提供更简洁的配置方式
+  - 新增tray参数支持，可直接传入MyTray实例进行配置
+  - 保持向后兼容，传统MyService<MyTray>方式仍然支持
+  - 更新文档和示例，展示新的简化使用方式
+
+### Enhanced
+- **MyScaffold响应式单位支持**：全面支持ScreenUtil响应式单位
+  - 所有内部尺寸属性使用.w/.h/.r/.sp响应式单位
+  - 包括边距、内边距、圆角、容器尺寸、图标大小等
+  - 菜单项文本和徽章文本支持响应式字体缩放(.sp)
+  - 提供更好的跨设备适配体验
+
+- **智能停靠状态下功能冲突防护**：在智能停靠状态下自动禁用可能冲突的窗口功能
+  - 双击最大化功能在智能停靠状态下自动禁用，防止破坏停靠布局
+  - 全屏功能在智能停靠状态下自动禁用，避免状态冲突
+  - UI按钮智能显示禁用状态和原因，提供友好的用户反馈
+  - 操作时显示明确提示，告知用户如何恢复功能（先关闭智能停靠）
+
+- **全屏功能支持**：新增完整的全屏功能API和UI控制
+  - 新增 `MyApp.isFullScreenEnabled()` 检查全屏功能可用性
+  - 新增 `MyApp.setFullScreenEnabled()` 控制全屏功能启用状态
+  - 新增 `MyApp.toggleFullScreen()` 切换全屏状态
+  - 全屏功能与智能停靠智能交互，避免功能冲突
+
+### Changed
+- **命名一致性改进**：重命名AdaptiveNavigationItem为MyAdaptiveNavigationItem
+  - 保持与其他My系列组件的命名一致性
+  - 更新所有相关文档和示例代码
+
+### Improved
+- **概念澄清和命名优化**：修正全屏和最大化功能的概念混淆
+  - 重命名 `isDoubleClickFullScreenEnabled()` → `isDoubleClickMaximizeEnabled()`
+  - 重命名 `setDoubleClickFullScreenEnabled()` → `setDoubleClickMaximizeEnabled()`
+
+## 0.14.3 - 2025-07-28
 
 ### Enhanced
 - **智能停靠状态下功能冲突防护**：在智能停靠状态下自动禁用可能冲突的窗口功能
