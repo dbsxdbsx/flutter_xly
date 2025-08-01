@@ -1,3 +1,42 @@
+## 0.14.3 - 2025-08-01
+
+### Enhanced
+- **智能停靠状态下功能冲突防护**：在智能停靠状态下自动禁用可能冲突的窗口功能
+  - 双击最大化功能在智能停靠状态下自动禁用，防止破坏停靠布局
+  - 全屏功能在智能停靠状态下自动禁用，避免状态冲突
+  - UI按钮智能显示禁用状态和原因，提供友好的用户反馈
+  - 操作时显示明确提示，告知用户如何恢复功能（先关闭智能停靠）
+
+### Added
+- **全屏功能支持**：新增完整的全屏功能API和UI控制
+  - 新增 `MyApp.isFullScreenEnabled()` 检查全屏功能可用性
+  - 新增 `MyApp.setFullScreenEnabled()` 控制全屏功能启用状态
+  - 新增 `MyApp.toggleFullScreen()` 切换全屏状态
+  - 全屏功能与智能停靠智能交互，避免功能冲突
+
+### Improved
+- **概念澄清和命名优化**：修正全屏和最大化功能的概念混淆
+  - 重命名 `isDoubleClickFullScreenEnabled()` → `isDoubleClickMaximizeEnabled()`
+  - 重命名 `setDoubleClickFullScreenEnabled()` → `setDoubleClickMaximizeEnabled()`
+  - 明确区分：最大化（占据工作区域，任务栏可见）vs 全屏（占据整个屏幕，隐藏系统UI）
+  - 移除不必要的F11快捷键，保持应用简洁性
+
+### Documentation
+- **智能托盘技术文档**：新增 `.doc/smart_tray_technical.md` 详细技术实现说明
+- **智能托盘用户指南**：新增 `.doc/smart_tray_user_guide.md` 用户使用指南
+- **全屏功能文档**：在README.md中添加全屏功能的详细使用说明
+  - 基本API使用方法
+  - 与智能停靠的交互说明
+  - 全屏vs最大化的区别说明
+  - 注意事项和最佳实践
+
+### Technical
+- **智能托盘隐藏机制**：完善智能停靠状态下的托盘隐藏逻辑
+  - 智能停靠激活时自动进入托盘模式，隐藏任务栏图标
+  - 窗口焦点管理：获得焦点时保持任务栏隐藏状态
+  - 退出智能停靠时自动恢复任务栏显示
+- **状态管理优化**：改进GetX响应式状态管理，修复UI更新问题
+
 ## 0.14.2 - 2025-07-28 [3c6360c]
 
 ### Enhanced

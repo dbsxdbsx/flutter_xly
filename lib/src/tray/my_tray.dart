@@ -5,6 +5,10 @@ import 'package:get/get.dart';
 import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
 
+import '../smart_dock/mouse_tracker.dart';
+import '../smart_dock/native_window_helper.dart';
+import '../smart_dock/smart_dock_manager.dart';
+
 /// 托盘菜单项配置类
 class MyTrayMenuItem {
   final String label;
@@ -39,6 +43,7 @@ class MyTray extends GetxService with TrayListener {
 
   // 状态管理
   final isVisible = true.obs;
+  final isTrayMode = false.obs; // 新增：是否处于托盘模式
   final currentIcon = Rx<String?>(null);
   final tooltip = ''.obs;
   final _isInitialized = false.obs;
@@ -368,31 +373,73 @@ MyTray 构建错误：未找到 $platformName 平台的默认应用图标！
     }
   }
 
-  /// 隐藏窗口到托盘
+  /// 检查是否处于智能停靠模式
+  bool _isInSmartDockMode() {
+    try {
+      // 需要导入相关模块
+      return SmartDockManager.isSmartDockingEnabled() &&
+          MouseTracker.state != MouseTrackingState.disabled;
+    } catch (e) {
+      if (kDebugMode) {
+        print('MyTray: 检查智能停靠状态失败: $e');
+      }
+      return false;
+    }
+  }
+
+  /// 进入托盘模式（智能隐藏：根据智能停靠状态决定行为）
   Future<void> hide() async {
     try {
-      await windowManager.hide();
-      isVisible.value = false;
+      // 设置托盘模式状态
+      isTrayMode.value = true;
 
-      if (kDebugMode) {
-        print('MyTray: 窗口已隐藏到托盘');
+      // 隐藏任务栏图标
+      await windowManager.setSkipTaskbar(true);
+
+      // 根据智能停靠状态决定是否隐藏窗口UI
+      if (!_isInSmartDockMode()) {
+        // 不在智能停靠状态，需要隐藏窗口UI
+        await windowManager.hide();
+        isVisible.value = false;
+
+        if (kDebugMode) {
+          print('MyTray: 已进入托盘模式（窗口UI已隐藏）');
+        }
+      } else {
+        // 在智能停靠状态，只隐藏任务栏图标，让SmartDock管理窗口UI
+        // 同时设置窗口为不激活任务栏模式，防止用户操作激活系统任务栏
+        final noActivateResult =
+            await NativeWindowHelper.setNoActivateTaskbar(true);
+
+        if (kDebugMode) {
+          print(
+              'MyTray: 已进入托盘模式（智能停靠状态，窗口UI由SmartDock管理，任务栏激活控制：${noActivateResult ? "成功" : "失败"}）');
+        }
       }
     } catch (e) {
       if (kDebugMode) {
-        print('MyTray: 隐藏到托盘失败: $e');
+        print('MyTray: 进入托盘模式失败: $e');
       }
     }
   }
 
-  /// 从托盘恢复窗口
+  /// 从托盘恢复窗口（退出托盘模式）
   Future<void> pop() async {
     try {
+      // 退出托盘模式
+      isTrayMode.value = false;
+      await windowManager.setSkipTaskbar(false);
+
+      // 恢复正常的任务栏激活行为
+      await NativeWindowHelper.setNoActivateTaskbar(false);
+
+      // 确保窗口可见并获得焦点
       await windowManager.show();
       await windowManager.focus();
       isVisible.value = true;
 
       if (kDebugMode) {
-        print('MyTray: 窗口已从托盘恢复');
+        print('MyTray: 已退出托盘模式（窗口已恢复，任务栏激活已恢复）');
       }
     } catch (e) {
       if (kDebugMode) {

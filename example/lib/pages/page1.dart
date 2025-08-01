@@ -347,11 +347,23 @@ class Page1View extends GetView<Page1Controller> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             Expanded(
-              child: Obx(() => MyButton(
-                    text:
-                        '允许双击最大化: ${MyApp.isDoubleClickFullScreenEnabled() ? "已开启" : "已关闭"}',
-                    onPressed: controller.toggleDoubleClickFullScreen,
-                  )),
+              child: Obx(() {
+                // 确保在Obx中使用响应式变量
+                final smartDockingEnabled = controller.enableSmartDocking.value;
+                final isEnabled = MyApp.isDoubleClickMaximizeEnabled();
+
+                String buttonText;
+                if (smartDockingEnabled && !isEnabled) {
+                  buttonText = '允许双击最大化: 已禁用(智能停靠)';
+                } else {
+                  buttonText = '允许双击最大化: ${isEnabled ? "已开启" : "已关闭"}';
+                }
+
+                return MyButton(
+                  text: buttonText,
+                  onPressed: controller.toggleDoubleClickMaximize,
+                );
+              }),
             ),
             SizedBox(width: 16.w),
             Expanded(
@@ -372,6 +384,30 @@ class Page1View extends GetView<Page1Controller> {
                         '显示标题栏: ${controller.showTitleBar.value ? "已开启" : "已关闭"}',
                     onPressed: controller.toggleTitleBar,
                   )),
+            ),
+          ],
+        ),
+        SizedBox(height: 12.h),
+        Row(
+          children: [
+            Expanded(
+              child: Obx(() {
+                // 确保在Obx中使用响应式变量
+                final smartDockingEnabled = controller.enableSmartDocking.value;
+                final isEnabled = MyApp.isFullScreenEnabled();
+
+                String buttonText;
+                if (smartDockingEnabled && !isEnabled) {
+                  buttonText = '全屏功能: 已禁用(智能停靠)';
+                } else {
+                  buttonText = '全屏功能: ${isEnabled ? "可用" : "已禁用"}';
+                }
+
+                return MyButton(
+                  text: buttonText,
+                  onPressed: controller.toggleFullScreenFeature,
+                );
+              }),
             ),
           ],
         ),
@@ -592,8 +628,7 @@ class Page1View extends GetView<Page1Controller> {
 class Page1Controller extends GetxController {
   final isMenuButtonActivated = false.obs;
   final isWindowControlEnabled = MyApp.isResizableEnabled().obs;
-  final enableDoubleClickFullScreen =
-      MyApp.isDoubleClickFullScreenEnabled().obs;
+  final enableDoubleClickMaximize = MyApp.isDoubleClickMaximizeEnabled().obs;
   final enableDraggable = MyApp.isDraggableEnabled().obs;
   final showTitleBar = (!MyApp.isTitleBarHidden()).obs;
   final enableSmartDocking = MyApp.isSmartDockingEnabled().obs;
@@ -750,15 +785,21 @@ class Page1Controller extends GetxController {
     MyToast.show('允许手动调整窗口尺寸${newState ? "已启用" : "已禁用"}');
   }
 
-  void toggleDoubleClickFullScreen() async {
+  void toggleDoubleClickMaximize() async {
+    // 检查是否处于智能停靠状态
+    if (MyApp.isSmartDockingEnabled()) {
+      MyToast.showUpWarn('智能停靠状态下已自动禁用双击最大化功能\n如需启用，请先关闭智能停靠');
+      return;
+    }
+
     // 获取当前状态的反状态
-    final newState = !MyApp.isDoubleClickFullScreenEnabled();
+    final newState = !MyApp.isDoubleClickMaximizeEnabled();
 
     // 设置新状态
-    await MyApp.setDoubleClickFullScreenEnabled(newState);
+    await MyApp.setDoubleClickMaximizeEnabled(newState);
 
     // 更新本地状态以保持UI同步
-    enableDoubleClickFullScreen.value = newState;
+    enableDoubleClickMaximize.value = newState;
 
     // 显示提示
     MyToast.show('允许双击最大化${newState ? "已启用" : "已禁用"}');
@@ -783,6 +824,17 @@ class Page1Controller extends GetxController {
 
   void showUpWarnToast() {
     MyToast.showUpWarn('这是一条警告消息示例');
+  }
+
+  void toggleFullScreenFeature() async {
+    // 检查是否处于智能停靠状态
+    if (MyApp.isSmartDockingEnabled()) {
+      MyToast.showUpWarn('智能停靠状态下已自动禁用全屏功能\n如需使用，请先关闭智能停靠');
+      return;
+    }
+
+    // 切换全屏状态
+    await MyApp.toggleFullScreen();
   }
 
   void showUpErrorToast() {

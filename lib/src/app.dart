@@ -71,13 +71,13 @@ class MyService<T> {
 
 class CustomDragArea extends StatelessWidget {
   final Widget child;
-  final bool enableDoubleClickFullScreen;
+  final bool enableDoubleClickMaximize;
   final bool draggable;
 
   const CustomDragArea({
     super.key,
     required this.child,
-    required this.enableDoubleClickFullScreen,
+    required this.enableDoubleClickMaximize,
     required this.draggable,
   });
 
@@ -89,8 +89,14 @@ class CustomDragArea extends StatelessWidget {
               await windowManager.startDragging();
             }
           : null,
-      onDoubleTap: enableDoubleClickFullScreen
+      onDoubleTap: enableDoubleClickMaximize
           ? () async {
+              // 检查是否处于智能停靠状态
+              if (MyApp.isSmartDockingEnabled()) {
+                debugPrint('智能停靠状态下已禁用双击最大化功能');
+                return;
+              }
+
               bool isMaximized = await windowManager.isMaximized();
               if (isMaximized) {
                 await windowManager.restore();
@@ -239,7 +245,7 @@ class MyApp extends StatelessWidget {
 
     // 1. 应用直接参数作为基础配置
     _globalEnableResizable.value = resizable;
-    _globalEnableDoubleClickFullScreen.value = doubleClickToFullScreen;
+    _globalEnableDoubleClickMaximize.value = doubleClickToFullScreen;
     _globalEnableDraggable.value = draggable;
     _globalEnableAspectRatio.value = setAspectRatioEnabled;
     _globalEnableAspectRatio.value = setAspectRatioEnabled;
@@ -435,7 +441,7 @@ class MyApp extends StatelessWidget {
 
     // 将拖动区域包裹在最外层，确保在启动屏期间也能拖动
     return Obx(() => CustomDragArea(
-          enableDoubleClickFullScreen: _globalEnableDoubleClickFullScreen.value,
+          enableDoubleClickMaximize: _globalEnableDoubleClickMaximize.value,
           draggable: _globalEnableDraggable.value,
           child: Stack(
             children: [
@@ -524,20 +530,26 @@ class MyApp extends StatelessWidget {
   }
 
   static final isSplashFinished = false.obs;
-  static final _globalEnableDoubleClickFullScreen = false.obs;
+  static final _globalEnableDoubleClickMaximize = false.obs;
   static final _globalEnableResizable = false.obs;
   static final _globalEnableDraggable = true.obs;
   static final _globalTitleBarHidden = true.obs;
   static final _globalEnableAspectRatio = true.obs;
+  static final _globalEnableFullScreen = true.obs;
 
   /// 获取当前双击最大化功能的状态
-  static bool isDoubleClickFullScreenEnabled() {
-    return _globalEnableDoubleClickFullScreen.value;
+  /// 在智能停靠状态下自动禁用双击最大化功能
+  static bool isDoubleClickMaximizeEnabled() {
+    // 检查是否处于智能停靠状态
+    if (isSmartDockingEnabled()) {
+      return false; // 智能停靠状态下禁用双击最大化
+    }
+    return _globalEnableDoubleClickMaximize.value;
   }
 
   /// 设置双击最大化功能的启用状态
-  static Future<void> setDoubleClickFullScreenEnabled(bool enabled) async {
-    _globalEnableDoubleClickFullScreen.value = enabled;
+  static Future<void> setDoubleClickMaximizeEnabled(bool enabled) async {
+    _globalEnableDoubleClickMaximize.value = enabled;
   }
 
   /// 获取当前窗口大小调整功能的状态
@@ -593,6 +605,45 @@ class MyApp extends StatelessWidget {
         // 移除比例限制，设置为0表示无限制
         await windowManager.setAspectRatio(0);
       }
+    }
+  }
+
+  /// 获取当前全屏功能的状态
+  /// 在智能停靠状态下自动禁用全屏功能
+  static bool isFullScreenEnabled() {
+    // 检查是否处于智能停靠状态
+    if (isSmartDockingEnabled()) {
+      return false; // 智能停靠状态下禁用全屏功能
+    }
+    return _globalEnableFullScreen.value;
+  }
+
+  /// 设置全屏功能的启用状态
+  static Future<void> setFullScreenEnabled(bool enabled) async {
+    _globalEnableFullScreen.value = enabled;
+  }
+
+  /// 切换全屏状态
+  /// 在智能停靠状态下此方法无效
+  static Future<void> toggleFullScreen() async {
+    if (!isFullScreenEnabled()) {
+      debugPrint('全屏功能已禁用（可能处于智能停靠状态）');
+      return;
+    }
+
+    if (!MyPlatform.isDesktop) return;
+
+    try {
+      final isFullScreen = await windowManager.isFullScreen();
+      if (isFullScreen) {
+        await windowManager.setFullScreen(false);
+        debugPrint('已退出全屏模式');
+      } else {
+        await windowManager.setFullScreen(true);
+        debugPrint('已进入全屏模式');
+      }
+    } catch (e) {
+      debugPrint('切换全屏状态时出错：$e');
     }
   }
 

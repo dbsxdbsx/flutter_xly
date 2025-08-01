@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../platform.dart';
+import '../tray/my_tray.dart';
 import 'mouse_tracker.dart';
 import 'native_window_helper.dart';
 
@@ -112,6 +113,21 @@ class WindowFocusManager with WindowListener {
   /// 在窗口重新获得焦点时恢复正常状态
   static void _restoreNormalStateOnFocus() async {
     try {
+      // 检查是否处于托盘模式
+      try {
+        if (MyTray.to.isTrayMode.value) {
+          // 处于托盘模式，不恢复任务栏显示，但可以取消置顶状态
+          if (MouseTracker.state != MouseTrackingState.disabled) {
+            await windowManager.setAlwaysOnTop(false);
+            debugPrint('智能停靠：窗口获得焦点，但处于托盘模式，保持任务栏隐藏');
+          }
+          return;
+        }
+      } catch (e) {
+        // MyTray可能未初始化，继续执行原有逻辑
+        debugPrint('智能停靠：检查托盘模式状态失败：$e');
+      }
+
       // 如果当前处于智能停靠状态，取消置顶设置
       if (MouseTracker.state != MouseTrackingState.disabled) {
         await windowManager.setAlwaysOnTop(false);

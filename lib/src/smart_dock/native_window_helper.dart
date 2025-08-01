@@ -191,6 +191,62 @@ class NativeWindowHelper {
     }
   }
 
+  /// 设置窗口为不激活任务栏模式
+  ///
+  /// 使用 WS_EX_NOACTIVATE 扩展样式防止窗口激活系统任务栏
+  /// 主要用于托盘模式下的智能停靠窗口
+  static Future<bool> setNoActivateTaskbar(bool enable) async {
+    if (!Platform.isWindows || !_initialized || _user32 == null) {
+      debugPrint('原生窗口助手：非Windows平台或未初始化，跳过任务栏激活控制');
+      return true;
+    }
+
+    try {
+      // 获取当前窗口句柄
+      final windowId = await windowManager.getId();
+      final hwnd = Pointer<IntPtr>.fromAddress(windowId);
+
+      // 定义Windows API常量
+      // ignore: constant_identifier_names
+      const int GWL_EXSTYLE = -20;
+      // ignore: constant_identifier_names
+      const int WS_EX_NOACTIVATE = 0x08000000;
+
+      // 获取Windows API函数
+      final getWindowLongPtr = _user32!.lookupFunction<
+          IntPtr Function(IntPtr, Int32),
+          int Function(int, int)>('GetWindowLongPtrW');
+      final setWindowLongPtr = _user32!.lookupFunction<
+          IntPtr Function(IntPtr, Int32, IntPtr),
+          int Function(int, int, int)>('SetWindowLongPtrW');
+
+      // 获取当前扩展样式
+      final currentExStyle = getWindowLongPtr(hwnd.address, GWL_EXSTYLE);
+
+      int newExStyle;
+      if (enable) {
+        // 添加 WS_EX_NOACTIVATE 样式
+        newExStyle = currentExStyle | WS_EX_NOACTIVATE;
+      } else {
+        // 移除 WS_EX_NOACTIVATE 样式
+        newExStyle = currentExStyle & ~WS_EX_NOACTIVATE;
+      }
+
+      final result = setWindowLongPtr(hwnd.address, GWL_EXSTYLE, newExStyle);
+
+      if (result != 0) {
+        debugPrint('原生窗口助手：成功设置不激活任务栏模式：$enable');
+        return true;
+      } else {
+        debugPrint('原生窗口助手：设置不激活任务栏模式失败');
+        return false;
+      }
+    } catch (e) {
+      debugPrint('原生窗口助手：设置不激活任务栏模式出错：$e');
+      return false;
+    }
+  }
+
   /// 清理资源
   static void dispose() {
     _user32 = null;

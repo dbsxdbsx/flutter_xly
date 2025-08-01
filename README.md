@@ -66,11 +66,7 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 
 ## 待办事项（TODOs）
 
-- tray and smart dock
-- compact style of ` MyRoute<Page7Controller>(`
 - add My prefix for `AdaptiveNavigationItem`?
-- tray hide tray method after shown the tray?
-- tray left click to toggle show or hide?
 
 - the MySacffold is issued, make it a ppl like sidebar widget?
 - dialogsheet, into MyDialog or MyMenu?
@@ -437,6 +433,27 @@ MyTray 特性：
 - **早期检测**：图标缺失时提供详细错误信息和解决方案
 - **完全可选**：不需要托盘功能时完全不涉及，零影响
 - **配置优先级**：如果同时提供 `tray` 参数和 `services` 中的MyTray，`tray` 参数优先
+- **🆕 智能托盘隐藏**：根据智能停靠状态自动选择隐藏模式，与智能停靠功能完美协作
+
+#### 智能托盘隐藏功能
+
+MyTray 现在支持智能托盘隐藏，能够根据当前窗口状态智能决策隐藏行为：
+
+- **普通模式**：窗口未处于智能停靠状态时，完全隐藏窗口和任务栏图标
+- **智能停靠模式**：窗口处于智能停靠状态时，只隐藏任务栏图标，保持智能停靠功能
+- **任务栏激活控制**：防止在智能停靠模式下意外激活系统任务栏
+
+```dart
+// 智能托盘隐藏（自动选择模式）
+MyTray.to.hide();  // 根据当前状态智能选择隐藏方式
+
+// 从托盘恢复
+MyTray.to.pop();   // 恢复窗口和任务栏显示
+```
+
+**详细文档**：
+- [智能托盘用户指南](.doc/smart_tray_user_guide.md) - 用户使用说明
+- [智能托盘技术文档](.doc/smart_tray_technical.md) - 开发者技术细节
 
 ### 使用系统通知 (MyNotify)
 
@@ -1331,13 +1348,48 @@ await MyApp.setDraggableEnabled(true);   // 允许拖动窗口
 bool canDrag = MyApp.isDraggableEnabled();
 
 // 双击最大化控制
-await MyApp.setDoubleClickFullScreenEnabled(true);  // 允许双击最大化
-bool canDoubleClick = MyApp.isDoubleClickFullScreenEnabled();
+await MyApp.setDoubleClickMaximizeEnabled(true);  // 允许双击最大化
+bool canDoubleClick = MyApp.isDoubleClickMaximizeEnabled();
+
+// 全屏功能控制
+await MyApp.setFullScreenEnabled(true);   // 启用全屏功能
+bool canFullScreen = MyApp.isFullScreenEnabled();
+await MyApp.toggleFullScreen();           // 切换全屏状态
 
 // 标题栏显示控制
 await MyApp.setTitleBarHidden(false);    // 显示标题栏
 bool isHidden = MyApp.isTitleBarHidden();
 ```
+
+#### 全屏功能详细说明
+
+全屏功能让窗口占据整个屏幕，隐藏任务栏等系统UI，提供沉浸式体验：
+
+**基本使用**：
+```dart
+// 检查全屏功能是否可用
+if (MyApp.isFullScreenEnabled()) {
+  // 切换全屏状态
+  await MyApp.toggleFullScreen();
+}
+
+// 或者直接切换（内部会自动检查）
+await MyApp.toggleFullScreen();
+```
+
+**与智能停靠的交互**：
+- ✅ **正常状态下**：全屏功能正常工作
+- ❌ **智能停靠状态下**：全屏功能自动禁用，防止功能冲突
+- 💡 **使用建议**：如需使用全屏功能，请先退出智能停靠模式
+
+**全屏 vs 最大化的区别**：
+- **最大化**：窗口占据工作区域，任务栏等系统UI仍然可见
+- **全屏**：窗口占据整个屏幕，隐藏所有系统UI，提供完全沉浸式体验
+
+**注意事项**：
+- 全屏功能仅在桌面平台（Windows、macOS、Linux）上可用
+- 在智能停靠状态下会自动禁用，避免状态冲突
+- 退出全屏后窗口会恢复到之前的状态
 
  ### 使用 appBuilder 添加全局浮动栏
 
