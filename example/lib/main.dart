@@ -189,7 +189,7 @@ void main() async {
           MyAdaptiveNavigationItem(
             icon: const Icon(Icons.tune),
             selectedIcon: const Icon(Icons.tune_outlined),
-            label: 'SpinBox',
+            label: '自定义编辑框',
             onTap: () {
               Get.toNamed(MyRoutes.page7);
             },

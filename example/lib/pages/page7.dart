@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:xly/xly.dart';
 
-/// SpinBox 测试页面
+/// 自定义编辑框 测试页面
 class Page7 extends StatelessWidget {
   const Page7({super.key});
 
@@ -25,7 +25,7 @@ class Page7 extends StatelessWidget {
                     ),
                   ),
                   SizedBox(height: 16.h),
-                  _buildBasicSpinBoxes(controller),
+                  _buildBasicEditBoxes(controller),
                   SizedBox(height: 32.h),
                   Text(
                     '自定义样式',
@@ -35,7 +35,7 @@ class Page7 extends StatelessWidget {
                     ),
                   ),
                   SizedBox(height: 16.h),
-                  _buildStyledSpinBoxes(controller),
+                  _buildStyledEditBoxes(controller),
                 ],
               ),
             ),
@@ -66,21 +66,21 @@ class Page7 extends StatelessWidget {
     );
   }
 
-  Widget _buildBasicSpinBoxes(Page7Controller controller) {
+  Widget _buildBasicEditBoxes(Page7Controller controller) {
     return Column(
       children: [
-        // 基础数字输入框
+        // 基础自定义编辑框
         MySpinBox(
-          label: '基础数字输入框',
+          label: '基础自定义编辑框',
           initialValue: controller.basicValue,
           min: 0,
           max: 100,
           onChanged: controller.onBasicValueChanged,
         ),
         SizedBox(height: 16.h),
-        // 可编辑的数字输入框
+        // 可编辑的自定义编辑框
         MySpinBox(
-          label: '可编辑的数字输入框（最大10000）',
+          label: '可编辑的自定义编辑框（最大10000）',
           initialValue: controller.editableValue,
           min: 0,
           max: 10000,
@@ -88,9 +88,9 @@ class Page7 extends StatelessWidget {
           onChanged: controller.onEditableValueChanged,
         ),
         SizedBox(height: 16.h),
-        // 带步长的数字输入框
+        // 带步长的自定义编辑框
         MySpinBox(
-          label: '步长为5的数字输入框',
+          label: '步长为5的自定义编辑框',
           initialValue: controller.steppedValue,
           min: 0,
           max: 100,
@@ -98,9 +98,9 @@ class Page7 extends StatelessWidget {
           onChanged: controller.onSteppedValueChanged,
         ),
         SizedBox(height: 16.h),
-        // 带后缀的数字输入框
+        // 带后缀的自定义编辑框
         MySpinBox(
-          label: '带后缀的数字输入框',
+          label: '带后缀的自定义编辑框',
           initialValue: controller.suffixValue,
           min: 0,
           max: 100,
@@ -111,7 +111,7 @@ class Page7 extends StatelessWidget {
     );
   }
 
-  Widget _buildStyledSpinBoxes(Page7Controller controller) {
+  Widget _buildStyledEditBoxes(Page7Controller controller) {
     return Column(
       children: [
         // 自定义字体大小
@@ -152,15 +152,15 @@ class Page7 extends StatelessWidget {
   }
 }
 
-/// SpinBox 测试页面控制器
+/// 自定义编辑框 测试页面控制器
 class Page7Controller extends GetxController {
-  // 基础数字输入框的值
+  // 基础自定义编辑框的值
   double basicValue = 50;
   double editableValue = 50;
   double steppedValue = 50;
   double suffixValue = 50;
 
-  // 自定义样式数字输入框的值
+  // 自定义样式编辑框的值
   double styledValue1 = 50;
   double styledValue2 = 50;
   double styledValue3 = 50;

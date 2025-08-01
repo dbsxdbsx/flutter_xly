@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-/// A customizable spin box widget with support for numeric input and increment/decrement buttons.
+/// 自定义编辑框组件，支持数字输入和增减按钮。
 ///
-/// This widget provides a rich numeric input experience with features like:
-/// * Increment/decrement buttons
-/// * Custom styling
-/// * Value range validation
-/// * Step control
+/// 该组件提供丰富的数字输入体验，具有以下特性：
+/// * 增减按钮
+/// * 自定义样式
+/// * 数值范围验证
+/// * 步长控制
 class MySpinBox extends StatefulWidget {
   // Default style constants
   static double get defaultTitleFontSize => 15.sp;

@@ -17,7 +17,7 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 9. 自定义菜单组件
 10. 焦点管理(针对只能键盘或遥控操作的App很有用)
 11. 自定义文本编辑器(支持下拉建议和样式自定义)
-12. 自定义数字输入框(支持步进调节和范围控制)
+12. 自定义编辑框(支持步进调节和范围控制)
 13. 列表组件(`MyList`和`MyCardList`)(支持拖拽重排序、滑动删除、加载更多等功能)
 14. 卡片组件(`MyCard`)(支持leading/trailing、点击事件、拖拽、滑动删除等)
 15. 分组框组件(`MyGroupBox`)(带标题的分组容器，支持多种边框样式)
@@ -887,9 +887,9 @@ Widget buildTextEditor() {
 }
 ```
 
-### 使用自定义数字输入框
+### 使用自定义编辑框
 ```dart
-Widget buildSpinBox() {
+Widget buildEditBox() {
   return MySpinBox(
     label: '数量',
     initialValue: 0,
