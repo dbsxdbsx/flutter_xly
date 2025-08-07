@@ -65,6 +65,7 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 - `timezone: ^0.10.0` - 时区处理
 
 ## 待办事项（TODOs）
+- if needed to make `final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();` also implicitly in the `MyApp.initialize(` ?
 - the MySacffold is issued, make it a ppl like sidebar widget?
 - dialogsheet, into MyDialog or MyMenu?
 - floatBar大小不随host app窗口大小随动，stateManagement测试

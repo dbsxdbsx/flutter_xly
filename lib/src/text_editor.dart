@@ -186,21 +186,41 @@ class MyTextEditor extends GetView<MyTextEditorController> {
               focusNode: controller.focusNode,
               optionsBuilder: (TextEditingValue textEditingValue) {
                 if (!enabled) return <String>[];
+
+                // 如果刚刚选择了一个选项，不显示下拉列表
+                if (controller.justSelected) {
+                  controller.updateCurrentOptions([]);
+                  return <String>[];
+                }
+
                 final allOptions = snapshot.data ?? <String>[];
 
                 if (textEditingValue.text.isNotEmpty) {
-                  return allOptions.where(
-                    (option) => _filterOption(option, textEditingValue.text),
-                  );
+                  final filteredOptions = allOptions
+                      .where(
+                        (option) =>
+                            _filterOption(option, textEditingValue.text),
+                      )
+                      .toList();
+
+                  // 更新控制器中的选项列表，用于键盘导航
+                  controller.updateCurrentOptions(filteredOptions);
+                  return filteredOptions;
                 }
+                controller.updateCurrentOptions(allOptions);
                 return allOptions;
               },
               onSelected: (String selected) {
+                controller.markJustSelected();
                 onOptionSelected?.call(selected);
                 controller.setDropdownOpen(false);
+                controller.clearHighlight();
               },
               optionsViewBuilder: (context, onSelected, options) {
-                controller.setDropdownOpen(options.isNotEmpty);
+                // 只有在用户没有手动关闭下拉列表时才显示
+                final shouldShow =
+                    options.isNotEmpty && !controller.manuallyClosedDropdown;
+                controller.setDropdownOpen(shouldShow);
                 final dropdownWidth = constraints.maxWidth;
 
                 return _buildDropdownList(
@@ -244,17 +264,52 @@ class MyTextEditor extends GetView<MyTextEditorController> {
   }) {
     return Focus(
       onKeyEvent: (node, event) {
-        if (!controller.isDropdownOpen) return KeyEventResult.ignored;
-
-        if (event is KeyDownEvent) {
+        // 处理按键按下和重复事件（支持按住键快速导航）
+        if (event is KeyDownEvent || event is KeyRepeatEvent) {
           switch (event.logicalKey) {
             case LogicalKeyboardKey.arrowDown:
+              if (controller.isDropdownOpen) {
+                controller.navigateDown();
+                return KeyEventResult.handled;
+              }
+              break;
             case LogicalKeyboardKey.arrowUp:
+              if (controller.isDropdownOpen) {
+                controller.navigateUp();
+                return KeyEventResult.handled;
+              }
+              break;
             case LogicalKeyboardKey.enter:
-              // Let RawAutocomplete handle these keys when dropdown is open
-              return KeyEventResult.skipRemainingHandlers;
+              // Enter键只在按下时处理，不处理重复事件
+              if (event is KeyDownEvent && controller.isDropdownOpen) {
+                final selected = controller.selectHighlighted();
+                if (selected != null) {
+                  controller.markJustSelected();
+                  onOptionSelected?.call(selected);
+                  controller.setDropdownOpen(false);
+                  controller.clearHighlight();
+                  return KeyEventResult.handled;
+                }
+              }
+              break;
+            case LogicalKeyboardKey.escape:
+              // Escape键只在按下时处理，不处理重复事件
+              if (event is KeyDownEvent) {
+                if (controller.isDropdownOpen) {
+                  // 如果下拉列表打开，关闭下拉列表并标记为手动关闭
+                  controller.setDropdownOpen(false);
+                  controller.clearHighlight();
+                  controller.markDropdownManuallyClosed();
+                  return KeyEventResult.handled;
+                } else if (node.hasFocus) {
+                  // 如果编辑器有焦点但下拉列表关闭，让编辑器失去焦点
+                  controller.focusNode.unfocus();
+                  return KeyEventResult.handled;
+                }
+              }
+              break;
             default:
-              return KeyEventResult.ignored;
+              break;
           }
         }
         return KeyEventResult.ignored;
@@ -268,6 +323,8 @@ class MyTextEditor extends GetView<MyTextEditorController> {
         inputFormatters: inputFormatters,
         onChanged: (value) {
           controller.updateHasText(value);
+          // 用户开始输入时，重置手动关闭标志，允许下拉列表重新显示
+          controller.resetManuallyClosedFlag();
           onChanged?.call(value);
         },
         maxLines: maxLines,
@@ -371,11 +428,19 @@ class MyTextEditor extends GetView<MyTextEditorController> {
     double dropdownWidth,
   ) {
     final scrollController = ScrollController();
-    final visibleOptions = options.take(maxShowDropDownItems).toList();
+
+    // 将ScrollController和参数传递给控制器
+    controller.setDropdownScrollController(scrollController);
+    controller.setDropdownParameters(
+      itemHeight: defaultDropdownItemHeight.h,
+      maxVisibleItems: maxShowDropDownItems,
+    );
 
     // 计算实际需要的高度
     final double itemHeight = defaultDropdownItemHeight.h;
-    final double adaptiveHeight = itemHeight * visibleOptions.length;
+    final int totalOptions = options.length;
+    final int displayItems = totalOptions.clamp(1, maxShowDropDownItems);
+    final double adaptiveHeight = itemHeight * displayItems;
     final double maxHeight = dropdownMaxHeight ?? defaultDropdownMaxHeight.h;
     final double finalHeight = adaptiveHeight.clamp(0, maxHeight);
 
@@ -410,56 +475,20 @@ class MyTextEditor extends GetView<MyTextEditorController> {
     Iterable<String> options,
     ScrollController scrollController,
   ) {
-    return Focus(
-      onKeyEvent: (node, event) {
-        if (event is! KeyDownEvent) return KeyEventResult.ignored;
-
-        final optionsList = options.toList();
-        final currentIndex = controller.highlightedOption == null
-            ? -1
-            : optionsList.indexOf(controller.highlightedOption as String);
-
-        switch (event.logicalKey) {
-          case LogicalKeyboardKey.arrowDown:
-            final nextIndex =
-                currentIndex < optionsList.length - 1 ? currentIndex + 1 : 0;
-            controller.setHighlightedOption(optionsList[nextIndex]);
-            return KeyEventResult.handled;
-
-          case LogicalKeyboardKey.arrowUp:
-            final previousIndex =
-                currentIndex > 0 ? currentIndex - 1 : optionsList.length - 1;
-            controller.setHighlightedOption(optionsList[previousIndex]);
-            return KeyEventResult.handled;
-
-          case LogicalKeyboardKey.enter:
-          case LogicalKeyboardKey.space:
-            if (controller.highlightedOption != null) {
-              onSelected(controller.highlightedOption as String);
-              return KeyEventResult.handled;
-            }
-            break;
-
-          default:
-            break;
-        }
-        return KeyEventResult.ignored;
-      },
-      child: Obx(() {
-        final highlighted = controller.highlightedOption;
-        final visibleOptions = options.take(maxShowDropDownItems).toList();
-        return ListView.builder(
-          controller: scrollController,
-          padding: EdgeInsets.zero,
-          itemCount: visibleOptions.length,
-          itemBuilder: (context, index) => _buildDropdownItem(
-            visibleOptions[index],
-            highlighted,
-            onSelected,
-          ),
-        );
-      }),
-    );
+    return Obx(() {
+      final highlighted = controller.highlightedOption;
+      final allOptions = options.toList(); // 使用所有选项，不限制数量
+      return ListView.builder(
+        controller: scrollController,
+        padding: EdgeInsets.zero,
+        itemCount: allOptions.length, // 显示所有选项
+        itemBuilder: (context, index) => _buildDropdownItem(
+          allOptions[index],
+          highlighted,
+          onSelected,
+        ),
+      );
+    });
   }
 
   Widget _buildDropdownItem(
@@ -472,7 +501,6 @@ class MyTextEditor extends GetView<MyTextEditorController> {
     return MouseRegion(
       onEnter: (_) {
         controller.setHighlightedOption(option);
-        FocusManager.instance.primaryFocus?.requestFocus();
       },
       child: InkWell(
         onTap: () => onSelected(option),
@@ -559,6 +587,27 @@ class MyTextEditorController extends GetxController {
   /// Whether the text editor contains any text
   final _hasText = false.obs;
 
+  /// Current available options for keyboard navigation
+  final _currentOptions = <String>[].obs;
+
+  /// Current highlighted index for keyboard navigation
+  final _highlightedIndex = (-1).obs;
+
+  /// Flag to indicate if an option was just selected
+  final _justSelected = false.obs;
+
+  /// Flag to indicate if user manually closed the dropdown
+  final _manuallyClosedDropdown = false.obs;
+
+  /// ScrollController for dropdown list
+  ScrollController? _dropdownScrollController;
+
+  /// Dropdown item height for scroll calculation
+  double _itemHeight = 48.0;
+
+  /// Maximum visible items in dropdown
+  int _maxVisibleItems = 5;
+
   late final FocusNode focusNode;
 
   @override
@@ -587,8 +636,19 @@ class MyTextEditorController extends GetxController {
   void setDropdownOpen(bool open) => _isDropdownOpen.value = open;
   bool get isDropdownOpen => _isDropdownOpen.value;
 
-  void setHighlightedOption(String? option) =>
-      _highlightedOption.value = option;
+  void setHighlightedOption(String? option) {
+    _highlightedOption.value = option;
+    // 同步更新索引，确保键盘导航从正确位置继续
+    if (option != null) {
+      final index = _currentOptions.indexOf(option);
+      if (index != -1) {
+        _highlightedIndex.value = index;
+      }
+    } else {
+      _highlightedIndex.value = -1;
+    }
+  }
+
   String? get highlightedOption => _highlightedOption.value;
 
   void updateHasText(String text) {
@@ -596,4 +656,164 @@ class MyTextEditorController extends GetxController {
   }
 
   bool get hasText => _hasText.value;
+
+  /// Update current options for keyboard navigation
+  void updateCurrentOptions(List<String> options) {
+    _currentOptions.value = options;
+    // 重置高亮索引
+    _highlightedIndex.value = -1;
+    _highlightedOption.value = null;
+  }
+
+  /// Clear highlight
+  void clearHighlight() {
+    _highlightedOption.value = null;
+    _highlightedIndex.value = -1;
+  }
+
+  /// Mark that an option was just selected
+  void markJustSelected() {
+    _justSelected.value = true;
+    // 延迟重置标志，给optionsBuilder时间响应
+    Future.delayed(const Duration(milliseconds: 100), () {
+      _justSelected.value = false;
+    });
+  }
+
+  /// Check if an option was just selected
+  bool get justSelected => _justSelected.value;
+
+  /// Check if user manually closed the dropdown
+  bool get manuallyClosedDropdown => _manuallyClosedDropdown.value;
+
+  /// Mark that user manually closed the dropdown
+  void markDropdownManuallyClosed() {
+    _manuallyClosedDropdown.value = true;
+  }
+
+  /// Reset the manually closed flag (when user starts typing or focuses)
+  void resetManuallyClosedFlag() {
+    _manuallyClosedDropdown.value = false;
+  }
+
+  /// Set dropdown scroll controller
+  void setDropdownScrollController(ScrollController? controller) {
+    _dropdownScrollController = controller;
+  }
+
+  /// Set dropdown parameters for scroll calculation
+  void setDropdownParameters(
+      {required double itemHeight, required int maxVisibleItems}) {
+    _itemHeight = itemHeight;
+    _maxVisibleItems = maxVisibleItems;
+  }
+
+  /// Navigate to next option
+  void navigateDown() {
+    if (_currentOptions.isEmpty) return;
+
+    final currentIndex = _highlightedIndex.value;
+    int nextIndex;
+
+    if (currentIndex == -1) {
+      // 如果没有选中任何项，选中第一项
+      nextIndex = 0;
+    } else if (currentIndex < _currentOptions.length - 1) {
+      // 如果不是最后一项，移动到下一项
+      nextIndex = currentIndex + 1;
+    } else {
+      // 如果已经是最后一项，保持在最后一项
+      nextIndex = currentIndex;
+    }
+
+    _highlightedIndex.value = nextIndex;
+    _highlightedOption.value = _currentOptions[nextIndex];
+
+    // 自动滚动到可见位置（使用实际的widget属性）
+    _scrollToIndex(nextIndex);
+  }
+
+  /// Navigate to previous option
+  void navigateUp() {
+    if (_currentOptions.isEmpty) return;
+
+    final currentIndex = _highlightedIndex.value;
+    int previousIndex;
+
+    if (currentIndex == -1) {
+      // 如果没有选中任何项，选中最后一项
+      previousIndex = _currentOptions.length - 1;
+    } else if (currentIndex > 0) {
+      // 如果不是第一项，移动到上一项
+      previousIndex = currentIndex - 1;
+    } else {
+      // 如果已经是第一项，保持在第一项
+      previousIndex = currentIndex;
+    }
+
+    _highlightedIndex.value = previousIndex;
+    _highlightedOption.value = _currentOptions[previousIndex];
+
+    // 自动滚动到可见位置（使用实际的widget属性）
+    _scrollToIndex(previousIndex);
+  }
+
+  /// Scroll to specific index in dropdown list
+  void _scrollToIndex(int index) {
+    if (_dropdownScrollController == null ||
+        !_dropdownScrollController!.hasClients) {
+      return;
+    }
+
+    // 如果总选项数不超过最大可见数，不需要滚动
+    if (_currentOptions.length <= _maxVisibleItems) {
+      return;
+    }
+
+    final double currentOffset = _dropdownScrollController!.offset;
+
+    // 计算当前可视区域内第一个和最后一个完全可见项的索引
+    final int firstVisibleIndex = (currentOffset / _itemHeight).floor();
+    final int lastVisibleIndex = firstVisibleIndex + _maxVisibleItems - 1;
+
+    double? targetOffset;
+
+    // 如果选中项在可视区域上方，滚动到该项成为第一个可见项
+    if (index < firstVisibleIndex) {
+      targetOffset = index * _itemHeight;
+    }
+    // 如果选中项在可视区域下方，滚动到该项成为最后一个可见项
+    else if (index > lastVisibleIndex) {
+      targetOffset = (index - _maxVisibleItems + 1) * _itemHeight;
+    }
+
+    // 只有需要滚动时才执行滚动
+    if (targetOffset != null) {
+      final double maxOffset =
+          (_currentOptions.length - _maxVisibleItems) * _itemHeight;
+      final double clampedOffset =
+          targetOffset.clamp(0.0, maxOffset > 0 ? maxOffset : 0.0);
+
+      // 如果当前有动画正在进行，先停止它
+      if (_dropdownScrollController!.position.isScrollingNotifier.value) {
+        _dropdownScrollController!.jumpTo(_dropdownScrollController!.offset);
+      }
+
+      // 使用更快的滚动动画
+      _dropdownScrollController!.animateTo(
+        clampedOffset,
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeOut,
+      );
+    }
+  }
+
+  /// Select current highlighted option
+  String? selectHighlighted() {
+    if (_highlightedIndex.value >= 0 &&
+        _highlightedIndex.value < _currentOptions.length) {
+      return _currentOptions[_highlightedIndex.value];
+    }
+    return null;
+  }
 }
