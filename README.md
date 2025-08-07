@@ -91,6 +91,15 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 - 支持所有平台：Android、iOS、macOS、Windows、Linux
 - 与 MyTray 职责分离：MyTray 专注托盘管理，MyNotify 专注系统通知
 
+### MyTextEditor 高级文本编辑器
+- 详细使用指南：[.doc/my_text_editor_usage_guide.md](.doc/my_text_editor_usage_guide.md)
+- 支持智能下拉建议、键盘导航、自定义样式等高级特性
+- 智能键盘导航：上下箭头键导航，Enter选择，Escape关闭
+- 鼠标键盘协同：鼠标悬停与键盘导航状态智能同步
+- 自动滚动系统：选中项自动滚动到可视区域，支持大量选项流畅导航
+- 防抖动机制：选择选项后智能防止下拉列表闪烁
+- 手动关闭记忆：用户主动关闭下拉列表后，输入新内容前不会自动重新打开
+
 ### MyScaffold 响应式改进
 - 所有内部尺寸属性已全面使用ScreenUtil响应式单位（.w/.h/.r/.sp）
 - 包括边距、内边距、圆角、容器尺寸、图标大小、字体大小等
@@ -866,27 +875,206 @@ Widget buildRightMenu() {
 ```
 
 ### 使用自定义文本编辑器
+
+> 📖 **详细使用指南**：[MyTextEditor 使用指南](.doc/my_text_editor_usage_guide.md) - 包含完整的API说明、高级用法和最佳实践
+
+#### 基础用法
 ```dart
-Widget buildTextEditor() {
+Widget buildBasicTextEditor() {
+  final controller = TextEditingController();
+
   return MyTextEditor(
-    textController: TextEditingController(),
-    label: '输入文本',
-    hint: '请输入...',
+    textController: controller,
+    label: '基础输入',
+    hint: '请输入文本',
     clearable: true,
-    onChanged: (value) => print('文本已更改: $value'),
-    getDropDownOptions: () async {
-      // 返回下拉建议列表
-      return ['选项1', '选项2', '选项3'];
-    },
-    onOptionSelected: (option) => print('选择了: $option'),
-    // 自定义样式
-    labelFontSize: 15.0,
-    textFontSize: 12.0,
-    borderRadius: 4.0,
-    focusedBorderColor: Colors.blue,
+    onChanged: (value) => debugPrint('文本已更改: $value'),
   );
 }
 ```
+
+#### 数字输入框
+```dart
+Widget buildNumberEditor() {
+  final numberController = TextEditingController();
+
+  return MyTextEditor(
+    textController: numberController,
+    label: '数字输入',
+    hint: '请输入数字',
+    keyboardType: TextInputType.number,
+    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+  );
+}
+```
+
+#### 多行文本输入
+```dart
+Widget buildMultilineEditor() {
+  final multilineController = TextEditingController();
+
+  return MyTextEditor(
+    textController: multilineController,
+    label: '多行输入',
+    hint: '请输入多行文本',
+    maxLines: 3,
+    height: 100.h,
+  );
+}
+```
+
+#### 带下拉建议的输入框
+```dart
+Widget buildDropdownEditor() {
+  final dropdownController = TextEditingController();
+
+  return MyTextEditor(
+    textController: dropdownController,
+    label: '颜色选择',
+    hint: '选择或输入颜色',
+    maxShowDropDownItems: 6,
+    getDropDownOptions: () async {
+      // 模拟异步获取数据
+      await Future.delayed(const Duration(milliseconds: 100));
+      return ['红色', '蓝色', '绿色', '黄色', '紫色', '橙色'];
+    },
+    onOptionSelected: (option) {
+      dropdownController.text = option;
+      debugPrint('选择了: $option');
+    },
+    // 自定义选项前缀图标
+    leadingBuilder: (option) => Container(
+      width: 20.w,
+      height: 20.w,
+      decoration: BoxDecoration(
+        color: _getColorFromName(option),
+        shape: BoxShape.circle,
+      ),
+    ),
+  );
+}
+
+Color _getColorFromName(String name) {
+  switch (name) {
+    case '红色': return Colors.red;
+    case '蓝色': return Colors.blue;
+    case '绿色': return Colors.green;
+    case '黄色': return Colors.yellow;
+    case '紫色': return Colors.purple;
+    case '橙色': return Colors.orange;
+    default: return Colors.grey;
+  }
+}
+```
+
+#### 自定义样式输入框
+```dart
+Widget buildStyledEditor() {
+  final styledController = TextEditingController();
+
+  return MyTextEditor(
+    textController: styledController,
+    label: '自定义样式输入框',
+    hint: '自定义样式示例',
+    clearable: true,
+    onCleared: () => MyToast.showInfo('清除了输入内容'),
+    // 自定义样式
+    borderRadius: 50.r,
+    borderWidth: 2,
+    backgroundColor: Colors.blue[50],
+    focusedBorderColor: Colors.blue,
+    labelColor: Colors.blue[700],
+    labelFontSize: 15.sp,
+    textFontSize: 14.sp,
+  );
+}
+```
+
+#### 完整的控制器管理示例
+```dart
+class MyTextEditorExample extends GetView<MyTextEditorController> {
+  const MyTextEditorExample({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        MyTextEditor(
+          textController: controller.basicController,
+          label: '基础输入',
+          hint: '请输入文本',
+          clearable: true,
+        ),
+        SizedBox(height: 16.h),
+        MyTextEditor(
+          textController: controller.colorController,
+          label: '颜色选择',
+          hint: '选择或输入颜色',
+          getDropDownOptions: controller.getColors,
+          onOptionSelected: controller.onColorSelected,
+          leadingBuilder: (option) => Container(
+            width: 20.w,
+            height: 20.w,
+            decoration: BoxDecoration(
+              color: controller.getColorFromName(option),
+              shape: BoxShape.circle,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class MyTextEditorController extends GetxController {
+  final basicController = TextEditingController();
+  final colorController = TextEditingController();
+
+  @override
+  void onClose() {
+    basicController.dispose();
+    colorController.dispose();
+    super.onClose();
+  }
+
+  void onColorSelected(String value) => colorController.text = value;
+
+  Future<List<String>> getColors() async {
+    await Future.delayed(const Duration(milliseconds: 100));
+    return ['红色', '蓝色', '绿色', '黄色', '紫色', '橙色'];
+  }
+
+  Color getColorFromName(String name) {
+    switch (name) {
+      case '红色': return Colors.red;
+      case '蓝色': return Colors.blue;
+      case '绿色': return Colors.green;
+      case '黄色': return Colors.yellow;
+      case '紫色': return Colors.purple;
+      case '橙色': return Colors.orange;
+      default: return Colors.grey;
+    }
+  }
+}
+```
+
+#### MyTextEditor 主要特性
+
+- **智能下拉导航**：支持键盘上下箭头导航，Enter选择，Escape关闭
+- **鼠标键盘协同**：鼠标悬停与键盘导航状态智能同步
+- **自动滚动**：选中项自动滚动到可视区域，支持大量选项流畅导航
+- **防抖动机制**：选择选项后智能防止下拉列表闪烁
+- **手动关闭记忆**：用户主动关闭下拉列表后，输入新内容前不会自动重新打开
+- **丰富的自定义选项**：支持样式、颜色、字体、边框等全方位自定义
+- **响应式设计**：所有尺寸属性支持ScreenUtil响应式单位
+
+#### 使用注意事项
+
+1. **控制器管理**：记得在控制器的`onClose()`方法中释放TextEditingController
+2. **响应式单位**：建议使用`.w`、`.h`、`.r`、`.sp`等响应式单位
+3. **异步数据**：`getDropDownOptions`支持异步获取数据，适合网络请求场景
+4. **键盘导航**：下拉列表支持完整的键盘导航，提升用户体验
+5. **性能优化**：大量选项时使用`maxShowDropDownItems`限制显示数量
 
 ### 使用自定义编辑框
 ```dart
