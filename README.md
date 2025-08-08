@@ -59,10 +59,36 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 - `url_launcher: ^6.2.5` - URL启动器
 - `path: ^1.8.0` - 路径操作
 - `xml: ^6.5.0` - XML解析
-- `icons_launcher: ^3.0.0` - 图标生成
 - `tray_manager: ^0.2.3` - 系统托盘管理
 - `flutter_local_notifications: ^19.4.0` - 本地通知
 - `timezone: ^0.10.0` - 时区处理
+
+## 应用图标生成
+
+本包内置自研的图标生成工具，支持一键为所有平台生成应用图标。
+
+```bash
+# 从单个源图标生成所有平台的图标
+dart run xly:generate icon="path/to/your/icon.png"
+```
+
+支持的平台：
+- Android（多种密度的 mipmap 图标）
+- iOS（包含所有尺寸规格，自动移除 alpha 通道）
+- Windows（ICO 格式，包含多种尺寸）
+- macOS（包含 Contents.json 配置）
+- Linux（256x256 PNG）
+- Web（包含 favicon 和 PWA 图标）
+
+特性：
+- 自动检测项目中存在的平台
+- 支持 PNG、JPEG、JPG 格式输入
+- 自动创建必要的目录结构
+- 生成平台特定的配置文件
+- 建议源图标尺寸：1024x1024 像素或更大
+
+详细使用说明和注意事项请参考：[tool/README.md](tool/README.md)
+
 
 ## 待办事项（TODOs）
 - if needed to make `final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();` also implicitly in the `MyApp.initialize(` ?
@@ -933,6 +959,7 @@ Widget buildDropdownEditor() {
     label: '颜色选择',
     hint: '选择或输入颜色',
     maxShowDropDownItems: 6,
+    dropdownShowBelow: true, // 默认显示在下方
     getDropDownOptions: () async {
       // 模拟异步获取数据
       await Future.delayed(const Duration(milliseconds: 100));
@@ -964,6 +991,25 @@ Color _getColorFromName(String name) {
     case '橙色': return Colors.orange;
     default: return Colors.grey;
   }
+}
+
+// 下拉列表显示在上方的示例
+Widget buildTopDropdownEditor() {
+  final countryController = TextEditingController();
+
+  return MyTextEditor(
+    textController: countryController,
+    label: '国家选择',
+    hint: '选择或输入国家',
+    dropdownShowBelow: false, // 显示在上方
+    getDropDownOptions: () async {
+      return ['中国', '美国', '日本', '韩国', '英国', '法国'];
+    },
+    onOptionSelected: (option) {
+      countryController.text = option;
+      debugPrint('选择了: $option');
+    },
+  );
 }
 ```
 
@@ -1065,6 +1111,7 @@ class MyTextEditorController extends GetxController {
 - **自动滚动**：选中项自动滚动到可视区域，支持大量选项流畅导航
 - **防抖动机制**：选择选项后智能防止下拉列表闪烁
 - **手动关闭记忆**：用户主动关闭下拉列表后，输入新内容前不会自动重新打开
+- **灵活的下拉位置**：支持下拉列表显示在输入框上方或下方，适应不同布局需求
 - **丰富的自定义选项**：支持样式、颜色、字体、边框等全方位自定义
 - **响应式设计**：所有尺寸属性支持ScreenUtil响应式单位
 
@@ -1773,34 +1820,6 @@ class MyHomePage extends StatelessWidget {
 - ✅ **灵活配置**：可控制滚动条显示和自动滚动行为
 - ✅ **完全透明**：框架级功能，用户代码零改动
 
-### 应用图标生成
-
-本包还提供了简化版的图标生成工具，支持一键为所有平台生成应用图标：
-
-```bash
-# 从单个源图标生成所有平台的图标
-dart run xly:generate icon="path/to/your/icon.png"
-```
-
-**支持的平台：**
-- Android (多种密度的mipmap图标)
-- iOS (包含所有尺寸规格，自动移除alpha通道)
-- Windows (ICO格式，包含多种尺寸)
-- macOS (包含Contents.json配置)
-- Linux (256x256 PNG)
-- Web (包含favicon和PWA图标)
-
-**特性：**
-- 自动检测项目中存在的平台
-- 支持PNG、JPEG、JPG格式输入
-- 自动创建必要的目录结构
-- 生成平台特定的配置文件
-- 建议源图标尺寸：1024x1024像素或更大
-
-**更多自定义需求：**
-如需更高级的图标配置（如Android自适应图标、iOS深色/着色变体等），请使用原始的 [icons_launcher](https://pub.dev/packages/icons_launcher) 包。
-
-详细使用说明和注意事项请参考：[tool/README.md](tool/README.md)
 
 ## 完整示例
 
@@ -1825,7 +1844,3 @@ dart run xly:generate icon="path/to/your/icon.png"
 ## 许可证
 
 [MIT](https://choosealicense.com/licenses/mit/)
-
-## 图标生成功能
-
-本项目已集成 [`icons_launcher`](https://pub.dev/packages/icons_launcher) 包，可以方便地生成各种平台的应用图标。用户无需单独导入该包。

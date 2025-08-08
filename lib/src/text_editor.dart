@@ -37,6 +37,7 @@ class MyTextEditor extends GetView<MyTextEditorController> {
   final Color? dropdownHighlightColor;
   final double? dropdownMaxHeight;
   final int maxShowDropDownItems;
+  final bool dropdownShowBelow;
 
   // Style properties - Size
   final double? height;
@@ -121,6 +122,7 @@ class MyTextEditor extends GetView<MyTextEditorController> {
     this.dropdownHighlightColor,
     this.dropdownMaxHeight = 200,
     this.maxShowDropDownItems = 5,
+    this.dropdownShowBelow = true,
 
     // Style properties - Size
     this.height,
@@ -444,7 +446,12 @@ class MyTextEditor extends GetView<MyTextEditorController> {
     final double maxHeight = dropdownMaxHeight ?? defaultDropdownMaxHeight.h;
     final double finalHeight = adaptiveHeight.clamp(0, maxHeight);
 
-    return Align(
+    // 计算偏移量：当dropdownShowBelow为false时，向上偏移
+    final double inputFieldHeight = (height ?? defaultTextEditorHeight).h;
+    final double offsetY =
+        dropdownShowBelow ? 0.0 : -(inputFieldHeight + finalHeight);
+
+    final Widget dropdownWidget = Align(
       alignment: Alignment.topLeft,
       child: Material(
         elevation: 4.0,
@@ -467,6 +474,17 @@ class MyTextEditor extends GetView<MyTextEditorController> {
         ),
       ),
     );
+
+    if (offsetY == 0.0) {
+      // 显示在下方，不需要特殊处理
+      return dropdownWidget;
+    } else {
+      // 显示在上方，使用Transform.translate并添加鼠标事件处理
+      return Transform.translate(
+        offset: Offset(0, offsetY),
+        child: dropdownWidget,
+      );
+    }
   }
 
   Widget _buildDropdownListContent(

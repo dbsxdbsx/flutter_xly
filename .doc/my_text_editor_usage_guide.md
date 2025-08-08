@@ -9,6 +9,7 @@ MyTextEditor 是 xly_flutter_package 中的高级文本编辑器组件，提供�
 ### 🎯 核心功能
 - **基础文本编辑**：支持单行和多行文本输入
 - **智能下拉建议**：异步获取建议选项，支持自定义过滤
+- **灵活的下拉位置**：支持下拉列表显示在输入框上方或下方
 - **清除功能**：可选的清除按钮，支持自定义清除回调
 - **输入限制**：支持键盘类型、输入格式化器等限制
 
@@ -79,6 +80,36 @@ class DropdownExample extends StatelessWidget {
 
 ## 高级用法
 
+### 下拉位置控制
+
+通过 `dropdownShowBelow` 参数可以控制下拉列表的显示位置：
+
+```dart
+// 默认显示在下方（推荐用于页面顶部的输入框）
+MyTextEditor(
+  textController: controller,
+  label: '城市选择',
+  hint: '请选择城市',
+  dropdownShowBelow: true, // 默认值
+  getDropDownOptions: getCities,
+  onOptionSelected: onCitySelected,
+)
+
+// 显示在上方（推荐用于页面底部的输入框）
+MyTextEditor(
+  textController: controller,
+  label: '国家选择',
+  hint: '请选择国家',
+  dropdownShowBelow: false, // 显示在上方
+  getDropDownOptions: getCountries,
+  onOptionSelected: onCountrySelected,
+)
+```
+
+**使用场景建议**：
+- `dropdownShowBelow: true`（默认）：适用于页面顶部或中部的输入框
+- `dropdownShowBelow: false`：适用于页面底部的输入框，避免被键盘遮挡
+
 ### 自定义选项显示
 
 ```dart
@@ -88,6 +119,7 @@ MyTextEditor(
   hint: '请选择国家',
   getDropDownOptions: _getCountries,
   onOptionSelected: (country) => controller.text = country,
+  dropdownShowBelow: false, // 显示在上方
   // 自定义选项前缀图标
   leadingBuilder: (option) => Flag.fromCode(
     _getCountryCode(option),

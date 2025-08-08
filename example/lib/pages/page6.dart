@@ -133,6 +133,7 @@ class Page6View extends GetView<Page6Controller> {
           hint: '选择或输入国家',
           getDropDownOptions: controller.getCountries,
           onOptionSelected: controller.onCountrySelected,
+          dropdownShowBelow: false, // 显示在上方
           leadingBuilder: (option) => Flag.fromCode(
             controller.getCountryCode(option),
             width: 24.w,
