@@ -197,7 +197,7 @@ MyTextEditor(
   hintColor: Colors.grey[500],
 
   // 下拉列表样式
-  dropdownMaxHeight: 200.h,
+  dropdownHighlightColor: Colors.blue[50],
   dropdownHighlightColor: Colors.blue[50],
   dropDownItemPadding: EdgeInsets.symmetric(
     horizontal: 16.w,
@@ -339,6 +339,11 @@ class MyFormView extends GetView<MyFormController> {
 }
 ```
 
+## 参数联动说明
+
+- 下拉高度仅由 `maxShowDropDownItems` 和单项高度共同决定：`finalHeight = itemHeight * min(totalOptions, maxShowDropDownItems)`。
+- 如需进一步限制高度，请通过调小 `maxShowDropDownItems` 或减小文字/行高来实现。
+
 ## 性能优化建议
 
 ### 1. 大量选项处理
@@ -445,7 +450,7 @@ getDropDownOptions: () async {
 | `onOptionSelected` | `ValueChanged<String>?` | `null` | 选项选择回调 |
 | `leadingBuilder` | `Widget Function(String)?` | `null` | 选项前缀构建器 |
 | `maxShowDropDownItems` | `int` | `5` | 最大显示选项数 |
-| `dropdownMaxHeight` | `double?` | `200` | 下拉列表最大高度 |
+
 
 ### 样式定制
 | 参数 | 类型 | 默认值 | 说明 |

@@ -35,7 +35,7 @@ class MyTextEditor extends GetView<MyTextEditorController> {
   final bool Function(String option, String input)? filterOption;
   final EdgeInsetsGeometry? dropDownItemPadding;
   final Color? dropdownHighlightColor;
-  final double? dropdownMaxHeight;
+
   final int maxShowDropDownItems;
   final bool dropdownShowBelow;
 
@@ -77,7 +77,7 @@ class MyTextEditor extends GetView<MyTextEditorController> {
   static const double defaultHintFontSize = 11.0;
   static const double defaultIconSize = 23.0;
   static const double defaultIconBoxSize = 32.0;
-  static const double defaultDropdownMaxHeight = 200.0;
+
   static const double defaultHorizontalPadding = 4.0;
   static const double defaultVerticalPadding = 8.0;
   static const double defaultBorderRadius = 4.0;
@@ -120,7 +120,6 @@ class MyTextEditor extends GetView<MyTextEditorController> {
     this.filterOption,
     this.dropDownItemPadding,
     this.dropdownHighlightColor,
-    this.dropdownMaxHeight = 200,
     this.maxShowDropDownItems = 5,
     this.dropdownShowBelow = true,
 
@@ -442,8 +441,7 @@ class MyTextEditor extends GetView<MyTextEditorController> {
     final int totalOptions = options.length;
     final int displayItems = totalOptions.clamp(1, maxShowDropDownItems);
     final double adaptiveHeight = itemHeight * displayItems;
-    final double maxHeight = dropdownMaxHeight ?? defaultDropdownMaxHeight.h;
-    final double finalHeight = adaptiveHeight.clamp(0, maxHeight);
+    final double finalHeight = adaptiveHeight;
 
     // 通过位移控制下拉列表相对输入框的位置：
     // - showBelow=true: 紧贴输入框下方（默认）

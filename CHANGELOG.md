@@ -1,4 +1,14 @@
 
+## 0.17.4 - 2025-08-19
+
+### Breaking Changes
+- 移除 `MyTextEditor.dropdownMaxHeight` 参数：高度现在仅由 `maxShowDropDownItems` 与单项高度共同决定（`finalHeight = itemHeight * min(totalOptions, maxShowDropDownItems)`）。若之前依赖像素级封顶，请通过调小 `maxShowDropDownItems` 或减小行高来达到类似效果。
+
+### Documentation
+- 更新 `.doc/my_text_editor_usage_guide.md`：移除 `dropdownMaxHeight` 的所有示例与参数说明，新增“参数联动说明”。
+
+
+
 ## 0.17.3 - 2025-08-19 [0e909df]
 
 ### Breaking Changes
