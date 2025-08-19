@@ -1,4 +1,18 @@
 
+## 0.17.5 - 2025-08-19
+
+### Enhanced
+- **智能托盘隐藏行为优化**：改进智能停靠模式下的"隐藏到托盘"交互体验
+  - 新增 `MouseTracker.forceCollapseToHidden()` API：支持强制收起到隐藏位同时保留悬停唤醒能力
+  - 优化 `MyTray.hide()` 在智能停靠模式下的行为：当窗口已展开时，点击"隐藏到托盘"会立即收起到边缘/角落隐藏位，避免鼠标仍在窗口区域时的视觉干扰
+  - 保持悬停唤醒功能：用户仍可通过鼠标移动到屏幕边缘重新激活窗口
+
+### Documentation
+- 更新智能托盘相关文档：
+  - README.md：补充智能收起行为说明
+  - `.doc/smart_tray_technical.md`：更新技术实现细节
+  - `.doc/smart_tray_user_guide.md`：完善用户体验说明与特别说明
+
 ## 0.17.4 - 2025-08-19
 
 ### Breaking Changes

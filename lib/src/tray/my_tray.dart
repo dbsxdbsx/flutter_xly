@@ -412,14 +412,19 @@ MyTray 构建错误：未找到 $platformName 平台的默认应用图标！
           print('MyTray: 已进入托盘模式（窗口UI已隐藏）');
         }
       } else {
-        // 在智能停靠状态，只隐藏任务栏图标，让SmartDock管理窗口UI
-        // 同时设置窗口为不激活任务栏模式，防止用户操作激活系统任务栏
+        // 在智能停靠状态：
+        // 1) 隐藏任务栏图标（已执行）
+        // 2) 设置窗口为不激活任务栏模式，防止用户操作激活系统任务栏
+        // 3) 若当前为展开态，强制收起到智能停靠的隐藏位置（但保留悬停可唤醒能力）
         final noActivateResult =
             await NativeWindowHelper.setNoActivateTaskbar(true);
 
+        // 强制收起到隐藏位置（不会禁用悬停，仅改变当前可见状态）
+        await MouseTracker.forceCollapseToHidden();
+
         if (kDebugMode) {
           print(
-              'MyTray: 已进入托盘模式（智能停靠状态，窗口UI由SmartDock管理，任务栏激活控制：${noActivateResult ? "成功" : "失败"}）');
+              'MyTray: 已进入托盘模式（智能停靠），已强制收起到隐藏位；任务栏激活控制：${noActivateResult ? "成功" : "失败"}');
         }
       }
     } catch (e) {

@@ -91,6 +91,7 @@ dart run xly:generate icon="path/to/your/icon.png"
 
 
 ## 待办事项（TODOs）
+- MyDialog， add param to set modal or not?
 - if needed to make `final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();` also implicitly in the `MyApp.initialize(` ?
 - the MySacffold is issued, make it a ppl like sidebar widget?
 - dialogsheet, into MyDialog or MyMenu?
@@ -99,6 +100,7 @@ dart run xly:generate icon="path/to/your/icon.png"
 - 静默启动？
 - MyToggleBtn?
 - permission功能？
+- clear the Print and DebugPrint for avoid ruin user code?
 
 ## 注意事项（Notes）
 
@@ -473,9 +475,10 @@ MyTray 特性：
 MyTray 现在支持智能托盘隐藏，能够根据当前窗口状态智能决策隐藏行为：
 
 - **普通模式**：窗口未处于智能停靠状态时，完全隐藏窗口和任务栏图标
-- **智能停靠模式**：窗口处于智能停靠状态时，只隐藏任务栏图标，保持智能停靠功能
+- **智能停靠模式**：窗口处于智能停靠状态时，隐藏任务栏图标并强制收起到隐藏位（保留悬停唤醒能力）
 - **任务栏激活控制**：防止在智能停靠模式下意外激活系统任务栏
 - **托盘左击（智能停靠隐藏下）**：左击托盘仅“模拟悬停弹出”，不激活不聚焦；用户首次把鼠标移入窗口后，再移出时会按常规自动收回
+- **🆕 智能收起行为**：在智能停靠已展开状态下点击"隐藏到托盘"，会立即收起到边缘/角落隐藏位，同时保持鼠标悬停可再次弹出
 
 ```dart
 // 智能托盘隐藏（自动选择模式）

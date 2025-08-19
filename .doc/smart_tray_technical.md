@@ -62,8 +62,9 @@ Future<void> hide() async {
       await windowManager.hide();
       isVisible.value = false;
     } else {
-      // 智能模式：保持窗口UI，启用任务栏激活控制
+      // 智能模式：保持窗口UI，启用任务栏激活控制，并强制收起到隐藏位
       await NativeWindowHelper.setNoActivateTaskbar(true);
+      await MouseTracker.forceCollapseToHidden(); // 强制收起但保留悬停唤醒
     }
   } catch (e) {
     // 错误处理

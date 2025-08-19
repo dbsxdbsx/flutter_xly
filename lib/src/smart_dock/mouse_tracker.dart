@@ -94,6 +94,31 @@ class MouseTracker {
     }
   }
 
+  /// 强制将窗口收起到隐藏位置（保持智能停靠悬停可用）
+  ///
+  /// 使用场景：
+  /// - 用户点击“隐藏到托盘”，但当前处于智能停靠并已弹出；
+  /// - 我们希望立即收起到边缘/角落隐藏状态，同时保留悬停唤醒能力。
+  static Future<void> forceCollapseToHidden() async {
+    try {
+      if (_state == MouseTrackingState.edgeTracking) {
+        if (!_isWindowHidden && _hiddenPosition != null) {
+          await WindowAnimationPresets.hideTo(_hiddenPosition!);
+          _isWindowHidden = true;
+          debugPrint('强制收起：边缘停靠 -> 隐藏到边缘');
+        }
+      } else if (_state == MouseTrackingState.cornerTracking) {
+        if (!_isCornerWindowHidden && _cornerHiddenPosition != null) {
+          await WindowAnimationPresets.hideTo(_cornerHiddenPosition!);
+          _isCornerWindowHidden = true;
+          debugPrint('强制收起：角落停靠 -> 隐藏到角落');
+        }
+      }
+    } catch (e) {
+      debugPrint('强制收起失败：$e');
+    }
+  }
+
   /// 开始角落鼠标跟踪
   ///
   /// [corner] 停靠角落
