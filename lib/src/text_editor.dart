@@ -435,7 +435,6 @@ class MyTextEditor extends GetView<MyTextEditorController> {
     controller.setDropdownScrollController(scrollController);
     controller.setDropdownParameters(
       itemHeight: defaultDropdownItemHeight.h,
-      maxVisibleItems: maxShowDropDownItems,
     );
 
     // 计算实际需要的高度
@@ -446,10 +445,12 @@ class MyTextEditor extends GetView<MyTextEditorController> {
     final double maxHeight = dropdownMaxHeight ?? defaultDropdownMaxHeight.h;
     final double finalHeight = adaptiveHeight.clamp(0, maxHeight);
 
-    // 计算偏移量：当dropdownShowBelow为false时，向上偏移
+    // 通过位移控制下拉列表相对输入框的位置：
+    // - showBelow=true: 紧贴输入框下方（默认）
+    // - showBelow=false: 移动到输入框上方，避免被键盘遮挡
     final double inputFieldHeight = (height ?? defaultTextEditorHeight).h;
-    final double offsetY =
-        dropdownShowBelow ? 0.0 : -(inputFieldHeight + finalHeight);
+    final double verticalOffset =
+        dropdownShowBelow ? 0.0 : -(finalHeight + inputFieldHeight);
 
     final Widget dropdownWidget = Align(
       alignment: Alignment.topLeft,
@@ -475,16 +476,18 @@ class MyTextEditor extends GetView<MyTextEditorController> {
       ),
     );
 
-    if (offsetY == 0.0) {
-      // 显示在下方，不需要特殊处理
-      return dropdownWidget;
-    } else {
-      // 显示在上方，使用Transform.translate并添加鼠标事件处理
-      return Transform.translate(
-        offset: Offset(0, offsetY),
-        child: dropdownWidget,
-      );
-    }
+    // 返回经位移后的下拉列表，使其在需要时显示到输入框上方
+    return Transform.translate(
+      offset: Offset(0, verticalOffset),
+      child: SizedBox(
+        height: finalHeight,
+        width: dropdownWidth,
+        child: Align(
+          alignment: Alignment.topLeft,
+          child: dropdownWidget,
+        ),
+      ),
+    );
   }
 
   Widget _buildDropdownListContent(
@@ -623,9 +626,6 @@ class MyTextEditorController extends GetxController {
   /// Dropdown item height for scroll calculation
   double _itemHeight = 48.0;
 
-  /// Maximum visible items in dropdown
-  int _maxVisibleItems = 5;
-
   late final FocusNode focusNode;
 
   @override
@@ -720,10 +720,8 @@ class MyTextEditorController extends GetxController {
   }
 
   /// Set dropdown parameters for scroll calculation
-  void setDropdownParameters(
-      {required double itemHeight, required int maxVisibleItems}) {
+  void setDropdownParameters({required double itemHeight}) {
     _itemHeight = itemHeight;
-    _maxVisibleItems = maxVisibleItems;
   }
 
   /// Navigate to next option
@@ -776,49 +774,47 @@ class MyTextEditorController extends GetxController {
     _scrollToIndex(previousIndex);
   }
 
-  /// Scroll to specific index in dropdown list
+  /// Scroll the dropdown so that the item at [index] is fully visible.
+  /// This version uses the actual viewport dimension and maxScrollExtent
+  /// from the ScrollController instead of an estimated visible item count.
   void _scrollToIndex(int index) {
-    if (_dropdownScrollController == null ||
-        !_dropdownScrollController!.hasClients) {
-      return;
-    }
+    final controller = _dropdownScrollController;
+    if (controller == null || !controller.hasClients) return;
 
-    // 如果总选项数不超过最大可见数，不需要滚动
-    if (_currentOptions.length <= _maxVisibleItems) {
-      return;
-    }
+    final position = controller.position;
 
-    final double currentOffset = _dropdownScrollController!.offset;
+    // 如果内容高度不超过可视高度，无需滚动
+    final contentHeight = _currentOptions.length * _itemHeight;
+    final viewportHeight = position.viewportDimension;
+    if (contentHeight <= viewportHeight) return;
 
-    // 计算当前可视区域内第一个和最后一个完全可见项的索引
-    final int firstVisibleIndex = (currentOffset / _itemHeight).floor();
-    final int lastVisibleIndex = firstVisibleIndex + _maxVisibleItems - 1;
+    final double currentOffset = position.pixels;
+    final double viewportTop = currentOffset;
+    final double viewportBottom = viewportTop + viewportHeight;
+
+    // 当前项的上下边界
+    final double itemTop = index * _itemHeight;
+    final double itemBottom = itemTop + _itemHeight;
 
     double? targetOffset;
-
-    // 如果选中项在可视区域上方，滚动到该项成为第一个可见项
-    if (index < firstVisibleIndex) {
-      targetOffset = index * _itemHeight;
-    }
-    // 如果选中项在可视区域下方，滚动到该项成为最后一个可见项
-    else if (index > lastVisibleIndex) {
-      targetOffset = (index - _maxVisibleItems + 1) * _itemHeight;
+    if (itemTop < viewportTop) {
+      // 目标项在可视区上方：把它对齐到顶部
+      targetOffset = itemTop;
+    } else if (itemBottom > viewportBottom) {
+      // 目标项在可视区下方：把它对齐到底部（让其整个露出）
+      targetOffset = itemBottom - viewportHeight;
     }
 
-    // 只有需要滚动时才执行滚动
     if (targetOffset != null) {
-      final double maxOffset =
-          (_currentOptions.length - _maxVisibleItems) * _itemHeight;
       final double clampedOffset =
-          targetOffset.clamp(0.0, maxOffset > 0 ? maxOffset : 0.0);
+          targetOffset.clamp(0.0, position.maxScrollExtent);
 
-      // 如果当前有动画正在进行，先停止它
-      if (_dropdownScrollController!.position.isScrollingNotifier.value) {
-        _dropdownScrollController!.jumpTo(_dropdownScrollController!.offset);
+      // 若正在滚动，先停止到当前像素，避免动画叠加造成抖动
+      if (position.isScrollingNotifier.value) {
+        controller.jumpTo(controller.offset);
       }
 
-      // 使用更快的滚动动画
-      _dropdownScrollController!.animateTo(
+      controller.animateTo(
         clampedOffset,
         duration: const Duration(milliseconds: 150),
         curve: Curves.easeOut,
