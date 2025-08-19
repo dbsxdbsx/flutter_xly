@@ -6,22 +6,20 @@
 
 ```mermaid
 graph TD
-    A[用户触发托盘隐藏] --> B[MyTray.hide()]
-    B --> C{检查智能停靠状态}
-    C -->|未启用智能停靠| D[普通托盘模式]
-    C -->|已启用智能停靠| E[智能停靠托盘模式]
-    
-    D --> F[隐藏窗口UI]
-    D --> G[隐藏任务栏图标]
-    
-    E --> H[保持窗口UI]
-    E --> I[隐藏任务栏图标]
-    E --> J[启用任务栏激活控制]
-    
-    K[用户恢复] --> L[MyTray.pop()]
-    L --> M[恢复任务栏图标]
-    L --> N[恢复窗口显示]
-    L --> O[恢复任务栏激活]
+  A[用户触发托盘隐藏] --> B[MyTray.hide];
+  B --> C{检查智能停靠状态};
+  C -->|未启用智能停靠| D[普通托盘模式];
+  C -->|已启用智能停靠| E[智能停靠托盘模式];
+  D --> F[隐藏窗口UI];
+  D --> G[隐藏任务栏图标];
+  E --> H[保持窗口UI];
+  E --> I[隐藏任务栏图标];
+  E --> J[启用任务栏激活控制];
+  K[用户恢复] --> L{恢复方式};
+  L -->|非智能停靠| M[MyTray.pop 显示并聚焦];
+  L -->|智能停靠隐藏| N[simulateHoverReveal 无激活弹出];
+  M --> O[恢复任务栏图标与窗口显示与任务栏激活];
+  N --> P[首次鼠标进入后恢复自动隐藏];
 ```
 
 ## ⚙️ 核心实现
@@ -32,7 +30,7 @@ graph TD
 /// 检查是否处于智能停靠模式
 bool _isInSmartDockMode() {
   try {
-    return SmartDockManager.isSmartDockingEnabled() && 
+    return SmartDockManager.isSmartDockingEnabled() &&
            MouseTracker.state != MouseTrackingState.disabled;
   } catch (e) {
     if (kDebugMode) {
@@ -54,10 +52,10 @@ Future<void> hide() async {
   try {
     // 设置托盘模式状态
     isTrayMode.value = true;
-    
+
     // 隐藏任务栏图标
     await windowManager.setSkipTaskbar(true);
-    
+
     // 根据智能停靠状态决定是否隐藏窗口UI
     if (!_isInSmartDockMode()) {
       // 普通模式：隐藏窗口UI
@@ -81,10 +79,10 @@ static Future<bool> setNoActivateTaskbar(bool enable) async {
   // Windows API常量
   const int GWL_EXSTYLE = -20;
   const int WS_EX_NOACTIVATE = 0x08000000;
-  
+
   // 获取当前扩展样式
   final currentExStyle = getWindowLongPtr(hwnd.address, GWL_EXSTYLE);
-  
+
   int newExStyle;
   if (enable) {
     // 添加 WS_EX_NOACTIVATE 样式
@@ -93,7 +91,7 @@ static Future<bool> setNoActivateTaskbar(bool enable) async {
     // 移除 WS_EX_NOACTIVATE 样式
     newExStyle = currentExStyle & ~WS_EX_NOACTIVATE;
   }
-  
+
   final result = setWindowLongPtr(hwnd.address, GWL_EXSTYLE, newExStyle);
   return result != 0;
 }
@@ -118,7 +116,7 @@ static void _restoreNormalStateOnFocus() async {
       }
       return;
     }
-    
+
     // 正常的焦点恢复逻辑...
   } catch (e) {
     debugPrint('智能停靠：恢复正常状态时出错：$e');
@@ -135,7 +133,7 @@ static void _restoreNormalStateOnFocus() async {
 await MyApp.initialize(
   // 启用智能停靠
   // （智能托盘功能依赖智能停靠状态检测）
-  
+
   // 配置托盘
   tray: MyTray(
     tooltip: "我的应用",
@@ -165,14 +163,14 @@ await SmartDockManager.setSmartEdgeDocking(
 class MyController extends GetxController {
   void intelligentHideToTray() {
     final tray = MyTray.to;
-    
+
     // 智能隐藏（自动检测模式）
     tray.hide();
-    
+
     // 可选：显示状态通知
-    final isSmartMode = tray.isTrayMode.value && 
+    final isSmartMode = tray.isTrayMode.value &&
                        SmartDockManager.isSmartDockingEnabled();
-    
+
     if (isSmartMode) {
       MyNotify.to.show("智能托盘模式", "鼠标移动到边缘可激活窗口");
     } else {
@@ -184,13 +182,13 @@ class MyController extends GetxController {
 
 ## 🔍 状态管理
 
-### 关键状态变量
+### 关键状态变量与过渡标记
 
 ```dart
 class MyTray extends GetxService {
   // 托盘模式状态
   final isTrayMode = false.obs;
-  
+
   // 窗口可见性状态
   final isVisible = true.obs;
 }
@@ -203,6 +201,11 @@ class SmartDockManager {
 class MouseTracker {
   // 鼠标跟踪状态
   static MouseTrackingState _state = MouseTrackingState.disabled;
+
+  // 托盘触发后的过渡标记：
+  // - simulateHoverReveal() 置为 true，阻止“未进入就隐藏”
+  // - 检测到首次进入窗口后置为 false，恢复自动隐藏
+  static bool _awaitingFirstEnterAfterReveal = false;
 }
 ```
 

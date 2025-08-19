@@ -231,8 +231,14 @@ MyTray 构建错误：未找到 $platformName 平台的默认应用图标！
   // TrayListener 事件处理
   @override
   Future<void> onTrayIconMouseDown() async {
-    // 左键点击恢复窗口
-    await pop();
+    // 左键点击：
+    // - 若处于智能停靠隐藏：仅模拟悬停弹出（不激活、不聚焦），保持原有自动隐藏语义
+    // - 否则：执行常规弹出（显示并聚焦）
+    if (_isInSmartDockMode()) {
+      await MouseTracker.simulateHoverReveal();
+    } else {
+      await pop();
+    }
   }
 
   @override

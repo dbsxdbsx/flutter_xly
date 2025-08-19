@@ -37,6 +37,11 @@ class MouseTracker {
   static Offset? _cornerAlignedPosition;
   static Offset? _cornerHiddenPosition;
 
+  // 托盘触发后的等待首次进入标记：
+  // - 为 true 时，即使鼠标不在窗口区域也暂不自动隐藏
+  // - 当检测到鼠标进入窗口一次后，置为 false，恢复正常自动隐藏逻辑
+  static bool _awaitingFirstEnterAfterReveal = false;
+
   /// 获取当前跟踪状态
   static MouseTrackingState get state => _state;
 
@@ -64,6 +69,29 @@ class MouseTracker {
     );
 
     debugPrint('智能隐藏监听已启动，边缘：${edge.name}');
+  }
+
+  /// 托盘左击时：模拟“鼠标悬停唤出”的弹出（不激活、不聚焦）
+  static Future<void> simulateHoverReveal() async {
+    try {
+      if (_state == MouseTrackingState.edgeTracking) {
+        if (_isWindowHidden && _alignedPosition != null) {
+          _awaitingFirstEnterAfterReveal = true;
+          await WindowAnimationPresets.showToInactive(_alignedPosition!);
+          _isWindowHidden = false;
+          debugPrint('托盘恢复：边缘停靠模拟悬停弹出（无激活）');
+        }
+      } else if (_state == MouseTrackingState.cornerTracking) {
+        if (_isCornerWindowHidden && _cornerAlignedPosition != null) {
+          _awaitingFirstEnterAfterReveal = true;
+          await WindowAnimationPresets.showToInactive(_cornerAlignedPosition!);
+          _isCornerWindowHidden = false;
+          debugPrint('托盘恢复：角落停靠模拟悬停弹出（无激活）');
+        }
+      }
+    } catch (e) {
+      debugPrint('托盘恢复模拟悬停失败：$e');
+    }
   }
 
   /// 开始角落鼠标跟踪
@@ -155,15 +183,29 @@ class MouseTracker {
 
       final isMouseInWindow = windowArea.contains(mousePosition);
 
+      // 托盘弹出后的第一次“进入窗口”事件：清除等待标记
+      if (!_isWindowHidden &&
+          isMouseInWindow &&
+          _awaitingFirstEnterAfterReveal) {
+        _awaitingFirstEnterAfterReveal = false;
+        debugPrint('托盘恢复：首次进入窗口，恢复自动隐藏语义');
+        return;
+      }
+
       if (!_isWindowHidden && !isMouseInWindow) {
-        // 窗口未隐藏且鼠标不在窗口内，隐藏窗口
+        // 窗口未隐藏且鼠标不在窗口内
+        if (_awaitingFirstEnterAfterReveal) {
+          // 托盘触发后，等待用户第一次把鼠标移入窗口，再恢复自动隐藏
+          return;
+        }
         await WindowAnimationPresets.hideTo(_hiddenPosition!);
         _isWindowHidden = true;
         debugPrint('智能隐藏：窗口已隐藏');
       } else if (_isWindowHidden && isMouseInWindow) {
-        // 窗口已隐藏且鼠标在窗口内，显示窗口（无激活）
+        // 窗口已隐藏且鼠标在窗口内，显示窗口（无激活）；并结束等待状态
         await WindowAnimationPresets.showToInactive(_alignedPosition!);
         _isWindowHidden = false;
+        _awaitingFirstEnterAfterReveal = false;
         debugPrint('智能隐藏：窗口已显示（无激活）');
       }
     } catch (e) {
@@ -213,15 +255,29 @@ class MouseTracker {
 
       final isMouseInWindow = windowArea.contains(mousePosition);
 
+      // 托盘弹出后的第一次“进入窗口”事件：清除等待标记
+      if (!_isCornerWindowHidden &&
+          isMouseInWindow &&
+          _awaitingFirstEnterAfterReveal) {
+        _awaitingFirstEnterAfterReveal = false;
+        debugPrint('托盘恢复：首次进入窗口（角落），恢复自动隐藏语义');
+        return;
+      }
+
       if (!_isCornerWindowHidden && !isMouseInWindow) {
-        // 窗口未隐藏且鼠标不在窗口内，隐藏窗口到角落
+        // 窗口未隐藏且鼠标不在窗口内
+        if (_awaitingFirstEnterAfterReveal) {
+          // 托盘触发后，等待用户第一次把鼠标移入窗口，再恢复自动隐藏
+          return;
+        }
         await WindowAnimationPresets.hideTo(_cornerHiddenPosition!);
         _isCornerWindowHidden = true;
         debugPrint('智能角落隐藏：窗口已隐藏到角落');
       } else if (_isCornerWindowHidden && isMouseInWindow) {
-        // 窗口已隐藏且鼠标在窗口内，显示窗口到对齐位置（无激活）
+        // 窗口已隐藏且鼠标在窗口内，显示窗口到对齐位置（无激活）；并结束等待状态
         await WindowAnimationPresets.showToInactive(_cornerAlignedPosition!);
         _isCornerWindowHidden = false;
+        _awaitingFirstEnterAfterReveal = false;
         debugPrint('智能角落隐藏：窗口已显示到对齐位置（无激活）');
       }
     } catch (e) {
