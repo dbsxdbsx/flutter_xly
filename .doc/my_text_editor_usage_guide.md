@@ -82,33 +82,47 @@ class DropdownExample extends StatelessWidget {
 
 ### 下拉位置控制
 
-通过 `dropdownShowBelow` 参数可以控制下拉列表的显示位置：
+通过 `showListCandidateBelow` 参数可以控制下拉列表的显示方向：
+
+- `null`（默认）：自动判定，依据可用空间决定向上或向下
+- `true`：强制显示在下方（below）
+- `false`：强制显示在上方（above）
 
 ```dart
-// 默认显示在下方（推荐用于页面顶部的输入框）
+// 自动（推荐）：不传参或传 null
 MyTextEditor(
   textController: controller,
   label: '城市选择',
   hint: '请选择城市',
-  dropdownShowBelow: true, // 默认值
   getDropDownOptions: getCities,
   onOptionSelected: onCitySelected,
 )
 
-// 显示在上方（推荐用于页面底部的输入框）
+// 强制显示在上方（推荐用于页面底部的输入框）
 MyTextEditor(
   textController: controller,
   label: '国家选择',
   hint: '请选择国家',
-  dropdownShowBelow: false, // 显示在上方
+  showListCandidateBelow: false, // 显示在上方
   getDropDownOptions: getCountries,
   onOptionSelected: onCountrySelected,
+)
+
+// 强制显示在下方（用于有明确布局规范的场景）
+MyTextEditor(
+  textController: controller,
+  label: '颜色选择',
+  hint: '请选择颜色',
+  showListCandidateBelow: true, // 显示在下方
+  getDropDownOptions: getCities,
+  onOptionSelected: onCitySelected,
 )
 ```
 
 **使用场景建议**：
-- `dropdownShowBelow: true`（默认）：适用于页面顶部或中部的输入框
-- `dropdownShowBelow: false`：适用于页面底部的输入框，避免被键盘遮挡
+- `showListCandidateBelow: null`（默认）：适用于大多数场景
+- `showListCandidateBelow: true`：适用于页面顶部或中部的输入框
+- `showListCandidateBelow: false`：适用于页面底部的输入框，避免被键盘遮挡
 
 ### 自定义选项显示
 

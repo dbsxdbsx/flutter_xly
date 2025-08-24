@@ -14,24 +14,23 @@ class Page6View extends GetView<Page6Controller> {
     return Column(
       children: [
         Expanded(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.all(16.w),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildSectionTitle('基础文本编辑器'),
-                SizedBox(height: 16.h),
-                _buildBasicEditors(),
-                SizedBox(height: 24.h),
-                _buildSectionTitle('带下拉列表的编辑器'),
-                SizedBox(height: 16.h),
-                _buildDropdownEditors(),
-                SizedBox(height: 24.h),
-                _buildSectionTitle('自定义样式编辑器'),
-                SizedBox(height: 16.h),
-                _buildStyledEditors(),
-              ],
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildSectionTitle('基础文本编辑器'),
+              SizedBox(height: 16.h),
+              _buildBasicEditors(),
+              SizedBox(height: 24.h),
+              //
+              _buildSectionTitle('自定义样式编辑器'),
+              SizedBox(height: 16.h),
+              _buildStyledEditors(),
+              SizedBox(height: 24.h),
+              //
+              _buildSectionTitle('带下拉列表的编辑器'),
+              SizedBox(height: 16.h),
+              _buildDropdownEditors(),
+            ],
           ),
         ),
         Padding(
@@ -114,7 +113,7 @@ class Page6View extends GetView<Page6Controller> {
           textController: controller.colorController,
           label: '颜色选择 (${controller.colorCount})',
           hint: '选择或输入颜色',
-          maxShowDropDownItems: 6,
+          maxShowDropDownItems: 4,
           getDropDownOptions: controller.getColors,
           onOptionSelected: controller.onColorSelected,
           leadingBuilder: (option) => Container(
@@ -133,7 +132,9 @@ class Page6View extends GetView<Page6Controller> {
           hint: '选择或输入国家',
           getDropDownOptions: controller.getCountries,
           onOptionSelected: controller.onCountrySelected,
-          dropdownShowBelow: false, // 显示在上方
+          showListCandidateBelow: false, // 显示在上方
+          maxShowDropDownItems:
+              1, // 注意，这里由于仅选择输出1个，所以若自动化选择还是应该显示在主编辑框的下方，但由于设置了·showListCandidateBelow=true·，所以显示在上方
           leadingBuilder: (option) => Flag.fromCode(
             controller.getCountryCode(option),
             width: 24.w,

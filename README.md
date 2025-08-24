@@ -91,6 +91,7 @@ dart run xly:generate icon="path/to/your/icon.png"
 
 
 ## 待办事项（TODOs）
+- auto arrow up/down ui; 
 - MyDialog， add param to set modal or not?
 - if needed to make `final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();` also implicitly in the `MyApp.initialize(` ?
 - the MySacffold is issued, make it a ppl like sidebar widget?
@@ -967,7 +968,7 @@ Widget buildDropdownEditor() {
     label: '颜色选择',
     hint: '选择或输入颜色',
     maxShowDropDownItems: 6,
-    dropdownShowBelow: true, // 默认显示在下方
+    // 不传表示自动决定方向（默认）
     getDropDownOptions: () async {
       // 模拟异步获取数据
       await Future.delayed(const Duration(milliseconds: 100));
@@ -1009,7 +1010,7 @@ Widget buildTopDropdownEditor() {
     textController: countryController,
     label: '国家选择',
     hint: '选择或输入国家',
-    dropdownShowBelow: false, // 显示在上方
+    showListCandidateBelow: false, // 显示在上方
     getDropDownOptions: () async {
       return ['中国', '美国', '日本', '韩国', '英国', '法国'];
     },

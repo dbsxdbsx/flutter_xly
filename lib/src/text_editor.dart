@@ -37,7 +37,8 @@ class MyTextEditor extends GetView<MyTextEditorController> {
   final Color? dropdownHighlightColor;
 
   final int maxShowDropDownItems;
-  final bool dropdownShowBelow;
+  // null=auto; true=below; false=above
+  final bool? showListCandidateBelow;
 
   // Style properties - Size
   final double? height;
@@ -70,6 +71,7 @@ class MyTextEditor extends GetView<MyTextEditorController> {
 
   // Internal properties
   final String uniqueId;
+  final GlobalKey _fieldKey = GlobalKey();
 
   // Default style constants
   static const double defaultLabelFontSize = 15.0;
@@ -121,7 +123,7 @@ class MyTextEditor extends GetView<MyTextEditorController> {
     this.dropDownItemPadding,
     this.dropdownHighlightColor,
     this.maxShowDropDownItems = 5,
-    this.dropdownShowBelow = true,
+    this.showListCandidateBelow,
 
     // Style properties - Size
     this.height,
@@ -166,9 +168,9 @@ class MyTextEditor extends GetView<MyTextEditorController> {
     if (filterOption != null) {
       return filterOption!(option, input);
     }
-    return _displayStringForOption(option)
-        .toLowerCase()
-        .contains(input.toLowerCase());
+    return _displayStringForOption(
+      option,
+    ).toLowerCase().contains(input.toLowerCase());
   }
 
   @override
@@ -182,9 +184,11 @@ class MyTextEditor extends GetView<MyTextEditorController> {
         return FutureBuilder<List<String>>(
           future: getDropDownOptions!(),
           builder: (context, snapshot) {
+            final openDirection = _computeOpenDirection(context);
             return RawAutocomplete<String>(
               textEditingController: textController,
               focusNode: controller.focusNode,
+              optionsViewOpenDirection: openDirection,
               optionsBuilder: (TextEditingValue textEditingValue) {
                 if (!enabled) return <String>[];
 
@@ -221,9 +225,13 @@ class MyTextEditor extends GetView<MyTextEditorController> {
                 // 只有在用户没有手动关闭下拉列表时才显示
                 final shouldShow =
                     options.isNotEmpty && !controller.manuallyClosedDropdown;
-                controller.setDropdownOpen(shouldShow);
+                // 避免在build期间触发响应式更新，延迟到frame结束
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  controller.setDropdownOpen(shouldShow);
+                });
                 final dropdownWidth = constraints.maxWidth;
 
+                // 让 RawAutocomplete 控制展开方向（3.35+），我们仅提供内容和尺寸
                 return _buildDropdownList(
                   context,
                   onSelected,
@@ -231,8 +239,12 @@ class MyTextEditor extends GetView<MyTextEditorController> {
                   dropdownWidth,
                 );
               },
-              fieldViewBuilder: (context, textEditingController, focusNode,
-                  onFieldSubmitted) {
+              fieldViewBuilder: (
+                context,
+                textEditingController,
+                focusNode,
+                onFieldSubmitted,
+              ) {
                 return _buildTextField(
                   context,
                   onSuffixIconTap: () {
@@ -264,6 +276,7 @@ class MyTextEditor extends GetView<MyTextEditorController> {
     VoidCallback? onSuffixIconTap,
   }) {
     return Focus(
+      key: _fieldKey,
       onKeyEvent: (node, event) {
         // 处理按键按下和重复事件（支持按住键快速导航）
         if (event is KeyDownEvent || event is KeyRepeatEvent) {
@@ -422,6 +435,44 @@ class MyTextEditor extends GetView<MyTextEditorController> {
     return null;
   }
 
+  // 基于当前输入框位置与可用空间，计算候选面板展开方向（3.35+）
+  OptionsViewOpenDirection _computeOpenDirection(BuildContext context) {
+    // 1) 明确指定：true=向下，false=向上
+    if (showListCandidateBelow != null) {
+      return showListCandidateBelow!
+          ? OptionsViewOpenDirection.down
+          : OptionsViewOpenDirection.up;
+    }
+
+    // 2) 自动：基于可用空间与预计高度选择
+    final ctx = _fieldKey.currentContext;
+    if (ctx == null) {
+      return OptionsViewOpenDirection.down;
+    }
+    final box = ctx.findRenderObject() as RenderBox?;
+    final overlay =
+        Overlay.of(context).context.findRenderObject() as RenderBox?;
+    if (box == null || overlay == null) {
+      return OptionsViewOpenDirection.down;
+    }
+
+    final fieldTopLeft = box.localToGlobal(Offset.zero, ancestor: overlay);
+    final fieldSize = box.size;
+    final overlaySize = overlay.size;
+    final spaceBelow =
+        overlaySize.height - (fieldTopLeft.dy + fieldSize.height);
+    final spaceAbove = fieldTopLeft.dy;
+
+    // 以“完整显示预计高度”为标准选择方向（优先向下）
+    final double itemHeight = defaultDropdownItemHeight.h;
+    final double expectedHeight = itemHeight * maxShowDropDownItems;
+
+    if (spaceBelow >= expectedHeight || spaceBelow >= spaceAbove) {
+      return OptionsViewOpenDirection.down;
+    }
+    return OptionsViewOpenDirection.up;
+  }
+
   Widget _buildDropdownList(
     BuildContext context,
     void Function(String) onSelected,
@@ -432,23 +483,36 @@ class MyTextEditor extends GetView<MyTextEditorController> {
 
     // 将ScrollController和参数传递给控制器
     controller.setDropdownScrollController(scrollController);
-    controller.setDropdownParameters(
-      itemHeight: defaultDropdownItemHeight.h,
-    );
+    controller.setDropdownParameters(itemHeight: defaultDropdownItemHeight.h);
 
     // 计算实际需要的高度
     final double itemHeight = defaultDropdownItemHeight.h;
     final int totalOptions = options.length;
     final int displayItems = totalOptions.clamp(1, maxShowDropDownItems);
-    final double adaptiveHeight = itemHeight * displayItems;
-    final double finalHeight = adaptiveHeight;
+    double desiredHeight = itemHeight * displayItems;
 
-    // 通过位移控制下拉列表相对输入框的位置：
-    // - showBelow=true: 紧贴输入框下方（默认）
-    // - showBelow=false: 移动到输入框上方，避免被键盘遮挡
-    final double inputFieldHeight = (height ?? defaultTextEditorHeight).h;
-    final double verticalOffset =
-        dropdownShowBelow ? 0.0 : -(finalHeight + inputFieldHeight);
+    // 根据展开方向裁剪高度；位置交由 RawAutocomplete 控制
+    final dir = _computeOpenDirection(context);
+    if (_fieldKey.currentContext != null) {
+      final box = _fieldKey.currentContext!.findRenderObject() as RenderBox?;
+      final overlay =
+          Overlay.of(context).context.findRenderObject() as RenderBox?;
+      if (box != null && overlay != null) {
+        final fieldTopLeft = box.localToGlobal(Offset.zero, ancestor: overlay);
+        final fieldSize = box.size;
+        final overlaySize = overlay.size;
+        final spaceBelow =
+            overlaySize.height - (fieldTopLeft.dy + fieldSize.height);
+        final spaceAbove = fieldTopLeft.dy;
+        if (dir == OptionsViewOpenDirection.down) {
+          desiredHeight = desiredHeight.clamp(0, spaceBelow);
+        } else {
+          desiredHeight = desiredHeight.clamp(0, spaceAbove);
+        }
+      }
+    }
+
+    final double finalHeight = desiredHeight;
 
     final Widget dropdownWidget = Align(
       alignment: Alignment.topLeft,
@@ -474,17 +538,11 @@ class MyTextEditor extends GetView<MyTextEditorController> {
       ),
     );
 
-    // 返回经位移后的下拉列表，使其在需要时显示到输入框上方
-    return Transform.translate(
-      offset: Offset(0, verticalOffset),
-      child: SizedBox(
-        height: finalHeight,
-        width: dropdownWidth,
-        child: Align(
-          alignment: Alignment.topLeft,
-          child: dropdownWidget,
-        ),
-      ),
+    // 不做位移，位置完全由 RawAutocomplete 确定
+    return SizedBox(
+      height: finalHeight,
+      width: dropdownWidth,
+      child: Align(alignment: Alignment.topLeft, child: dropdownWidget),
     );
   }
 
@@ -501,11 +559,8 @@ class MyTextEditor extends GetView<MyTextEditorController> {
         controller: scrollController,
         padding: EdgeInsets.zero,
         itemCount: allOptions.length, // 显示所有选项
-        itemBuilder: (context, index) => _buildDropdownItem(
-          allOptions[index],
-          highlighted,
-          onSelected,
-        ),
+        itemBuilder: (context, index) =>
+            _buildDropdownItem(allOptions[index], highlighted, onSelected),
       );
     });
   }
@@ -617,6 +672,12 @@ class MyTextEditorController extends GetxController {
 
   /// Flag to indicate if user manually closed the dropdown
   final _manuallyClosedDropdown = false.obs;
+
+  /// 展开方向（Flutter 3.35+）
+  final _optionsDirection = OptionsViewOpenDirection.down.obs;
+  OptionsViewOpenDirection get optionsDirection => _optionsDirection.value;
+  void setOptionsDirection(OptionsViewOpenDirection dir) =>
+      _optionsDirection.value = dir;
 
   /// ScrollController for dropdown list
   ScrollController? _dropdownScrollController;
@@ -804,8 +865,10 @@ class MyTextEditorController extends GetxController {
     }
 
     if (targetOffset != null) {
-      final double clampedOffset =
-          targetOffset.clamp(0.0, position.maxScrollExtent);
+      final double clampedOffset = targetOffset.clamp(
+        0.0,
+        position.maxScrollExtent,
+      );
 
       // 若正在滚动，先停止到当前像素，避免动画叠加造成抖动
       if (position.isScrollingNotifier.value) {

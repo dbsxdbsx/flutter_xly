@@ -197,7 +197,7 @@ class Page4View extends GetView<Page4Controller> {
                       SizedBox(
                         width: 120.w,
                         child: Obx(() => DropdownButtonFormField<int>(
-                              value: controller.selectedCardIndex.value == -1
+                              initialValue: controller.selectedCardIndex.value == -1
                                   ? null
                                   : controller.selectedCardIndex.value,
                               decoration: InputDecoration(

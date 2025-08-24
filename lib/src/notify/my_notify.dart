@@ -76,9 +76,7 @@ class MyNotify extends GetxService {
       );
 
       const LinuxInitializationSettings initializationSettingsLinux =
-          LinuxInitializationSettings(
-        defaultActionName: 'Open notification',
-      );
+          LinuxInitializationSettings(defaultActionName: 'Open notification');
 
       const WindowsInitializationSettings initializationSettingsWindows =
           WindowsInitializationSettings(
@@ -97,10 +95,11 @@ class MyNotify extends GetxService {
       );
 
       // 初始化插件
-      final bool? initialized = await _flutterLocalNotificationsPlugin
-          .initialize(initializationSettings,
-              onDidReceiveNotificationResponse:
-                  _onDidReceiveNotificationResponse);
+      final bool? initialized =
+          await _flutterLocalNotificationsPlugin.initialize(
+        initializationSettings,
+        onDidReceiveNotificationResponse: _onDidReceiveNotificationResponse,
+      );
 
       if (initialized == true) {
         _isInitialized.value = true;
@@ -161,10 +160,12 @@ class MyNotify extends GetxService {
 
   /// 通知点击回调
   void _onDidReceiveNotificationResponse(
-      NotificationResponse notificationResponse) {
+    NotificationResponse notificationResponse,
+  ) {
     if (kDebugMode) {
       print(
-          'MyNotify: 通知被点击 - ID: ${notificationResponse.id}, Payload: ${notificationResponse.payload}');
+        'MyNotify: 通知被点击 - ID: ${notificationResponse.id}, Payload: ${notificationResponse.payload}',
+      );
     }
 
     // 这里可以根据需要处理通知点击事件
@@ -250,8 +251,9 @@ class MyNotify extends GetxService {
     }
 
     try {
-      final NotificationDetails notificationDetails =
-          _buildNotificationDetails(type);
+      final NotificationDetails notificationDetails = _buildNotificationDetails(
+        type,
+      );
 
       await _flutterLocalNotificationsPlugin.show(
         id,
@@ -305,10 +307,13 @@ class MyNotify extends GetxService {
     }
 
     try {
-      final NotificationDetails notificationDetails =
-          _buildNotificationDetails(type);
-      final tz.TZDateTime tzScheduledDate =
-          tz.TZDateTime.from(scheduledDate, tz.local);
+      final NotificationDetails notificationDetails = _buildNotificationDetails(
+        type,
+      );
+      final tz.TZDateTime tzScheduledDate = tz.TZDateTime.from(
+        scheduledDate,
+        tz.local,
+      );
 
       await _flutterLocalNotificationsPlugin.zonedSchedule(
         id,

@@ -1,4 +1,25 @@
 
+## 0.18.0 - 2025-08-24
+
+### Breaking Changes
+- **MyTextEditor 下拉位置控制 API 重构**：
+  - 移除 `dropdownShowBelow` 参数（bool）
+  - 移除 `dropdownAutoDirection` 参数（bool）
+  - 新增 `showListCandidateBelow` 参数（bool?，默认 null）
+    - `null`：自动判定方向，基于可用空间决定向上或向下（推荐）
+    - `true`：强制显示在下方
+    - `false`：强制显示在上方
+
+### Migration Guide
+- 旧代码迁移：
+  - `dropdownShowBelow: true` → `showListCandidateBelow: true`
+  - `dropdownShowBelow: false` → `showListCandidateBelow: false`
+  - 移除所有 `dropdownAutoDirection` 参数（默认 null 即自动）
+
+### Documentation
+- 更新 `.doc/my_text_editor_usage_guide.md`：重写"下拉位置控制"章节，提供三态布尔使用示例
+- 更新 `README.md`：调整 MyTextEditor 示例代码，展示新 API 用法
+
 ## 0.17.5 - 2025-08-19
 
 ### Enhanced
