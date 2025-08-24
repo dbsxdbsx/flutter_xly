@@ -111,9 +111,9 @@ class Page6View extends GetView<Page6Controller> {
       children: [
         MyTextEditor(
           textController: controller.colorController,
-          label: '颜色选择 (${controller.colorCount})',
+          label: '颜色选择 (${controller.colorCount}个+自动决定候选项列表位置)',
           hint: '选择或输入颜色',
-          maxShowDropDownItems: 4,
+          maxShowDropDownItems: 5,
           getDropDownOptions: controller.getColors,
           onOptionSelected: controller.onColorSelected,
           leadingBuilder: (option) => Container(
@@ -128,13 +128,28 @@ class Page6View extends GetView<Page6Controller> {
         SizedBox(height: 16.h),
         MyTextEditor(
           textController: controller.countryController,
-          label: '国家选择 (${controller.countryCount})',
+          label: '国家选择 (${controller.countryCount}个+候选项列表强制显示在上方)',
           hint: '选择或输入国家',
           getDropDownOptions: controller.getCountries,
           onOptionSelected: controller.onCountrySelected,
-          showListCandidateBelow: false, // 显示在上方
+          showListCandidateBelow: true, // 显示在上方
           maxShowDropDownItems:
-              1, // 注意，这里由于仅选择输出1个，所以若自动化选择还是应该显示在主编辑框的下方，但由于设置了·showListCandidateBelow=true·，所以显示在上方
+              2, // 注意，这里由于仅选择输出2个，所以若自动化选择还是应该显示在主编辑框的下方，但由于设置了·showListCandidateBelow=true·，所以显示在上方
+          leadingBuilder: (option) => Flag.fromCode(
+            controller.getCountryCode(option),
+            width: 24.w,
+            height: 24.w,
+            borderRadius: 4,
+          ),
+        ),
+        SizedBox(height: 16.h),
+        MyTextEditor(
+          textController: controller.countryBelowController,
+          label: '国家选择（下方） (${controller.countryCount}个+候选项列表强制显示在下方)',
+          hint: '选择或输入国家',
+          getDropDownOptions: controller.getCountries,
+          onOptionSelected: controller.onCountryBelowSelected,
+          showListCandidateBelow: true, // 显示在下方（显式）
           leadingBuilder: (option) => Flag.fromCode(
             controller.getCountryCode(option),
             width: 24.w,
@@ -163,23 +178,21 @@ class Page6View extends GetView<Page6Controller> {
         SizedBox(height: 16.h),
         MyTextEditor(
           textController: controller.styledController2,
-          label: '自定义边框颜色',
-          hint: '红色边框示例',
+          label: '自定义边框颜色和标签颜色',
+          hint: '红色边框+绿色标签示例',
+          labelColor: Colors.green,
           normalBorderColor: Colors.red,
           enabledBorderColor: Colors.red,
           focusedBorderColor: Colors.red,
         ),
-        SizedBox(height: 16.h),
-        MyTextEditor(
-          textController: controller.styledController3,
-          label: '自定义标签颜色',
-          hint: '绿色标签示例',
-          labelColor: Colors.green,
-          focusedBorderColor: Colors.green,
-        ),
       ],
+
+      // ========== 下面是控制器定义 ==========
     );
   }
+
+  // 文本编辑器测试页面控制器
+  //（下方的真实控制器类定义见文件后部）
 }
 
 /// 文本编辑器测试页面控制器
@@ -190,6 +203,8 @@ class Page6Controller extends GetxController {
   final multilineController = TextEditingController();
   final colorController = TextEditingController();
   final countryController = TextEditingController();
+  final countryBelowController = TextEditingController();
+
   final styledController1 = TextEditingController();
   final styledController2 = TextEditingController();
   final styledController3 = TextEditingController();
@@ -218,6 +233,8 @@ class Page6Controller extends GetxController {
   // 回调方法
   void onColorSelected(String value) => colorController.text = value;
   void onCountrySelected(String value) => countryController.text = value;
+  void onCountryBelowSelected(String value) =>
+      countryBelowController.text = value;
   void onStyled1Cleared() => MyToast.show('清除了自定义样式输入框的内容');
 
   /// 获取颜色选项列表

@@ -184,7 +184,19 @@ class MyTextEditor extends GetView<MyTextEditorController> {
         return FutureBuilder<List<String>>(
           future: getDropDownOptions!(),
           builder: (context, snapshot) {
+            // 在窗口尺寸变化或布局变化时，自动重算方向（通过 LayoutBuilder 触发 build）
             final openDirection = _computeOpenDirection(context);
+
+            // 首帧后：在自动模式下，计算并保存方向，用于未弹出时也能正确显示箭头
+            if (showListCandidateBelow == null) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                final dir = _computeOpenDirection(context);
+                if (controller.optionsDirection != dir) {
+                  controller.setOptionsDirection(dir);
+                }
+              });
+            }
+
             return RawAutocomplete<String>(
               textEditingController: textController,
               focusNode: controller.focusNode,
@@ -371,33 +383,85 @@ class MyTextEditor extends GetView<MyTextEditorController> {
           border: _buildBorder(normalBorderColor),
           enabledBorder: _buildBorder(enabledBorderColor),
           focusedBorder: _buildBorder(focusedBorderColor),
-          suffixIcon: _buildSuffixIcon(onSuffixIconTap),
+          suffixIcon: _buildSuffixIcon(context, onSuffixIconTap),
         ),
       ),
     );
   }
 
-  Widget? _buildSuffixIcon(VoidCallback? onSuffixIconTap) {
+  Widget? _buildSuffixIcon(
+      BuildContext context, VoidCallback? onSuffixIconTap) {
     if (getDropDownOptions != null) {
-      return SizedBox(
-        width: defaultIconBoxSize.w,
-        height: defaultIconBoxSize.h,
-        child: Center(
-          child: IconButton(
-            iconSize: defaultIconSize.w,
-            icon: const Icon(Icons.arrow_drop_down, color: Colors.grey),
-            onPressed: onSuffixIconTap,
-            padding: EdgeInsets.zero,
-            constraints: BoxConstraints(
-              maxWidth: defaultIconBoxSize.w,
-              maxHeight: defaultIconBoxSize.h,
-              minWidth: defaultIconBoxSize.w,
-              minHeight: defaultIconBoxSize.h,
+      // 根据显示方向选择箭头图标：
+      // - 显式设置 showListCandidateBelow 时，箭头固定指向对应方向（即使未弹出列表）
+      // - 自动模式（null）时，在下拉面板弹出期间实时指示展开方向；未弹出时默认向下
+      if (showListCandidateBelow != null) {
+        // 显式模式：固定方向，同时加入旋转动效；不可点击时置灰并禁用
+        final canTap = enabled && !readOnly;
+        final turns = showListCandidateBelow! ? 0.0 : 0.5; // 下=0，上=0.5圈
+        final Color iconColor =
+            canTap ? Colors.grey : Colors.grey.withValues(alpha: 0.4);
+        return SizedBox(
+          width: defaultIconBoxSize.w,
+          height: defaultIconBoxSize.h,
+          child: Center(
+            child: IconButton(
+              iconSize: defaultIconSize.w,
+              icon: AnimatedRotation(
+                turns: turns,
+                duration: const Duration(milliseconds: 150),
+                curve: Curves.easeInOut,
+                child: Icon(Icons.arrow_drop_down, color: iconColor),
+              ),
+              onPressed: canTap ? onSuffixIconTap : null,
+              padding: EdgeInsets.zero,
+              constraints: BoxConstraints(
+                maxWidth: defaultIconBoxSize.w,
+                maxHeight: defaultIconBoxSize.h,
+                minWidth: defaultIconBoxSize.w,
+                minHeight: defaultIconBoxSize.h,
+              ),
+              splashRadius: (defaultIconBoxSize / 2).r,
             ),
-            splashRadius: (defaultIconBoxSize / 2).r,
           ),
-        ),
-      );
+        );
+      } else {
+        // 自动模式：用 Obx 监听 isDropdownOpen，弹出时依据实时方向显示
+        return Obx(() {
+          final canTap = enabled && !readOnly;
+          // 自动模式：未弹出时使用首帧保存的方向，弹出时用实时方向
+          final dir = controller.isDropdownOpen
+              ? _computeOpenDirection(context)
+              : controller.optionsDirection;
+          final turns = dir == OptionsViewOpenDirection.down ? 0.0 : 0.5;
+          final Color iconColor =
+              canTap ? Colors.grey : Colors.grey.withValues(alpha: 0.4);
+          return SizedBox(
+            width: defaultIconBoxSize.w,
+            height: defaultIconBoxSize.h,
+            child: Center(
+              child: IconButton(
+                iconSize: defaultIconSize.w,
+                icon: AnimatedRotation(
+                  turns: turns,
+                  duration: const Duration(milliseconds: 150),
+                  curve: Curves.easeInOut,
+                  child: Icon(Icons.arrow_drop_down, color: iconColor),
+                ),
+                onPressed: canTap ? onSuffixIconTap : null,
+                padding: EdgeInsets.zero,
+                constraints: BoxConstraints(
+                  maxWidth: defaultIconBoxSize.w,
+                  maxHeight: defaultIconBoxSize.h,
+                  minWidth: defaultIconBoxSize.w,
+                  minHeight: defaultIconBoxSize.h,
+                ),
+                splashRadius: (defaultIconBoxSize / 2).r,
+              ),
+            ),
+          );
+        });
+      }
     }
 
     if (clearable) {
@@ -491,6 +555,9 @@ class MyTextEditor extends GetView<MyTextEditorController> {
     final int displayItems = totalOptions.clamp(1, maxShowDropDownItems);
     double desiredHeight = itemHeight * displayItems;
 
+    // 当向上展开时，在输入框与候选面板之间预留一个小间隙，避免遮挡label/标题
+    final double gapUp = 8.h;
+
     // 根据展开方向裁剪高度；位置交由 RawAutocomplete 控制
     final dir = _computeOpenDirection(context);
     if (_fieldKey.currentContext != null) {
@@ -507,42 +574,89 @@ class MyTextEditor extends GetView<MyTextEditorController> {
         if (dir == OptionsViewOpenDirection.down) {
           desiredHeight = desiredHeight.clamp(0, spaceBelow);
         } else {
-          desiredHeight = desiredHeight.clamp(0, spaceAbove);
+          final double available =
+              (spaceAbove - gapUp).clamp(0, spaceAbove).toDouble();
+          desiredHeight = desiredHeight.clamp(0, available).toDouble();
         }
       }
     }
 
     final double finalHeight = desiredHeight;
+    final bool isUp = dir == OptionsViewOpenDirection.up;
+    final double containerHeight = isUp ? (finalHeight + gapUp) : finalHeight;
 
     final Widget dropdownWidget = Align(
-      alignment: Alignment.topLeft,
-      child: Material(
-        elevation: 4.0,
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxHeight: finalHeight,
-            maxWidth: dropdownWidth,
-            minWidth: dropdownWidth,
+      alignment: isUp ? Alignment.bottomLeft : Alignment.topLeft,
+      child: Padding(
+        padding: EdgeInsets.only(bottom: isUp ? gapUp : 0),
+        child: Material(
+          elevation: 4.0,
+          shape: RoundedRectangleBorder(
+            borderRadius:
+                BorderRadius.circular((borderRadius ?? defaultBorderRadius).r),
           ),
-          child: Scrollbar(
-            controller: scrollController,
-            thumbVisibility: showScrollbar,
-            child: _buildDropdownListContent(
-              context,
-              onSelected,
-              options,
-              scrollController,
+          clipBehavior: Clip.antiAlias,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: finalHeight,
+              maxWidth: dropdownWidth,
+              minWidth: dropdownWidth,
+            ),
+            child: Scrollbar(
+              controller: scrollController,
+              thumbVisibility: showScrollbar,
+              child: _buildDropdownListContent(
+                context,
+                onSelected,
+                options,
+                scrollController,
+              ),
             ),
           ),
         ),
       ),
     );
 
-    // 不做位移，位置完全由 RawAutocomplete 确定
+    // 仅在“向下展开”时叠加贴边渐变阴影
+    final bool addAnchorEdgeShadow = dir == OptionsViewOpenDirection.down;
+    final Widget? anchorEdgeShadow = addAnchorEdgeShadow
+        ? IgnorePointer(
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: Container(
+                height: 8.h,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(
+                        (borderRadius ?? defaultBorderRadius).r),
+                    topRight: Radius.circular(
+                        (borderRadius ?? defaultBorderRadius).r),
+                  ),
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.16),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          )
+        : null;
+
     return SizedBox(
-      height: finalHeight,
+      height: containerHeight,
       width: dropdownWidth,
-      child: Align(alignment: Alignment.topLeft, child: dropdownWidget),
+      child: Stack(
+        children: [
+          Align(
+              alignment: isUp ? Alignment.bottomLeft : Alignment.topLeft,
+              child: dropdownWidget),
+          if (anchorEdgeShadow != null) anchorEdgeShadow,
+        ],
+      ),
     );
   }
 
@@ -641,7 +755,8 @@ class MyTextEditor extends GetView<MyTextEditorController> {
 
   OutlineInputBorder _buildBorder(Color color) {
     return OutlineInputBorder(
-      borderRadius: BorderRadius.circular(defaultBorderRadius.r),
+      borderRadius:
+          BorderRadius.circular((borderRadius ?? defaultBorderRadius).r),
       borderSide: BorderSide(color: color),
     );
   }

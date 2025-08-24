@@ -1,4 +1,21 @@
 
+## 0.18.1 - 2025-08-24
+
+### Enhanced
+- **MyTextEditor功能完善**：进一步优化文本编辑器组件的用户体验
+  - 完善下拉候选列表的交互逻辑和显示效果
+  - 优化示例页面的演示效果和用户指导
+  - 清理冗余代码文件，提升项目结构清晰度
+
+### Documentation
+- 更新 `.doc/my_text_editor_usage_guide.md`：完善使用指南内容
+- 更新 `README.md`：优化MyTextEditor相关文档说明
+- 更新示例页面：改进page6.dart的演示效果
+
+### Technical
+- 移除 `user_code/display_view.dart`：清理不再使用的代码文件
+- 更新依赖锁定文件：确保依赖版本一致性
+
 ## 0.18.0 - 2025-08-24 [61b8608]
 
 ### Breaking Changes

@@ -91,7 +91,7 @@ dart run xly:generate icon="path/to/your/icon.png"
 
 
 ## 待办事项（TODOs）
-- auto arrow up/down ui; 
+- tray feature- issue
 - MyDialog， add param to set modal or not?
 - if needed to make `final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();` also implicitly in the `MyApp.initialize(` ?
 - the MySacffold is issued, make it a ppl like sidebar widget?
