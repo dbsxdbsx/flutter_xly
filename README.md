@@ -91,6 +91,8 @@ dart run xly:generate icon="path/to/your/icon.png"
 
 
 ## 待办事项（TODOs）
+- 3dot loading widget(deepseek app);
+- MyTextEditor- add a param for if laoding all candidates but not effect by the txt in main editor?
 - tray feature- issue
 - MyDialog， add param to set modal or not?
 - if needed to make `final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();` also implicitly in the `MyApp.initialize(` ?
