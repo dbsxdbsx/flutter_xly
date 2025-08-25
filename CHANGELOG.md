@@ -1,5 +1,5 @@
 
-## 0.19.1 - 2025-08-25
+## 0.19.1 - 2025-08-25 [a2dea1c]
 
 ### Enhanced
 - **MyTextEditor组件增强**：新增`showAllOnPopWithNonTyping `参数，优化下拉候选列表的触发行为
