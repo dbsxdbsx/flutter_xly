@@ -1,5 +1,5 @@
 
-## 0.19.2 - 2025-08-25
+## 0.19.2 - 2025-08-25 [252b0fc]
 
 ### Fixed
 - **MyTextEditor组件修复**：解决`showAllOnPopWithNonTyping`参数相关的焦点与箭头点击行为问题
