@@ -36,6 +36,7 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 28. 窗口比例调整控制(支持动态启用/禁用窗口固定比例调整功能)
 29. 系统托盘管理(`MyTray`)(支持托盘图标、右键菜单、窗口最小化到托盘等功能)
 30. 系统通知管理(`MyNotify`)(跨平台系统通知，支持即时通知、定时通知、多种通知类型)
+31. 多点动态加载指示器(`MyLoadingDot`)(支持fade/bounce/scale/wave四种动画效果，自适应容器宽度)
 
 ## 内置依赖包
 
@@ -128,6 +129,14 @@ dart run xly:generate icon="path/to/your/icon.png"
 - 自动滚动系统：选中项自动滚动到可视区域，支持大量选项流畅导航
 - 防抖动机制：选择选项后智能防止下拉列表闪烁
 - 手动关闭记忆：用户主动关闭下拉列表后，输入新内容前不会自动重新打开
+
+### MyLoadingDot 多点动态加载指示器
+- 详细使用指南：[.doc/my_loading_dot_usage_guide.md](.doc/my_loading_dot_usage_guide.md)
+- 支持fade/bounce/scale/wave四种动画效果，适应不同使用场景
+- 自适应容器宽度，智能调整点大小和间距，避免布局越界
+- 单控制器驱动多点相位动画，性能优化，资源消耗低
+- 提供`MyLoadingDot.typing()`工厂方法，专为聊天"正在输入"场景优化
+- 支持随机化起始相位，避免多实例同步问题
 
 ### MyScaffold 响应式改进
 - 所有内部尺寸属性已全面使用ScreenUtil响应式单位（.w/.h/.r/.sp）
@@ -404,6 +413,85 @@ Toast 特性：
 - 支持异步任务加载提示
 - 支持自动关闭和手动关闭
 - 支持动画效果和自定义动画时长
+
+### 使用多点动态加载指示器 (MyLoadingDot)
+
+MyLoadingDot 提供了四种不同的动画效果，适用于各种加载场景：
+
+```dart
+// 1. 最简单的使用（默认fade动画）
+MyLoadingDot()
+
+// 2. "正在输入"场景（推荐）
+Row(
+  children: [
+    MyLoadingDot.typing(
+      size: 6.w,
+      gap: 2.w,
+      color: Colors.grey,
+    ),
+    SizedBox(width: 8.w),
+    Text('AI 正在输入…'),
+  ],
+)
+
+// 3. 不同动画类型
+// 弹跳动画
+MyLoadingDot(
+  dotAnimation: MyLoadingDotAnimation.bounce,
+  size: 8.w,
+  gap: 3.w,
+  color: Colors.blue,
+)
+
+// 缩放动画
+MyLoadingDot(
+  dotAnimation: MyLoadingDotAnimation.scale,
+  size: 10.w,
+  gap: 4.w,
+  color: Colors.green,
+)
+
+// 波动动画
+MyLoadingDot(
+  dotAnimation: MyLoadingDotAnimation.wave,
+  size: 8.w,
+  gap: 3.w,
+  color: Colors.purple,
+)
+
+// 4. 按钮加载状态
+ElevatedButton(
+  onPressed: isLoading ? null : _handleSubmit,
+  child: isLoading
+    ? MyLoadingDot(
+        dotAnimation: MyLoadingDotAnimation.scale,
+        size: 4.w,
+        gap: 1.w,
+        color: Colors.white,
+        dotCount: 3,
+      )
+    : Text('提交'),
+)
+
+// 5. 自定义参数
+MyLoadingDot(
+  dotCount: 5,                                    // 5个点
+  period: const Duration(milliseconds: 1400),     // 更慢的动画周期
+  phaseShift: 0.2,                               // 整体相位偏移
+  size: 8.w,
+  gap: 2.w,
+  color: Colors.blueGrey,
+  randomizeStartPhase: false,                     // 禁用随机起始相位
+)
+```
+
+MyLoadingDot 特性：
+- **四种动画效果**：fade（淡入淡出）、bounce（弹跳）、scale（缩放）、wave（波动）
+- **自适应布局**：自动适应容器宽度，智能调整点大小和间距
+- **高性能**：单控制器驱动多点相位动画，资源消耗低
+- **防同步**：支持随机化起始相位，避免多实例同步问题
+- **灵活配置**：支持自定义点数量、大小、间距、颜色、动画周期等
 
 ### 使用系统托盘 (MyTray)
 

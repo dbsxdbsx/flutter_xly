@@ -1,4 +1,14 @@
 
+## 0.19.3 - 2025-08-25
+
+### Documentation
+- **MyLoadingDot组件文档完善**：为多点动态加载指示器组件补充完整文档
+  - 在README.md功能列表中添加MyLoadingDot组件说明
+  - 在README.md使用示例中添加详细的MyLoadingDot使用代码示例
+  - 在注意事项中添加MyLoadingDot组件的特性说明和文档链接
+  - 新增专门的使用指南：`.doc/my_loading_dot_usage_guide.md`
+  - 包含四种动画类型详解、性能优化说明、实际应用场景、参数详解、最佳实践等
+
 ## 0.19.2 - 2025-08-25 [252b0fc]
 
 ### Fixed
