@@ -157,6 +157,14 @@ MyTextEditor(
 - `showAllOnPopWithNonTyping : false`（默认）：适用于主要通过输入进行搜索的场景
 - `showAllOnPopWithNonTyping : true`：适用于既可输入又可从完整列表中选择的场景，提升用户体验
 
+**焦点与箭头点击行为说明**：
+- 当 `showAllOnPopWithNonTyping: true` 时：
+  - 重新获得焦点时，无论编辑框是否有文本，都会显示全量候选列表
+  - 点击侧边箭头时，显示全量候选列表，不会清空已输入的文本
+- 当 `showAllOnPopWithNonTyping: false` 时：
+  - 重新获得焦点时，仅在编辑框为空时显示全量候选列表，有文本时按输入过滤
+  - 点击侧边箭头时，按当前输入内容过滤显示，不会清空已输入的文本
+
 ### 自定义选项显示
 
 ```dart

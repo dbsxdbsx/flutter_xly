@@ -165,7 +165,7 @@ class Page6View extends GetView<Page6Controller> {
           hint: '选择或输入国家',
           getDropDownOptions: controller.getCountries,
           onOptionSelected: (v) => controller.arrowFullListController.text = v,
-          showAllOnPopWithNonTyping : true,
+          showAllOnPopWithNonTyping: true,
           maxShowDropDownItems: 6,
           leadingBuilder: (option) => Flag.fromCode(
             controller.getCountryCode(option),

@@ -278,7 +278,28 @@ class MyTextEditor extends GetView<MyTextEditorController> {
                       controller._lastOpenTrigger = _OpenTrigger.arrow;
                       controller.resetManuallyClosedFlag();
 
-                      focusNode.requestFocus();
+                      // 若当前未获得焦点，先请求焦点
+                      if (!focusNode.hasFocus) {
+                        focusNode.requestFocus();
+
+                        // 当 showAllOnPopWithNonTyping 为 false 且文本非空时，焦点回调不会触发“轻微文本变更”，
+                        // 因此在此处补一次以打开（保持按输入过滤的语义）。
+                        if (!showAllOnPopWithNonTyping) {
+                          final currentText = textEditingController.text;
+                          textEditingController.text = ' ';
+                          Future.microtask(() {
+                            textEditingController.text = currentText;
+                            textEditingController.selection =
+                                TextSelection.collapsed(
+                              offset: currentText.length,
+                            );
+                          });
+                        }
+                        // 不调用 onFieldSubmitted，避免与焦点回调产生重复触发
+                        return;
+                      }
+
+                      // 已经获得焦点：直接触发一次轻微文本变更以打开下拉
                       final currentText = textEditingController.text;
                       textEditingController.text = ' ';
                       Future.microtask(() {
@@ -308,12 +329,17 @@ class MyTextEditor extends GetView<MyTextEditorController> {
       key: _fieldKey,
       onFocusChange: (hasFocus) {
         if (hasFocus) {
-          // 当获得焦点且输入为空时，触发一次轻微的文本变更以促使 RawAutocomplete 打开候选列表
+          // 当获得焦点时：
+          // - 若开启 showAllOnPopWithNonTyping，则无论是否有输入，都触发一次轻微文本变更以促使 RawAutocomplete 刷新并打开候选列表；
+          // - 若未开启该参数，则仅在输入为空时触发（保持原有行为）。
+          final shouldTriggerOpen =
+              (showAllOnPopWithNonTyping || textController.text.isEmpty);
           if (enabled &&
               !readOnly &&
               getDropDownOptions != null &&
-              textController.text.isEmpty) {
-            // 重置“手动关闭”标志，允许下拉列表显示
+              shouldTriggerOpen) {
+            // 标记为“焦点触发”并重置“手动关闭”标志，允许下拉列表显示
+            controller._lastOpenTrigger = _OpenTrigger.focus;
             controller.resetManuallyClosedFlag();
             final currentText = textController.text;
             textController.text = ' ';
