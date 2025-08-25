@@ -30,3 +30,5 @@ export 'src/scaffold.dart';
 export 'src/smart_dock/smart_dock.dart';
 export 'src/tray/tray.dart';
 export 'src/notify/lib.dart';
+
+export 'src/loading_dot.dart';

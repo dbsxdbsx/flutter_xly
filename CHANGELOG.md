@@ -1,4 +1,24 @@
 
+## 0.18.2 - 2025-08-25
+
+### Added
+- **MyLoadingDot组件**：新增多点动态加载指示器，支持多种动画效果
+  - 支持fade、bounce、scale、wave四种动画类型
+  - 提供`MyLoadingDot.typing()`工厂方法，兼容"正在输入"场景
+  - 自适应容器宽度，支持响应式尺寸单位
+  - 可配置点数量、间距、颜色、动画周期等参数
+  - 内置相位偏移和随机化起始相位，避免多实例同步问题
+
+### Enhanced
+- **示例应用完善**：新增Page10演示页面，展示MyLoadingDot的各种使用方式
+  - 包含基础用法、不同动画类型、自定义参数等完整示例
+  - 优化浮动导航栏的页面标题，提升用户体验
+  - 更新侧边栏导航，新增LoadingDot演示入口
+
+### Documentation
+- 更新README.md：移除已完成的TODO项目（3dot loading widget）
+- 完善组件导出：在xly.dart中正确导出MyLoadingDot组件
+
 ## 0.18.1 - 2025-08-24
 
 ### Enhanced

@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:xly/xly.dart';
 
 import 'pages/page1.dart';
+import 'pages/page10.dart';
 import 'pages/page2.dart';
 import 'pages/page3.dart';
 import 'pages/page4.dart';
@@ -102,6 +103,11 @@ void main() async {
         page: const Page9View(),
         controller: () => Page9Controller(),
       ),
+      MyRoute<Page10Controller>(
+        path: MyRoutes.page10,
+        page: const Page10View(),
+        controller: () => Page10Controller(),
+      ),
     ],
     splash: const MySplash(
       nextRoute: MyRoutes.page1,
@@ -192,6 +198,12 @@ void main() async {
             label: '托盘功能测试',
             route: MyRoutes.page9,
           ),
+          MyAdaptiveNavigationItem(
+            icon: Icon(Icons.more_horiz),
+            selectedIcon: Icon(Icons.more_horiz_outlined),
+            label: 'LoadingDot演示',
+            route: MyRoutes.page10,
+          ),
         ],
         trailing: const PlatformInfoWidget(),
       );
@@ -210,4 +222,5 @@ class MyRoutes {
   static const String page7 = '/page7';
   static const String page8 = '/page8';
   static const String page9 = '/page9';
+  static const String page10 = '/page10';
 }

@@ -58,9 +58,10 @@ Widget getFloatBar() {
                     _buildPageButton(context, '第5页', MyRoutes.page5),
                     _buildPageButton(context, '第6页', MyRoutes.page6),
                     _buildPageButton(context, '第7页', MyRoutes.page7),
-                    _buildPageButton(context, '第8页 - 托盘通知测试', MyRoutes.page8),
+                    _buildPageButton(context, '第8页 - 通知功能测试', MyRoutes.page8),
+                    _buildPageButton(context, '第9页 - 托盘功能测试', MyRoutes.page9),
                     _buildPageButton(
-                        context, '第9页 - MyTray托盘功能', MyRoutes.page9),
+                        context, '第10页 - LoadingDot演示', MyRoutes.page10),
                   ],
                 ),
                 actions: [
