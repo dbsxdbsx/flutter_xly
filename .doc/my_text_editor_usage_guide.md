@@ -126,6 +126,37 @@ MyTextEditor(
 - `showListCandidateBelow: true`：适用于页面顶部或中部的输入框
 - `showListCandidateBelow: false`：适用于页面底部的输入框，避免被键盘遮挡
 
+### 下拉触发行为控制
+
+通过 `showAllOnPopWithNonTyping ` 参数可以控制通过箭头点击或获得焦点时的候选列表行为：
+
+- `false`（默认）：所有触发方式都会根据当前输入内容过滤候选列表
+- `true`：通过箭头点击或获得焦点触发时，显示全量候选列表（忽略当前输入）
+
+```dart
+// 默认行为：所有触发方式都会过滤
+MyTextEditor(
+  textController: controller,
+  label: '颜色选择',
+  hint: '输入或选择颜色',
+  showAllOnPopWithNonTyping : false, // 默认值
+  getDropDownOptions: getColors,
+)
+
+// 箭头和焦点显示全量候选：适用于既可输入又可选择的场景
+MyTextEditor(
+  textController: controller,
+  label: '国家选择',
+  hint: '输入或选择国家',
+  showAllOnPopWithNonTyping : true, // 箭头/焦点显示全量
+  getDropDownOptions: getCountries,
+)
+```
+
+**使用场景建议**：
+- `showAllOnPopWithNonTyping : false`（默认）：适用于主要通过输入进行搜索的场景
+- `showAllOnPopWithNonTyping : true`：适用于既可输入又可从完整列表中选择的场景，提升用户体验
+
 ### 自定义选项显示
 
 ```dart

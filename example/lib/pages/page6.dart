@@ -111,9 +111,9 @@ class Page6View extends GetView<Page6Controller> {
       children: [
         MyTextEditor(
           textController: controller.colorController,
-          label: '颜色选择 (${controller.colorCount}个+自动决定候选项列表位置)',
+          label: '颜色选择 (${controller.colorCount}个候选项，可见显示6个+自动决定候选项列表位置)',
           hint: '选择或输入颜色',
-          maxShowDropDownItems: 5,
+          maxShowDropDownItems: 6,
           getDropDownOptions: controller.getColors,
           onOptionSelected: controller.onColorSelected,
           leadingBuilder: (option) => Container(
@@ -128,11 +128,11 @@ class Page6View extends GetView<Page6Controller> {
         SizedBox(height: 16.h),
         MyTextEditor(
           textController: controller.countryController,
-          label: '国家选择 (${controller.countryCount}个+候选项列表强制显示在上方)',
+          label: '国家选择 (${controller.countryCount}个候选项，可见显示2个+候选项列表强制显示在上方)',
           hint: '选择或输入国家',
           getDropDownOptions: controller.getCountries,
           onOptionSelected: controller.onCountrySelected,
-          showListCandidateBelow: true, // 显示在上方
+          showListCandidateBelow: false, // 显示在上方
           maxShowDropDownItems:
               2, // 注意，这里由于仅选择输出2个，所以若自动化选择还是应该显示在主编辑框的下方，但由于设置了·showListCandidateBelow=true·，所以显示在上方
           leadingBuilder: (option) => Flag.fromCode(
@@ -145,11 +145,28 @@ class Page6View extends GetView<Page6Controller> {
         SizedBox(height: 16.h),
         MyTextEditor(
           textController: controller.countryBelowController,
-          label: '国家选择（下方） (${controller.countryCount}个+候选项列表强制显示在下方)',
+          label:
+              '国家选择（下方） (${controller.countryCount}个候选项，可见显示默认，即5个+候选项列表强制显示在下方)',
           hint: '选择或输入国家',
           getDropDownOptions: controller.getCountries,
           onOptionSelected: controller.onCountryBelowSelected,
           showListCandidateBelow: true, // 显示在下方（显式）
+          leadingBuilder: (option) => Flag.fromCode(
+            controller.getCountryCode(option),
+            width: 24.w,
+            height: 24.w,
+            borderRadius: 4,
+          ),
+        ),
+        SizedBox(height: 16.h),
+        MyTextEditor(
+          textController: controller.arrowFullListController,
+          label: '国家选择（箭头/聚焦时全量，输入时过滤）',
+          hint: '选择或输入国家',
+          getDropDownOptions: controller.getCountries,
+          onOptionSelected: (v) => controller.arrowFullListController.text = v,
+          showAllOnPopWithNonTyping : true,
+          maxShowDropDownItems: 6,
           leadingBuilder: (option) => Flag.fromCode(
             controller.getCountryCode(option),
             width: 24.w,
@@ -166,24 +183,18 @@ class Page6View extends GetView<Page6Controller> {
       children: [
         MyTextEditor(
           textController: controller.styledController1,
-          label: '自定义样式输入框',
-          hint: '自定义样式输入框',
+          label: '综合自定义样式输入框',
+          hint: '圆角边框+蓝色背景+绿色标签+红色边框',
           clearable: true,
           onCleared: controller.onStyled1Cleared,
+          // 综合样式设置
           borderRadius: 50.r,
           borderWidth: 2,
           backgroundColor: Colors.blue[50],
-          focusedBorderColor: Colors.blue,
-        ),
-        SizedBox(height: 16.h),
-        MyTextEditor(
-          textController: controller.styledController2,
-          label: '自定义边框颜色和标签颜色',
-          hint: '红色边框+绿色标签示例',
           labelColor: Colors.green,
           normalBorderColor: Colors.red,
           enabledBorderColor: Colors.red,
-          focusedBorderColor: Colors.red,
+          focusedBorderColor: Colors.blue,
         ),
       ],
 
@@ -206,8 +217,8 @@ class Page6Controller extends GetxController {
   final countryBelowController = TextEditingController();
 
   final styledController1 = TextEditingController();
-  final styledController2 = TextEditingController();
   final styledController3 = TextEditingController();
+  final arrowFullListController = TextEditingController();
 
   // 选项数量
   final colorCount = 30; // 颜色选项总数
@@ -225,9 +236,10 @@ class Page6Controller extends GetxController {
     multilineController.dispose();
     colorController.dispose();
     countryController.dispose();
+    countryBelowController.dispose();
     styledController1.dispose();
-    styledController2.dispose();
     styledController3.dispose();
+    arrowFullListController.dispose();
   }
 
   // 回调方法

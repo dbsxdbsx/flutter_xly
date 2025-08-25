@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:xly/xly.dart';
 
+// 打开下拉的触发来源：输入、获取焦点、点击箭头
+enum _OpenTrigger { typing, focus, arrow }
+
 /// A customizable text editor widget with support for dropdown suggestions and styling options.
 ///
 /// This widget provides a rich text editing experience with features like:
@@ -39,6 +42,8 @@ class MyTextEditor extends GetView<MyTextEditorController> {
   final int maxShowDropDownItems;
   // null=auto; true=below; false=above
   final bool? showListCandidateBelow;
+  // 当通过“获得焦点”或“点击箭头”触发下拉时，是否始终展示全量候选（忽略当前输入）
+  final bool showAllOnPopWithNonTyping;
 
   // Style properties - Size
   final double? height;
@@ -124,6 +129,7 @@ class MyTextEditor extends GetView<MyTextEditorController> {
     this.dropdownHighlightColor,
     this.maxShowDropDownItems = 5,
     this.showListCandidateBelow,
+    this.showAllOnPopWithNonTyping = false,
 
     // Style properties - Size
     this.height,
@@ -212,6 +218,13 @@ class MyTextEditor extends GetView<MyTextEditorController> {
 
                 final allOptions = snapshot.data ?? <String>[];
 
+                // 当由“获得焦点”或“点击箭头”触发，且要求始终展示全量候选时，忽略输入进行过滤
+                if (controller._lastOpenTrigger != _OpenTrigger.typing &&
+                    showAllOnPopWithNonTyping) {
+                  controller.updateCurrentOptions(allOptions);
+                  return allOptions;
+                }
+
                 if (textEditingValue.text.isNotEmpty) {
                   final filteredOptions = allOptions
                       .where(
@@ -261,6 +274,10 @@ class MyTextEditor extends GetView<MyTextEditorController> {
                   context,
                   onSuffixIconTap: () {
                     if (enabled) {
+                      // 记录触发来源为“箭头点击”并清除手动关闭标记
+                      controller._lastOpenTrigger = _OpenTrigger.arrow;
+                      controller.resetManuallyClosedFlag();
+
                       focusNode.requestFocus();
                       final currentText = textEditingController.text;
                       textEditingController.text = ' ';
@@ -289,6 +306,26 @@ class MyTextEditor extends GetView<MyTextEditorController> {
   }) {
     return Focus(
       key: _fieldKey,
+      onFocusChange: (hasFocus) {
+        if (hasFocus) {
+          // 当获得焦点且输入为空时，触发一次轻微的文本变更以促使 RawAutocomplete 打开候选列表
+          if (enabled &&
+              !readOnly &&
+              getDropDownOptions != null &&
+              textController.text.isEmpty) {
+            // 重置“手动关闭”标志，允许下拉列表显示
+            controller.resetManuallyClosedFlag();
+            final currentText = textController.text;
+            textController.text = ' ';
+            Future.microtask(() {
+              textController.text = currentText;
+              textController.selection = TextSelection.collapsed(
+                offset: currentText.length,
+              );
+            });
+          }
+        }
+      },
       onKeyEvent: (node, event) {
         // 处理按键按下和重复事件（支持按住键快速导航）
         if (event is KeyDownEvent || event is KeyRepeatEvent) {
@@ -351,6 +388,8 @@ class MyTextEditor extends GetView<MyTextEditorController> {
           controller.updateHasText(value);
           // 用户开始输入时，重置手动关闭标志，允许下拉列表重新显示
           controller.resetManuallyClosedFlag();
+          // 标记为“输入触发”，以便 optionsBuilder 按输入过滤
+          controller._lastOpenTrigger = _OpenTrigger.typing;
           onChanged?.call(value);
         },
         maxLines: maxLines,
@@ -785,6 +824,9 @@ class MyTextEditorController extends GetxController {
   /// Flag to indicate if an option was just selected
   final _justSelected = false.obs;
 
+  /// 最近一次打开候选列表的触发来源（输入/焦点/箭头）
+  _OpenTrigger _lastOpenTrigger = _OpenTrigger.focus;
+
   /// Flag to indicate if user manually closed the dropdown
   final _manuallyClosedDropdown = false.obs;
 
@@ -818,6 +860,9 @@ class MyTextEditorController extends GetxController {
 
   void _onFocusChange() {
     if (focusNode.hasFocus) {
+      // 记录为“焦点触发”，并允许重新展示下拉
+      _lastOpenTrigger = _OpenTrigger.focus;
+      resetManuallyClosedFlag();
       setDropdownOpen(true);
     }
   }

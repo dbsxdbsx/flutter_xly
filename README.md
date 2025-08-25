@@ -91,7 +91,6 @@ dart run xly:generate icon="path/to/your/icon.png"
 
 
 ## 待办事项（TODOs）
-- MyTextEditor- add a param for if laoding all candidates but not effect by the txt in main editor?
 - tray feature- issue
 - MyDialog， add param to set modal or not?
 - if needed to make `final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();` also implicitly in the `MyApp.initialize(` ?
@@ -969,6 +968,7 @@ Widget buildDropdownEditor() {
     label: '颜色选择',
     hint: '选择或输入颜色',
     maxShowDropDownItems: 6,
+    showAllOnPopWithNonTyping : true, // 箭头点击显示全量候选
     // 不传表示自动决定方向（默认）
     getDropDownOptions: () async {
       // 模拟异步获取数据
@@ -1122,6 +1122,7 @@ class MyTextEditorController extends GetxController {
 - **防抖动机制**：选择选项后智能防止下拉列表闪烁
 - **手动关闭记忆**：用户主动关闭下拉列表后，输入新内容前不会自动重新打开
 - **灵活的下拉位置**：支持下拉列表显示在输入框上方或下方，适应不同布局需求
+- **智能触发行为**：区分输入、焦点、箭头三种触发方式，支持箭头点击显示全量候选
 - **丰富的自定义选项**：支持样式、颜色、字体、边框等全方位自定义
 - **响应式设计**：所有尺寸属性支持ScreenUtil响应式单位
 
