@@ -1,4 +1,25 @@
 
+## 0.20.0 - 2025-08-26
+
+### Added
+- **MyTray托盘点击切换功能**：新增toggleOnClick参数，支持托盘左键点击切换显示/隐藏
+  - 构造参数：bool toggleOnClick = true，控制托盘左键点击行为
+  - toggleOnClick=false：保持现状（智能停靠下模拟悬停弹出；否则恢复显示并聚焦）
+  - toggleOnClick=true：切换语义（普通模式hide↔pop切换；智能停靠下隐藏↔无激活显示切换）
+  - 运行时API：getToggleOnClick()、setToggleOnClick(bool)、toggleToggleOnClick()
+  - 智能停靠兼容：保持"隐藏→显示不会立即缩回"的既有体验
+- **MyTray任务栏图标策略控制**：新增hideTaskBarIcon参数和运行时API
+  - 构造参数：bool hideTaskBarIcon = true，控制托盘存在时任务栏图标是否隐藏
+  - 运行时API：showTaskbarIcon()、hideTaskbarIcon()、getHideTaskBarIcon()
+  - 全局策略：无论hide()/pop()操作，任务栏图标显示完全由策略决定
+  - 与智能停靠完全解耦：不影响悬停唤醒、不激活显示等现有行为
+
+### Enhanced
+- **示例页面功能扩展**：Page9新增托盘功能完整演示区域
+  - 新增toggleOnClick策略演示：实时显示当前切换开关状态，提供开启、关闭、切换三种操作按钮
+  - 任务栏图标策略演示：实时显示当前任务栏图标状态（隐藏/显示），提供显示、隐藏、切换三种操作按钮
+  - 支持手动验证策略切换效果和托盘点击行为变化
+
 ## 0.19.5 - 2025-08-26 [069950e]
 
 ### Enhanced

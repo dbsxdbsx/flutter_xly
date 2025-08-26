@@ -8,6 +8,55 @@ class Page9Controller extends GetxController {
   final isHidden = false.obs;
   final isMenuItemEnabled = true.obs; // 用于测试菜单项禁用功能
 
+  // 任务栏图标隐藏状态（基于 MyTray 策略）
+  final isTaskbarHidden = false.obs;
+  // 托盘点击切换策略（toggleOnClick）当前值
+  final isToggleOnClick = false.obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    refreshTaskbarState();
+  }
+
+  // 刷新任务栏图标隐藏状态
+  void refreshTaskbarState() {
+    isTaskbarHidden.value = MyTray.to.hideTaskBarIcon;
+    isToggleOnClick.value = MyTray.to.getToggleOnClick();
+  }
+
+  // 显示任务栏图标
+  Future<void> showTaskbarIcon() async {
+    await MyTray.to.showTaskbarIcon();
+    refreshTaskbarState();
+  }
+
+  // 隐藏任务栏图标
+  Future<void> hideTaskbarIcon() async {
+    await MyTray.to.hideTaskbarIcon();
+    refreshTaskbarState();
+  }
+
+  // 切换任务栏图标显示/隐藏
+  Future<void> toggleTaskbarIcon() async {
+    if (MyTray.to.hideTaskBarIcon) {
+      await showTaskbarIcon();
+    } else {
+      await hideTaskbarIcon();
+    }
+  }
+
+  // === toggleOnClick 测试 ===
+  Future<void> setToggleOnClick(bool enabled) async {
+    await MyTray.to.setToggleOnClick(enabled);
+    refreshTaskbarState();
+  }
+
+  Future<void> toggleToggleOnClick() async {
+    await MyTray.to.toggleToggleOnClick();
+    refreshTaskbarState();
+  }
+
   /// 隐藏到托盘并显示通知
   void hideWithNotification() {
     final myTray = MyTray.to;
@@ -244,6 +293,90 @@ class Page9View extends GetView<Page9Controller> {
                   onPressed: controller.silentHide,
                   icon: Icons.visibility_off,
                   backgroundColor: Colors.grey,
+                  width: double.infinity,
+                ),
+              ],
+            ),
+
+            SizedBox(height: 24.h),
+
+            // 任务栏图标策略区域
+            _buildSection(
+              '任务栏图标策略',
+              [
+                Obx(() => Text(
+                      '当前：${controller.isTaskbarHidden.value ? "隐藏" : "显示"}',
+                      style: TextStyle(fontSize: 14.sp),
+                    )),
+                SizedBox(height: 8.h),
+                Row(
+                  children: [
+                    Expanded(
+                      child: MyButton(
+                        text: '显示任务栏图标',
+                        onPressed: controller.showTaskbarIcon,
+                        icon: Icons.task,
+                        backgroundColor: Colors.green,
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: MyButton(
+                        text: '隐藏任务栏图标',
+                        onPressed: controller.hideTaskbarIcon,
+                        icon: Icons.hide_source,
+                        backgroundColor: Colors.red,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 8.h),
+                MyButton(
+                  text: '切换任务栏图标显示/隐藏',
+                  onPressed: controller.toggleTaskbarIcon,
+                  icon: Icons.swap_horiz,
+                  width: double.infinity,
+                ),
+              ],
+            ),
+
+            SizedBox(height: 24.h),
+
+            // toggleOnClick 策略区域
+            _buildSection(
+              '托盘左击“切换语义”开关（toggleOnClick）',
+              [
+                Obx(() => Text(
+                      '当前：${controller.isToggleOnClick.value ? "开启（点击切换）" : "关闭（保持现状）"}',
+                      style: TextStyle(fontSize: 14.sp),
+                    )),
+                SizedBox(height: 8.h),
+                Row(
+                  children: [
+                    Expanded(
+                      child: MyButton(
+                        text: '开启切换语义',
+                        onPressed: () => controller.setToggleOnClick(true),
+                        icon: Icons.toggle_on,
+                        backgroundColor: Colors.green,
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: MyButton(
+                        text: '关闭切换语义',
+                        onPressed: () => controller.setToggleOnClick(false),
+                        icon: Icons.toggle_off,
+                        backgroundColor: Colors.red,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 8.h),
+                MyButton(
+                  text: '切换 toggleOnClick 开关',
+                  onPressed: controller.toggleToggleOnClick,
+                  icon: Icons.swap_calls,
                   width: double.infinity,
                 ),
               ],

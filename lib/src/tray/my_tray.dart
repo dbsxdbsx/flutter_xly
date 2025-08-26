@@ -73,10 +73,19 @@ class MyTray extends GetxService with TrayListener {
   final tooltip = ''.obs;
   final _isInitialized = false.obs;
 
+  // 对外只读访问器：获取当前策略
+  bool get hideTaskBarIcon => _hideTaskBarIcon.value;
+  // 任务栏图标策略：托盘存在时是否隐藏任务栏图标（全局策略，可运行时调整）
+  final _hideTaskBarIcon = true.obs;
   // 构造函数参数
   final String? iconPath;
   final String? initialTooltip;
   final List<MyTrayMenuItem>? initialMenuItems;
+  // 新增：是否左击托盘切换显示/隐藏（可运行时修改）
+  final _toggleOnClick = true.obs;
+
+  // 私有：用于智能停靠下的切换记忆
+  bool _smartDockShownByTray = false;
 
   // 当前设置的菜单项（用于动态设置的菜单）
   List<MyTrayMenuItem>? _currentMenuItems;
@@ -86,8 +95,12 @@ class MyTray extends GetxService with TrayListener {
     this.iconPath,
     String? tooltip,
     List<MyTrayMenuItem>? menuItems,
+    bool hideTaskBarIcon = true,
+    bool toggleOnClick = true,
   })  : initialTooltip = tooltip,
         initialMenuItems = menuItems {
+    _hideTaskBarIcon.value = hideTaskBarIcon;
+    _toggleOnClick.value = toggleOnClick;
     if (tooltip != null) {
       this.tooltip.value = tooltip;
     }
@@ -202,6 +215,9 @@ MyTray 构建错误：未找到 $platformName 平台的默认应用图标！
       currentIcon.value = absoluteIconPath;
       _isInitialized.value = true;
 
+      // 应用任务栏图标显示策略（隐藏/显示）
+      await windowManager.setSkipTaskbar(_hideTaskBarIcon.value);
+
       if (kDebugMode) {
         print('MyTray: 托盘初始化成功，使用图标: $absoluteIconPath');
       }
@@ -272,13 +288,35 @@ MyTray 构建错误：未找到 $platformName 平台的默认应用图标！
   // TrayListener 事件处理
   @override
   Future<void> onTrayIconMouseDown() async {
-    // 左键点击：
-    // - 若处于智能停靠隐藏：仅模拟悬停弹出（不激活、不聚焦），保持原有自动隐藏语义
-    // - 否则：执行常规弹出（显示并聚焦）
+    // 左键点击行为：
+    // - 当 toggleOnClick=false：保持现状（智能停靠下模拟悬停弹出；否则恢复显示并聚焦）
+    // - 当 toggleOnClick=true：切换语义
+    if (!_toggleOnClick.value) {
+      if (_isInSmartDockMode()) {
+        await MouseTracker.simulateHoverReveal();
+      } else {
+        await pop();
+      }
+      return;
+    }
+
     if (_isInSmartDockMode()) {
-      await MouseTracker.simulateHoverReveal();
+      // 智能停靠：在“无激活弹出”和“强制收起到隐藏位”之间切换
+      if (_smartDockShownByTray) {
+        await MouseTracker.forceCollapseToHidden();
+        _smartDockShownByTray = false;
+      } else {
+        await MouseTracker.simulateHoverReveal();
+        _smartDockShownByTray = true;
+      }
     } else {
-      await pop();
+      // 非智能停靠：在 hide()/pop() 之间切换
+      if (isTrayMode.value || !isVisible.value) {
+        await pop();
+        _smartDockShownByTray = false;
+      } else {
+        await hide();
+      }
     }
   }
 
@@ -466,8 +504,8 @@ MyTray 构建错误：未找到 $platformName 平台的默认应用图标！
       // 设置托盘模式状态
       isTrayMode.value = true;
 
-      // 隐藏任务栏图标
-      await windowManager.setSkipTaskbar(true);
+      // 根据策略设置任务栏图标显示/隐藏
+      await windowManager.setSkipTaskbar(_hideTaskBarIcon.value);
 
       // 根据智能停靠状态决定是否隐藏窗口UI
       if (!_isInSmartDockMode()) {
@@ -494,6 +532,8 @@ MyTray 构建错误：未找到 $platformName 平台的默认应用图标！
               'MyTray: 已进入托盘模式（智能停靠），已强制收起到隐藏位；任务栏激活控制：${noActivateResult ? "成功" : "失败"}');
         }
       }
+      // 无论普通/智能停靠，隐藏后重置托盘展开记忆
+      _smartDockShownByTray = false;
     } catch (e) {
       if (kDebugMode) {
         print('MyTray: 进入托盘模式失败: $e');
@@ -506,7 +546,9 @@ MyTray 构建错误：未找到 $platformName 平台的默认应用图标！
     try {
       // 退出托盘模式
       isTrayMode.value = false;
-      await windowManager.setSkipTaskbar(false);
+
+      // 遵从策略，不强制显示任务栏图标
+      await windowManager.setSkipTaskbar(_hideTaskBarIcon.value);
 
       // 恢复正常的任务栏激活行为
       await NativeWindowHelper.setNoActivateTaskbar(false);
@@ -515,6 +557,8 @@ MyTray 构建错误：未找到 $platformName 平台的默认应用图标！
       await windowManager.show();
       await windowManager.focus();
       isVisible.value = true;
+      // 退出托盘模式后，重置托盘展开记忆
+      _smartDockShownByTray = false;
 
       if (kDebugMode) {
         print('MyTray: 已退出托盘模式（窗口已恢复，任务栏激活已恢复）');
@@ -547,6 +591,33 @@ MyTray 构建错误：未找到 $platformName 平台的默认应用图标！
       }
     }
   }
+
+  // === 任务栏图标策略：对外API ===
+  bool getHideTaskBarIcon() => _hideTaskBarIcon.value;
+
+  /// toggleOnClick: 对外API（get/set/toggle）
+  bool getToggleOnClick() => _toggleOnClick.value;
+  Future<void> setToggleOnClick(bool enabled) async {
+    _toggleOnClick.value = enabled;
+  }
+
+  Future<void> toggleToggleOnClick() async {
+    _toggleOnClick.value = !_toggleOnClick.value;
+  }
+
+  /// 设置任务栏图标隐藏策略（全局），默认立即生效
+  Future<void> _setHideTaskBarIcon(bool hide, {bool applyNow = true}) async {
+    _hideTaskBarIcon.value = hide;
+    if (applyNow && _isInitialized.value) {
+      await windowManager.setSkipTaskbar(_hideTaskBarIcon.value);
+    }
+  }
+
+  /// 便捷方法：显示任务栏图标
+  Future<void> showTaskbarIcon() => _setHideTaskBarIcon(false);
+
+  /// 便捷方法：隐藏任务栏图标
+  Future<void> hideTaskbarIcon() => _setHideTaskBarIcon(true);
 
   /// 检查是否已初始化
   bool get isInitialized => _isInitialized.value;

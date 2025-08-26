@@ -45,6 +45,7 @@
 ///   service: () => MyTray(
 ///     iconPath: "assets/icon.png",        // 可选：托盘图标路径，为空时使用默认应用图标
 ///     tooltip: "My App",                  // 可选：悬停提示
+///     hideTaskBarIcon: true,              // 可选：托盘存在时是否隐藏任务栏图标（默认true）
 ///     menuItems: [                        // 可选：右键菜单
 ///       MyTrayMenuItem(
 ///         label: '显示主窗口',
@@ -79,14 +80,19 @@
 /// final tray = MyTray.to;
 ///
 /// // 基础操作
-/// tray.minimizeToTray();              // 最小化到托盘
-/// tray.restoreFromTray();             // 从托盘恢复
-/// tray.showNotification("标题", "消息"); // 显示通知
+/// tray.hide();                        // 隐藏到托盘
+/// tray.pop();                         // 从托盘恢复
+/// tray.notify("标题", "消息");          // 显示通知
 ///
 /// // 动态配置
 /// tray.setTooltip("新提示");           // 更新提示文本
 /// tray.setContextMenu([...]);         // 更新右键菜单
-/// tray.setIconState(MyTrayIconState.warning); // 切换图标状态
+/// tray.setIcon("new_icon.png");       // 切换图标
+///
+/// // 任务栏图标策略控制
+/// tray.showTaskbarIcon();             // 显示任务栏图标
+/// tray.hideTaskbarIcon();             // 隐藏任务栏图标
+/// bool isHidden = tray.hideTaskBarIcon; // 获取当前策略
 /// ```
 ///
 /// ## 默认行为

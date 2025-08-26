@@ -104,11 +104,18 @@ tray.setIcon("new_icon.png");   // 动态设置图标
 tray.setMenuItemEnabled('settings', true);   // 启用设置菜单
 bool isEnabled = tray.getMenuItemEnabled('settings'); // 查询状态
 tray.toggleMenuItemEnabled('settings');      // 切换状态
+
+// 托盘点击行为控制
+tray.setToggleOnClick(true);              // 开启切换语义
+bool isToggleMode = tray.getToggleOnClick(); // 查询当前状态
+tray.toggleToggleOnClick();               // 切换开关状态
 ```
 
 ### 默认行为
 - **tooltip**: 不显示（`null`）
 - **menuItems**: 无菜单（`null`）
+- **hideTaskBarIcon**: 隐藏任务栏图标（`true`）
+- **toggleOnClick**: 开启切换语义（`true`）
 - **图标验证**: 构造时检查文件存在性，不存在则抛异常
 - **平台检查**: 非桌面平台自动跳过初始化
 - **生命周期**: 随应用启动/关闭自动管理

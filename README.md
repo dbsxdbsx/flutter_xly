@@ -510,6 +510,8 @@ void main() async {
     tray: MyTray(
       // iconPath: "assets/icon.png",  // 可选：为空时自动使用默认应用图标
       tooltip: "我的应用",              // 可选：悬停提示
+      hideTaskBarIcon: true,          // 可选：托盘存在时是否隐藏任务栏图标（默认true）
+      toggleOnClick: true,            // 可选：托盘左键点击是否切换显示/隐藏（默认true）
       menuItems: [                    // 可选：右键菜单
         MyTrayMenuItem(key: 'show', label: '显示', onTap: () => MyTray.to.pop()),
         MyTrayMenuItem.separator(),
@@ -528,6 +530,11 @@ await myTray.pop();  // 恢复窗口显示
 
 // 3. 动态控制菜单项禁用状态
 await myTray.setMenuItemEnabled('settings', true);   // 启用设置菜单
+
+// 4. 运行时控制任务栏图标显示策略
+await myTray.showTaskbarIcon();    // 显示任务栏图标（托盘+任务栏双入口）
+await myTray.hideTaskbarIcon();    // 隐藏任务栏图标（纯托盘模式）
+bool isHidden = myTray.hideTaskBarIcon;  // 获取当前策略状态
 bool isEnabled = myTray.getMenuItemEnabled('settings'); // 查询状态
 await myTray.toggleMenuItemEnabled('settings');      // 切换状态
 ```
@@ -565,13 +572,62 @@ MyTray 特性：
 - **配置优先级**：如果同时提供 `tray` 参数和 `services` 中的MyTray，`tray` 参数优先
 - **🆕 智能托盘隐藏**：根据智能停靠状态自动选择隐藏模式，与智能停靠功能完美协作
 - **🆕 原生禁用样式**：支持菜单项的启用/禁用状态，使用系统原生灰色样式和不可点击行为
+- **🆕 任务栏图标策略控制**：hideTaskBarIcon参数控制托盘存在时任务栏图标显示，支持运行时切换
+- **🆕 托盘点击切换功能**：toggleOnClick参数控制托盘左键点击行为，支持切换显示/隐藏或保持现状
+
+#### 任务栏图标策略控制
+
+MyTray 支持灵活的任务栏图标显示策略，允许用户选择"纯托盘模式"或"托盘+任务栏双入口模式"：
+
+- **hideTaskBarIcon = true（默认）**：托盘存在时隐藏任务栏图标，提供干净的任务栏体验
+- **hideTaskBarIcon = false**：托盘存在时保留任务栏图标，提供双入口访问方式
+- **运行时切换**：支持通过API动态改变策略，无需重启应用
+- **与智能停靠解耦**：任务栏图标显示策略不影响智能停靠的悬停唤醒等行为
+
+```dart
+// 初始化时配置策略
+tray: MyTray(
+  hideTaskBarIcon: false,  // 保留任务栏图标（双入口模式）
+),
+
+// 运行时切换策略
+MyTray.to.showTaskbarIcon();    // 显示任务栏图标
+MyTray.to.hideTaskbarIcon();    // 隐藏任务栏图标
+bool isHidden = MyTray.to.hideTaskBarIcon;  // 获取当前策略
+```
+
+#### 托盘点击切换功能
+
+MyTray 支持灵活的托盘左键点击行为控制，允许用户选择"切换语义"或"保持现状"：
+
+- **toggleOnClick = true（默认）**：托盘左键点击执行切换语义
+  - 普通模式：在hide()和pop()之间切换（隐藏到托盘 ↔ 恢复显示并聚焦）
+  - 智能停靠模式：在"收起到隐藏位"和"无激活弹出到对齐位"之间切换
+- **toggleOnClick = false**：托盘左键点击保持现状行为
+  - 普通模式：始终执行pop()（恢复显示并聚焦）
+  - 智能停靠模式：始终执行simulateHoverReveal()（无激活弹出，不会立即缩回）
+- **运行时切换**：支持通过API动态改变行为，无需重启应用
+- **智能停靠兼容**：保持"隐藏→显示不会立即缩回"的既有体验
+
+```dart
+// 初始化时配置行为
+tray: MyTray(
+  toggleOnClick: false,  // 保持现状行为（始终显示）
+),
+
+// 运行时切换行为
+MyTray.to.setToggleOnClick(true);     // 开启切换语义
+MyTray.to.setToggleOnClick(false);    // 关闭切换语义
+MyTray.to.toggleToggleOnClick();      // 切换开关状态
+bool isToggleMode = MyTray.to.getToggleOnClick();  // 获取当前状态
+```
 
 #### 智能托盘隐藏功能
 
 MyTray 现在支持智能托盘隐藏，能够根据当前窗口状态智能决策隐藏行为：
 
-- **普通模式**：窗口未处于智能停靠状态时，完全隐藏窗口和任务栏图标
-- **智能停靠模式**：窗口处于智能停靠状态时，隐藏任务栏图标并强制收起到隐藏位（保留悬停唤醒能力）
+- **普通模式**：窗口未处于智能停靠状态时，完全隐藏窗口UI
+- **智能停靠模式**：窗口处于智能停靠状态时，强制收起到隐藏位（保留悬停唤醒能力）
 - **任务栏激活控制**：防止在智能停靠模式下意外激活系统任务栏
 - **托盘左击（智能停靠隐藏下）**：左击托盘仅“模拟悬停弹出”，不激活不聚焦；用户首次把鼠标移入窗口后，再移出时会按常规自动收回
 - **🆕 智能收起行为**：在智能停靠已展开状态下点击"隐藏到托盘"，会立即收起到边缘/角落隐藏位，同时保持鼠标悬停可再次弹出
@@ -585,7 +641,7 @@ MyTray.to.hide();  // 根据当前状态智能选择隐藏方式
 await MouseTracker.simulateHoverReveal();
 
 // 从托盘恢复（非智能停靠场景）
-MyTray.to.pop();   // 恢复窗口和任务栏显示
+MyTray.to.pop();   // 恢复窗口显示
 ```
 
 **详细文档**：
