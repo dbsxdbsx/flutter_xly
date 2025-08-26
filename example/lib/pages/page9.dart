@@ -333,27 +333,33 @@ class Page9View extends GetView<Page9Controller> {
                   width: double.infinity,
                 ),
                 SizedBox(height: 12.h),
-                MyButton(
-                  text: '设置测试禁用菜单',
-                  onPressed: controller.setTestDisabledMenu,
-                  icon: Icons.toggle_off,
-                  backgroundColor: Colors.indigo,
-                  width: double.infinity,
+                Row(
+                  children: [
+                    Expanded(
+                      child: MyButton(
+                        text: '设置测试禁用菜单',
+                        onPressed: controller.setTestDisabledMenu,
+                        icon: Icons.toggle_off,
+                        backgroundColor: Colors.indigo,
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Obx(() => MyButton(
+                            text: controller.isMenuItemEnabled.value
+                                ? '禁用测试菜单项'
+                                : '启用测试菜单项',
+                            onPressed: controller.toggleMenuItemState,
+                            icon: controller.isMenuItemEnabled.value
+                                ? Icons.toggle_on
+                                : Icons.toggle_off,
+                            backgroundColor: controller.isMenuItemEnabled.value
+                                ? Colors.green
+                                : Colors.red,
+                          )),
+                    ),
+                  ],
                 ),
-                SizedBox(height: 12.h),
-                Obx(() => MyButton(
-                      text: controller.isMenuItemEnabled.value
-                          ? '禁用测试菜单项'
-                          : '启用测试菜单项',
-                      onPressed: controller.toggleMenuItemState,
-                      icon: controller.isMenuItemEnabled.value
-                          ? Icons.toggle_on
-                          : Icons.toggle_off,
-                      backgroundColor: controller.isMenuItemEnabled.value
-                          ? Colors.green
-                          : Colors.red,
-                      width: double.infinity,
-                    )),
                 SizedBox(height: 12.h),
                 Container(
                   padding: EdgeInsets.all(12.w),
