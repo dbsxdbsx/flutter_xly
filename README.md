@@ -511,9 +511,10 @@ void main() async {
       // iconPath: "assets/icon.png",  // 可选：为空时自动使用默认应用图标
       tooltip: "我的应用",              // 可选：悬停提示
       menuItems: [                    // 可选：右键菜单
-        MyTrayMenuItem(label: '显示', onTap: () => MyTray.to.pop()),
+        MyTrayMenuItem(key: 'show', label: '显示', onTap: () => MyTray.to.pop()),
         MyTrayMenuItem.separator(),
-        MyTrayMenuItem(label: '退出', onTap: () => exit(0)),
+        MyTrayMenuItem(key: 'settings', label: '设置', enabled: false), // 禁用项
+        MyTrayMenuItem(key: 'exit', label: '退出', onTap: () => exit(0)),
       ],
     ),
   );
@@ -524,6 +525,11 @@ final myTray = MyTray.to;
 await myTray.notify("标题", "消息内容");
 await myTray.setIcon("new_icon.png");  // 可选参数，为空时使用默认图标
 await myTray.pop();  // 恢复窗口显示
+
+// 3. 动态控制菜单项禁用状态
+await myTray.setMenuItemEnabled('settings', true);   // 启用设置菜单
+bool isEnabled = myTray.getMenuItemEnabled('settings'); // 查询状态
+await myTray.toggleMenuItemEnabled('settings');      // 切换状态
 ```
 
 #### 传统方式：使用services参数（向后兼容）
@@ -558,6 +564,7 @@ MyTray 特性：
 - **完全可选**：不需要托盘功能时完全不涉及，零影响
 - **配置优先级**：如果同时提供 `tray` 参数和 `services` 中的MyTray，`tray` 参数优先
 - **🆕 智能托盘隐藏**：根据智能停靠状态自动选择隐藏模式，与智能停靠功能完美协作
+- **🆕 原生禁用样式**：支持菜单项的启用/禁用状态，使用系统原生灰色样式和不可点击行为
 
 #### 智能托盘隐藏功能
 

@@ -11,6 +11,8 @@ import '../smart_dock/smart_dock_manager.dart';
 
 /// 托盘菜单项配置类
 class MyTrayMenuItem {
+  /// 稳定键，用于唯一标识菜单项；不提供时回退使用 label
+  final String? key;
   final String label;
   final VoidCallback? onTap;
   final String? icon;
@@ -19,6 +21,7 @@ class MyTrayMenuItem {
   final List<MyTrayMenuItem>? submenu;
 
   const MyTrayMenuItem({
+    this.key,
     required this.label,
     this.onTap,
     this.icon,
@@ -29,12 +32,34 @@ class MyTrayMenuItem {
 
   /// 创建分隔符菜单项
   const MyTrayMenuItem.separator()
-      : label = '',
+      : key = null,
+        label = '',
         onTap = null,
         icon = null,
         enabled = true,
         isSeparator = true,
         submenu = null;
+
+  /// 便捷复制（不可变模式）
+  MyTrayMenuItem copyWith({
+    String? key,
+    String? label,
+    VoidCallback? onTap,
+    String? icon,
+    bool? enabled,
+    bool? isSeparator,
+    List<MyTrayMenuItem>? submenu,
+  }) {
+    return MyTrayMenuItem(
+      key: key ?? this.key,
+      label: label ?? this.label,
+      onTap: onTap ?? this.onTap,
+      icon: icon ?? this.icon,
+      enabled: enabled ?? this.enabled,
+      isSeparator: isSeparator ?? this.isSeparator,
+      submenu: submenu ?? this.submenu,
+    );
+  }
 }
 
 /// MyTray 托盘管理器
@@ -201,31 +226,47 @@ MyTray 构建错误：未找到 $platformName 平台的默认应用图标！
     }
   }
 
-  /// 更新右键菜单
+  /// 更新右键菜单（使用原生 disabled 与 onClick 实现禁用与点击回调）
   Future<void> _updateContextMenu() async {
     if (initialMenuItems == null || initialMenuItems!.isEmpty) return;
 
     try {
-      final menuItems = <MenuItem>[];
-
-      for (final item in initialMenuItems!) {
-        if (item.isSeparator) {
-          menuItems.add(MenuItem.separator());
-        } else {
-          menuItems.add(MenuItem(
-            key: item.label,
-            label: item.label,
-          ));
-        }
-      }
-
-      final menu = Menu(items: menuItems);
+      final menu = Menu(items: _buildMenuItems(initialMenuItems!));
       await trayManager.setContextMenu(menu);
     } catch (e) {
       if (kDebugMode) {
         print('MyTray: 更新右键菜单失败: $e');
       }
     }
+  }
+
+  /// 将 MyTrayMenuItem 列表映射为 menu_base.MenuItem 列表
+  List<MenuItem> _buildMenuItems(List<MyTrayMenuItem> items) {
+    final result = <MenuItem>[];
+    for (final item in items) {
+      if (item.isSeparator) {
+        result.add(MenuItem.separator());
+        continue;
+      }
+      final displayKey = item.key ?? item.label;
+      if (item.submenu != null && item.submenu!.isNotEmpty) {
+        result.add(MenuItem.submenu(
+          key: displayKey,
+          label: item.label,
+          disabled: !item.enabled,
+          submenu: Menu(items: _buildMenuItems(item.submenu!)),
+          onClick: (_) => item.onTap?.call(),
+        ));
+      } else {
+        result.add(MenuItem(
+          key: displayKey,
+          label: item.label,
+          disabled: !item.enabled,
+          onClick: (_) => item.onTap?.call(),
+        ));
+      }
+    }
+    return result;
   }
 
   // TrayListener 事件处理
@@ -252,32 +293,9 @@ MyTray 构建错误：未找到 $platformName 平台的默认应用图标！
 
   @override
   Future<void> onTrayMenuItemClick(MenuItem menuItem) async {
-    // 处理菜单项点击事件
+    // 原生 onClick 已触发回调，这里仅记录日志与兼容处理
     if (kDebugMode) {
-      print('MyTray: 菜单项点击: ${menuItem.label}');
-    }
-
-    // 查找对应的菜单项并执行回调
-    if (initialMenuItems != null) {
-      _handleMenuItemClick(initialMenuItems!, menuItem.key);
-    }
-    // 如果没有找到，尝试查找当前设置的菜单项
-    if (_currentMenuItems != null) {
-      _handleMenuItemClick(_currentMenuItems!, menuItem.key);
-    }
-  }
-
-  /// 递归查找并处理菜单项点击
-  void _handleMenuItemClick(List<MyTrayMenuItem> items, String? key) {
-    for (final item in items) {
-      if (item.label == key && item.onTap != null) {
-        item.onTap!();
-        return;
-      }
-      // 处理子菜单
-      if (item.submenu != null) {
-        _handleMenuItemClick(item.submenu!, key);
-      }
+      print('MyTray: 菜单项点击: ${menuItem.key}/${menuItem.label}');
     }
   }
 
@@ -353,20 +371,7 @@ MyTray 构建错误：未找到 $platformName 平台的默认应用图标！
       // 保存当前菜单项
       _currentMenuItems = items;
 
-      final menuItems = <MenuItem>[];
-
-      for (final item in items) {
-        if (item.isSeparator) {
-          menuItems.add(MenuItem.separator());
-        } else {
-          menuItems.add(MenuItem(
-            key: item.label,
-            label: item.label,
-          ));
-        }
-      }
-
-      final menu = Menu(items: menuItems);
+      final menu = Menu(items: _buildMenuItems(items));
       await trayManager.setContextMenu(menu);
 
       if (kDebugMode) {
@@ -377,6 +382,68 @@ MyTray 构建错误：未找到 $platformName 平台的默认应用图标！
         print('MyTray: 设置右键菜单失败: $e');
       }
     }
+  }
+
+  // === 便捷API：查询/修改禁用状态 ===
+
+  /// 获取当前菜单中指定 key 的启用状态（未找到返回 false）
+  bool getMenuItemEnabled(String key) {
+    final item = _findItemByKey(_currentMenuItems ?? initialMenuItems, key);
+    return item?.enabled ?? false;
+  }
+
+  /// 设置指定 key 的启用状态，返回是否找到并更新
+  Future<bool> setMenuItemEnabled(String key, bool enabled) async {
+    final updated = _updateEnabledRecursive(
+        _currentMenuItems ?? initialMenuItems, key, enabled);
+    if (updated) {
+      // 重建并应用菜单
+      final source = _currentMenuItems ?? initialMenuItems!;
+      await setContextMenu(source);
+    }
+    return updated;
+  }
+
+  /// 便捷切换
+  Future<bool> toggleMenuItemEnabled(String key) async {
+    final cur = getMenuItemEnabled(key);
+    return setMenuItemEnabled(key, !cur);
+  }
+
+  // --- 内部：查找/更新 ---
+  MyTrayMenuItem? _findItemByKey(List<MyTrayMenuItem>? list, String searchKey) {
+    if (list == null) return null;
+    for (final it in list) {
+      if (!it.isSeparator) {
+        final k = it.key ?? it.label;
+        if (k == searchKey) return it;
+      }
+      if (it.submenu != null && it.submenu!.isNotEmpty) {
+        final hit = _findItemByKey(it.submenu, searchKey);
+        if (hit != null) return hit;
+      }
+    }
+    return null;
+  }
+
+  bool _updateEnabledRecursive(
+      List<MyTrayMenuItem>? list, String searchKey, bool enabled) {
+    if (list == null) return false;
+    for (var i = 0; i < list.length; i++) {
+      final it = list[i];
+      if (!it.isSeparator) {
+        final k = it.key ?? it.label;
+        if (k == searchKey) {
+          list[i] = it.copyWith(enabled: enabled);
+          return true;
+        }
+      }
+      if (it.submenu != null && it.submenu!.isNotEmpty) {
+        final hit = _updateEnabledRecursive(it.submenu, searchKey, enabled);
+        if (hit) return true;
+      }
+    }
+    return false;
   }
 
   /// 检查是否处于智能停靠模式

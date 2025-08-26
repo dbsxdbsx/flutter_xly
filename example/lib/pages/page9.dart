@@ -6,6 +6,7 @@ import '../services/example_service.dart';
 
 class Page9Controller extends GetxController {
   final isHidden = false.obs;
+  final isMenuItemEnabled = true.obs; // 用于测试菜单项禁用功能
 
   /// 隐藏到托盘并显示通知
   void hideWithNotification() {
@@ -73,6 +74,50 @@ class Page9Controller extends GetxController {
     ]);
 
     MyToast.showInfo("自定义托盘菜单已设置");
+  }
+
+  /// 设置带禁用项的测试托盘菜单
+  void setTestDisabledMenu() {
+    final myTray = MyTray.to;
+    myTray.setContextMenu([
+      MyTrayMenuItem(
+        label: '显示主窗口',
+        onTap: () => myTray.pop(),
+      ),
+      const MyTrayMenuItem.separator(),
+      MyTrayMenuItem(
+        key: 'test_item',
+        label: '测试菜单项',
+        enabled: isMenuItemEnabled.value,
+        onTap: () => _testMenuItemAction(),
+      ),
+      MyTrayMenuItem(
+        label: '切换测试项状态',
+        onTap: () => toggleMenuItemState(),
+      ),
+      const MyTrayMenuItem.separator(),
+      MyTrayMenuItem(
+        label: '退出应用',
+        onTap: () => ExampleService.to.exitApp(),
+      ),
+    ]);
+
+    MyToast.showInfo("测试禁用菜单已设置");
+  }
+
+  /// 切换菜单项启用/禁用状态
+  void toggleMenuItemState() async {
+    isMenuItemEnabled.value = !isMenuItemEnabled.value;
+    // 直接通过便捷API切换禁用状态（无需重建列表）
+    await MyTray.to.setMenuItemEnabled('test_item', isMenuItemEnabled.value);
+    MyToast.showInfo(
+      isMenuItemEnabled.value ? "测试菜单项已启用" : "测试菜单项已禁用",
+    );
+  }
+
+  /// 测试菜单项的动作
+  void _testMenuItemAction() {
+    MyToast.showInfo("测试菜单项被点击了！");
   }
 
   /// 切换图标为正常状态
@@ -170,6 +215,7 @@ class Page9View extends GetView<Page9Controller> {
                     'MyTray 托盘功能：\n'
                     '• 支持最小化窗口到系统托盘\n'
                     '• 支持自定义托盘右键菜单\n'
+                    '• 支持菜单项的启用/禁用状态（灰色显示）\n'
                     '• 支持状态驱动的图标切换（可选）\n'
                     '• 仅在桌面平台（Windows/macOS/Linux）可用\n'
                     '• 托盘图标位于任务栏通知区域',
@@ -287,6 +333,28 @@ class Page9View extends GetView<Page9Controller> {
                   width: double.infinity,
                 ),
                 SizedBox(height: 12.h),
+                MyButton(
+                  text: '设置测试禁用菜单',
+                  onPressed: controller.setTestDisabledMenu,
+                  icon: Icons.toggle_off,
+                  backgroundColor: Colors.indigo,
+                  width: double.infinity,
+                ),
+                SizedBox(height: 12.h),
+                Obx(() => MyButton(
+                      text: controller.isMenuItemEnabled.value
+                          ? '禁用测试菜单项'
+                          : '启用测试菜单项',
+                      onPressed: controller.toggleMenuItemState,
+                      icon: controller.isMenuItemEnabled.value
+                          ? Icons.toggle_on
+                          : Icons.toggle_off,
+                      backgroundColor: controller.isMenuItemEnabled.value
+                          ? Colors.green
+                          : Colors.red,
+                      width: double.infinity,
+                    )),
+                SizedBox(height: 12.h),
                 Container(
                   padding: EdgeInsets.all(12.w),
                   decoration: BoxDecoration(
@@ -294,7 +362,7 @@ class Page9View extends GetView<Page9Controller> {
                     borderRadius: BorderRadius.circular(6.r),
                   ),
                   child: Text(
-                    '提示：设置后右键点击托盘图标可查看自定义菜单',
+                    '提示：设置测试菜单后，可以通过切换按钮来测试菜单项的启用/禁用功能',
                     style: TextStyle(
                       fontSize: 12.sp,
                       color: Colors.grey[600],
@@ -311,6 +379,7 @@ class Page9View extends GetView<Page9Controller> {
             Obx(() => _buildSection(
                   '当前状态',
                   [
+                    // 窗口状态
                     Container(
                       padding: EdgeInsets.all(12.w),
                       decoration: BoxDecoration(
@@ -343,6 +412,48 @@ class Page9View extends GetView<Page9Controller> {
                               color: controller.isHidden.value
                                   ? Colors.orange[700]
                                   : Colors.green[700],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 12.h),
+                    // 菜单项状态
+                    Container(
+                      padding: EdgeInsets.all(12.w),
+                      decoration: BoxDecoration(
+                        color: controller.isMenuItemEnabled.value
+                            ? Colors.blue.withValues(alpha: 0.1)
+                            : Colors.red.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(6.r),
+                        border: Border.all(
+                          color: controller.isMenuItemEnabled.value
+                              ? Colors.blue.withValues(alpha: 0.3)
+                              : Colors.red.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            controller.isMenuItemEnabled.value
+                                ? Icons.toggle_on
+                                : Icons.toggle_off,
+                            color: controller.isMenuItemEnabled.value
+                                ? Colors.blue[700]
+                                : Colors.red[700],
+                            size: 20.sp,
+                          ),
+                          SizedBox(width: 8.w),
+                          Text(
+                            controller.isMenuItemEnabled.value
+                                ? '测试菜单项：启用状态'
+                                : '测试菜单项：禁用状态',
+                            style: TextStyle(
+                              fontSize: 14.sp,
+                              color: controller.isMenuItemEnabled.value
+                                  ? Colors.blue[700]
+                                  : Colors.red[700],
                               fontWeight: FontWeight.w500,
                             ),
                           ),

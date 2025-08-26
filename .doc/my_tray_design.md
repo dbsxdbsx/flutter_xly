@@ -44,9 +44,10 @@ void main() async {
       iconPath: "assets/icon.png",  // 可选，为空时自动使用默认图标
       tooltip: "My App",
       menuItems: [
-        MyTrayMenuItem(label: '显示', onTap: () => MyTray.to.pop()),
+        MyTrayMenuItem(key: 'show', label: '显示', onTap: () => MyTray.to.pop()),
         MyTrayMenuItem.separator(),
-        MyTrayMenuItem(label: '退出', onTap: () => exit(0)),
+        MyTrayMenuItem(key: 'settings', label: '设置', enabled: false), // 禁用项
+        MyTrayMenuItem(key: 'exit', label: '退出', onTap: () => exit(0)),
       ],
     ),
   );
@@ -98,6 +99,11 @@ tray.notify("标题", "消息");      // 显示通知
 tray.setTooltip("新提示");       // 更新提示文本
 tray.setContextMenu([...]);     // 更新右键菜单
 tray.setIcon("new_icon.png");   // 动态设置图标
+
+// 菜单项禁用状态控制
+tray.setMenuItemEnabled('settings', true);   // 启用设置菜单
+bool isEnabled = tray.getMenuItemEnabled('settings'); // 查询状态
+tray.toggleMenuItemEnabled('settings');      // 切换状态
 ```
 
 ### 默认行为
@@ -125,6 +131,7 @@ tray.setIcon("new_icon.png");   // 动态设置图标
 - 动态图标切换
 - 自定义托盘菜单
 - 动态图标和提示更新
+- 菜单项启用/禁用状态控制（原生灰色样式）
 - 平台特定行为适配
 
 ## 架构设计
@@ -139,7 +146,7 @@ MyTray (GetxService)  ← 改为继承GetxService
 
 ### 核心组件
 - `MyTray`: 主要的托盘管理器类（GetxService）
-- `MyTrayMenuItem`: 托盘菜单项配置
+- `MyTrayMenuItem`: 托盘菜单项配置（支持key、enabled等属性）
 - `MyTrayNotification`: 通知消息处理
 - ~~`MyTrayIconConfig`: 图标配置选项~~（已移除，简化设计）
 - ~~`MyTrayWrapper`: 托盘包装器组件~~（已移除，不再需要）
@@ -228,9 +235,10 @@ await MyApp.initialize(
         iconPath: "assets/tray_icon.png",
         tooltip: "我的应用",
         menuItems: [
-          MyTrayMenuItem(label: '显示主窗口', onTap: () => MyTray.to.pop()),
+          MyTrayMenuItem(key: 'show', label: '显示主窗口', onTap: () => MyTray.to.pop()),
           MyTrayMenuItem.separator(),
-          MyTrayMenuItem(label: '退出应用', onTap: () => exit(0)),
+          MyTrayMenuItem(key: 'settings', label: '设置', enabled: false), // 禁用项示例
+          MyTrayMenuItem(key: 'exit', label: '退出应用', onTap: () => exit(0)),
         ],
       ),
     ),
@@ -242,6 +250,69 @@ final myTray = MyTray.to;
 myTray.setIcon("assets/tray_busy.png");  // 切换到忙碌图标
 myTray.setIcon("assets/tray_normal.png"); // 切换回正常图标
 ```
+
+## 菜单项禁用功能
+
+### 功能概述
+MyTray 支持菜单项的启用/禁用状态控制，使用系统原生的禁用样式和行为。
+
+### 实现原理
+- **原生支持**：通过 `tray_manager` 重导出的 `menu_base` 包，使用 `MenuItem.disabled` 属性
+- **系统样式**：禁用项显示为系统标准的灰色样式，在系统层面不可点击
+- **跨平台**：Windows/macOS 完全支持，Linux 依桌面环境而定
+
+### 基础用法
+
+#### 静态禁用
+```dart
+MyTrayMenuItem(
+  key: 'settings',        // 推荐提供稳定的key
+  label: '设置',
+  enabled: false,         // 设置为禁用状态
+  onTap: () => openSettings(),
+),
+```
+
+#### 动态控制
+```dart
+final myTray = MyTray.to;
+
+// 查询状态
+bool isEnabled = myTray.getMenuItemEnabled('settings');
+
+// 设置状态
+await myTray.setMenuItemEnabled('settings', true);   // 启用
+await myTray.setMenuItemEnabled('settings', false);  // 禁用
+
+// 切换状态
+await myTray.toggleMenuItemEnabled('settings');
+```
+
+### 完整示例
+```dart
+// 初始化时设置菜单
+MyTray(
+  menuItems: [
+    MyTrayMenuItem(key: 'show', label: '显示窗口', onTap: () => MyTray.to.pop()),
+    MyTrayMenuItem.separator(),
+    MyTrayMenuItem(key: 'sync', label: '同步数据', enabled: false), // 初始禁用
+    MyTrayMenuItem(key: 'settings', label: '设置', onTap: () => openSettings()),
+    MyTrayMenuItem.separator(),
+    MyTrayMenuItem(key: 'exit', label: '退出', onTap: () => exit(0)),
+  ],
+),
+
+// 运行时根据状态动态启用/禁用
+void onSyncStatusChanged(bool canSync) async {
+  await MyTray.to.setMenuItemEnabled('sync', canSync);
+}
+```
+
+### 注意事项
+- **key 的重要性**：推荐为每个菜单项提供唯一的 `key`，便于后续查找和修改
+- **子菜单支持**：子菜单项同样支持禁用功能
+- **平台差异**：Linux 下的视觉效果可能因桌面环境而异
+- **性能考虑**：动态修改会重建整个菜单，频繁操作时需注意性能
 
 ## 图标管理
 
@@ -344,6 +415,7 @@ MyTray.to.hide();
 MyTray.to.pop();
 MyTray.to.notify("标题", "消息");
 MyTray.to.setIcon("new_icon.png");
+MyTray.to.setMenuItemEnabled("settings", true);
 ```
 
 **架构优势**：
