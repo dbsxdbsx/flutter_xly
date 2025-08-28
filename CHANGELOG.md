@@ -1,4 +1,14 @@
 
+
+## 0.20.2 - 2025-08-28
+
+### Enhanced
+- **MyDialog & MyDialogSheet**：新增 barrierDismissible 参数（默认 true），支持按需控制点击遮罩关闭
+  - MyDialog.show / MyDialog.showIos / 内部 _showDialog 透传该参数
+  - MyDialogSheet.show 增加同名参数，保持命名与 Flutter 官方一致
+- **README**：补充严格模态用法示例（barrierDismissible: false）并在基础示例中标注默认语义
+
+
 ## 0.20.1 - 2025-08-28
 
 ### Added

@@ -790,7 +790,7 @@ goToPage(context, Routes.page2);
 
 #### 基础用法
 ```dart
-// 1. 简单确认对话框
+// 1. 简单确认对话框（默认可点击遮罩关闭）
 final result = await MyDialog.show(
   content: const Text('确定要删除这个文件吗？'),
 );
@@ -866,6 +866,25 @@ MyDialog.show(
   rightButtonText: '编辑',
 );
 ```
+
+#### 严格模态（不允许点击遮罩关闭）
+```dart
+await MyDialog.show(
+  title: '删除文件',
+  content: const Text('此操作不可撤销，确定删除？'),
+  rightButtonText: '删除',
+  barrierDismissible: false, // 关键：禁止点击外部关闭
+);
+```
+
+
+
+// 也可在iOS风格对话框中使用严格模态：
+await MyDialog.showIos(
+  title: '提示',
+  content: const Text('这是iOS风格的对话框'),
+  barrierDismissible: false,
+);
 
 #### iOS风格对话框
 ```dart
