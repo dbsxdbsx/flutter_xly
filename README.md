@@ -93,7 +93,6 @@ dart run xly:generate icon="path/to/your/icon.png"
 
 ## 待办事项（TODOs）
 - floatBar大小不随host app窗口大小随动，stateManagement测试(中国象棋app测试)
-- the MySacffold is issued, make it a ppl like sidebar widget?
 - right menu 子菜单issue
 - 静默启动？
 - MyToggleBtn?
@@ -101,6 +100,26 @@ dart run xly:generate icon="path/to/your/icon.png"
 - clear the Print and DebugPrint for avoid ruin user code?
 
 ## 注意事项（Notes）
+
+### 关于 keyToRollBack 参数的行为优化
+
+**回退键处理逻辑**：`keyToRollBack` 参数现在采用更智能的处理方式：
+
+1. **优先处理弹层**：回退键首先尝试关闭当前打开的弹层（Dialog、BottomSheet、PopupMenu、Drawer等）
+2. **双击回退/退出**：只有在没有弹层可关闭时，才进入原有的双击回退/退出逻辑
+3. **用户体验提升**：避免了"弹层打开时按回退键直接退出应用"的反直觉行为
+
+**示例场景**：
+```dart
+// 设置回退键（可以是任意键）
+keyToRollBack: LogicalKeyboardKey.escape,  // 或 backspace、f1 等
+
+// 行为表现：
+// 1. Dialog打开时按回退键 → 关闭Dialog
+// 2. Drawer打开时按回退键 → 关闭Drawer
+// 3. 无弹层时按回退键 → 显示"再按一次退出/返回"提示
+// 4. 双击回退键 → 执行退出/返回操作
+```
 
 ### 关于 navigatorKey 参数的移除
 
@@ -234,7 +253,7 @@ void main() async {
         controller: () => Page3Controller(),
       ),
     ],
-    keyToRollBack: LogicalKeyboardKey.backspace,
+    keyToRollBack: LogicalKeyboardKey.backspace,  // 全局回退键，优先处理弹层关闭
     exitInfoText: '自定义: 再按一次退出App',
     backInfoText: '自定义: 再按一次返回上一页',
     pageTransitionStyle: Transition.fade,

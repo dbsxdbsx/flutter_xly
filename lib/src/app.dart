@@ -467,6 +467,10 @@ class MyApp extends StatelessWidget {
     String? lastRoute;
 
     Future<void> handleRollBackIntent() async {
+      // 优先让当前可关闭层（如 Drawer、Dialog、BottomSheet 等）消费 ESC / 回退
+      final popped = await Get.key.currentState?.maybePop() ?? false;
+      if (popped) return;
+
       final now = DateTime.now();
       final currentRoute = Get.currentRoute;
 

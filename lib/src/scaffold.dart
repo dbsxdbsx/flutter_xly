@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_adaptive_scaffold/flutter_adaptive_scaffold.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -318,7 +319,16 @@ class _MyScaffoldState extends State<MyScaffold> {
             key: const Key('body'),
             inAnimation: AdaptiveScaffold.fadeIn,
             outAnimation: AdaptiveScaffold.fadeOut,
-            builder: (_) => widget.body ?? const SizedBox.shrink(),
+            builder: (_) {
+              if (isSmallScreen) {
+                return widget.body ?? const SizedBox.shrink();
+              }
+              // 中/大屏：将AppBar包在内容区域的内层Scaffold中，避免占据侧边栏顶部空间
+              return Scaffold(
+                appBar: widget.appBar,
+                body: widget.body ?? const SizedBox.shrink(),
+              );
+            },
           ),
         },
       ),
@@ -328,9 +338,14 @@ class _MyScaffoldState extends State<MyScaffold> {
     final shouldShowDrawer =
         isSmallScreen && !widget.useBottomNavigationOnSmall;
 
-    // 处理AppBar - 为非标准AppBar添加自定义汉堡包图标
-    PreferredSizeWidget? effectiveAppBar = widget.appBar;
-    if (shouldShowDrawer && widget.appBar != null && widget.appBar is! AppBar) {
+    // 处理AppBar：
+    // - 小屏幕：放在外层Scaffold（需要汉堡菜单/系统行为）
+    // - 中/大屏：不在外层放置，由内容区域内部自己渲染，避免挤占侧边栏顶部空间
+    PreferredSizeWidget? effectiveAppBar = isSmallScreen ? widget.appBar : null;
+    if (isSmallScreen &&
+        shouldShowDrawer &&
+        widget.appBar != null &&
+        widget.appBar is! AppBar) {
       // 对于非标准AppBar（如_DynamicAppBar），包装一个带汉堡包图标的容器
       effectiveAppBar = PreferredSize(
         preferredSize: widget.appBar!.preferredSize,
@@ -374,19 +389,29 @@ class _MyScaffoldState extends State<MyScaffold> {
 
       // 小屏幕时显示抽屉（如果不使用底部导航栏）
       drawer: shouldShowDrawer
-          ? Drawer(
-              width:
-                  (screenWidth * widget.drawerWidthRatio).clamp(200.w, 304.w),
-              child: _CustomExtendedNavigationRail(
-                selectedIndex: _selectedIndex,
-                onDestinationSelected: (index) {
+          ? CallbackShortcuts(
+              bindings: {
+                const SingleActivator(LogicalKeyboardKey.escape): () {
                   _scaffoldKey.currentState?.closeDrawer();
-                  handleDestinationSelected(index);
                 },
-                destinations: destinations,
-                trailing: widget.trailing,
-                scrollController: _drawerScrollController,
-                alwaysShowScrollbar: widget.alwaysShowScrollbar,
+              },
+              child: Focus(
+                autofocus: true,
+                child: Drawer(
+                  width: (screenWidth * widget.drawerWidthRatio)
+                      .clamp(200.w, 304.w),
+                  child: _CustomExtendedNavigationRail(
+                    selectedIndex: _selectedIndex,
+                    onDestinationSelected: (index) {
+                      _scaffoldKey.currentState?.closeDrawer();
+                      handleDestinationSelected(index);
+                    },
+                    destinations: destinations,
+                    trailing: widget.trailing,
+                    scrollController: _drawerScrollController,
+                    alwaysShowScrollbar: widget.alwaysShowScrollbar,
+                  ),
+                ),
               ),
             )
           : null,
