@@ -18,8 +18,6 @@ import 'services/example_service.dart';
 import 'widgets/float_bar_navigation.dart';
 import 'widgets/platform_info_widget.dart';
 
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-
 void main() async {
   await MyApp.initialize(
     appName: "示例App",
@@ -122,7 +120,6 @@ void main() async {
       spaceBetween: 30,
     ),
     pageTransitionStyle: Transition.fade,
-    navigatorKey: navigatorKey,
     draggable: false,
     resizable: true,
     doubleClickToFullScreen: true,

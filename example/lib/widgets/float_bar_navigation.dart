@@ -38,7 +38,7 @@ Widget getFloatBar() {
       dockActivate: true,
       buttons: ctrl.buttons.toList(),
       onPressed: (index) {
-        final context = navigatorKey.currentContext;
+        final context = Get.context ?? Get.overlayContext;
         if (context == null) return;
 
         if (index == 0) {

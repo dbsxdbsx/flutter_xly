@@ -129,7 +129,6 @@ class MyApp extends StatelessWidget {
   final Transition pageTransitionStyle;
   final Duration pageTransitionDuration;
 
-  final GlobalKey<NavigatorState>? navigatorKey;
   final bool enableDoubleClickFullScreen;
   final bool draggable;
 
@@ -150,7 +149,6 @@ class MyApp extends StatelessWidget {
     this.backInfoText = '再按一次返回上一页',
     this.pageTransitionStyle = Transition.fade,
     this.pageTransitionDuration = const Duration(milliseconds: 300),
-    this.navigatorKey,
     this.enableDoubleClickFullScreen = false,
     this.draggable = true,
   });
@@ -171,8 +169,6 @@ class MyApp extends StatelessWidget {
     MySplash? splash,
     Transition pageTransitionStyle = Transition.fade,
     Duration pageTransitionDuration = const Duration(milliseconds: 300),
-    GlobalKey<NavigatorState>? navigatorKey,
-
     // UI自定义配置
     Widget Function(BuildContext, Widget?)?
         appBuilder, // 应用构建器，用于自定义UI层级（如添加FloatBar、全局遮罩等）
@@ -307,7 +303,6 @@ class MyApp extends StatelessWidget {
       backInfoText: backInfoText,
       pageTransitionStyle: pageTransitionStyle,
       pageTransitionDuration: pageTransitionDuration,
-      navigatorKey: navigatorKey,
       enableDoubleClickFullScreen: doubleClickToFullScreen,
       draggable: draggable,
     ));
@@ -381,7 +376,7 @@ class MyApp extends StatelessWidget {
 
   Widget _buildApp(BuildContext context) {
     Widget app = GetMaterialApp(
-      navigatorKey: navigatorKey,
+      navigatorKey: Get.key,
       debugShowCheckedModeBanner: showDebugTag,
       title: appName ?? '',
       initialRoute: routes.isNotEmpty ? routes.first.path : '/',

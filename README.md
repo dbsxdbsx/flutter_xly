@@ -92,9 +92,8 @@ dart run xly:generate icon="path/to/your/icon.png"
 
 
 ## 待办事项（TODOs）
-- if needed to make `final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();` also implicitly in the `MyApp.initialize(` ?
+- floatBar大小不随host app窗口大小随动，stateManagement测试(中国象棋app测试)
 - the MySacffold is issued, make it a ppl like sidebar widget?
-- floatBar大小不随host app窗口大小随动，stateManagement测试
 - right menu 子菜单issue
 - 静默启动？
 - MyToggleBtn?
@@ -102,6 +101,31 @@ dart run xly:generate icon="path/to/your/icon.png"
 - clear the Print and DebugPrint for avoid ruin user code?
 
 ## 注意事项（Notes）
+
+### 关于 navigatorKey 参数的移除
+
+**重要变更**：从当前版本开始，我们移除了 `MyApp.initialize` 的 `navigatorKey` 参数。
+
+**变更原因**：
+- XLY 以 GetX 为路由/对话框基座，已提供无 Context 导航能力（`Get.toNamed`、`Get.back`、`Get.dialog`）
+- 提供全局 BuildContext（`Get.context`/`Get.overlayContext`）以及全局 NavigatorKey（`Get.key`）
+- 继续暴露 `navigatorKey` 只会增加使用者的心智负担，且绝大多数场景并不需要
+
+**兼容性影响**：
+- 这是一次不兼容变更（移除 API 参数）
+- 如果你之前传递了 `navigatorKey`，请删除该参数
+- 如果你的代码使用了自定义的全局 `navigatorKey` 来获取 context 或做原生 `showDialog`，请改为：
+  - 使用 `Get.dialog` / `Get.back`，或
+  - 使用 `Get.context` / `Get.overlayContext` 获取 context
+
+**迁移指南**：
+1. 删除 main.dart 中的自定义 `GlobalKey<NavigatorState>` 定义与传参
+2. 将 `showDialog(context: xxx)` 替换为 `Get.dialog(...)`；或将 `xxx` 替换为 `Get.context ?? Get.overlayContext`
+3. 如确需 NavigatorState，使用 `Get.key.currentState`
+
+**FAQ**：
+- Q: 我有第三方库要我"传入 navigatorKey"怎么办？
+- A: 大多数库仅需 `navigatorObservers` 或支持 GetX 的 API。极少数需要直接操作 NavigatorState 的，可通过 `Get.key` 访问全局 NavigatorState；不需要在 `MyApp.initialize` 上传参数。
 
 ### MyTray 组件设计
 - 系统托盘功能组件设计文档：[.doc/my_tray_design.md](.doc/my_tray_design.md)

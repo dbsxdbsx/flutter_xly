@@ -1,4 +1,17 @@
 
+## 0.21.0 - 2025-08-28
+
+### Breaking Changes
+- **移除 navigatorKey 参数**：从 `MyApp.initialize` 中移除 `navigatorKey` 参数
+  - 内部使用 `Get.key` 作为全局 NavigatorKey，简化用户配置
+  - 如需访问 NavigatorState，请使用 `Get.key.currentState`
+  - 如需全局 BuildContext，请使用 `Get.context` 或 `Get.overlayContext`
+  - 对话框请使用 `Get.dialog` 替代原生 `showDialog`
+
+### Enhanced
+- **简化初始化参数**：降低心智负担，开箱即用
+- **文档更新**：添加 navigatorKey 移除的详细说明和迁移指南
+
 ## 0.20.3 - 2025-08-28
 
 ### Enhanced
