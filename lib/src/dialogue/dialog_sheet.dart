@@ -29,7 +29,7 @@ class MyDialogSheet {
   }
 
   /// 显示中心弹出对话框
-  static Future<T?> show<T>({
+  static Future<T?> showCenter<T>({
     String? title,
     required Widget content,
     EdgeInsetsGeometry? contentPadding,

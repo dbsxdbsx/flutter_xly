@@ -92,8 +92,6 @@ dart run xly:generate icon="path/to/your/icon.png"
 
 
 ## 待办事项（TODOs）
-- MyDialog， add param to set modal or not?
-- dialogsheet, into MyDialog or MyMenu?
 - if needed to make `final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();` also implicitly in the `MyApp.initialize(` ?
 - the MySacffold is issued, make it a ppl like sidebar widget?
 - floatBar大小不随host app窗口大小随动，stateManagement测试
@@ -788,6 +786,27 @@ goToPage(context, Routes.page2);
 
 ### 显示对话框
 
+#### 🎯 选择指南：MyDialog vs MyDialogSheet
+
+| 特性 | MyDialog | MyDialogSheet |
+|------|----------|---------------|
+| **适用场景** | 标准确认/取消对话框 | 自定义布局面板 |
+| **返回值** | `MyDialogChosen` 枚举 | 泛型 `T?`，可返回任意类型 |
+| **按钮** | 固定左右按钮模式 | 可选按钮，支持自定义 |
+| **布局控制** | 基础主题配置 | 精细控制内边距、尺寸、标题居中等 |
+| **风格** | Material/Cupertino 标准样式 | 完全自定义样式 |
+
+**何时使用 MyDialog：**
+- ✅ 简单的确认/取消操作
+- ✅ 需要标准的用户选择结果（左/右/取消）
+- ✅ 希望保持系统原生对话框风格
+
+**何时使用 MyDialogSheet：**
+- ✅ 需要复杂的自定义内容布局
+- ✅ 需要精确控制对话框尺寸和内边距
+- ✅ 需要返回自定义数据类型
+- ✅ 底部弹出菜单（Action Sheet）
+
 #### 基础用法
 ```dart
 // 1. 简单确认对话框（默认可点击遮罩关闭）
@@ -1014,10 +1033,10 @@ if (action != null) {
 }
 ```
 
-#### 中心对话框 (MyDialogSheet.show)
+#### 中心对话框 (MyDialogSheet.showCenter)
 ```dart
 // 4. 简单中心对话框
-MyDialogSheet.show(
+MyDialogSheet.showCenter(
   title: '设置',
   content: const Text('这是一个中心对话框'),
   onConfirm: () {
@@ -1027,7 +1046,7 @@ MyDialogSheet.show(
 );
 
 // 5. 复杂内容的中心对话框
-MyDialogSheet.show(
+MyDialogSheet.showCenter(
   title: '用户设置',
   content: Column(
     mainAxisSize: MainAxisSize.min,
@@ -1063,7 +1082,7 @@ MyDialogSheet.show(
 );
 
 // 6. 自定义样式的中心对话框
-MyDialogSheet.show(
+MyDialogSheet.showCenter(
   title: '重要提醒',
   titleFontSize: 20.sp,
   centerTitle: true,

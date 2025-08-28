@@ -191,13 +191,14 @@ class MyButton extends StatelessWidget {
     Widget iconWidget = icon != null
         ? Icon(icon, color: foregroundColor, size: isNormal ? 24.w : 20.w)
         : const SizedBox.shrink();
+    final TextStyle textStyle = TextStyle(
+      color: foregroundColor,
+      fontSize: isNormal ? 16.sp : (isCube ? 13.sp : 16.sp),
+      fontWeight: FontWeight.bold,
+    );
     Widget textWidget = Text(
       text,
-      style: TextStyle(
-        color: foregroundColor,
-        fontSize: isNormal ? 16.sp : (isCube ? 13.sp : 16.sp),
-        fontWeight: FontWeight.bold,
-      ),
+      style: textStyle,
       textAlign: TextAlign.center,
     );
 
