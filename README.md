@@ -92,11 +92,10 @@ dart run xly:generate icon="path/to/your/icon.png"
 
 
 ## 待办事项（TODOs）
-- tray feature- issue
 - MyDialog， add param to set modal or not?
+- dialogsheet, into MyDialog or MyMenu?
 - if needed to make `final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();` also implicitly in the `MyApp.initialize(` ?
 - the MySacffold is issued, make it a ppl like sidebar widget?
-- dialogsheet, into MyDialog or MyMenu?
 - floatBar大小不随host app窗口大小随动，stateManagement测试
 - right menu 子菜单issue
 - 静默启动？

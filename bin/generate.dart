@@ -21,10 +21,10 @@ void main(List<String> args) async {
   if (params.containsKey('icon')) {
     final iconPath = params['icon']!;
     print('🎨 开始生成应用图标...\n');
-    
+
     final generator = IconGenerator();
     await generator.generateIcons(iconPath);
-    
+
     print('\n🎉 图标生成完成！');
   } else {
     print('❌ 未识别的命令参数');

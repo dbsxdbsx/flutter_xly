@@ -42,6 +42,7 @@ class MyDialogSheet {
     VoidCallback? onExit,
     String confirmText = '确定',
     String exitText = '取消',
+    bool barrierDismissible = true,
   }) {
     return Get.dialog(
       _CenterDialogSheet(
@@ -58,7 +59,7 @@ class MyDialogSheet {
         confirmText: confirmText,
         exitText: exitText,
       ),
-      barrierDismissible: true,
+      barrierDismissible: barrierDismissible,
       useSafeArea: true,
     );
   }

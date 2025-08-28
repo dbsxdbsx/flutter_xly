@@ -19,6 +19,7 @@ class MyDialog {
     double? borderRadius,
     double? elevation,
     double? barrierOpacity,
+    bool barrierDismissible = true,
   }) async {
     return _showDialog(
       dialog: AlertDialog(
@@ -48,6 +49,7 @@ class MyDialog {
         ),
       ),
       barrierOpacity: barrierOpacity,
+      barrierDismissible: barrierDismissible,
     );
   }
 
@@ -65,6 +67,7 @@ class MyDialog {
     double? borderRadius,
     double? elevation,
     double? barrierOpacity,
+    bool barrierDismissible = true,
   }) async {
     return _showDialog(
       dialog: CupertinoAlertDialog(
@@ -84,16 +87,18 @@ class MyDialog {
         ),
       ),
       barrierOpacity: barrierOpacity,
+      barrierDismissible: barrierDismissible,
     );
   }
 
   static Future<MyDialogChosen> _showDialog({
     required Widget dialog,
     double? barrierOpacity,
+    bool barrierDismissible = true,
   }) async {
     final result = await Get.dialog<MyDialogChosen>(
       dialog,
-      barrierDismissible: true,
+      barrierDismissible: barrierDismissible,
       barrierColor: barrierOpacity != null
           ? Colors.black.withValues(alpha: barrierOpacity)
           : null,
