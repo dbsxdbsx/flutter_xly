@@ -28,7 +28,7 @@ void main() async {
 
     // 使用新的简化托盘配置方式
     tray: MyTray(
-      // iconPath: "assets/icons/tray.ico",  // 可选：为空时自动使用默认应用图标
+      // iconPath: "assets/tray_icons_for_test/tray.ico", // 明确指定图标路径，兼容Debug/Release
       tooltip: "XLY示例应用的托盘tooltip",
       menuItems: [
         MyTrayMenuItem(

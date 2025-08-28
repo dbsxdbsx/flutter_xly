@@ -162,12 +162,15 @@ class IconGenerator {
         break;
       case 'windows':
         await _generateWindowsIcons(sourceImage);
+        await _copyTrayIconToAssets(platform, sourceImage);
         break;
       case 'macos':
         await _generateMacosIcons(sourceImage);
+        await _copyTrayIconToAssets(platform, sourceImage);
         break;
       case 'linux':
         await _generateLinuxIcons(sourceImage);
+        await _copyTrayIconToAssets(platform, sourceImage);
         break;
       case 'web':
         await _generateWebIcons(sourceImage);
@@ -587,6 +590,134 @@ class IconGenerator {
 }''';
 
     await File('$dir/Contents.json').writeAsString(contentsJson);
+  }
+
+  /// 复制托盘图标到Flutter assets目录（用于MyTray运行时访问）
+  Future<void> _copyTrayIconToAssets(
+      String platform, img.Image sourceImage) async {
+    print('🔄 正在复制托盘图标到Flutter assets...');
+
+    String assetPath;
+    String sourceFilePath;
+
+    // 使用统一的 _auto_tray_icon_gen 文件夹，简化资产管理
+    String fileName;
+    switch (platform) {
+      case 'windows':
+        fileName = 'app_icon.ico';
+        sourceFilePath = 'windows/runner/resources/app_icon.ico';
+        break;
+      case 'macos':
+        fileName = 'app_icon.png'; // macOS 使用 PNG 格式
+        sourceFilePath =
+            'macos/Runner/Assets.xcassets/AppIcon.appiconset/app-icon-512@2x.png';
+        break;
+      case 'linux':
+        fileName = 'app_icon.png';
+        sourceFilePath = 'snap/gui/app_icon.png';
+        break;
+      default:
+        return; // 不支持的平台，跳过
+    }
+
+    assetPath = 'assets/_auto_tray_icon_gen/$fileName';
+
+    // 创建assets目录
+    final assetDir = path.dirname(assetPath);
+    await _createDirectoryIfNotExists(assetDir);
+
+    // 复制文件
+    final sourceFile = File(sourceFilePath);
+    if (await sourceFile.exists()) {
+      await sourceFile.copy(assetPath);
+      print('✅ 托盘图标已复制到: $assetPath');
+
+      // 更新pubspec.yaml
+      await _updatePubspecAssets(assetDir);
+    } else {
+      print('⚠️ 源文件不存在，跳过复制: $sourceFilePath');
+    }
+  }
+
+  /// 更新pubspec.yaml的assets配置
+  Future<void> _updatePubspecAssets(String assetDir) async {
+    final pubspecFile = File('pubspec.yaml');
+    if (!await pubspecFile.exists()) {
+      print('⚠️ pubspec.yaml 文件不存在，跳过更新');
+      return;
+    }
+
+    try {
+      final content = await pubspecFile.readAsString();
+      final lines = content.split('\n');
+
+      // 标准化资产路径（确保以/结尾）
+      final normalizedAssetDir =
+          assetDir.endsWith('/') ? assetDir : '$assetDir/';
+
+      // 查找flutter和assets部分
+      int flutterIndex = -1;
+      int assetsIndex = -1;
+      int assetsIndent = 0;
+
+      for (int i = 0; i < lines.length; i++) {
+        final line = lines[i];
+        if (line.trim() == 'flutter:') {
+          flutterIndex = i;
+        } else if (flutterIndex != -1 && line.trim() == 'assets:') {
+          assetsIndex = i;
+          assetsIndent = line.length - line.trimLeft().length;
+          break;
+        }
+      }
+
+      // 检查是否已存在该资产路径
+      bool assetExists = false;
+      if (assetsIndex != -1) {
+        for (int i = assetsIndex + 1; i < lines.length; i++) {
+          final line = lines[i];
+          if (line.trim().isEmpty) continue;
+
+          // 如果缩进不对，说明已经离开assets部分
+          final currentIndent = line.length - line.trimLeft().length;
+          if (currentIndent <= assetsIndent) break;
+
+          if (line.trim() == '- $normalizedAssetDir') {
+            assetExists = true;
+            break;
+          }
+        }
+      }
+
+      if (!assetExists) {
+        if (assetsIndex == -1) {
+          // 没有assets部分，需要添加
+          if (flutterIndex == -1) {
+            // 没有flutter部分，添加完整的flutter配置
+            lines.add('');
+            lines.add('flutter:');
+            lines.add('  uses-material-design: true');
+            lines.add('  assets:');
+            lines.add('    - $normalizedAssetDir');
+          } else {
+            // 有flutter部分，添加assets
+            lines.insert(flutterIndex + 1, '  assets:');
+            lines.insert(flutterIndex + 2, '    - $normalizedAssetDir');
+          }
+        } else {
+          // 有assets部分，添加新的资产路径
+          final assetIndentStr = ' ' * (assetsIndent + 2);
+          lines.insert(assetsIndex + 1, '$assetIndentStr- $normalizedAssetDir');
+        }
+
+        await pubspecFile.writeAsString(lines.join('\n'));
+        print('✅ 已更新 pubspec.yaml，添加资产路径: $normalizedAssetDir');
+      } else {
+        print('ℹ️ pubspec.yaml 中已存在资产路径: $normalizedAssetDir');
+      }
+    } catch (e) {
+      print('⚠️ 更新 pubspec.yaml 失败: $e');
+    }
   }
 }
 

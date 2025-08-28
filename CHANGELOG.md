@@ -1,4 +1,23 @@
 
+## 0.20.1 - 2025-08-28
+
+### Added
+- **图标生成工具托盘图标自动复制功能**：扩展 `dart run xly:generate icon` 命令，自动处理托盘图标一致性
+  - 使用统一的 `assets/_auto_tray_icon_gen/` 文件夹简化资产管理
+  - 为桌面平台（Windows、macOS、Linux）自动复制应用图标到 Flutter assets
+  - 自动更新 pubspec.yaml 添加必要的 assets 路径声明
+  - 确保 MyTray 托盘图标与应用窗口图标完全一致，跨启动方式稳定
+- **MyTray图标解析优化**：重构默认图标路径解析逻辑
+  - 新增 `_resolveIconPath()` 统一解析方法，优先检查 `_auto_tray_icon_gen` 文件夹
+  - 使用 MyPlatform.getAppDirectory 和 getFilePastedFromAssets 确保路径一致性
+  - 移除对 `assets/icons/tray.ico` 的硬编码兜底，完全基于平台默认图标路径
+  - 解决 VSCode F5 调试与从应用目录运行时托盘图标不一致的问题
+
+### Enhanced
+- **工具文档更新**：tool/README.md 新增托盘图标自动复制功能说明和 Windows 图标缓存注意事项
+- **MyTray文档完善**：.doc/my_tray_design.md 新增自动图标一致性最佳实践章节和图标缓存问题说明
+- **README更新**：添加托盘图标一致性工作流、自动化优势说明和 Windows 图标缓存提醒
+
 ## 0.20.0 - 2025-08-26
 
 ### Added

@@ -323,12 +323,53 @@ void onSyncStatusChanged(bool canSync) async {
 
 ## 图标管理
 
+### 自动图标一致性（推荐）
+
+**🆕 最佳实践**：使用 XLY 图标生成工具确保托盘图标与应用图标完全一致：
+
+```bash
+# 一键生成所有平台图标，包括托盘图标资产
+# 注：无论在什么操作系统上运行，都会为项目中存在的所有平台生成图标
+dart run xly:generate icon="assets/app_icon.png"
+```
+
+**自动化优势**：
+- ✅ **完美一致**：托盘图标与应用窗口图标使用相同源文件
+- ✅ **跨启动方式一致**：VSCode F5 调试和从应用目录运行表现完全相同
+- ✅ **自动资产管理**：自动复制图标到 Flutter assets 并更新 pubspec.yaml
+- ✅ **零配置使用**：MyTray 不传 iconPath 参数即可自动使用一致图标
+
+**工作原理**：
+1. 图标生成工具为每个平台生成标准应用图标（如 `windows/runner/resources/app_icon.ico`）
+2. 同时自动复制到 Flutter assets 统一路径（`assets/_auto_tray_icon_gen/`）
+3. MyTray 默认解析逻辑会优先使用这些资产，确保运行时一致性
+
+**📁 生成的图标文件说明**：
+- `assets/_auto_tray_icon_gen/app_icon.ico`：Windows 专用，多尺寸支持
+- `assets/_auto_tray_icon_gen/app_icon.png`：macOS/Linux 专用，系统推荐格式
+- MyTray 根据运行平台自动选择正确格式，两种文件并存无冗余问题
+
+**⚠️ Windows 图标缓存问题**：
+在 Windows 10/11 中，更换图标后可能遇到：
+- **托盘图标**：重新构建后立即更新 ✅
+- **应用图标**（任务栏/文件管理器）：因系统缓存显示旧图标 ❌
+- **解决方案**：重启系统清除图标缓存
+
 ### 图标要求
 - **Windows**: 推荐使用 `.ico` 格式，支持多尺寸
 - **macOS**: 推荐使用 `.png` 格式，系统会自动处理模板图标
 - **Linux**: 推荐使用 `.png` 格式
 - **路径**: 必须是相对于项目根目录的有效路径
 - **尺寸**: 32x32像素
+
+### 手动图标配置（高级用法）
+```dart
+// 显式指定图标路径（覆盖默认行为）
+MyTray(
+  iconPath: "assets/custom_tray_icon.png",
+  // ...
+)
+```
 
 ### 动态图标切换
 ```dart
