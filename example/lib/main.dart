@@ -6,6 +6,7 @@ import 'package:xly/xly.dart';
 
 import 'pages/page1.dart';
 import 'pages/page10.dart';
+import 'pages/page11.dart';
 import 'pages/page2.dart';
 import 'pages/page3.dart';
 import 'pages/page4.dart';
@@ -15,7 +16,6 @@ import 'pages/page7.dart';
 import 'pages/page8.dart';
 import 'pages/page9.dart';
 import 'services/example_service.dart';
-import 'widgets/float_bar_navigation.dart';
 import 'widgets/platform_info_widget.dart';
 
 void main() async {
@@ -44,10 +44,6 @@ void main() async {
     services: [
       MyService<ExampleService>(
         service: () => ExampleService(),
-        permanent: true,
-      ),
-      MyService<FloatBarNavController>(
-        service: () => FloatBarNavController(),
         permanent: true,
       ),
       MyService<MyNotify>(
@@ -106,6 +102,11 @@ void main() async {
         page: const Page10View(),
         controller: () => Page10Controller(),
       ),
+      MyRoute<Page11Controller>(
+        path: MyRoutes.page11,
+        page: const Page11View(),
+        controller: () => Page11Controller(),
+      ),
     ],
     splash: const MySplash(
       nextRoute: MyRoutes.page1,
@@ -134,12 +135,7 @@ void main() async {
           backgroundColor: Colors.grey.withValues(alpha: 0.3),
           elevation: 0,
         ),
-        body: Stack(
-          children: [
-            child!,
-            getFloatBar(),
-          ],
-        ),
+        body: child!,
         drawer: const [
           MyAdaptiveNavigationItem(
             icon: Icon(Icons.dashboard_outlined),
@@ -201,10 +197,43 @@ void main() async {
             label: 'LoadingDot演示',
             route: MyRoutes.page10,
           ),
+          MyAdaptiveNavigationItem(
+            icon: Icon(Icons.palette),
+            selectedIcon: Icon(Icons.palette_outlined),
+            label: 'FloatPanel样式',
+            route: MyRoutes.page11,
+          ),
         ],
         trailing: const PlatformInfoWidget(),
       );
     },
+    // 全局浮动面板通过 floatPanel 参数自动挂载（新：items 方式）
+    floatPanel: FloatPanel()
+      ..configure(
+        items: [
+          FloatPanelIconBtn(
+            icon: Icons.filter_1,
+            id: 'page1',
+            onTap: () {
+              Get.toNamed(MyRoutes.page1);
+            },
+          ),
+          FloatPanelIconBtn(
+            icon: Icons.filter_2,
+            id: 'page2',
+            onTap: () {
+              Get.toNamed(MyRoutes.page2);
+            },
+          ),
+          FloatPanelIconBtn(
+            icon: Icons.filter_3,
+            id: 'page3',
+            onTap: () {
+              Get.toNamed(MyRoutes.page3);
+            },
+          ),
+        ],
+      ),
   );
 }
 
@@ -220,4 +249,5 @@ class MyRoutes {
   static const String page8 = '/page8';
   static const String page9 = '/page9';
   static const String page10 = '/page10';
+  static const String page11 = '/page11';
 }

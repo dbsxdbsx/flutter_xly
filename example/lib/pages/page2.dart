@@ -2,6 +2,8 @@ import 'package:example/main.dart';
 import 'package:flutter/material.dart';
 import 'package:xly/xly.dart';
 
+import '../widgets/section_title.dart';
+
 class Page2View extends GetView<Page2Controller> {
   const Page2View({super.key});
 
@@ -12,15 +14,15 @@ class Page2View extends GetView<Page2Controller> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _buildSectionTitle('图标位置测试（普通样式）'),
+          const SectionTitle('图标位置测试（普通样式）'),
           SizedBox(height: 16.h),
           _buildIconPositionTests(),
           SizedBox(height: 24.h),
-          _buildSectionTitle('按钮形状测试'),
+          const SectionTitle('按钮形状测试'),
           SizedBox(height: 16.h),
           _buildShapeTests(),
           SizedBox(height: 24.h),
-          _buildSectionTitle('其他样式测试'),
+          const SectionTitle('其他样式测试'),
           SizedBox(height: 16.h),
           _buildOtherStyleTests(),
           const Spacer(),
@@ -29,13 +31,6 @@ class Page2View extends GetView<Page2Controller> {
           _buildNavigationButtons(),
         ],
       ),
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
     );
   }
 

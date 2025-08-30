@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:xly/xly.dart';
 
 import '../main.dart';
+import '../widgets/section_title.dart';
 
 /// 文本编辑器测试页面
 class Page6View extends GetView<Page6Controller> {
@@ -17,17 +18,17 @@ class Page6View extends GetView<Page6Controller> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildSectionTitle('基础文本编辑器'),
+              const SectionTitle('基础文本编辑器'),
               SizedBox(height: 16.h),
               _buildBasicEditors(),
               SizedBox(height: 24.h),
               //
-              _buildSectionTitle('自定义样式编辑器'),
+              const SectionTitle('自定义样式编辑器'),
               SizedBox(height: 16.h),
               _buildStyledEditors(),
               SizedBox(height: 24.h),
               //
-              _buildSectionTitle('带下拉列表的编辑器'),
+              const SectionTitle('带下拉列表的编辑器'),
               SizedBox(height: 16.h),
               _buildDropdownEditors(),
             ],
@@ -54,13 +55,6 @@ class Page6View extends GetView<Page6Controller> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
     );
   }
 

@@ -1,9 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lottie/lottie.dart';
-import 'package:xly/src/app.dart';
+import 'package:xly/xly.dart';
 
 class MySplash extends StatefulWidget {
   final String nextRoute;

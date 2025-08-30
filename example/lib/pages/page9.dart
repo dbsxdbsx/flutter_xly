@@ -3,6 +3,7 @@ import 'package:xly/xly.dart';
 
 import '../main.dart';
 import '../services/example_service.dart';
+import '../widgets/section_title.dart';
 
 class Page9Controller extends GetxController {
   final isHidden = false.obs;
@@ -625,13 +626,9 @@ class Page9View extends GetView<Page9Controller> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        SectionTitle(
           title,
-          style: TextStyle(
-            fontSize: 18.sp,
-            fontWeight: FontWeight.bold,
-            color: Colors.grey[800],
-          ),
+          color: Colors.grey[800],
         ),
         SizedBox(height: 12.h),
         ...children,

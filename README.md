@@ -31,7 +31,7 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 23. 智能边缘停靠机制(自动检测窗口拖拽到边缘并触发停靠)
 24. 服务管理系统(确保服务在ScreenUtil初始化后注册，避免.sp等扩展方法返回无限值)
 25. 全局UI构建器(`appBuilder`)(支持在应用顶层添加自定义组件，如全局浮动按钮)
-26. 可拖拽浮动操作栏(`MyFloatBar`)(一个可拖动、可停靠、可展开的浮动操作栏)
+26. 全局浮动面板(`FloatPanel`)(一个可拖动、可停靠、可展开的浮动面板，支持智能联动)
 27. 自适应侧边栏导航(`MyScaffold`)(根据屏幕尺寸自动切换抽屉/侧边栏/底部导航)
 28. 窗口比例调整控制(支持动态启用/禁用窗口固定比例调整功能)
 29. 系统托盘管理(`MyTray`)(支持托盘图标、右键菜单、窗口最小化到托盘等功能)
@@ -92,7 +92,10 @@ dart run xly:generate icon="path/to/your/icon.png"
 
 
 ## 待办事项（TODOs）
-- floatBar大小不随host app窗口大小随动，stateManagement测试(中国象棋app测试)
+- floatBar大小不随host app窗口大小随动，stateManagement测试(中国象棋app测试)?
+- floatPanel left right move not correctly
+- add `My` prefix for some of exported  widgets, like `FloatButtonState`,etc?
+- what the `ExampleService` used for, can it be removed?
 - right menu 子菜单issue
 - 静默启动？
 - MyToggleBtn?
@@ -1891,69 +1894,42 @@ await MyApp.toggleFullScreen();
 - 在智能停靠状态下会自动禁用，避免状态冲突
 - 退出全屏后窗口会恢复到之前的状态
 
- ### 使用 appBuilder 添加全局浮动栏
+ ### 使用全局浮动面板
 
- `MyApp.initialize` 提供了一个 `appBuilder` 参数，允许您在应用的顶层UI上包裹自定义组件。这对于实现全局浮动导航栏、消息通知等功能非常有用。
-
- `MyFloatBar` 是一个可拖动、可停靠、可展开的浮动操作栏，可以与 `appBuilder` 结合使用。
+ `FloatPanel` 是一个全新的全局浮动面板系统，提供拖拽、贴边、展开/收起等交互功能。通过统一的全局管理器 `FloatPanel.to`，你可以在任意位置控制面板的显示、按钮、状态和样式。
 
  ```dart
  // main.dart
  void main() async {
    await MyApp.initialize(
      // ... 其他配置
-     services: [
-       // 为FloatBar注册控制器
-       MyService<FloatBarNavController>(
-         service: () => FloatBarNavController(),
-         permanent: true,
-       ),
-     ],
-     appBuilder: (context, child) {
-       // 使用Stack将FloatBar覆盖在应用内容之上
-       return Stack(
-         children: [
-           child!, // child是原始的应用页面
-           getFloatBar(), // 自定义的FloatBar
+     // 全局浮动面板通过 floatPanel 参数自动挂载
+     floatPanel: FloatPanel()
+       ..configure(
+         items: [
+           FloatPanelIconBtn(
+             icon: Icons.home,
+             id: 'home',
+             onTap: () {
+               Get.toNamed('/home');
+             },
+           ),
+           FloatPanelIconBtn(
+             icon: Icons.settings,
+             id: 'settings',
+             onTap: () {
+               Get.toNamed('/settings');
+             },
+           ),
+           FloatPanelIconBtn(
+             icon: Icons.exit_to_app,
+             onTap: () async {
+               await MyApp.exit();
+             },
+           ),
          ],
-       );
-     },
+       ),
    );
- }
-
- // float_bar_navigation.dart
-
- /// 获取FloatBar组件
- Widget getFloatBar() {
-   final ctrl = Get.find<FloatBarNavController>();
-   return Obx(
-     () => MyFloatBar(
-       barWidthInput: 60,
-       backgroundColor: const Color(0xFF222222),
-       buttons: ctrl.buttons.toList(),
-       onPressed: (index) {
-         // 处理按钮点击事件
-         if (index == 0) {
-           // 打开导航菜单
-         } else if (index == 1) {
-           // 最小化窗口
-           windowManager.minimize();
-         } else if (index == 2) {
-           // 退出应用
-           showExitConfirmDialog();
-         }
-       },
-     ),
-   );
- }
-
- /// FloatBar导航控制器
- class FloatBarNavController extends GetxController {
-   final buttons = <MyFloatBarButton>[
-     MyFloatBarButton(icon: Icons.menu),          // 导航菜单按钮
-     MyFloatBarButton(icon: CupertinoIcons.minus), // 最小化窗口按钮
-     MyFloatBarButton(icon: CupertinoIcons.xmark_circle), // 退出应用按钮
-   ].obs;
  }
  ```
 
@@ -1995,6 +1971,15 @@ dart run xly:rename all="新应用名称"
 # 为不同平台设置不同名称
 dart run xly:rename android="Android版本" ios="iOS版本" windows="Windows版本"
 ```
+
+
+### FloatPanel 多选禁用与示例路由单选策略
+
+- 新增“多选禁用”能力：可同时禁用多个带 id 的按钮（`disabledIds` 集合）
+- 示例采用“路由单选策略”：切换页面时清理历史禁用，仅禁用当前页对应按钮
+- 如需跨页面保留多选禁用，只需去掉“清理历史禁用”的步骤
+
+详细说明请见： [.doc/float_panel_usage.md](.doc/float_panel_migration_and_usage.md)
 
 ### 使用自适应侧边栏导航
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:xly/xly.dart';
 
 import '../main.dart';
+import '../widgets/section_title.dart';
 
 class Page8Controller extends GetxController {
   final notificationCount = 0.obs;
@@ -272,13 +273,9 @@ class Page8View extends GetView<Page8Controller> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        SectionTitle(
           title,
-          style: TextStyle(
-            fontSize: 18.sp,
-            fontWeight: FontWeight.bold,
-            color: Colors.grey[800],
-          ),
+          color: Colors.grey[800],
         ),
         SizedBox(height: 12.h),
         ...children,

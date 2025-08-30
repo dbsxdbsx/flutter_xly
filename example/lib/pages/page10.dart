@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:xly/xly.dart';
 
+import '../widgets/section_title.dart';
+
 class Page10Controller extends GetxController {}
 
 class Page10View extends GetView<Page10Controller> {
   const Page10View({super.key});
 
-  Widget _buildTitle(String text) => Padding(
+  Widget _buildTitle(String text) => SectionTitle(
+        text,
+        fontSize: 16.sp,
         padding: EdgeInsets.symmetric(vertical: 8.h),
-        child: Text(
-          text,
-          style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
-        ),
       );
 
   Widget _demoCard(String title, Widget child) {

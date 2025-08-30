@@ -1,4 +1,20 @@
 
+## 0.22.0 - 2025-08-30
+
+### Breaking Changes
+- **FloatPanel 系统重构**：完全移除旧的 `MyFloatBar` 组件，统一使用新的 `FloatPanel` 系统
+  - 移除 `appBuilder` 中使用 `MyFloatBar` 的方式
+  - 新的 `FloatPanel` 通过 `MyApp.initialize` 的 `floatPanel` 参数直接配置
+  - 支持智能联动、多选禁用、自定义样式等高级功能
+
+### Enhanced
+- **文档更新**：更新 README.md 中的浮动面板使用说明，移除过时的 `MyFloatBar` 引用
+- **示例项目优化**：示例项目已完全迁移到新的 `FloatPanel` 系统
+
+### Migration Guide
+- 将原有的 `appBuilder` + `MyFloatBar` 方式替换为 `floatPanel` 参数配置
+- 详细迁移指南请参考：[.doc/float_panel_usage.md](.doc/float_panel_usage.md)
+
 ## 0.21.1 - 2025-08-28
 
 ### Fixed

@@ -1,21 +1,4 @@
-import 'dart:async';
-
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
-import 'package:screen_retriever/screen_retriever.dart';
-import 'package:window_manager/window_manager.dart';
-import 'package:xly/src/exit.dart';
-import 'package:xly/src/platform.dart';
-import 'package:xly/src/smart_dock/smart_dock_manager.dart';
-import 'package:xly/src/splash.dart';
-import 'package:xly/src/toast/toast.dart';
-import 'package:xly/src/tray/my_tray.dart';
-import 'package:xly/src/window_enums.dart';
+part of '../xly.dart';
 
 class VoidCallbackIntent extends Intent {
   final VoidCallback callback;
@@ -165,13 +148,16 @@ class MyApp extends StatelessWidget {
     // 托盘配置 - 简化配置方式
     MyTray? tray,
 
+    // 浮动面板 - 类似托盘的全局管理器
+    FloatPanel? floatPanel,
+
     // 路由和页面配置
     MySplash? splash,
     Transition pageTransitionStyle = Transition.fade,
     Duration pageTransitionDuration = const Duration(milliseconds: 300),
     // UI自定义配置
     Widget Function(BuildContext, Widget?)?
-        appBuilder, // 应用构建器，用于自定义UI层级（如添加FloatBar、全局遮罩等）
+        appBuilder, // 应用构建器，用于自定义UI层级（如全局遮罩等）
 
     // 窗口基础配置
     Size? minimumSize,
@@ -285,6 +271,14 @@ class MyApp extends StatelessWidget {
     }
 
     // 3. 准备服务，但不立即注册。注册操作将推迟到UI构建阶段，以确保ScreenUtil等依赖项已准备就绪。
+    // 若提供 floatPanel，则作为全局服务注册（类似 tray）
+    if (floatPanel != null) {
+      finalServices.add(MyService<FloatPanel>(
+        service: () => floatPanel,
+        permanent: true,
+      ));
+    }
+
     // 4. 在所有配置应用完毕后，设置路由并运行应用
     runApp(MyApp._(
       designSize: designSize,
@@ -405,6 +399,23 @@ class MyApp extends StatelessWidget {
         Locale('en', 'US'),
       ],
       locale: const Locale('zh', 'CN'),
+      // 隐式路由联动：当路由变化时，若当前路由名与某个 item.id 或 '/'+id 匹配，则自动设置禁用联动
+      routingCallback: (routing) {
+        final current = routing?.current;
+        if (current == null) return;
+        if (!Get.isRegistered<FloatPanel>()) return;
+        final fp = FloatPanel.to;
+        for (final item in fp.items) {
+          final id = item.id;
+          if (id == null) continue;
+          if (current == id || current == '/$id') {
+            // 仅禁用当前页面对应按钮，并清理旧的禁用集合，保证“单选禁用”效果
+            fp.iconBtns.enableAll();
+            fp.iconBtn(id).setEnabled(false);
+            break;
+          }
+        }
+      },
     );
 
     // 包装 Toast
@@ -442,6 +453,26 @@ class MyApp extends StatelessWidget {
             children: [
               // 底层内容
               processedChild,
+
+              // 全局浮动面板（页面之上，splash 之下）
+              if (Get.isRegistered<FloatPanel>())
+                Obx(() {
+                  final fp = FloatPanel.to;
+                  if (!fp.visible.value) return const SizedBox.shrink();
+                  return _FloatBoxPanel(
+                    items: fp.items,
+                    panelWidthInput: fp.panelWidth.value,
+                    backgroundColor: fp.backgroundColor.value,
+                    panelShape: fp.panelShape.value,
+                    borderRadiusInput: fp.borderRadius.value,
+                    dockType: fp.dockType.value,
+                    panelButtonColor: fp.panelButtonColor.value,
+                    customButtonColor: fp.customButtonColor.value,
+                    dockActivate: fp.dockActivate.value,
+                    innerButtonFocusColor: fp.handleFocusColor.value,
+                    customButtonFocusColor: fp.focusColor.value,
+                  );
+                }),
 
               // 顶层启动屏
               if (splash != null && !isSplashFinished.value)
