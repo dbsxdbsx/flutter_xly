@@ -233,6 +233,13 @@ void main() async {
             },
           ),
         ],
+        // NOTE:示例：自定义样式和动画（可选，全部有默认值）
+        // borderColor: Colors.blueGrey.withValues(alpha: 0.3),
+        // initialPanelIcon: Icons.apps,
+        // panelAnimDuration: 700,
+        // panelAnimCurve: Curves.easeInOutCubic,
+        // dockAnimDuration: 250,
+        // dockAnimCurve: Curves.fastOutSlowIn,
       ),
   );
 }

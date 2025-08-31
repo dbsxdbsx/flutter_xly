@@ -40,6 +40,13 @@ await MyApp.initialize(
           onTap: () => Get.toNamed('/page3'),
         ),
       ],
+      // 可选：自定义样式和动画（全部有默认值）
+      borderColor: Colors.grey,
+      initialPanelIcon: Icons.menu,
+      panelAnimDuration: 800,
+      panelAnimCurve: Curves.easeInOut,
+      dockAnimDuration: 200,
+      dockAnimCurve: Curves.fastOutSlowIn,
     ),
 );
 ```
@@ -100,6 +107,13 @@ FloatPanel.to // 获取全局实例
 void configure({
   List<FloatPanelIconBtn>? items,
   bool? visible,
+  // 新增可选配置（全部有默认值）
+  Color? borderColor,           // 边框颜色，默认 Color(0xFF333333)
+  IconData? initialPanelIcon,   // 初始手柄图标，默认 Icons.add
+  int? panelAnimDuration,       // 展开收起动画时长(ms)，默认 600
+  Curve? panelAnimCurve,        // 展开收起动画曲线，默认 Curves.fastLinearToSlowEaseIn
+  int? dockAnimDuration,        // 贴边动画时长(ms)，默认 300
+  Curve? dockAnimCurve,         // 贴边动画曲线，默认 Curves.fastLinearToSlowEaseIn
 });
 
 // 单个图标按钮控制（链式句柄）
@@ -175,6 +189,14 @@ final RxBool dockActivate;           // 是否启用停靠
 final Rx<Color> handleFocusColor;    // 顶部handle按钮悬停色（默认蓝色）
 final Rx<Color> focusColor;          // 其他功能按钮悬停色（默认红色）
 final Rx<DisabledStyle> disabledStyle; // 禁用样式配置
+
+// 新增可配置属性
+final Rx<Color> borderColor;         // 边框颜色（默认 Color(0xFF333333)）
+final Rx<IconData> initialPanelIcon; // 初始手柄图标（默认 Icons.add）
+final RxInt panelAnimDuration;       // 展开收起动画时长（默认 600ms）
+final Rx<Curve> panelAnimCurve;      // 展开收起动画曲线（默认 fastLinearToSlowEaseIn）
+final RxInt dockAnimDuration;        // 贴边动画时长（默认 300ms）
+final Rx<Curve> dockAnimCurve;       // 贴边动画曲线（默认 fastLinearToSlowEaseIn）
 ```
 
 ### 3.2 FloatPanelIconBtn

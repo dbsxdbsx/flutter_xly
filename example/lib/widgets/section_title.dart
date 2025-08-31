@@ -39,4 +39,3 @@ class SectionTitle extends StatelessWidget {
     return title;
   }
 }
-

@@ -461,6 +461,7 @@ class MyApp extends StatelessWidget {
                   if (!fp.visible.value) return const SizedBox.shrink();
                   return _FloatBoxPanel(
                     items: fp.items,
+                    // 传入设计值，缩放在 _FloatBoxPanel 内部处理
                     panelWidthInput: fp.panelWidth.value,
                     backgroundColor: fp.backgroundColor.value,
                     panelShape: fp.panelShape.value,
@@ -471,6 +472,13 @@ class MyApp extends StatelessWidget {
                     dockActivate: fp.dockActivate.value,
                     innerButtonFocusColor: fp.handleFocusColor.value,
                     customButtonFocusColor: fp.focusColor.value,
+                    // 新增从 FloatPanel 读取的配置
+                    borderColor: fp.borderColor.value,
+                    initialPanelIcon: fp.initialPanelIcon.value,
+                    panelAnimDuration: fp.panelAnimDuration.value,
+                    panelAnimCurve: fp.panelAnimCurve.value,
+                    dockAnimDuration: fp.dockAnimDuration.value,
+                    dockAnimCurve: fp.dockAnimCurve.value,
                   );
                 }),
 

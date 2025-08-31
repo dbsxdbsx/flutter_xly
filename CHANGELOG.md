@@ -1,4 +1,19 @@
 
+## 0.22.1 - 2025-08-31
+
+### Fixed
+- **FloatPanel 停靠偏移修复**：修复浮动面板在左右边缘停靠时偏移量不对称的问题
+  - 修正 dock 偏移量计算公式，从 `panelWidth * (panelWidth / 50) / 2` 简化为 `panelWidth / 2`
+  - 确保左右停靠时均为严格的"半隐藏"效果，解决右侧"缩进过多"、左侧"缩进过少"的不一致现象
+  - 保持运行时 `.w` 缩放的一致性，适配不同屏幕密度
+
+### Enhanced
+- **FloatPanel 配置扩展**：新增多项可选配置参数，提升自定义灵活性
+  - 新增 `borderColor`、`initialPanelIcon` 等样式配置选项
+  - 新增 `panelAnimDuration`、`panelAnimCurve`、`dockAnimDuration`、`dockAnimCurve` 等动画配置
+  - 所有新增参数均有合理默认值，保持向后兼容
+  - 更新相关文档和示例代码
+
 ## 0.22.0 - 2025-08-30
 
 ### Breaking Changes

@@ -92,8 +92,6 @@ dart run xly:generate icon="path/to/your/icon.png"
 
 
 ## 待办事项（TODOs）
-- floatBar大小不随host app窗口大小随动，stateManagement测试(中国象棋app测试)?
-- floatPanel left right move not correctly
 - add `My` prefix for some of exported  widgets, like `FloatButtonState`,etc?
 - what the `ExampleService` used for, can it be removed?
 - right menu 子菜单issue
@@ -1928,6 +1926,13 @@ await MyApp.toggleFullScreen();
              },
            ),
          ],
+         // 可选：自定义样式和动画（全部有默认值）
+         borderColor: Colors.grey,
+         initialPanelIcon: Icons.menu,
+         panelAnimDuration: 800,
+         panelAnimCurve: Curves.easeInOut,
+         dockAnimDuration: 200,
+         dockAnimCurve: Curves.fastOutSlowIn,
        ),
    );
  }
