@@ -88,7 +88,7 @@ dart run xly:generate icon="path/to/your/icon.png"
 - 生成平台特定的配置文件
 - 建议源图标尺寸：1024x1024 像素或更大
 
-详细使用说明和注意事项请参考：[tool/README.md](tool/README.md)
+详细使用说明和注意事项请参考：[本地](tool/README.md) | [GitHub](https://github.com/dbsxdbsx/flutter_xly/blob/main/tool/README.md)
 
 
 ## 待办事项（TODOs）
@@ -148,14 +148,14 @@ keyToRollBack: LogicalKeyboardKey.escape,  // 或 backspace、f1 等
 - A: 大多数库仅需 `navigatorObservers` 或支持 GetX 的 API。极少数需要直接操作 NavigatorState 的，可通过 `Get.key` 访问全局 NavigatorState；不需要在 `MyApp.initialize` 上传参数。
 
 ### MyTray 组件设计
-- 系统托盘功能组件设计文档：[.doc/my_tray_design.md](.doc/my_tray_design.md)
+- 系统托盘功能组件设计文档：[本地](.doc/my_tray_design.md) | [GitHub](https://github.com/dbsxdbsx/flutter_xly/blob/main/.doc/my_tray_design.md)
 - 提供完整的托盘图标管理、窗口最小化到托盘等功能
 - 遵循"无隐式消息"设计原则，只有用户明确操作时才显示反馈
 - 仅在桌面平台（Windows/macOS/Linux）可用
 - **智能默认图标**：`iconPath` 参数现在可选，为空时自动使用各平台的默认应用图标，图标缺失时提供详细错误信息和解决方案
 
 ### MyNotify 系统通知组件
-- 系统通知功能使用指南：[.doc/my_notify_usage_guide.md](.doc/my_notify_usage_guide.md)
+- 系统通知功能使用指南：[本地](.doc/my_notify_usage_guide.md) | [GitHub](https://github.com/dbsxdbsx/flutter_xly/blob/main/.doc/my_notify_usage_guide.md)
 - 基于 `flutter_local_notifications` 包封装的跨平台通知管理器
 - 支持即时通知和定时通知，多种通知类型（信息、警告、错误、成功）
 - 自动处理权限管理和状态监控
@@ -163,7 +163,7 @@ keyToRollBack: LogicalKeyboardKey.escape,  // 或 backspace、f1 等
 - 与 MyTray 职责分离：MyTray 专注托盘管理，MyNotify 专注系统通知
 
 ### MyTextEditor 高级文本编辑器
-- 详细使用指南：[.doc/my_text_editor_usage_guide.md](.doc/my_text_editor_usage_guide.md)
+- 详细使用指南：[本地](.doc/my_text_editor_usage_guide.md) | [GitHub](https://github.com/dbsxdbsx/flutter_xly/blob/main/.doc/my_text_editor_usage_guide.md)
 - 支持智能下拉建议、键盘导航、自定义样式等高级特性
 - 智能键盘导航：上下箭头键导航，Enter选择，Escape关闭
 - 鼠标键盘协同：鼠标悬停与键盘导航状态智能同步
@@ -172,7 +172,7 @@ keyToRollBack: LogicalKeyboardKey.escape,  // 或 backspace、f1 等
 - 手动关闭记忆：用户主动关闭下拉列表后，输入新内容前不会自动重新打开
 
 ### MyLoadingDot 多点动态加载指示器
-- 详细使用指南：[.doc/my_loading_dot_usage_guide.md](.doc/my_loading_dot_usage_guide.md)
+- 详细使用指南：[本地](.doc/my_loading_dot_usage_guide.md) | [GitHub](https://github.com/dbsxdbsx/flutter_xly/blob/main/.doc/my_loading_dot_usage_guide.md)
 - 支持fade/bounce/scale/wave四种动画效果，适应不同使用场景
 - 自适应容器宽度，智能调整点大小和间距，避免布局越界
 - 单控制器驱动多点相位动画，性能优化，资源消耗低
@@ -711,8 +711,8 @@ MyTray.to.pop();   // 恢复窗口显示
 ```
 
 **详细文档**：
-- [智能托盘用户指南](.doc/smart_tray_user_guide.md) - 用户使用说明
-- [智能托盘技术文档](.doc/smart_tray_technical.md) - 开发者技术细节
+- [智能托盘用户指南](.doc/smart_tray_user_guide.md) | [GitHub](https://github.com/dbsxdbsx/flutter_xly/blob/main/.doc/smart_tray_user_guide.md) - 用户使用说明
+- [智能托盘技术文档](.doc/smart_tray_technical.md) | [GitHub](https://github.com/dbsxdbsx/flutter_xly/blob/main/.doc/smart_tray_technical.md) - 开发者技术细节
 
 ### 使用系统通知 (MyNotify)
 
@@ -1168,7 +1168,7 @@ Widget buildRightMenu() {
 
 ### 使用自定义文本编辑器
 
-> 📖 **详细使用指南**：[MyTextEditor 使用指南](.doc/my_text_editor_usage_guide.md) - 包含完整的API说明、高级用法和最佳实践
+> 📖 **详细使用指南**：[MyTextEditor 使用指南](.doc/my_text_editor_usage_guide.md) | [GitHub](https://github.com/dbsxdbsx/flutter_xly/blob/main/.doc/my_text_editor_usage_guide.md) - 包含完整的API说明、高级用法和最佳实践
 
 #### 基础用法
 ```dart
@@ -1984,7 +1984,7 @@ dart run xly:rename android="Android版本" ios="iOS版本" windows="Windows版�
 - 示例采用“路由单选策略”：切换页面时清理历史禁用，仅禁用当前页对应按钮
 - 如需跨页面保留多选禁用，只需去掉“清理历史禁用”的步骤
 
-详细说明请见： [.doc/float_panel_usage.md](.doc/float_panel_migration_and_usage.md)
+详细说明请见： [本地](.doc/float_panel_usage.md) | [GitHub](https://github.com/dbsxdbsx/flutter_xly/blob/main/.doc/float_panel_usage.md)
 
 ### 使用自适应侧边栏导航
 

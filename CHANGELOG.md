@@ -1,4 +1,18 @@
 
+## 0.22.2 - 2025-08-31
+
+### Fixed
+- **pub.dev链接显示问题修复**：修复README.md和CHANGELOG.md中相对链接在pub.dev上显示不正确的问题
+  - 将所有`.doc/`目录的相对链接替换为"本地 | GitHub"双链接格式
+  - 修复文档链接文件名不一致问题（`float_panel_usage.md` → `float_panel_migration_and_usage.md`）
+  - 确保用户在pub.dev上能够正确访问所有文档链接
+
+### Enhanced
+- **GitHub开源链接可见性**：在pubspec.yaml中添加homepage和repository字段
+  - 添加`homepage: https://github.com/dbsxdbsx/flutter_xly`
+  - 添加`repository: https://github.com/dbsxdbsx/flutter_xly`
+  - 确保GitHub开源链接在pub.dev包页面上清晰可见
+
 ## 0.22.1 - 2025-08-31
 
 ### Fixed
@@ -28,7 +42,7 @@
 
 ### Migration Guide
 - 将原有的 `appBuilder` + `MyFloatBar` 方式替换为 `floatPanel` 参数配置
-- 详细迁移指南请参考：[.doc/float_panel_usage.md](.doc/float_panel_usage.md)
+- 详细迁移指南请参考：[本地](.doc/float_panel_migration_and_usage.md) | [GitHub](https://github.com/dbsxdbsx/flutter_xly/blob/main/.doc/float_panel_migration_and_usage.md)
 
 ## 0.21.1 - 2025-08-28
 

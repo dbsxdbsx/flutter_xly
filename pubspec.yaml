@@ -1,6 +1,8 @@
 name: xly
 description: "A Test Flutter Package， DO NOT USE IT at present"
-version: 0.22.1
+version: 0.22.2
+homepage: https://github.com/dbsxdbsx/flutter_xly
+repository: https://github.com/dbsxdbsx/flutter_xly
 
 environment:
   sdk: ^3.5.3
