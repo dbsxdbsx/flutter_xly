@@ -280,6 +280,9 @@ class MyApp extends StatelessWidget {
     }
 
     // 4. 在所有配置应用完毕后，设置路由并运行应用
+    if (appName != null) {
+      _globalWindowTitle.value = appName;
+    }
     runApp(MyApp._(
       designSize: designSize,
       theme: theme,
@@ -328,6 +331,7 @@ class MyApp extends StatelessWidget {
     }
 
     if (appName != null) {
+      _globalWindowTitle.value = appName;
       await windowManager.setTitle(appName);
     }
 
@@ -369,61 +373,66 @@ class MyApp extends StatelessWidget {
   }
 
   Widget _buildApp(BuildContext context) {
-    Widget app = GetMaterialApp(
-      navigatorKey: Get.key,
-      debugShowCheckedModeBanner: showDebugTag,
-      title: appName ?? '',
-      initialRoute: routes.isNotEmpty ? routes.first.path : '/',
-      getPages: [
-        ...routes.map((route) => GetPage(
-              name: route.path,
-              page: () => route.page,
-              binding: BindingsBuilder(() {
-                route.registerController();
-              }),
-              transition: pageTransitionStyle,
-              transitionDuration: pageTransitionDuration,
-            )),
-      ],
-      builder: (context, child) => _buildAppContent(context, child),
-      theme: _buildTheme(),
-      defaultTransition: pageTransitionStyle,
-      transitionDuration: pageTransitionDuration,
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [
-        Locale('zh', 'CN'),
-        Locale('en', 'US'),
-      ],
-      locale: const Locale('zh', 'CN'),
-      // 隐式路由联动：当路由变化时，若当前路由名与某个 item.id 或 '/'+id 匹配，则自动设置禁用联动
-      routingCallback: (routing) {
-        final current = routing?.current;
-        if (current == null) return;
-        if (!Get.isRegistered<FloatPanel>()) return;
-        final fp = FloatPanel.to;
-        for (final item in fp.items) {
-          final id = item.id;
-          if (id == null) continue;
-          if (current == id || current == '/$id') {
-            // 仅禁用当前页面对应按钮，并清理旧的禁用集合，保证“单选禁用”效果
-            fp.iconBtns.enableAll();
-            fp.iconBtn(id).setEnabled(false);
-            break;
+    return Obx(() {
+      final effectiveTitle = _globalWindowTitle.value.isNotEmpty
+          ? _globalWindowTitle.value
+          : (appName ?? '');
+      Widget app = GetMaterialApp(
+        navigatorKey: Get.key,
+        debugShowCheckedModeBanner: showDebugTag,
+        title: effectiveTitle,
+        initialRoute: routes.isNotEmpty ? routes.first.path : '/',
+        getPages: [
+          ...routes.map((route) => GetPage(
+                name: route.path,
+                page: () => route.page,
+                binding: BindingsBuilder(() {
+                  route.registerController();
+                }),
+                transition: pageTransitionStyle,
+                transitionDuration: pageTransitionDuration,
+              )),
+        ],
+        builder: (context, child) => _buildAppContent(context, child),
+        theme: _buildTheme(),
+        defaultTransition: pageTransitionStyle,
+        transitionDuration: pageTransitionDuration,
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('zh', 'CN'),
+          Locale('en', 'US'),
+        ],
+        locale: const Locale('zh', 'CN'),
+        // 隐式路由联动：当路由变化时，若当前路由名与某个 item.id 或 '/'+id 匹配，则自动设置禁用联动
+        routingCallback: (routing) {
+          final current = routing?.current;
+          if (current == null) return;
+          if (!Get.isRegistered<FloatPanel>()) return;
+          final fp = FloatPanel.to;
+          for (final item in fp.items) {
+            final id = item.id;
+            if (id == null) continue;
+            if (current == id || current == '/$id') {
+              // 仅禁用当前页面对应按钮，并清理旧的禁用集合，保证“单选禁用”效果
+              fp.iconBtns.enableAll();
+              fp.iconBtn(id).setEnabled(false);
+              break;
+            }
           }
-        }
-      },
-    );
+        },
+      );
 
-    // 包装 Toast
-    if (useToast) {
-      app = MyToast(child: app);
-    }
+      // 包装 Toast
+      if (useToast) {
+        app = MyToast(child: app);
+      }
 
-    return app;
+      return app;
+    });
   }
 
   ThemeData _buildTheme() {
@@ -574,6 +583,7 @@ class MyApp extends StatelessWidget {
   static final _globalTitleBarHidden = true.obs;
   static final _globalEnableAspectRatio = true.obs;
   static final _globalEnableFullScreen = true.obs;
+  static final _globalWindowTitle = ''.obs;
 
   /// 获取当前双击最大化功能的状态
   /// 在智能停靠状态下自动禁用双击最大化功能
@@ -683,6 +693,22 @@ class MyApp extends StatelessWidget {
     } catch (e) {
       debugPrint('切换全屏状态时出错：$e');
     }
+  }
+
+  /// Window Title APIs
+  static Future<void> setWindowTitle(String title) async {
+    _globalWindowTitle.value = title;
+    if (MyPlatform.isDesktop) {
+      try {
+        await windowManager.setTitle(title);
+      } catch (e) {
+        debugPrint('设置窗口标题失败：$e');
+      }
+    }
+  }
+
+  static String getWindowTitle() {
+    return _globalWindowTitle.value;
   }
 
   /// 停靠窗口到指定角落（简单对齐，不隐藏）

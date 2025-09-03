@@ -30,6 +30,26 @@ class Page1View extends GetView<Page1Controller> {
                 SizedBox(height: 8.h),
                 _buildWindowControlSection(),
                 SizedBox(height: 12.h),
+                _buildSectionTitle('窗口标题测试'),
+                SizedBox(height: 8.h),
+                Row(
+                  children: [
+                    Expanded(
+                      child: MyButton(
+                        text: '设置随机标题',
+                        onPressed: controller.setRandomWindowTitle,
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: MyButton(
+                        text: '读取当前标题',
+                        onPressed: controller.showCurrentWindowTitle,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 12.h),
                 _buildSectionTitle('智能停靠测试（边缘+角落）'),
                 SizedBox(height: 8.h),
                 _buildEdgeDockingSection(),
@@ -982,6 +1002,17 @@ class Page1Controller extends GetxController {
       },
       spinnerColor: Colors.orange,
     );
+  }
+
+  void setRandomWindowTitle() async {
+    final title = 'XLY演示-${DateTime.now().millisecondsSinceEpoch}';
+    await MyApp.setWindowTitle(title);
+    MyToast.show('已设置标题: $title');
+  }
+
+  void showCurrentWindowTitle() {
+    final title = MyApp.getWindowTitle();
+    MyToast.show('当前标题: ${title.isEmpty ? "(空)" : title}');
   }
 
   /// 停靠窗口到左上角

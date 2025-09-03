@@ -1,4 +1,21 @@
 
+## 0.23.0 - 2025-09-04
+
+### Added
+- 窗口标题API：`MyApp.setWindowTitle(String)` 与 `MyApp.getWindowTitle()`
+  - 桌面平台：同步原生窗口标题（调用 `windowManager.setTitle`）
+  - 非桌面平台：仅更新内部全局状态，`GetMaterialApp.title` 仍可即时反映
+  - 通过全局 Rx 字符串 `_globalWindowTitle` 驱动，标题变更即时生效
+
+### Enhanced
+- 示例 Page1：新增“设置随机标题”“读取当前标题”两个测试按钮，便于验证标题读写功能
+- 初始化逻辑：当 `MyApp.initialize` 传入 `appName` 时，自动写入全局标题并同步原生窗口
+
+### Documentation
+- README：新增“窗口标题控制”章节，补充API用法、跨平台行为与特性说明
+
+---
+
 ## 0.22.2 - 2025-08-31
 
 ### Fixed

@@ -92,10 +92,10 @@ dart run xly:generate icon="path/to/your/icon.png"
 
 
 ## 待办事项（TODOs）
+- 静默启动？`  bool showWindow = true,` param?
 - add `My` prefix for some of exported  widgets, like `FloatButtonState`,etc?
 - what the `ExampleService` used for, can it be removed?
 - right menu 子菜单issue
-- 静默启动？
 - MyToggleBtn?
 - permission功能？
 - clear the Print and DebugPrint for avoid ruin user code?
@@ -1802,6 +1802,23 @@ await MyApp.setSmartEdgeDocking(enabled: true);
 ### 窗口控制API
 
 XLY包提供了一系列窗口控制API，允许您动态管理窗口的各种行为特性：
+
+#### 窗口标题控制
+
+通过以下 API 动态设置 / 获取窗口标题。桌面平台会同步到原生窗口标题；非桌面平台将更新内部状态，并即时反映在 GetMaterialApp 的 title 上。
+
+```dart
+// 设置窗口标题（桌面端会调用 windowManager.setTitle）
+await MyApp.setWindowTitle('我的新标题');
+
+// 获取当前窗口标题（无标题时返回空字符串）
+final current = MyApp.getWindowTitle();
+```
+
+特性：
+- 即时生效：内部通过 Obx 监听全局标题状态，GetMaterialApp 的 title 会动态更新
+- 跨平台可用：非桌面端也可安全调用（不触发原生 API）
+- 初始化联动：如果在 MyApp.initialize 传入 appName，会作为初始标题
 
 #### 窗口比例调整控制
 
