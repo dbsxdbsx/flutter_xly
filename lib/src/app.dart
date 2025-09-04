@@ -190,6 +190,11 @@ class MyApp extends StatelessWidget {
     Duration exitGapTime = const Duration(seconds: 2),
     bool useOKToast = true,
 
+    // 单实例配置
+    bool singleInstance = true,
+    String? singleInstanceKey,
+    bool singleInstanceActivateOnSecond = true,
+
     // 初始化配置
     bool ensureScreenSize = true,
     bool initializeWidgetsBinding = true,
@@ -204,6 +209,46 @@ class MyApp extends StatelessWidget {
     }
     if (initializeGetStorage) {
       await GetStorage.init();
+    }
+
+    // 单实例检查 - 在其他初始化之前进行，以免创建多余的窗口
+    if (singleInstance) {
+      final instanceKey = singleInstanceKey ?? appName ?? 'XlyFlutterApp';
+      final isFirstInstance = await SingleInstanceManager.instance.initialize(
+        instanceKey: instanceKey,
+        activateExisting: singleInstanceActivateOnSecond,
+        onActivate: MyPlatform.isDesktop ? () async {
+          // 当收到激活请求时，显示并聚焦窗口
+          try {
+            await windowManager.show();
+            await windowManager.focus();
+            await windowManager.setAlwaysOnTop(true);
+            // 短暂置顶后取消，避免影响用户体验
+            Future.delayed(const Duration(milliseconds: 100), () async {
+              try {
+                await windowManager.setAlwaysOnTop(false);
+              } catch (e) {
+                if (kDebugMode) {
+                  print('取消窗口置顶失败: $e');
+                }
+              }
+            });
+          } catch (e) {
+            if (kDebugMode) {
+              print('激活窗口失败: $e');
+            }
+          }
+        } : null,
+      );
+
+      if (!isFirstInstance) {
+        // 不是首个实例，退出当前实例
+        if (kDebugMode) {
+          print('检测到应用已在运行，当前实例即将退出');
+        }
+        await exitApp();
+        return;
+      }
     }
 
     if (MyPlatform.isDesktop) {
@@ -573,6 +618,8 @@ class MyApp extends StatelessWidget {
 
   /// 静态方法用于退出应用
   static Future<void> exit() async {
+    // 清理单实例管理器资源
+    await SingleInstanceManager.instance.dispose();
     await exitApp();
   }
 

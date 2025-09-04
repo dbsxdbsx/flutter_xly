@@ -17,6 +17,7 @@ import 'package:window_manager/window_manager.dart';
 // Internal modules used by parts
 import 'src/exit.dart';
 import 'src/platform.dart';
+import 'src/single_instance.dart';
 import 'src/smart_dock/smart_dock_manager.dart';
 import 'src/splash.dart';
 import 'src/toast/toast.dart';
