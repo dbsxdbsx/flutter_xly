@@ -1,4 +1,26 @@
 
+## 0.25.0 - 2025-09-05
+
+### Breaking Changes
+- **MyApp.initialize 参数重命名**：为提升API语义清晰度，重命名了窗口初始化相关参数
+  - `showWindow` → `showWindowOnInit`：明确表示仅在初始化时控制窗口显示
+  - `focusWindow` → `focusWindowOnInit`：明确表示仅在初始化时控制窗口焦点
+  - `centerWindow` → `centerWindowOnInit`：明确表示仅在初始化时控制窗口居中
+  - **迁移指南**：将现有代码中的参数名更新为新名称即可，功能行为完全一致
+
+### Enhanced
+- **showWindowOnInit 行为增强**：新增兜底校正机制，确保最终窗口状态与参数设置严格一致
+  - 解决Windows runner默认模板在首帧回调中强制Show窗口的冲突问题
+  - 当`showWindowOnInit=false`时，通过多层校正（立即隐藏+首帧后校正+延时兜底）确保窗口最终隐藏
+  - 当`showWindowOnInit=true`时，确保窗口最终可见，避免某些平台时序问题
+  - 添加详细注释说明：如需完全根除短暂闪现，可在C++侧移除runner的首帧Show逻辑
+
+### Documentation
+- **参数语义说明**：README.md中补充`showWindowOnInit`和`focusWindowOnInit`的精确定义和注意事项
+- **技术背景**：代码注释中详细说明Windows runner首帧Show冲突的技术原理和解决方案
+
+---
+
 ## 0.24.0 - 2025-09-04
 
 ### Added

@@ -20,10 +20,10 @@ import 'widgets/platform_info_widget.dart';
 
 void main() async {
   await MyApp.initialize(
+    showWindowOnInit: false,
     appName: "示例App",
     setTitleBarHidden: false,
     designSize: const Size(900, 700),
-
     // 使用新的简化托盘配置方式
     tray: MyTray(
       // iconPath: "assets/tray_icons_for_test/tray.ico", // 明确指定图标路径，兼容Debug/Release

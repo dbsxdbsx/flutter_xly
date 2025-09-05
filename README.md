@@ -93,7 +93,7 @@ dart run xly:generate icon="path/to/your/icon.png"
 
 
 ## 待办事项（TODOs）
-- 静默启动？`  bool showWindow = true,` param?
+- 静默启动？`  bool showWindowOnInit = true,` param?
 - add `My` prefix for some of exported  widgets, like `FloatButtonState`,etc?
 - what the `ExampleService` used for, can it be removed?
 - right menu 子菜单issue
@@ -221,6 +221,23 @@ XLY包内置单实例管理功能，确保应用在同一台设备上只能运�
 - 激活已有实例时会自动显示窗口并获得焦点
 - 单实例检查在其他初始化步骤之前进行，避免创建多余的窗口资源
 
+### 窗口初始化参数说明
+
+`MyApp.initialize` 中的窗口控制参数已重命名以提升语义清晰度：
+
+- **`showWindowOnInit`**（默认：`true`）：是否在初始化完成后显示窗口
+  - 仅在初始化时生效，后续可通过 `windowManager.show()/hide()` 控制
+  - 设置为 `false` 可实现"后台启动"或"托盘优先启动"
+  - **注意**：Windows平台下，即使设置为 `false`，可能仍有极短暂闪现（来自runner首帧显示），但会被立即隐藏
+
+- **`focusWindowOnInit`**（默认：`true`）：是否在初始化时让窗口获得焦点
+  - 仅在初始化时生效，后续可通过 `windowManager.focus()/blur()` 控制
+  - 设置为 `false` 可避免应用启动时抢夺用户焦点
+
+- **`centerWindowOnInit`**（默认：`true`）：是否在初始化时将窗口居中显示
+  - 仅在初始化时生效，后续可通过 `windowManager.center()` 或 `windowManager.setPosition()` 控制
+
+**技术说明**：为解决Windows runner默认模板的首帧强制显示问题，xly内部实现了多层校正机制，确保最终窗口状态与参数设置严格一致。如需完全根除短暂闪现，可在C++侧移除runner的首帧Show逻辑。
 
 ## 使用示例（Examples）
 

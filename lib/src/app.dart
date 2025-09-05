@@ -161,9 +161,9 @@ class MyApp extends StatelessWidget {
 
     // 窗口基础配置
     Size? minimumSize,
-    bool centerWindow = true,
-    bool showWindow = true,
-    bool focusWindow = true,
+    bool centerWindowOnInit = true,
+    bool showWindowOnInit = true,
+    bool focusWindowOnInit = true,
 
     // 窗口交互配置
     bool draggable = true,
@@ -217,28 +217,30 @@ class MyApp extends StatelessWidget {
       final isFirstInstance = await SingleInstanceManager.instance.initialize(
         instanceKey: instanceKey,
         activateExisting: singleInstanceActivateOnSecond,
-        onActivate: MyPlatform.isDesktop ? () async {
-          // 当收到激活请求时，显示并聚焦窗口
-          try {
-            await windowManager.show();
-            await windowManager.focus();
-            await windowManager.setAlwaysOnTop(true);
-            // 短暂置顶后取消，避免影响用户体验
-            Future.delayed(const Duration(milliseconds: 100), () async {
-              try {
-                await windowManager.setAlwaysOnTop(false);
-              } catch (e) {
-                if (kDebugMode) {
-                  print('取消窗口置顶失败: $e');
+        onActivate: MyPlatform.isDesktop
+            ? () async {
+                // 当收到激活请求时，显示并聚焦窗口
+                try {
+                  await windowManager.show();
+                  await windowManager.focus();
+                  await windowManager.setAlwaysOnTop(true);
+                  // 短暂置顶后取消，避免影响用户体验
+                  Future.delayed(const Duration(milliseconds: 100), () async {
+                    try {
+                      await windowManager.setAlwaysOnTop(false);
+                    } catch (e) {
+                      if (kDebugMode) {
+                        print('取消窗口置顶失败: $e');
+                      }
+                    }
+                  });
+                } catch (e) {
+                  if (kDebugMode) {
+                    print('激活窗口失败: $e');
+                  }
                 }
               }
-            });
-          } catch (e) {
-            if (kDebugMode) {
-              print('激活窗口失败: $e');
-            }
-          }
-        } : null,
+            : null,
       );
 
       if (!isFirstInstance) {
@@ -261,9 +263,9 @@ class MyApp extends StatelessWidget {
           setSkipTaskbar: setSkipTaskbar,
           setResizable: resizable,
           setMaximizable: setMaximizable,
-          centerWindow: centerWindow,
-          focusWindow: focusWindow,
-          showWindow: showWindow,
+          centerWindow: centerWindowOnInit,
+          focusWindow: focusWindowOnInit,
+          showWindow: showWindowOnInit,
           setAspectRatio: setAspectRatio && setAspectRatioEnabled,
           minimumSize: minimumSize,
         );
@@ -398,6 +400,51 @@ class MyApp extends StatelessWidget {
     if (centerWindow) await windowManager.center();
     if (focusWindow) await windowManager.focus();
     if (showWindow) await windowManager.show();
+
+    // --- Enforce final visibility per `showWindow` regardless of runner behavior ---
+    // 背景：Windows runner 默认模板会在首帧回调里强制 Show 窗口（SetNextFrameCallback + ForceRedraw），
+    // 这会与 Dart 侧的 showWindow=false 冲突，导致“即使禁用仍短暂弹出”。
+    // 方案A（本实现）：在 Dart 层进行兜底校正，确保“最终状态”与 showWindow 一致。
+    // 说明：若要完全根除闪现，请在 C++ 侧移除首帧 Show（见 example/windows/runner/flutter_window.cpp 中的注释）。
+    try {
+      if (!showWindow) {
+        // 1) 立即隐藏并移除焦点，覆盖 runner 可能已经或即将执行的 Show
+        await windowManager.hide();
+        await windowManager.blur();
+
+        // 2) 在首帧后再次校正，防止 runner 在 SetNextFrameCallback 中再次 Show
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          try {
+            if (await windowManager.isVisible()) {
+              await windowManager.hide();
+              await windowManager.blur();
+            }
+          } catch (_) {}
+        });
+
+        // 3) 再加一个极短延时的兜底，尽量压缩闪现时长
+        Future.delayed(const Duration(milliseconds: 50), () async {
+          try {
+            if (await windowManager.isVisible()) {
+              await windowManager.hide();
+              await windowManager.blur();
+            }
+          } catch (_) {}
+        });
+      } else {
+        // showWindow = true：确保最终是可见状态（在某些平台/时序下可能未展示）
+        if (!(await windowManager.isVisible())) {
+          await windowManager.show();
+        }
+        // 可选：如需再次确保焦点，可按需启用（默认不重复focus以避免打断用户）
+        // if (focusWindow) {
+        //   await windowManager.focus();
+        // }
+      }
+    } catch (e) {
+      debugPrint('窗口可见性兜底校正失败：$e');
+    }
+    // --- End enforce block ---
   }
 
   @override
