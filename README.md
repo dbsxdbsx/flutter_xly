@@ -93,7 +93,7 @@ dart run xly:generate icon="path/to/your/icon.png"
 
 
 ## 待办事项（TODOs）
-- 静默启动？`  bool showWindowOnInit = true,` param?
+- 静默启动？`  bool showWindowOnInit = true,` param? ✅ 已实现
 - add `My` prefix for some of exported  widgets, like `FloatButtonState`,etc?
 - what the `ExampleService` used for, can it be removed?
 - right menu 子菜单issue
@@ -228,11 +228,12 @@ XLY包内置单实例管理功能，确保应用在同一台设备上只能运�
 - **`showWindowOnInit`**（默认：`true`）：是否在初始化完成后显示窗口
   - 仅在初始化时生效，后续可通过 `windowManager.show()/hide()` 控制
   - 设置为 `false` 可实现"后台启动"或"托盘优先启动"
-  - **注意**：Windows平台下，即使设置为 `false`，可能仍有极短暂闪现（来自runner首帧显示），但会被立即隐藏
+  - 采用简化的控制逻辑，确保窗口状态与参数设置一致
 
 - **`focusWindowOnInit`**（默认：`true`）：是否在初始化时让窗口获得焦点
   - 仅在初始化时生效，后续可通过 `windowManager.focus()/blur()` 控制
   - 设置为 `false` 可避免应用启动时抢夺用户焦点
+  - 仅在窗口显示时才会应用焦点设置
 
 - **`centerWindowOnInit`**（默认：`true`）：是否在初始化时将窗口居中显示
   - 仅在初始化时生效，后续可通过 `windowManager.center()` 或 `windowManager.setPosition()` 控制

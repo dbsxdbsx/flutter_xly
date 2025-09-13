@@ -21,6 +21,7 @@ import 'widgets/platform_info_widget.dart';
 void main() async {
   await MyApp.initialize(
     showWindowOnInit: false,
+    focusWindowOnInit: false,
     appName: "示例App",
     setTitleBarHidden: false,
     designSize: const Size(900, 700),
