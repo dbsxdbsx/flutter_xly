@@ -11,3 +11,6 @@ lint:
 
 clean:
     flutter clean && flutter pub get
+
+setup-win:
+    dart run :win_setup

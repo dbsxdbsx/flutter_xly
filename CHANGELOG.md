@@ -1,4 +1,20 @@
 
+## 0.26.0 - 2025-09-13
+
+### Added
+- **Windows启动闪现一键修复工具**：新增`dart run xly:win_setup`命令，彻底解决Flutter Windows应用启动时的白屏/黑屏闪现问题
+  - 精确查找并注释掉`windows/runner/flutter_window.cpp`中的强制显示代码
+  - 支持`--project-dir`参数指定项目路径，`--dry-run`演练模式，`--backup`自动备份
+  - 安全的非侵入式补丁，保持其他自定义代码不变
+  - 配合`showWindowOnInit: false`实现真正的静默启动，完全消除启动闪现
+
+### Enhanced
+- **README文档完善**：新增"根除Windows启动闪现：静默启动补丁"章节
+  - 详细说明问题原因、解决方案和使用方法
+  - 提供完整的命令行选项说明和使用示例
+  - 强调一劳永逸的优化效果和技术背景
+- **Justfile工具集成**：新增`just setup-win`快捷命令，简化Windows优化流程
+
 ## 0.25.1 - 2025-09-13
 
 ### Fixed

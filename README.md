@@ -238,7 +238,42 @@ XLY包内置单实例管理功能，确保应用在同一台设备上只能运�
 - **`centerWindowOnInit`**（默认：`true`）：是否在初始化时将窗口居中显示
   - 仅在初始化时生效，后续可通过 `windowManager.center()` 或 `windowManager.setPosition()` 控制
 
-**技术说明**：为解决Windows runner默认模板的首帧强制显示问题，xly内部实现了多层校正机制，确保最终窗口状态与参数设置严格一致。如需完全根除短暂闪现，可在C++侧移除runner的首帧Show逻辑。
+**技术说明**：为解决Windows runner默认模板的首帧强制显示问题，xly内部实现了多层校正机制，确保最终窗口状态与参数设置严格一致。如需完全根除短暂闪现，可使用本包提供的工具对Windows runner进行一键优化。
+
+### 根除Windows启动闪现：静默启动补丁
+
+**问题**：即使在 `MyApp.initialize` 中设置 `showWindowOnInit: false`，你的 Flutter Windows 应用在启动时可能仍会短暂闪现一个白屏或黑屏窗口。这是因为 Flutter 官方的 Windows runner 模板默认会在渲染第一帧后强制显示窗口。
+
+**解决方案**：本包提供了一个安全的、非侵入式的一键补丁工具，用于注释掉你项目中 `windows/runner/flutter_window.cpp` 文件里的强制显示代码，将窗口显示时机完全交由 Dart 侧控制。
+
+**如何使用**：
+
+1.  打开终端，`cd` 到你的 Flutter 项目根目录。
+2.  执行以下命令：
+
+    ```bash
+    dart run xly:win_setup
+    ```
+
+**这个工具会做什么**：
+
+*   **精确查找**：它会精确查找并注释掉 `flutter_window.cpp` 中导致问题的 `this->Show()` 和 `flutter_controller_->ForceRedraw()` 两行代码。
+*   **保持安全**：它不会删除或覆盖你的任何其他自定义代码。如果你的文件已被修改过，它会安全跳过。
+*   **自动备份**：默认情况下，它会为你创建一个 `flutter_window.cpp.bak` 备份文件。
+
+**效果**：
+
+应用此补丁后，当你设置 `showWindowOnInit: false` 时，应用将真正地在后台完成初始化，直到你通过 `windowManager.show()` 或 `MyTray.to.pop()` 等方式主动显示它，从而彻底告别启动闪现。这是一个**一劳永逸**的优化。
+
+**高级选项**：
+
+```bash
+# 在位于其他目录的项目上运行
+dart run xly:win_setup --project-dir="C:/path/to/your/project"
+
+# 演练模式，只看不改
+dart run xly:win_setup --dry-run
+```
 
 ## 使用示例（Examples）
 
