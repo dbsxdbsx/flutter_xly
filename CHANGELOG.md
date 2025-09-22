@@ -1,4 +1,32 @@
 
+## 0.26.1 - 2025-09-22
+
+### Enhanced
+- **FloatPanel 常亮控制功能**：新增按钮"常亮（高亮显示）"状态管理
+  - 新增 `setHighlighted(bool)` 方法：设置指定按钮的常亮状态
+  - 新增 `toggleHighlighted()` 方法：切换按钮常亮状态
+  - 新增 `isHighlighted` getter：查询按钮是否处于常亮状态
+  - 新增 `highlightedIds` 集合：全局管理所有常亮按钮的 ID
+  - 常亮状态与启用/禁用状态完全独立，不相互影响
+  - 示例项目新增常亮控制演示区域和完整测试用例
+
+### Fixed
+- **代码质量优化**：清理 FloatPanel 源码中的损坏注释，完善 API 文档注释
+
+## 0.26.1 - 2025-09-22
+
+### Enhanced
+- **FloatPanel 常亮控制功能**：新增按钮"常亮（高亮显示）"状态管理
+  - 新增 `setHighlighted(bool)` 方法：设置指定按钮的常亮状态
+  - 新增 `toggleHighlighted()` 方法：切换按钮常亮状态
+  - 新增 `isHighlighted` getter：查询按钮是否处于常亮状态
+  - 新增 `highlightedIds` 集合：全局管理所有常亮按钮的 ID
+  - 常亮状态与启用/禁用状态完全独立，不相互影响
+  - 示例项目新增常亮控制演示区域和完整测试用例
+
+### Fixed
+- **代码质量优化**：清理 FloatPanel 源码中的损坏注释，完善 API 文档注释
+
 ## 0.26.0 - 2025-09-13
 
 ### Added

@@ -80,6 +80,30 @@ class Page11View extends GetView<Page11Controller> {
               onPressed: () => FloatPanel.to.iconBtns.enableAll(),
             ),
           ]),
+          SizedBox(height: 24.h),
+          const SectionTitle('浮动面板按钮常亮控制', fontSize: 20),
+          SizedBox(height: 8.h),
+          Wrap(spacing: 12, runSpacing: 12, children: [
+            MyButton(
+              text: '设置按钮1常亮',
+              onPressed: () =>
+                  FloatPanel.to.iconBtn('page1').setHighlighted(true),
+            ),
+            MyButton(
+              text: '取消按钮1常亮',
+              onPressed: () =>
+                  FloatPanel.to.iconBtn('page1').setHighlighted(false),
+            ),
+            MyButton(
+              text: '切换按钮2常亮',
+              onPressed: () =>
+                  FloatPanel.to.iconBtn('page2').toggleHighlighted(),
+            ),
+            MyButton(
+              text: '清空全部常亮',
+              onPressed: () => FloatPanel.to.highlightedIds.clear(),
+            ),
+          ]),
         ],
       ),
     );

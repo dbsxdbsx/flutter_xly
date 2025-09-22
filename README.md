@@ -2074,11 +2074,30 @@ dart run xly:rename android="Android版本" ios="iOS版本" windows="Windows版�
 ```
 
 
-### FloatPanel 多选禁用与示例路由单选策略
+### FloatPanel 多选禁用与常亮控制
 
 - 新增“多选禁用”能力：可同时禁用多个带 id 的按钮（`disabledIds` 集合）
+- 新增"常亮控制"能力：可让指定按钮保持高亮显示状态，且不影响启用/禁用（`highlightedIds` 集合）
 - 示例采用“路由单选策略”：切换页面时清理历史禁用，仅禁用当前页对应按钮
 - 如需跨页面保留多选禁用，只需去掉“清理历史禁用”的步骤
+
+#### 常亮控制 API
+```dart
+// 设置按钮常亮（高亮显示）
+FloatPanel.to.iconBtn('your_id').setHighlighted(true);
+
+// 取消按钮常亮
+FloatPanel.to.iconBtn('your_id').setHighlighted(false);
+
+// 切换按钮常亮状态
+FloatPanel.to.iconBtn('your_id').toggleHighlighted();
+
+// 查询按钮是否常亮
+bool isHighlighted = FloatPanel.to.iconBtn('your_id').isHighlighted;
+
+// 清空所有常亮按钮
+FloatPanel.to.highlightedIds.clear();
+```
 
 详细说明请见： [本地](.doc/float_panel_usage.md) | [GitHub](https://github.com/dbsxdbsx/flutter_xly/blob/main/.doc/float_panel_usage.md)
 

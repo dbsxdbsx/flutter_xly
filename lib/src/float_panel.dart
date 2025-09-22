@@ -47,6 +47,13 @@ class FloatPanel extends GetxService {
   // 当前“禁用联动”的 id 集合，支持多个
   final RxSet<String> disabledIds = <String>{}.obs;
 
+  // 持久“常亮”集合（不影响启用状态）
+  final RxSet<String> highlightedIds = <String>{}.obs;
+  // 访问器（可用于订阅）
+  RxSet<String> get highlightedIdsRx => highlightedIds;
+  // 工具方法
+  bool isHighlighted(String id) => highlightedIds.contains(id);
+
   // 显隐
   final RxBool visible = true.obs;
   void show() => visible.value = true;
@@ -161,6 +168,31 @@ class FloatPanelIconBtnCtrl {
     }
     return this;
   }
+
+  /// 设置该 id 的“常亮（高亮显示）”状态；不影响启用/禁用
+  FloatPanelIconBtnCtrl setHighlighted(bool value) {
+    final set = FloatPanel.to.highlightedIds;
+    if (value) {
+      set.add(id);
+    } else {
+      set.remove(id);
+    }
+    return this;
+  }
+
+  /// toggle highlighted state
+  FloatPanelIconBtnCtrl toggleHighlighted() {
+    final set = FloatPanel.to.highlightedIds;
+    if (set.contains(id)) {
+      set.remove(id);
+    } else {
+      set.add(id);
+    }
+    return this;
+  }
+
+  /// whether current id is highlighted
+  bool get isHighlighted => FloatPanel.to.highlightedIds.contains(id);
 
   // 查询当前是否处于启用（仅联动维度，不含显式 disabled: true）
   bool get isEnabled => !FloatPanel.to.isDisabled(id);
@@ -620,12 +652,15 @@ class _FloatBoxPanel extends StatelessWidget {
                         children: List.generate(items.length, (index) {
                           final item = items[index];
                           final disabledSet = FloatPanel.to.disabledIds;
+                          final highlightedSet = FloatPanel.to.highlightedIds;
                           final bool iconBtnDisabledMatch =
                               item.id != null && disabledSet.contains(item.id);
                           final bool explicitDisabled = item.disabled == true;
                           final bool isEnabled =
                               !(iconBtnDisabledMatch || explicitDisabled);
                           final bool isDisabledLinked = iconBtnDisabledMatch;
+                          final bool forcedHighlighted = item.id != null &&
+                              highlightedSet.contains(item.id);
                           return GestureDetector(
                             onPanStart: (d) =>
                                 ctrl.onPanStartGesture(d.globalPosition),
@@ -654,7 +689,8 @@ class _FloatBoxPanel extends StatelessWidget {
                                         : false,
                                 iconSize: ctrl.currentIconSize.value,
                                 enabled: isEnabled,
-                                isHighlighted: isDisabledLinked,
+                                isHighlighted:
+                                    forcedHighlighted || isDisabledLinked,
                               ),
                             ),
                           );
