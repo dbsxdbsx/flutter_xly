@@ -422,58 +422,61 @@ void main() async {
 
 #### 异步服务支持（🆕）
 
+> 📖 **完整指南**：[异步服务详细文档](.doc/async_service_guide.md) | [GitHub](https://github.com/dbsxdbsx/flutter_xly/blob/main/.doc/async_service_guide.md) - 包含设计模式详解、实际案例、FAQ 和最佳实践
+
 从 v1.0.0 开始，`MyService` 支持异步服务初始化，适用于需要从数据库、网络或其他异步源加载配置的服务。
 
-**使用方式**：
+**快速决策**：
 
-- **同步服务**：使用 `service` 参数
-- **异步服务**：使用 `asyncService` 参数
+- **同步服务** (`service`)：轻量级、可惰性加载、字段可空
+- **异步服务** (`asyncService`)：必须预先初始化、字段非空、类型安全
+
+**基础示例**：
 
 ```dart
-// 异步服务示例 - 使用异步工厂方法模式
-class ChatService extends GetxService {
-  static ChatService get to => Get.find();
+// 同步服务 - 轻量级
+MyService<CacheService>(
+  service: () => CacheService(),
+  permanent: true,
+)
 
-  late String apiKey;
+// 异步服务 - 需要预先初始化
+MyService<DatabaseService>(
+  asyncService: DatabaseService.create,  // 静态工厂方法
+  permanent: true,
+)
+```
 
-  // 私有构造函数
-  ChatService._();
+**异步服务的静态工厂方法模式**：
 
-  // 异步工厂方法
-  static Future<ChatService> create() async {
-    final service = ChatService._();
-    // 从本地存储加载配置
-    service.apiKey = await service._loadApiKeyFromDatabase();
-    return service;
+```dart
+class DatabaseService extends GetxService {
+  static DatabaseService get to => Get.find();
+
+  late Database db;  // 非空，预先初始化
+
+  DatabaseService._();  // 私有构造函数
+
+  // 静态工厂方法 - 在返回前完成异步初始化
+  static Future<DatabaseService> create() async {
+    final service = DatabaseService._();
+    service.db = await openDatabase('app.db');
+    return service;  // 返回时已完全可用
   }
 
-  Future<String> _loadApiKeyFromDatabase() async {
-    // 模拟异步加载（从数据库、网络等）
-    await Future.delayed(const Duration(seconds: 1));
-    return 'your-api-key';
+  Future<List<User>> getUsers() async {
+    return await db.query('users');  // 直接使用，无需检查
   }
-}
-
-// 注册异步服务
-void main() async {
-  await MyApp.initialize(
-    services: [
-      // 使用 asyncService 参数和异步工厂方法
-      MyService<ChatService>(
-        asyncService: () async => await ChatService.create(),
-        permanent: true,
-      ),
-    ],
-    routes: [...],
-  );
 }
 ```
 
-**注意事项**：
+**核心说明**：
 
-- `service` 和 `asyncService` 必须且只能提供其中一个
-- 异步服务会在 `MyApp.initialize()` 中并行注册，提高启动性能
-- 如果服务初始化失败，应用仍会继续运行，但会在调试模式下打印错误信息
+- **非 workaround**：静态工厂方法是 GoF 设计模式，适应 GetX 的 `putAsync` 不等待 `onInit()` 的设计
+- **并行注册**：所有异步服务并行初始化，最大化性能
+- **类型安全**：允许使用 `late` 字段，避免运行时空值检查
+
+**适用场景**：数据库连接、网络配置加载、AI 引擎初始化、复杂多步异步操作等。
 
 #### 自定义服务示例
 
