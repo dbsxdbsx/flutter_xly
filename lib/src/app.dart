@@ -375,12 +375,12 @@ class MyApp extends StatelessWidget {
 
     // 4. 在runApp之前注册所有服务（支持异步服务）
     // 注意：此时ScreenUtil已通过ensureScreenSize()初始化，服务可以安全使用
+    // 按照用户输入的顺序依次注册，保证服务依赖关系
     if (finalServices.isNotEmpty) {
       try {
-        // 并行注册所有服务以提高性能
-        await Future.wait(
-          finalServices.map((service) => service.registerService()),
-        );
+        for (final service in finalServices) {
+          await service.registerService();
+        }
         if (kDebugMode) {
           print('MyApp: 成功注册 ${finalServices.length} 个服务');
         }
