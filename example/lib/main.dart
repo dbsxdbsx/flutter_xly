@@ -43,12 +43,18 @@ void main() async {
     ),
 
     services: [
+      // 同步服务示例 - 使用 service 参数（传统方式）
       MyService<ExampleService>(
         service: () => ExampleService(),
         permanent: true,
       ),
+
+      // 异步服务示例 - 使用 asyncService 参数（新方式）
+      // 虽然 MyNotify 本身不需要异步初始化，但这里展示了
+      // 即使是同步服务也可以用 asyncService 方式注册
+      // 这对于测试和未来可能的异步需求很有用
       MyService<MyNotify>(
-        service: () => MyNotify(),
+        asyncService: () async => MyNotify(),
         permanent: true,
       ),
     ],

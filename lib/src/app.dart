@@ -27,27 +27,58 @@ class MyRoute<T extends GetxController> {
   }
 }
 
-/// 服务注册类，用于在ScreenUtil初始化后注册GetX服务
+/// 服务注册类，用于注册GetX服务
+///
+/// 支持同步和异步服务初始化：
+/// - 同步服务：使用 `service` 参数
+/// - 异步服务：使用 `asyncService` 参数
+///
+/// 示例：
+/// ```dart
+/// // 同步服务
+/// MyService<SettingsService>(service: () => SettingsService())
+///
+/// // 异步服务（需要异步初始化，如从数据库/网络加载配置）
+/// MyService<ChatService>(asyncService: () async => ChatService())
+/// ```
 class MyService<T> {
-  final T Function() service;
+  final T Function()? service;
+  final Future<T> Function()? asyncService;
   final bool permanent;
   final bool fenix;
   final String? tag;
 
   MyService({
-    required this.service,
+    this.service,
+    this.asyncService,
     this.permanent = false,
     this.fenix = false,
     this.tag,
-  });
+  }) : assert(
+          (service != null) ^ (asyncService != null),
+          'service 和 asyncService 必须且只能提供其中一个',
+        );
 
-  void registerService() {
-    if (permanent) {
-      Get.put<T>(service(), permanent: true, tag: tag);
-    } else if (fenix) {
-      Get.lazyPut<T>(service, fenix: true, tag: tag);
+  /// 注册服务到GetX依赖注入系统
+  ///
+  /// 对于异步服务，会等待其初始化完成后再返回
+  Future<void> registerService() async {
+    if (asyncService != null) {
+      // 异步服务：使用 Get.putAsync
+      await Get.putAsync<T>(
+        asyncService!,
+        permanent: permanent,
+        tag: tag,
+      );
     } else {
-      Get.lazyPut<T>(service, tag: tag);
+      // 同步服务：保持原有逻辑
+      if (permanent) {
+        Get.put<T>(service!(), permanent: true, tag: tag);
+      } else if (fenix) {
+        Get.lazyPut<T>(service!, fenix: true, tag: tag);
+      } else {
+        Get.lazyPut<T>(service!, tag: tag);
+      }
     }
   }
 }
@@ -286,10 +317,19 @@ class MyApp extends StatelessWidget {
       // 检查services中是否已有MyTray服务
       bool hasTrayService = finalServices.any((service) {
         try {
-          return service.service() is MyTray;
+          // 检查同步服务
+          if (service.service != null) {
+            return service.service!() is MyTray;
+          }
+          // 检查异步服务类型
+          if (service.asyncService != null) {
+            return service.asyncService.runtimeType
+                .toString()
+                .contains('MyTray');
+          }
+          return false;
         } catch (e) {
-          // 如果service()调用失败，检查类型
-          return service.service.runtimeType.toString().contains('MyTray');
+          return false;
         }
       });
 
@@ -297,9 +337,17 @@ class MyApp extends StatelessWidget {
         // 如果services中已有MyTray，移除它并使用tray参数提供的配置
         finalServices.removeWhere((service) {
           try {
-            return service.service() is MyTray;
+            if (service.service != null) {
+              return service.service!() is MyTray;
+            }
+            if (service.asyncService != null) {
+              return service.asyncService.runtimeType
+                  .toString()
+                  .contains('MyTray');
+            }
+            return false;
           } catch (e) {
-            return service.service.runtimeType.toString().contains('MyTray');
+            return false;
           }
         });
 
@@ -317,8 +365,7 @@ class MyApp extends StatelessWidget {
       );
     }
 
-    // 3. 准备服务，但不立即注册。注册操作将推迟到UI构建阶段，以确保ScreenUtil等依赖项已准备就绪。
-    // 若提供 floatPanel，则作为全局服务注册（类似 tray）
+    // 3. 若提供 floatPanel，则作为全局服务注册（类似 tray）
     if (floatPanel != null) {
       finalServices.add(MyService<FloatPanel>(
         service: () => floatPanel,
@@ -326,7 +373,27 @@ class MyApp extends StatelessWidget {
       ));
     }
 
-    // 4. 在所有配置应用完毕后，设置路由并运行应用
+    // 4. 在runApp之前注册所有服务（支持异步服务）
+    // 注意：此时ScreenUtil已通过ensureScreenSize()初始化，服务可以安全使用
+    if (finalServices.isNotEmpty) {
+      try {
+        // 并行注册所有服务以提高性能
+        await Future.wait(
+          finalServices.map((service) => service.registerService()),
+        );
+        if (kDebugMode) {
+          print('MyApp: 成功注册 ${finalServices.length} 个服务');
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print('MyApp: 服务注册失败: $e');
+        }
+        // 服务注册失败时仍然继续运行，但记录错误
+        // 如果需要严格模式（服务注册失败就退出），可以在这里抛出异常
+      }
+    }
+
+    // 5. 在所有配置应用完毕后，设置路由并运行应用
     if (appName != null) {
       _globalWindowTitle.value = appName;
     }
@@ -334,7 +401,7 @@ class MyApp extends StatelessWidget {
       designSize: designSize,
       theme: theme,
       routes: routes,
-      services: finalServices, // 使用处理后的services列表
+      services: null, // 服务已注册，不再需要传递
       appBuilder: appBuilder,
       appName: appName,
       useToast: useOKToast,
@@ -414,13 +481,7 @@ class MyApp extends StatelessWidget {
     return ScreenUtilInit(
       designSize: designSize,
       builder: (context, child) {
-        // 在ScreenUtil初始化后，但在任何页面构建前，注册所有服务。
-        // 这确保了服务可以安全地使用ScreenUtil，同时其配置能在路由和页面加载前生效。
-        if (services != null) {
-          for (final service in services!) {
-            service.registerService();
-          }
-        }
+        // 服务已在 MyApp.initialize() 中注册完成
         return _buildApp(context);
       },
     );

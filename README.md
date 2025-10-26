@@ -1,42 +1,42 @@
-# XLY包
+# XLY 包
 
-XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。虽然目前仍在开发中，但已经可以在项目中使用许多实用功能。
+XLY 是一个 Flutter 懒人工具包，提供了一些常用的功能和组件。虽然目前仍在开发中，但已经可以在项目中使用许多实用功能。
 
 ## 功能（Features）
 
 当前，这个包提供了以下功能：
 
-1. 基于GetX的状态管理(不用再加入"get"包了)
-2. 基于ScreenUtil的屏幕适配(不用再加入"flutter_screenutil"包了)
-3. 基于window_manager的窗口管理(不用再加入"window_manager"包了)
-4. 基于screen_retriever的屏幕信息获取(不用再加入"screen_retriever"包了)
-5. 基于GetStorage的本地存储(不用再加入"get_storage"包了)
-6. Toast消息显示(内置实现，支持自定义动画和样式)
+1. 基于 GetX 的状态管理(不用再加入"get"包了)
+2. 基于 ScreenUtil 的屏幕适配(不用再加入"flutter_screenutil"包了)
+3. 基于 window_manager 的窗口管理(不用再加入"window_manager"包了)
+4. 基于 screen_retriever 的屏幕信息获取(不用再加入"screen_retriever"包了)
+5. 基于 GetStorage 的本地存储(不用再加入"get_storage"包了)
+6. Toast 消息显示(内置实现，支持自定义动画和样式)
 7. 导航辅助函数
 8. 自定义按钮组件
 9. 自定义菜单组件
-10. 焦点管理(针对只能键盘或遥控操作的App很有用)
+10. 焦点管理(针对只能键盘或遥控操作的 App 很有用)
 11. 自定义文本编辑器(支持下拉建议和样式自定义)
 12. 自定义编辑框(支持步进调节和范围控制)
 13. 列表组件(`MyList`和`MyCardList`)(支持拖拽重排序、滑动删除、加载更多等功能)
-14. 卡片组件(`MyCard`)(支持leading/trailing、点击事件、拖拽、滑动删除等)
+14. 卡片组件(`MyCard`)(支持 leading/trailing、点击事件、拖拽、滑动删除等)
 15. 分组框组件(`MyGroupBox`)(带标题的分组容器，支持多种边框样式)
 16. 列表底部状态组件(`MyEndOfListWidget`)(支持加载中、错误重试、到底提示等状态)
 17. 增强图标按钮(`MyIcon`)(支持悬停效果、工具提示、自定义样式)
-18. URL启动器组件(`MyUrlLauncher`)(包装任意Widget使其可点击打开链接)
+18. URL 启动器组件(`MyUrlLauncher`)(包装任意 Widget 使其可点击打开链接)
 19. 跨平台工具类(支持文件操作、权限管理、窗口控制、细粒度平台检测等)
-20. 开机自启动管理(支持桌面和Android平台)
+20. 开机自启动管理(支持桌面和 Android 平台)
 21. 窗口停靠功能(支持停靠到屏幕四个角落，自动避开任务栏)
-22. 边缘停靠功能(类似QQ的窗口边缘隐藏和鼠标悬停显示功能)
+22. 边缘停靠功能(类似 QQ 的窗口边缘隐藏和鼠标悬停显示功能)
 23. 智能边缘停靠机制(自动检测窗口拖拽到边缘并触发停靠)
-24. 服务管理系统(确保服务在ScreenUtil初始化后注册，避免.sp等扩展方法返回无限值)
-25. 全局UI构建器(`appBuilder`)(支持在应用顶层添加自定义组件，如全局浮动按钮)
+24. 服务管理系统(确保服务在 ScreenUtil 初始化后注册，避免.sp 等扩展方法返回无限值)
+25. 全局 UI 构建器(`appBuilder`)(支持在应用顶层添加自定义组件，如全局浮动按钮)
 26. 全局浮动面板(`FloatPanel`)(一个可拖动、可停靠、可展开的浮动面板，支持智能联动)
 27. 自适应侧边栏导航(`MyScaffold`)(根据屏幕尺寸自动切换抽屉/侧边栏/底部导航)
 28. 窗口比例调整控制(支持动态启用/禁用窗口固定比例调整功能)
 29. 系统托盘管理(`MyTray`)(支持托盘图标、右键菜单、窗口最小化到托盘等功能)
 30. 系统通知管理(`MyNotify`)(跨平台系统通知，支持即时通知、定时通知、多种通知类型)
-31. 多点动态加载指示器(`MyLoadingDot`)(支持fade/bounce/scale/wave四种动画效果，自适应容器宽度)
+31. 多点动态加载指示器(`MyLoadingDot`)(支持 fade/bounce/scale/wave 四种动画效果，自适应容器宽度)
 32. 单实例管理(`SingleInstanceManager`)(确保应用只运行一个实例，支持激活已有实例)
 
 ## 内置依赖包
@@ -44,23 +44,25 @@ XLY 是一个Flutter懒人工具包，提供了一些常用的功能和组件。
 使用本包后，您无需再单独导入以下包：
 
 ### 已重导出的包（可直接使用）
-- `get: ^4.6.6` - GetX状态管理
+
+- `get: ^4.6.6` - GetX 状态管理
 - `flutter_screenutil: ^5.9.3` - 屏幕适配
 - `window_manager: ^0.4.2` - 窗口管理
 - `screen_retriever: ^0.2.0` - 屏幕信息获取
 - `get_storage: ^2.1.1` - 本地存储
 
-### 内部使用的包（多数情况无需关心，本xly包有相应功能可直接使用）
-- `lottie: ^3.1.2` - Lottie动画
+### 内部使用的包（多数情况无需关心，本 xly 包有相应功能可直接使用）
+
+- `lottie: ^3.1.2` - Lottie 动画
 - `path_provider: ^2.1.2` - 路径管理
 - `permission_handler: ^11.3.0` - 权限管理
 - `autostart_settings: ^0.1.4` - 自启动设置（Android）
 - `launch_at_startup: ^0.3.0` - 开机自启动（桌面）
 - `package_info_plus: ^8.0.0` - 应用信息
 - `flutter_inset_shadow: ^2.0.3` - 内阴影
-- `url_launcher: ^6.2.5` - URL启动器
+- `url_launcher: ^6.2.5` - URL 启动器
 - `path: ^1.8.0` - 路径操作
-- `xml: ^6.5.0` - XML解析
+- `xml: ^6.5.0` - XML 解析
 - `tray_manager: ^0.2.3` - 系统托盘管理
 - `flutter_local_notifications: ^19.4.0` - 本地通知
 - `timezone: ^0.10.0` - 时区处理
@@ -75,6 +77,7 @@ dart run xly:generate icon="path/to/your/icon.png"
 ```
 
 支持的平台：
+
 - Android（多种密度的 mipmap 图标）
 - iOS（包含所有尺寸规格，自动移除 alpha 通道）
 - Windows（ICO 格式，包含多种尺寸）
@@ -83,6 +86,7 @@ dart run xly:generate icon="path/to/your/icon.png"
 - Web（包含 favicon 和 PWA 图标）
 
 特性：
+
 - 自动检测项目中存在的平台
 - 支持 PNG、JPEG、JPG 格式输入
 - 自动创建必要的目录结构
@@ -91,14 +95,14 @@ dart run xly:generate icon="path/to/your/icon.png"
 
 详细使用说明和注意事项请参考：[本地](tool/README.md) | [GitHub](https://github.com/dbsxdbsx/flutter_xly/blob/main/tool/README.md)
 
-
 ## 待办事项（TODOs）
+
 - 静默启动？`  bool showWindowOnInit = true,` param? ✅ 已实现
-- add `My` prefix for some of exported  widgets, like `FloatButtonState`,etc?
+- add `My` prefix for some of exported widgets, like `FloatButtonState`,etc?
 - what the `ExampleService` used for, can it be removed?
-- right menu 子菜单issue
+- right menu 子菜单 issue
 - MyToggleBtn?
-- permission功能？
+- permission 功能？
 - clear the Print and DebugPrint for avoid ruin user code?
 
 ## 注意事项（Notes）
@@ -107,11 +111,12 @@ dart run xly:generate icon="path/to/your/icon.png"
 
 **回退键处理逻辑**：`keyToRollBack` 参数现在采用更智能的处理方式：
 
-1. **优先处理弹层**：回退键首先尝试关闭当前打开的弹层（Dialog、BottomSheet、PopupMenu、Drawer等）
+1. **优先处理弹层**：回退键首先尝试关闭当前打开的弹层（Dialog、BottomSheet、PopupMenu、Drawer 等）
 2. **双击回退/退出**：只有在没有弹层可关闭时，才进入原有的双击回退/退出逻辑
 3. **用户体验提升**：避免了"弹层打开时按回退键直接退出应用"的反直觉行为
 
 **示例场景**：
+
 ```dart
 // 设置回退键（可以是任意键）
 keyToRollBack: LogicalKeyboardKey.escape,  // 或 backspace、f1 等
@@ -128,11 +133,13 @@ keyToRollBack: LogicalKeyboardKey.escape,  // 或 backspace、f1 等
 **重要变更**：从当前版本开始，我们移除了 `MyApp.initialize` 的 `navigatorKey` 参数。
 
 **变更原因**：
+
 - XLY 以 GetX 为路由/对话框基座，已提供无 Context 导航能力（`Get.toNamed`、`Get.back`、`Get.dialog`）
 - 提供全局 BuildContext（`Get.context`/`Get.overlayContext`）以及全局 NavigatorKey（`Get.key`）
 - 继续暴露 `navigatorKey` 只会增加使用者的心智负担，且绝大多数场景并不需要
 
 **兼容性影响**：
+
 - 这是一次不兼容变更（移除 API 参数）
 - 如果你之前传递了 `navigatorKey`，请删除该参数
 - 如果你的代码使用了自定义的全局 `navigatorKey` 来获取 context 或做原生 `showDialog`，请改为：
@@ -140,15 +147,18 @@ keyToRollBack: LogicalKeyboardKey.escape,  // 或 backspace、f1 等
   - 使用 `Get.context` / `Get.overlayContext` 获取 context
 
 **迁移指南**：
+
 1. 删除 main.dart 中的自定义 `GlobalKey<NavigatorState>` 定义与传参
 2. 将 `showDialog(context: xxx)` 替换为 `Get.dialog(...)`；或将 `xxx` 替换为 `Get.context ?? Get.overlayContext`
 3. 如确需 NavigatorState，使用 `Get.key.currentState`
 
 **FAQ**：
+
 - Q: 我有第三方库要我"传入 navigatorKey"怎么办？
 - A: 大多数库仅需 `navigatorObservers` 或支持 GetX 的 API。极少数需要直接操作 NavigatorState 的，可通过 `Get.key` 访问全局 NavigatorState；不需要在 `MyApp.initialize` 上传参数。
 
 ### MyTray 组件设计
+
 - 系统托盘功能组件设计文档：[本地](.doc/my_tray_design.md) | [GitHub](https://github.com/dbsxdbsx/flutter_xly/blob/main/.doc/my_tray_design.md)
 - 提供完整的托盘图标管理、窗口最小化到托盘等功能
 - 遵循"无隐式消息"设计原则，只有用户明确操作时才显示反馈
@@ -156,6 +166,7 @@ keyToRollBack: LogicalKeyboardKey.escape,  // 或 backspace、f1 等
 - **智能默认图标**：`iconPath` 参数现在可选，为空时自动使用各平台的默认应用图标，图标缺失时提供详细错误信息和解决方案
 
 ### MyNotify 系统通知组件
+
 - 系统通知功能使用指南：[本地](.doc/my_notify_usage_guide.md) | [GitHub](https://github.com/dbsxdbsx/flutter_xly/blob/main/.doc/my_notify_usage_guide.md)
 - 基于 `flutter_local_notifications` 包封装的跨平台通知管理器
 - 支持即时通知和定时通知，多种通知类型（信息、警告、错误、成功）
@@ -164,30 +175,35 @@ keyToRollBack: LogicalKeyboardKey.escape,  // 或 backspace、f1 等
 - 与 MyTray 职责分离：MyTray 专注托盘管理，MyNotify 专注系统通知
 
 ### MyTextEditor 高级文本编辑器
+
 - 详细使用指南：[本地](.doc/my_text_editor_usage_guide.md) | [GitHub](https://github.com/dbsxdbsx/flutter_xly/blob/main/.doc/my_text_editor_usage_guide.md)
 - 支持智能下拉建议、键盘导航、自定义样式等高级特性
-- 智能键盘导航：上下箭头键导航，Enter选择，Escape关闭
+- 智能键盘导航：上下箭头键导航，Enter 选择，Escape 关闭
 - 鼠标键盘协同：鼠标悬停与键盘导航状态智能同步
 - 自动滚动系统：选中项自动滚动到可视区域，支持大量选项流畅导航
 - 防抖动机制：选择选项后智能防止下拉列表闪烁
 - 手动关闭记忆：用户主动关闭下拉列表后，输入新内容前不会自动重新打开
 
 ### MyLoadingDot 多点动态加载指示器
+
 - 详细使用指南：[本地](.doc/my_loading_dot_usage_guide.md) | [GitHub](https://github.com/dbsxdbsx/flutter_xly/blob/main/.doc/my_loading_dot_usage_guide.md)
-- 支持fade/bounce/scale/wave四种动画效果，适应不同使用场景
+- 支持 fade/bounce/scale/wave 四种动画效果，适应不同使用场景
 - 自适应容器宽度，智能调整点大小和间距，避免布局越界
 - 单控制器驱动多点相位动画，性能优化，资源消耗低
 - 提供`MyLoadingDot.typing()`工厂方法，专为聊天"正在输入"场景优化
 - 支持随机化起始相位，避免多实例同步问题
 
 ### MyScaffold 响应式改进
-- 所有内部尺寸属性已全面使用ScreenUtil响应式单位（.w/.h/.r/.sp）
+
+- 所有内部尺寸属性已全面使用 ScreenUtil 响应式单位（.w/.h/.r/.sp）
 - 包括边距、内边距、圆角、容器尺寸、图标大小、字体大小等
 - 菜单项文本和徽章文本现在支持响应式字体缩放
 - 提供更好的跨设备适配体验，在不同屏幕密度下保持一致的视觉效果
 
 ### 初始化顺序与配置覆盖
+
 `MyApp.initialize`的配置应用顺序遵循以下核心原则：
+
 1. **`MyApp.initialize`的直接参数**：方法调用时直接传入的配置，如`designSize`、`exitInfoText`等。
 2. **`services`列表中的服务**：在`services`列表中注册的`GetxService`。
 3. **路由**：通过`routes`参数配置的页面和控制器。
@@ -198,7 +214,7 @@ keyToRollBack: LogicalKeyboardKey.escape,  // 或 backspace、f1 等
 
 ### 单实例机制说明
 
-XLY包内置单实例管理功能，确保应用在同一台设备上只能运行一个实例。当尝试启动第二个实例时，会自动激活已有实例并退出新实例。
+XLY 包内置单实例管理功能，确保应用在同一台设备上只能运行一个实例。当尝试启动第二个实例时，会自动激活已有实例并退出新实例。
 
 #### 配置参数
 
@@ -210,10 +226,10 @@ XLY包内置单实例管理功能，确保应用在同一台设备上只能运�
 
 #### 工作原理
 
-- 使用TCP端口锁机制确保跨进程的实例检测
-- 端口号通过稳定的字符串哈希算法生成（30000-39999范围）
-- 仅在桌面平台（Windows/macOS/Linux）生效，移动端和Web端自动跳过
-- 当检测到已有实例时，会发送HTTP激活请求并自动退出当前实例
+- 使用 TCP 端口锁机制确保跨进程的实例检测
+- 端口号通过稳定的字符串哈希算法生成（30000-39999 范围）
+- 仅在桌面平台（Windows/macOS/Linux）生效，移动端和 Web 端自动跳过
+- 当检测到已有实例时，会发送 HTTP 激活请求并自动退出当前实例
 
 #### 注意事项
 
@@ -226,11 +242,13 @@ XLY包内置单实例管理功能，确保应用在同一台设备上只能运�
 `MyApp.initialize` 中的窗口控制参数已重命名以提升语义清晰度：
 
 - **`showWindowOnInit`**（默认：`true`）：是否在初始化完成后显示窗口
+
   - 仅在初始化时生效，后续可通过 `windowManager.show()/hide()` 控制
   - 设置为 `false` 可实现"后台启动"或"托盘优先启动"
   - 采用简化的控制逻辑，确保窗口状态与参数设置一致
 
 - **`focusWindowOnInit`**（默认：`true`）：是否在初始化时让窗口获得焦点
+
   - 仅在初始化时生效，后续可通过 `windowManager.focus()/blur()` 控制
   - 设置为 `false` 可避免应用启动时抢夺用户焦点
   - 仅在窗口显示时才会应用焦点设置
@@ -238,9 +256,9 @@ XLY包内置单实例管理功能，确保应用在同一台设备上只能运�
 - **`centerWindowOnInit`**（默认：`true`）：是否在初始化时将窗口居中显示
   - 仅在初始化时生效，后续可通过 `windowManager.center()` 或 `windowManager.setPosition()` 控制
 
-**技术说明**：为解决Windows runner默认模板的首帧强制显示问题，xly内部实现了多层校正机制，确保最终窗口状态与参数设置严格一致。如需完全根除短暂闪现，可使用本包提供的工具对Windows runner进行一键优化。
+**技术说明**：为解决 Windows runner 默认模板的首帧强制显示问题，xly 内部实现了多层校正机制，确保最终窗口状态与参数设置严格一致。如需完全根除短暂闪现，可使用本包提供的工具对 Windows runner 进行一键优化。
 
-### 根除Windows启动闪现：静默启动补丁
+### 根除 Windows 启动闪现：静默启动补丁
 
 **问题**：即使在 `MyApp.initialize` 中设置 `showWindowOnInit: false`，你的 Flutter Windows 应用在启动时可能仍会短暂闪现一个白屏或黑屏窗口。这是因为 Flutter 官方的 Windows runner 模板默认会在渲染第一帧后强制显示窗口。
 
@@ -257,9 +275,9 @@ XLY包内置单实例管理功能，确保应用在同一台设备上只能运�
 
 **这个工具会做什么**：
 
-*   **精确查找**：它会精确查找并注释掉 `flutter_window.cpp` 中导致问题的 `this->Show()` 和 `flutter_controller_->ForceRedraw()` 两行代码。
-*   **保持安全**：它不会删除或覆盖你的任何其他自定义代码。如果你的文件已被修改过，它会安全跳过。
-*   **自动备份**：默认情况下，它会为你创建一个 `flutter_window.cpp.bak` 备份文件。
+- **精确查找**：它会精确查找并注释掉 `flutter_window.cpp` 中导致问题的 `this->Show()` 和 `flutter_controller_->ForceRedraw()` 两行代码。
+- **保持安全**：它不会删除或覆盖你的任何其他自定义代码。如果你的文件已被修改过，它会安全跳过。
+- **自动备份**：默认情况下，它会为你创建一个 `flutter_window.cpp.bak` 备份文件。
 
 **效果**：
 
@@ -349,7 +367,7 @@ class Routes {
 
 ### 服务管理系统
 
-XLY包提供了服务管理系统，确保GetX服务在ScreenUtil初始化后注册，避免在服务中使用`.sp`、`.w`等扩展方法时返回无限值的问题。
+XLY 包提供了服务管理系统，确保 GetX 服务在 ScreenUtil 初始化后注册，避免在服务中使用`.sp`、`.w`等扩展方法时返回无限值的问题。
 
 #### 基本用法
 
@@ -389,12 +407,73 @@ void main() async {
         tag: 'app',
         permanent: true,
       ),
+
+      // 🆕 异步服务 - 需要异步初始化（如从数据库/网络加载配置）
+      MyService<ChatService>(
+        asyncService: () async => ChatService(),
+        permanent: true,
+      ),
     ],
 
     routes: [...],
   );
 }
 ```
+
+#### 异步服务支持（🆕）
+
+从 v1.0.0 开始，`MyService` 支持异步服务初始化，适用于需要从数据库、网络或其他异步源加载配置的服务。
+
+**使用方式**：
+
+- **同步服务**：使用 `service` 参数
+- **异步服务**：使用 `asyncService` 参数
+
+```dart
+// 异步服务示例 - 使用异步工厂方法模式
+class ChatService extends GetxService {
+  static ChatService get to => Get.find();
+
+  late String apiKey;
+
+  // 私有构造函数
+  ChatService._();
+
+  // 异步工厂方法
+  static Future<ChatService> create() async {
+    final service = ChatService._();
+    // 从本地存储加载配置
+    service.apiKey = await service._loadApiKeyFromDatabase();
+    return service;
+  }
+
+  Future<String> _loadApiKeyFromDatabase() async {
+    // 模拟异步加载（从数据库、网络等）
+    await Future.delayed(const Duration(seconds: 1));
+    return 'your-api-key';
+  }
+}
+
+// 注册异步服务
+void main() async {
+  await MyApp.initialize(
+    services: [
+      // 使用 asyncService 参数和异步工厂方法
+      MyService<ChatService>(
+        asyncService: () async => await ChatService.create(),
+        permanent: true,
+      ),
+    ],
+    routes: [...],
+  );
+}
+```
+
+**注意事项**：
+
+- `service` 和 `asyncService` 必须且只能提供其中一个
+- 异步服务会在 `MyApp.initialize()` 中并行注册，提高启动性能
+- 如果服务初始化失败，应用仍会继续运行，但会在调试模式下打印错误信息
 
 #### 自定义服务示例
 
@@ -431,10 +510,10 @@ class MyCustomService extends GetxService {
 
 #### 重要说明
 
-1. **初始化时机**: 服务会在ScreenUtil初始化**之后**、runApp**之前**注册
+1. **初始化时机**: 服务会在 ScreenUtil 初始化**之后**、runApp**之前**注册
 2. **避免无限值**: 在服务的`onInit()`方法中可以安全使用`.sp`、`.w`等扩展方法
 3. **向后兼容**: `services`参数是可选的，现有代码无需修改
-4. **GetX兼容**: 完全兼容GetX的所有服务管理功能
+4. **GetX 兼容**: 完全兼容 GetX 的所有服务管理功能
 
 ### 显示 Toast 消息
 
@@ -523,11 +602,12 @@ MyToast.hideAll(1000); // 1秒后关闭
 ```
 
 Toast 特性：
+
 - 支持多种预设样式：成功、信息、警告、错误
 - 支持多个显示位置：顶部、中间、底部
 - **支持两种显示模式**：
-  - **普通模式**：新Toast替换旧Toast（默认行为）
-  - **堆叠模式**：多条Toast同时显示，形成视觉堆叠效果
+  - **普通模式**：新 Toast 替换旧 Toast（默认行为）
+  - **堆叠模式**：多条 Toast 同时显示，形成视觉堆叠效果
 - 支持自定义样式：背景色、文字样式、图标等
 - 支持加载动画显示
 - 支持异步任务加载提示
@@ -607,6 +687,7 @@ MyLoadingDot(
 ```
 
 MyLoadingDot 特性：
+
 - **四种动画效果**：fade（淡入淡出）、bounce（弹跳）、scale（缩放）、wave（波动）
 - **自适应布局**：自动适应容器宽度，智能调整点大小和间距
 - **高性能**：单控制器驱动多点相位动画，资源消耗低
@@ -634,6 +715,7 @@ tray: MyTray(
 ```
 
 **自动化优势**：
+
 - ✅ **完美一致**：托盘图标与应用窗口图标使用相同源文件
 - ✅ **跨启动方式稳定**：VSCode F5 调试和从应用目录运行表现完全相同
 - ✅ **零配置**：无需手动管理图标文件和路径
@@ -641,7 +723,7 @@ tray: MyTray(
 
 **⚠️ Windows 用户注意**：更换图标后，托盘图标会立即更新，但任务栏/文件管理器中的应用图标可能因系统缓存而显示旧图标。建议重启系统以清除图标缓存。
 
-#### 推荐方式：使用tray参数（简化配置）
+#### 推荐方式：使用 tray 参数（简化配置）
 
 ```dart
 // 1. 在 main.dart 中使用tray参数（推荐方式）
@@ -683,7 +765,7 @@ bool isEnabled = myTray.getMenuItemEnabled('settings'); // 查询状态
 await myTray.toggleMenuItemEnabled('settings');      // 切换状态
 ```
 
-#### 传统方式：使用services参数（向后兼容）
+#### 传统方式：使用 services 参数（向后兼容）
 
 ```dart
 // 传统方式仍然支持，用于复杂场景或向后兼容
@@ -708,17 +790,18 @@ void main() async {
 ```
 
 MyTray 特性：
-- **简化配置**：推荐使用 `tray` 参数，无需了解GetxService概念
+
+- **简化配置**：推荐使用 `tray` 参数，无需了解 GetxService 概念
 - **向后兼容**：传统的 `MyService<MyTray>` 方式仍然支持
 - **🆕 自动图标一致性**：配合图标生成工具，托盘图标与应用图标完全一致，跨启动方式稳定
 - **智能默认图标**：`iconPath` 可选，为空时自动查找默认应用图标
 - **早期检测**：图标缺失时提供详细错误信息和解决方案
 - **完全可选**：不需要托盘功能时完全不涉及，零影响
-- **配置优先级**：如果同时提供 `tray` 参数和 `services` 中的MyTray，`tray` 参数优先
+- **配置优先级**：如果同时提供 `tray` 参数和 `services` 中的 MyTray，`tray` 参数优先
 - **🆕 智能托盘隐藏**：根据智能停靠状态自动选择隐藏模式，与智能停靠功能完美协作
 - **🆕 原生禁用样式**：支持菜单项的启用/禁用状态，使用系统原生灰色样式和不可点击行为
-- **🆕 任务栏图标策略控制**：hideTaskBarIcon参数控制托盘存在时任务栏图标显示，支持运行时切换
-- **🆕 托盘点击切换功能**：toggleOnClick参数控制托盘左键点击行为，支持切换显示/隐藏或保持现状
+- **🆕 任务栏图标策略控制**：hideTaskBarIcon 参数控制托盘存在时任务栏图标显示，支持运行时切换
+- **🆕 托盘点击切换功能**：toggleOnClick 参数控制托盘左键点击行为，支持切换显示/隐藏或保持现状
 
 #### 任务栏图标策略控制
 
@@ -726,7 +809,7 @@ MyTray 支持灵活的任务栏图标显示策略，允许用户选择"纯托盘
 
 - **hideTaskBarIcon = true（默认）**：托盘存在时隐藏任务栏图标，提供干净的任务栏体验
 - **hideTaskBarIcon = false**：托盘存在时保留任务栏图标，提供双入口访问方式
-- **运行时切换**：支持通过API动态改变策略，无需重启应用
+- **运行时切换**：支持通过 API 动态改变策略，无需重启应用
 - **与智能停靠解耦**：任务栏图标显示策略不影响智能停靠的悬停唤醒等行为
 
 ```dart
@@ -746,13 +829,13 @@ bool isHidden = MyTray.to.hideTaskBarIcon;  // 获取当前策略
 MyTray 支持灵活的托盘左键点击行为控制，允许用户选择"切换语义"或"保持现状"：
 
 - **toggleOnClick = true（默认）**：托盘左键点击执行切换语义
-  - 普通模式：在hide()和pop()之间切换（隐藏到托盘 ↔ 恢复显示并聚焦）
+  - 普通模式：在 hide()和 pop()之间切换（隐藏到托盘 ↔ 恢复显示并聚焦）
   - 智能停靠模式：在"收起到隐藏位"和"无激活弹出到对齐位"之间切换
 - **toggleOnClick = false**：托盘左键点击保持现状行为
-  - 普通模式：始终执行pop()（恢复显示并聚焦）
-  - 智能停靠模式：始终执行simulateHoverReveal()（无激活弹出，不会立即缩回）
-- **运行时切换**：支持通过API动态改变行为，无需重启应用
-- **智能停靠兼容**：保持"隐藏→显示不会立即缩回"的既有体验
+  - 普通模式：始终执行 pop()（恢复显示并聚焦）
+  - 智能停靠模式：始终执行 simulateHoverReveal()（无激活弹出，不会立即缩回）
+- **运行时切换**：支持通过 API 动态改变行为，无需重启应用
+- **智能停靠兼容**：保持"隐藏 → 显示不会立即缩回"的既有体验
 
 ```dart
 // 初始化时配置行为
@@ -771,7 +854,7 @@ bool isToggleMode = MyTray.to.getToggleOnClick();  // 获取当前状态
 
 MyTray 现在支持智能托盘隐藏，能够根据当前窗口状态智能决策隐藏行为：
 
-- **普通模式**：窗口未处于智能停靠状态时，完全隐藏窗口UI
+- **普通模式**：窗口未处于智能停靠状态时，完全隐藏窗口 UI
 - **智能停靠模式**：窗口处于智能停靠状态时，强制收起到隐藏位（保留悬停唤醒能力）
 - **任务栏激活控制**：防止在智能停靠模式下意外激活系统任务栏
 - **托盘左击（智能停靠隐藏下）**：左击托盘仅“模拟悬停弹出”，不激活不聚焦；用户首次把鼠标移入窗口后，再移出时会按常规自动收回
@@ -790,6 +873,7 @@ MyTray.to.pop();   // 恢复窗口显示
 ```
 
 **详细文档**：
+
 - [智能托盘用户指南](.doc/smart_tray_user_guide.md) | [GitHub](https://github.com/dbsxdbsx/flutter_xly/blob/main/.doc/smart_tray_user_guide.md) - 用户使用说明
 - [智能托盘技术文档](.doc/smart_tray_technical.md) | [GitHub](https://github.com/dbsxdbsx/flutter_xly/blob/main/.doc/smart_tray_technical.md) - 开发者技术细节
 
@@ -840,6 +924,7 @@ await myNotify.cancelAll();      // 取消所有通知
 ```
 
 MyNotify 特性：
+
 - **跨平台支持**：Android、iOS、macOS、Windows、Linux
 - **多种通知类型**：信息、警告、错误、成功，不同优先级和样式
 - **定时通知**：支持指定时间显示通知
@@ -848,6 +933,7 @@ MyNotify 特性：
 - **职责分离**：与 MyTray 分离，专注系统通知功能
 
 ### 使用自定义按钮
+
 ```dart
 Widget buildCustomButton() {
   return MyButton(
@@ -862,6 +948,7 @@ Widget buildCustomButton() {
 ```
 
 ### 使用菜单按钮
+
 ```dart
 Widget buildMenuButton() {
   return MyMenuButton(
@@ -884,8 +971,8 @@ Widget buildMenuButton() {
 }
 ```
 
-
 ### 使用焦点管理
+
 ```dart
 class MyWidget extends StatelessWidget {
   @override
@@ -901,8 +988,8 @@ class MyWidget extends StatelessWidget {
 }
 ```
 
-
 ### 导航到新页面
+
 ```dart
 goToPage(context, Routes.page2);
 ```
@@ -911,26 +998,29 @@ goToPage(context, Routes.page2);
 
 #### 🎯 选择指南：MyDialog vs MyDialogSheet
 
-| 特性 | MyDialog | MyDialogSheet |
-|------|----------|---------------|
-| **适用场景** | 标准确认/取消对话框 | 自定义布局面板 |
-| **返回值** | `MyDialogChosen` 枚举 | 泛型 `T?`，可返回任意类型 |
-| **按钮** | 固定左右按钮模式 | 可选按钮，支持自定义 |
-| **布局控制** | 基础主题配置 | 精细控制内边距、尺寸、标题居中等 |
-| **风格** | Material/Cupertino 标准样式 | 完全自定义样式 |
+| 特性         | MyDialog                    | MyDialogSheet                    |
+| ------------ | --------------------------- | -------------------------------- |
+| **适用场景** | 标准确认/取消对话框         | 自定义布局面板                   |
+| **返回值**   | `MyDialogChosen` 枚举       | 泛型 `T?`，可返回任意类型        |
+| **按钮**     | 固定左右按钮模式            | 可选按钮，支持自定义             |
+| **布局控制** | 基础主题配置                | 精细控制内边距、尺寸、标题居中等 |
+| **风格**     | Material/Cupertino 标准样式 | 完全自定义样式                   |
 
 **何时使用 MyDialog：**
+
 - ✅ 简单的确认/取消操作
 - ✅ 需要标准的用户选择结果（左/右/取消）
 - ✅ 希望保持系统原生对话框风格
 
 **何时使用 MyDialogSheet：**
+
 - ✅ 需要复杂的自定义内容布局
 - ✅ 需要精确控制对话框尺寸和内边距
 - ✅ 需要返回自定义数据类型
 - ✅ 底部弹出菜单（Action Sheet）
 
 #### 基础用法
+
 ```dart
 // 1. 简单确认对话框（默认可点击遮罩关闭）
 final result = await MyDialog.show(
@@ -959,6 +1049,7 @@ MyDialog.show(
 ```
 
 #### 自定义样式
+
 ```dart
 // 3. 完全自定义的对话框
 MyDialog.show(
@@ -1010,6 +1101,7 @@ MyDialog.show(
 ```
 
 #### 严格模态（不允许点击遮罩关闭）
+
 ```dart
 await MyDialog.show(
   title: '删除文件',
@@ -1019,16 +1111,15 @@ await MyDialog.show(
 );
 ```
 
-
-
-// 也可在iOS风格对话框中使用严格模态：
+// 也可在 iOS 风格对话框中使用严格模态：
 await MyDialog.showIos(
-  title: '提示',
-  content: const Text('这是iOS风格的对话框'),
-  barrierDismissible: false,
+title: '提示',
+content: const Text('这是 iOS 风格的对话框'),
+barrierDismissible: false,
 );
 
-#### iOS风格对话框
+#### iOS 风格对话框
+
 ```dart
 // 5. iOS风格对话框（适用于iOS平台或需要iOS风格的场景）
 MyDialog.showIos(
@@ -1042,6 +1133,7 @@ MyDialog.showIos(
 ```
 
 #### 实用示例
+
 ```dart
 // 6. 退出确认对话框
 Future<void> showExitConfirmDialog() async {
@@ -1079,6 +1171,7 @@ Future<void> showDeleteConfirmDialog(String fileName) async {
 ### 使用底部弹出菜单和中心对话框
 
 #### 底部弹出菜单 (MyDialogSheet.showBottom)
+
 ```dart
 // 1. 简单底部菜单
 MyDialogSheet.showBottom(
@@ -1157,6 +1250,7 @@ if (action != null) {
 ```
 
 #### 中心对话框 (MyDialogSheet.showCenter)
+
 ```dart
 // 4. 简单中心对话框
 MyDialogSheet.showCenter(
@@ -1233,6 +1327,7 @@ MyDialogSheet.showCenter(
 ```
 
 ### 右键菜单
+
 ```dart
 Widget buildRightMenu() {
   return Text('这是一个测试右键菜单').showRightMenu(
@@ -1247,9 +1342,10 @@ Widget buildRightMenu() {
 
 ### 使用自定义文本编辑器
 
-> 📖 **详细使用指南**：[MyTextEditor 使用指南](.doc/my_text_editor_usage_guide.md) | [GitHub](https://github.com/dbsxdbsx/flutter_xly/blob/main/.doc/my_text_editor_usage_guide.md) - 包含完整的API说明、高级用法和最佳实践
+> 📖 **详细使用指南**：[MyTextEditor 使用指南](.doc/my_text_editor_usage_guide.md) | [GitHub](https://github.com/dbsxdbsx/flutter_xly/blob/main/.doc/my_text_editor_usage_guide.md) - 包含完整的 API 说明、高级用法和最佳实践
 
 #### 基础用法
+
 ```dart
 Widget buildBasicTextEditor() {
   final controller = TextEditingController();
@@ -1265,6 +1361,7 @@ Widget buildBasicTextEditor() {
 ```
 
 #### 数字输入框
+
 ```dart
 Widget buildNumberEditor() {
   final numberController = TextEditingController();
@@ -1280,6 +1377,7 @@ Widget buildNumberEditor() {
 ```
 
 #### 多行文本输入
+
 ```dart
 Widget buildMultilineEditor() {
   final multilineController = TextEditingController();
@@ -1295,6 +1393,7 @@ Widget buildMultilineEditor() {
 ```
 
 #### 带下拉建议的输入框
+
 ```dart
 Widget buildDropdownEditor() {
   final dropdownController = TextEditingController();
@@ -1360,6 +1459,7 @@ Widget buildTopDropdownEditor() {
 ```
 
 #### 自定义样式输入框
+
 ```dart
 Widget buildStyledEditor() {
   final styledController = TextEditingController();
@@ -1383,6 +1483,7 @@ Widget buildStyledEditor() {
 ```
 
 #### 完整的控制器管理示例
+
 ```dart
 class MyTextEditorExample extends GetView<MyTextEditorController> {
   const MyTextEditorExample({super.key});
@@ -1452,7 +1553,7 @@ class MyTextEditorController extends GetxController {
 
 #### MyTextEditor 主要特性
 
-- **智能下拉导航**：支持键盘上下箭头导航，Enter选择，Escape关闭
+- **智能下拉导航**：支持键盘上下箭头导航，Enter 选择，Escape 关闭
 - **鼠标键盘协同**：鼠标悬停与键盘导航状态智能同步
 - **自动滚动**：选中项自动滚动到可视区域，支持大量选项流畅导航
 - **防抖动机制**：选择选项后智能防止下拉列表闪烁
@@ -1460,17 +1561,18 @@ class MyTextEditorController extends GetxController {
 - **灵活的下拉位置**：支持下拉列表显示在输入框上方或下方，适应不同布局需求
 - **智能触发行为**：区分输入、焦点、箭头三种触发方式，支持箭头点击显示全量候选
 - **丰富的自定义选项**：支持样式、颜色、字体、边框等全方位自定义
-- **响应式设计**：所有尺寸属性支持ScreenUtil响应式单位
+- **响应式设计**：所有尺寸属性支持 ScreenUtil 响应式单位
 
 #### 使用注意事项
 
-1. **控制器管理**：记得在控制器的`onClose()`方法中释放TextEditingController
+1. **控制器管理**：记得在控制器的`onClose()`方法中释放 TextEditingController
 2. **响应式单位**：建议使用`.w`、`.h`、`.r`、`.sp`等响应式单位
 3. **异步数据**：`getDropDownOptions`支持异步获取数据，适合网络请求场景
 4. **键盘导航**：下拉列表支持完整的键盘导航，提升用户体验
 5. **性能优化**：大量选项时使用`maxShowDropDownItems`限制显示数量
 
 ### 使用自定义编辑框
+
 ```dart
 Widget buildEditBox() {
   return MySpinBox(
@@ -1494,6 +1596,7 @@ Widget buildEditBox() {
 ### 使用列表组件
 
 #### MyList - 基础列表组件
+
 ```dart
 Widget buildMyList() {
   final items = ['项目1', '项目2', '项目3', '项目4'];
@@ -1522,6 +1625,7 @@ Widget buildMyList() {
 ```
 
 #### MyCardList - 高级卡片列表组件
+
 ```dart
 Widget buildMyCardList() {
   return MyCardList(
@@ -1563,6 +1667,7 @@ Widget buildMyCardList() {
 ```
 
 ### 使用卡片组件
+
 ```dart
 Widget buildMyCard() {
   return MyCard(
@@ -1596,6 +1701,7 @@ Widget buildMyCard() {
 ```
 
 ### 使用分组框组件
+
 ```dart
 Widget buildMyGroupBox() {
   return MyGroupBox(
@@ -1623,6 +1729,7 @@ Widget buildMyGroupBox() {
 ```
 
 ### 使用列表底部状态组件
+
 ```dart
 Widget buildEndOfListWidget() {
   return MyEndOfListWidget(
@@ -1651,6 +1758,7 @@ Widget buildEndOfListWidget() {
 ```
 
 ### 使用增强图标按钮
+
 ```dart
 Widget buildMyIcon() {
   return MyIcon(
@@ -1668,7 +1776,8 @@ Widget buildMyIcon() {
 }
 ```
 
-### 使用URL启动器组件
+### 使用 URL 启动器组件
+
 ```dart
 Widget buildUrlLauncher() {
   return MyUrlLauncher(
@@ -1689,6 +1798,7 @@ Widget buildUrlLauncher() {
 ```
 
 ### 使用平台工具类
+
 ```dart
 // 通用平台类型判断
 if (MyPlatform.isDesktop) {
@@ -1764,15 +1874,16 @@ await MyApp.dockToCorner(WindowCorner.bottomRight);
 ```
 
 窗口停靠功能特性：
+
 - 🎯 **精确停靠**: 窗口会精确停靠到屏幕的四个角落
 - 📏 **任务栏感知**: 自动检测任务栏位置，确保窗口不被遮挡
-- 🔧 **跨平台兼容**: 支持Windows、macOS、Linux桌面平台
+- 🔧 **跨平台兼容**: 支持 Windows、macOS、Linux 桌面平台
 - ⚡ **简单易用**: 一行代码完成停靠操作
 - 🛡️ **错误处理**: 内部处理所有异常，返回操作结果
 
-### 使用边缘停靠功能（类似QQ）
+### 使用边缘停靠功能（类似 QQ）
 
-边缘停靠功能允许您将窗口停靠到屏幕边缘，大部分隐藏，只留一小部分可见，类似腾讯QQ的停靠行为：
+边缘停靠功能允许您将窗口停靠到屏幕边缘，大部分隐藏，只留一小部分可见，类似腾讯 QQ 的停靠行为：
 
 ```dart
 // 启用左边缘停靠，可见宽度为8像素
@@ -1804,10 +1915,11 @@ MyApp.disableEdgeDocking();
 ```
 
 边缘停靠功能特性：
+
 - 🎯 **智能停靠**: 窗口停靠到屏幕边缘，只留小部分可见
 - 🖱️ **交互友好**: 点击可见部分可展开/收缩窗口
 - 📏 **可调节**: 支持自定义可见宽度
-- 🔧 **跨平台**: 支持Windows、macOS、Linux桌面平台
+- 🔧 **跨平台**: 支持 Windows、macOS、Linux 桌面平台
 - ⚡ **简单控制**: 提供手动控制方法
 - 🛡️ **安全可靠**: 内部异常处理，操作安全
 
@@ -1830,6 +1942,7 @@ await MyApp.setSmartEdgeDocking(enabled: false);
 ```
 
 智能停靠特性：
+
 - 🧠 **智能检测**: 自动检测窗口拖拽行为和位置
 - 🎯 **边界触发**: 窗口部分超出屏幕边界时自动停靠
 - 📐 **智能选择**: 自动判断边缘停靠或角落停靠
@@ -1843,13 +1956,13 @@ await MyApp.setSmartEdgeDocking(enabled: false);
 
 ### 功能对比：`dockToCorner` vs 智能停靠
 
-| 功能 | `dockToCorner` | 智能停靠 (`setSmartEdgeDocking`) |
-|------|----------------|----------------------------------|
-| **触发方式** | 手动调用API | 自动检测拖拽行为 |
-| **行为模式** | 仅对齐到角落，不隐藏 | 先对齐，后根据鼠标智能隐藏 |
-| **适用场景** | 简单的窗口定位 | 类似QQ的智能停靠体验 |
-| **鼠标交互** | 无 | 鼠标悬停显示，离开隐藏 |
-| **使用复杂度** | 简单 | 自动化，无需手动管理 |
+| 功能           | `dockToCorner`       | 智能停靠 (`setSmartEdgeDocking`) |
+| -------------- | -------------------- | -------------------------------- |
+| **触发方式**   | 手动调用 API         | 自动检测拖拽行为                 |
+| **行为模式**   | 仅对齐到角落，不隐藏 | 先对齐，后根据鼠标智能隐藏       |
+| **适用场景**   | 简单的窗口定位       | 类似 QQ 的智能停靠体验           |
+| **鼠标交互**   | 无                   | 鼠标悬停显示，离开隐藏           |
+| **使用复杂度** | 简单                 | 自动化，无需手动管理             |
 
 ```dart
 // 简单对齐到角落（不隐藏）
@@ -1862,13 +1975,15 @@ await MyApp.setSmartEdgeDocking(enabled: true);
 ```
 
 **重要更新**：智能角落停靠行为已优化！现在当拖拽到屏幕角落时，窗口会：
+
 1. 🎯 **先对齐到角落** - 与边缘停靠行为保持一致
 2. 👁️ **再智能隐藏** - 鼠标离开时才隐藏到角落
 3. 🔄 **鼠标交互** - 悬停显示完整窗口，离开后隐藏
 
 这确保了角落停靠与边缘停靠具有一致的用户体验。
 
-**最新优化**：Taskbar智能对齐！现在智能停靠会自动检测任务栏位置：
+**最新优化**：Taskbar 智能对齐！现在智能停靠会自动检测任务栏位置：
+
 - 🎯 **智能检测**: 自动检测任务栏在屏幕的哪个边缘（左、右、上、下）
 - 📏 **外边缘对齐**: 当停靠边缘或角落的某个边缘有任务栏时，窗口会对齐到任务栏的外边缘而不是工作区域边缘
 - 🔄 **保持兼容**: `dockToCorner`功能保持原有行为（对齐到工作区域内侧）
@@ -1878,9 +1993,9 @@ await MyApp.setSmartEdgeDocking(enabled: true);
 
 注意：此功能仅在桌面平台（Windows、macOS、Linux）上可用。
 
-### 窗口控制API
+### 窗口控制 API
 
-XLY包提供了一系列窗口控制API，允许您动态管理窗口的各种行为特性：
+XLY 包提供了一系列窗口控制 API，允许您动态管理窗口的各种行为特性：
 
 #### 窗口标题控制
 
@@ -1895,6 +2010,7 @@ final current = MyApp.getWindowTitle();
 ```
 
 特性：
+
 - 即时生效：内部通过 Obx 监听全局标题状态，GetMaterialApp 的 title 会动态更新
 - 跨平台可用：非桌面端也可安全调用（不触发原生 API）
 - 初始化联动：如果在 MyApp.initialize 传入 appName，会作为初始标题
@@ -1915,6 +2031,7 @@ bool isEnabled = MyApp.isAspectRatioEnabled();
 ```
 
 **特性说明：**
+
 - 🔒 **比例锁定**: 启用时窗口将保持初始设计尺寸的宽高比
 - 🔓 **自由调整**: 禁用时窗口可以调整为任意比例
 - ⚙️ **动态切换**: 可以在运行时动态启用或禁用
@@ -1933,7 +2050,7 @@ await MyApp.initialize(
 );
 ```
 
-#### 其他窗口控制API
+#### 其他窗口控制 API
 
 ```dart
 // 窗口大小调整控制
@@ -1960,9 +2077,10 @@ bool isHidden = MyApp.isTitleBarHidden();
 
 #### 全屏功能详细说明
 
-全屏功能让窗口占据整个屏幕，隐藏任务栏等系统UI，提供沉浸式体验：
+全屏功能让窗口占据整个屏幕，隐藏任务栏等系统 UI，提供沉浸式体验：
 
 **基本使用**：
+
 ```dart
 // 检查全屏功能是否可用
 if (MyApp.isFullScreenEnabled()) {
@@ -1975,66 +2093,70 @@ await MyApp.toggleFullScreen();
 ```
 
 **与智能停靠的交互**：
+
 - ✅ **正常状态下**：全屏功能正常工作
 - ❌ **智能停靠状态下**：全屏功能自动禁用，防止功能冲突
 - 💡 **使用建议**：如需使用全屏功能，请先退出智能停靠模式
 
 **全屏 vs 最大化的区别**：
-- **最大化**：窗口占据工作区域，任务栏等系统UI仍然可见
-- **全屏**：窗口占据整个屏幕，隐藏所有系统UI，提供完全沉浸式体验
+
+- **最大化**：窗口占据工作区域，任务栏等系统 UI 仍然可见
+- **全屏**：窗口占据整个屏幕，隐藏所有系统 UI，提供完全沉浸式体验
 
 **注意事项**：
+
 - 全屏功能仅在桌面平台（Windows、macOS、Linux）上可用
 - 在智能停靠状态下会自动禁用，避免状态冲突
 - 退出全屏后窗口会恢复到之前的状态
 
- ### 使用全局浮动面板
+### 使用全局浮动面板
 
- `FloatPanel` 是一个全新的全局浮动面板系统，提供拖拽、贴边、展开/收起等交互功能。通过统一的全局管理器 `FloatPanel.to`，你可以在任意位置控制面板的显示、按钮、状态和样式。
+`FloatPanel` 是一个全新的全局浮动面板系统，提供拖拽、贴边、展开/收起等交互功能。通过统一的全局管理器 `FloatPanel.to`，你可以在任意位置控制面板的显示、按钮、状态和样式。
 
- ```dart
- // main.dart
- void main() async {
-   await MyApp.initialize(
-     // ... 其他配置
-     // 全局浮动面板通过 floatPanel 参数自动挂载
-     floatPanel: FloatPanel()
-       ..configure(
-         items: [
-           FloatPanelIconBtn(
-             icon: Icons.home,
-             id: 'home',
-             onTap: () {
-               Get.toNamed('/home');
-             },
-           ),
-           FloatPanelIconBtn(
-             icon: Icons.settings,
-             id: 'settings',
-             onTap: () {
-               Get.toNamed('/settings');
-             },
-           ),
-           FloatPanelIconBtn(
-             icon: Icons.exit_to_app,
-             onTap: () async {
-               await MyApp.exit();
-             },
-           ),
-         ],
-         // 可选：自定义样式和动画（全部有默认值）
-         borderColor: Colors.grey,
-         initialPanelIcon: Icons.menu,
-         panelAnimDuration: 800,
-         panelAnimCurve: Curves.easeInOut,
-         dockAnimDuration: 200,
-         dockAnimCurve: Curves.fastOutSlowIn,
-       ),
-   );
- }
- ```
+```dart
+// main.dart
+void main() async {
+  await MyApp.initialize(
+    // ... 其他配置
+    // 全局浮动面板通过 floatPanel 参数自动挂载
+    floatPanel: FloatPanel()
+      ..configure(
+        items: [
+          FloatPanelIconBtn(
+            icon: Icons.home,
+            id: 'home',
+            onTap: () {
+              Get.toNamed('/home');
+            },
+          ),
+          FloatPanelIconBtn(
+            icon: Icons.settings,
+            id: 'settings',
+            onTap: () {
+              Get.toNamed('/settings');
+            },
+          ),
+          FloatPanelIconBtn(
+            icon: Icons.exit_to_app,
+            onTap: () async {
+              await MyApp.exit();
+            },
+          ),
+        ],
+        // 可选：自定义样式和动画（全部有默认值）
+        borderColor: Colors.grey,
+        initialPanelIcon: Icons.menu,
+        panelAnimDuration: 800,
+        panelAnimCurve: Curves.easeInOut,
+        dockAnimDuration: 200,
+        dockAnimCurve: Curves.fastOutSlowIn,
+      ),
+  );
+}
+```
 
- ### 使用自启动管理
+### 使用自启动管理
+
 ```dart
 // 检查是否支持自启动功能
 if (MyAutoStart.isSupported()) {
@@ -2057,11 +2179,12 @@ await MyAutoStart.setAutoStart(false);
 ```
 
 注意：
-- Web平台不支持此功能
-- Android平台会打开系统设置页面
+
+- Web 平台不支持此功能
+- Android 平台会打开系统设置页面
 - 桌面平台需要提供正确的包名（可选）
 
-## App重命名功能
+## App 重命名功能
 
 本包集成了应用重命名功能，支持一键重命名所有平台的应用名称：
 
@@ -2073,7 +2196,6 @@ dart run xly:rename all="新应用名称"
 dart run xly:rename android="Android版本" ios="iOS版本" windows="Windows版本"
 ```
 
-
 ### FloatPanel 多选禁用与常亮控制
 
 - 新增“多选禁用”能力：可同时禁用多个带 id 的按钮（`disabledIds` 集合）
@@ -2082,6 +2204,7 @@ dart run xly:rename android="Android版本" ios="iOS版本" windows="Windows版�
 - 如需跨页面保留多选禁用，只需去掉“清理历史禁用”的步骤
 
 #### 常亮控制 API
+
 ```dart
 // 设置按钮常亮（高亮显示）
 FloatPanel.to.iconBtn('your_id').setHighlighted(true);
@@ -2108,7 +2231,7 @@ FloatPanel.to.highlightedIds.clear();
 #### 🎯 智能导航功能
 
 1. **自动路由同步** - 侧边栏选中状态与当前路由自动同步
-2. **简化导航API** - 只需指定`route`参数即可自动导航
+2. **简化导航 API** - 只需指定`route`参数即可自动导航
 3. **智能自动滚动** - 选中项自动滚动到可视区域
 4. **可配置选项** - 灵活控制滚动条和自动滚动行为
 
@@ -2180,29 +2303,30 @@ class MyHomePage extends StatelessWidget {
 ```
 
 **显示模式：**
+
 - **小屏幕**：显示抽屉式导航或底部导航栏
 - **中等屏幕**：显示收缩的图标式侧边栏
 - **大屏幕**：显示完整的展开式侧边栏（图标+文字）
 
 **智能功能：**
+
 - ✅ **自动路由同步**：无论通过什么方式导航，侧边栏状态都会自动同步
-- ✅ **简化API**：只需指定`route`参数，无需手写`onTap`回调
+- ✅ **简化 API**：只需指定`route`参数，无需手写`onTap`回调
 - ✅ **智能滚动**：选中项自动滚动到可视区域，确保始终可见
 - ✅ **即时响应**：无延迟的界面更新和状态同步
 - ✅ **灵活配置**：可控制滚动条显示和自动滚动行为
 - ✅ **完全透明**：框架级功能，用户代码零改动
 
-
 ## 完整示例
 
-对于一个完整的示例，请参考Example页面。该示例展示了如何综合使用 xly 包中的各种功能，包括按钮、菜单、焦点管理和导航等。Example 页面提供了更详细的代码实现和实际运行效果，可以帮助您更好地理解和使用 xly 包的各项功能。
+对于一个完整的示例，请参考 Example 页面。该示例展示了如何综合使用 xly 包中的各种功能，包括按钮、菜单、焦点管理和导航等。Example 页面提供了更详细的代码实现和实际运行效果，可以帮助您更好地理解和使用 xly 包的各项功能。
 
 您可以在项目的 `example` 目录下找到完整的示例代码。通过运行示例项目，您可以直观地体验 xly 包提供的各种组件和功能，并了解它们在实际应用中的使用方法。
 
-## splash Json动画资源
+## splash Json 动画资源
 
-- [lottie 动画参考1](https://lottiefiles.com/featured)
-- [lottie 动画参考2](https://iconscout.com/lottie-animations/)
+- [lottie 动画参考 1](https://lottiefiles.com/featured)
+- [lottie 动画参考 2](https://iconscout.com/lottie-animations/)
 
 ## 注意事项
 
