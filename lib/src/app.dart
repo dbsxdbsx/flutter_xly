@@ -376,21 +376,9 @@ class MyApp extends StatelessWidget {
     // 4. 在runApp之前注册所有服务（支持异步服务）
     // 注意：此时ScreenUtil已通过ensureScreenSize()初始化，服务可以安全使用
     // 按照用户输入的顺序依次注册，保证服务依赖关系
-    if (finalServices.isNotEmpty) {
-      try {
-        for (final service in finalServices) {
-          await service.registerService();
-        }
-        if (kDebugMode) {
-          print('MyApp: 成功注册 ${finalServices.length} 个服务');
-        }
-      } catch (e) {
-        if (kDebugMode) {
-          print('MyApp: 服务注册失败: $e');
-        }
-        // 服务注册失败时仍然继续运行，但记录错误
-        // 如果需要严格模式（服务注册失败就退出），可以在这里抛出异常
-      }
+    // 如果服务注册失败，异常会自然向上传播，终止应用初始化
+    for (final service in finalServices) {
+      await service.registerService();
     }
 
     // 5. 在所有配置应用完毕后，设置路由并运行应用
