@@ -1,8 +1,8 @@
 import 'package:flutter/animation.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:window_manager/window_manager.dart';
 
+import '../logger.dart';
 import 'mouse_tracker.dart';
 import 'native_window_helper.dart';
 import 'window_focus_manager.dart';
@@ -94,7 +94,7 @@ class WindowAnimator {
             lastPosition = currentPosition;
           }
         } catch (e) {
-          debugPrint('动画帧处理出错: $e');
+          XlyLogger.error('动画帧处理出错', e);
           _animationTicker?.dispose();
           _animationTicker = null;
           _isAnimating = false;
@@ -104,7 +104,7 @@ class WindowAnimator {
 
       _animationTicker?.start();
     } catch (e) {
-      debugPrint('窗口动画失败: $e');
+      XlyLogger.error('窗口动画失败', e);
       _isAnimating = false;
       _currentAnimationTargetPosition = null;
     }
@@ -199,14 +199,14 @@ class WindowAnimationPresets {
 
       if (shouldAvoidActivation) {
         await showToInactive(position);
-        debugPrint('智能显示：使用无激活显示');
+        XlyLogger.debug('智能显示：使用无激活显示');
       } else {
         await showTo(position);
-        debugPrint('智能显示：使用正常显示');
+        XlyLogger.debug('智能显示：使用正常显示');
       }
     } catch (e) {
       // 如果出错，回退到无激活显示
-      debugPrint('智能显示检查出错，回退到无激活显示：$e');
+      XlyLogger.warning('智能显示检查出错，回退到无激活显示：$e');
       await showToInactive(position);
     }
   }

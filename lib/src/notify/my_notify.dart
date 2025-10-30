@@ -1,11 +1,11 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
+import '../logger.dart';
 import 'notify_enums.dart';
 
 /// MyNotify 系统通知管理器
@@ -107,18 +107,12 @@ class MyNotify extends GetxService {
         // 检查权限状态
         await _checkPermissions();
 
-        if (kDebugMode) {
-          print('MyNotify: 通知插件初始化成功');
-        }
+        XlyLogger.info('MyNotify: 通知插件初始化成功');
       } else {
-        if (kDebugMode) {
-          print('MyNotify: 通知插件初始化失败');
-        }
+        XlyLogger.warning('MyNotify: 通知插件初始化失败');
       }
     } catch (e) {
-      if (kDebugMode) {
-        print('MyNotify: 初始化异常: $e');
-      }
+      XlyLogger.error('MyNotify: 初始化异常', e);
     }
   }
 
@@ -151,9 +145,7 @@ class MyNotify extends GetxService {
         _permissionGranted.value = true;
       }
     } catch (e) {
-      if (kDebugMode) {
-        print('MyNotify: 检查权限失败: $e');
-      }
+      XlyLogger.error('MyNotify: 检查权限失败', e);
       _permissionGranted.value = false;
     }
   }
@@ -162,11 +154,9 @@ class MyNotify extends GetxService {
   void _onDidReceiveNotificationResponse(
     NotificationResponse notificationResponse,
   ) {
-    if (kDebugMode) {
-      print(
-        'MyNotify: 通知被点击 - ID: ${notificationResponse.id}, Payload: ${notificationResponse.payload}',
-      );
-    }
+    XlyLogger.debug(
+      'MyNotify: 通知被点击 - ID: ${notificationResponse.id}, Payload: ${notificationResponse.payload}',
+    );
 
     // 这里可以根据需要处理通知点击事件
     // 例如导航到特定页面或执行特定操作
@@ -175,9 +165,7 @@ class MyNotify extends GetxService {
   /// 请求通知权限
   Future<bool> requestPermissions() async {
     if (!_isInitialized.value) {
-      if (kDebugMode) {
-        print('MyNotify: 插件未初始化，无法请求权限');
-      }
+      XlyLogger.warning('MyNotify: 插件未初始化，无法请求权限');
       return false;
     }
 
@@ -209,9 +197,7 @@ class MyNotify extends GetxService {
 
       return true; // 其他平台默认有权限
     } catch (e) {
-      if (kDebugMode) {
-        print('MyNotify: 请求权限失败: $e');
-      }
+      XlyLogger.error('MyNotify: 请求权限失败', e);
       return false;
     }
   }
@@ -231,21 +217,15 @@ class MyNotify extends GetxService {
     String? payload,
   }) async {
     if (!_isInitialized.value) {
-      if (kDebugMode) {
-        print('MyNotify: 插件未初始化，无法显示通知');
-      }
+      XlyLogger.warning('MyNotify: 插件未初始化，无法显示通知');
       return;
     }
 
     if (!_permissionGranted.value) {
-      if (kDebugMode) {
-        print('MyNotify: 没有通知权限，尝试请求权限');
-      }
+      XlyLogger.info('MyNotify: 没有通知权限，尝试请求权限');
       final granted = await requestPermissions();
       if (!granted) {
-        if (kDebugMode) {
-          print('MyNotify: 权限请求失败，无法显示通知');
-        }
+        XlyLogger.warning('MyNotify: 权限请求失败，无法显示通知');
         return;
       }
     }
@@ -263,13 +243,9 @@ class MyNotify extends GetxService {
         payload: payload,
       );
 
-      if (kDebugMode) {
-        print('MyNotify: 通知显示成功 - $title: $body');
-      }
+      XlyLogger.info('MyNotify: 通知显示成功 - $title: $body');
     } catch (e) {
-      if (kDebugMode) {
-        print('MyNotify: 显示通知失败: $e');
-      }
+      XlyLogger.error('MyNotify: 显示通知失败', e);
     }
   }
 
@@ -290,18 +266,14 @@ class MyNotify extends GetxService {
     String? payload,
   }) async {
     if (!_isInitialized.value) {
-      if (kDebugMode) {
-        print('MyNotify: 插件未初始化，无法定时通知');
-      }
+      XlyLogger.warning('MyNotify: 插件未初始化，无法定时通知');
       return;
     }
 
     if (!_permissionGranted.value) {
       final granted = await requestPermissions();
       if (!granted) {
-        if (kDebugMode) {
-          print('MyNotify: 权限请求失败，无法定时通知');
-        }
+        XlyLogger.warning('MyNotify: 权限请求失败，无法定时通知');
         return;
       }
     }
@@ -325,13 +297,9 @@ class MyNotify extends GetxService {
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       );
 
-      if (kDebugMode) {
-        print('MyNotify: 定时通知设置成功 - $title: $body, 时间: $scheduledDate');
-      }
+      XlyLogger.info('MyNotify: 定时通知设置成功 - $title: $body, 时间: $scheduledDate');
     } catch (e) {
-      if (kDebugMode) {
-        print('MyNotify: 设置定时通知失败: $e');
-      }
+      XlyLogger.error('MyNotify: 设置定时通知失败', e);
     }
   }
 
@@ -422,13 +390,9 @@ class MyNotify extends GetxService {
 
     try {
       await _flutterLocalNotificationsPlugin.cancel(id);
-      if (kDebugMode) {
-        print('MyNotify: 已取消通知 ID: $id');
-      }
+      XlyLogger.info('MyNotify: 已取消通知 ID: $id');
     } catch (e) {
-      if (kDebugMode) {
-        print('MyNotify: 取消通知失败: $e');
-      }
+      XlyLogger.error('MyNotify: 取消通知失败', e);
     }
   }
 
@@ -438,13 +402,9 @@ class MyNotify extends GetxService {
 
     try {
       await _flutterLocalNotificationsPlugin.cancelAll();
-      if (kDebugMode) {
-        print('MyNotify: 已取消所有通知');
-      }
+      XlyLogger.info('MyNotify: 已取消所有通知');
     } catch (e) {
-      if (kDebugMode) {
-        print('MyNotify: 取消所有通知失败: $e');
-      }
+      XlyLogger.error('MyNotify: 取消所有通知失败', e);
     }
   }
 
@@ -457,9 +417,7 @@ class MyNotify extends GetxService {
       return await _flutterLocalNotificationsPlugin
           .pendingNotificationRequests();
     } catch (e) {
-      if (kDebugMode) {
-        print('MyNotify: 获取待处理通知失败: $e');
-      }
+      XlyLogger.error('MyNotify: 获取待处理通知失败', e);
       return [];
     }
   }
@@ -471,9 +429,7 @@ class MyNotify extends GetxService {
     try {
       return await _flutterLocalNotificationsPlugin.getActiveNotifications();
     } catch (e) {
-      if (kDebugMode) {
-        print('MyNotify: 获取活跃通知失败: $e');
-      }
+      XlyLogger.error('MyNotify: 获取活跃通知失败', e);
       return [];
     }
   }

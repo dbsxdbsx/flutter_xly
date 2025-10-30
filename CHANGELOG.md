@@ -1,3 +1,33 @@
+## 0.28.0 - 2025-10-30
+
+### Added
+
+- **统一日志系统**：引入 `XlyLogger` 统一日志工具，避免包内部调试日志污染用户项目
+  - 新增 `enableDebugLogging` 参数到 `MyApp.initialize()`，默认为 `false`
+  - 提供四级日志输出：`debug()`、`info()`、`warning()`、`error()`
+  - Example 项目默认启用调试日志（`enableDebugLogging: true`），方便包开发
+  - 用户项目默认关闭调试日志，需要时可主动启用
+  - 错误级别日志始终输出，确保重要错误可见
+  - 所有日志带 `[Xly]` 前缀，便于识别来源
+
+### Enhanced
+
+- **日志输出优化**：将全部 158 个 `print`/`debugPrint` 调用迁移到统一日志系统
+  - Smart Dock 模块（72 个）：窗口停靠、鼠标追踪、动画等内部状态日志
+  - MyTray 模块（21 个）：托盘初始化、菜单操作等日志
+  - MyNotify 模块（22 个）：通知权限、显示状态等日志
+  - MyApp 核心（19 个）：窗口操作、全屏切换等日志
+  - 工具类（24 个）：平台工具、自启动、单实例等日志
+- **代码质量**：移除所有未使用的 `import 'package:flutter/foundation.dart'` 引用
+
+### Documentation
+
+- **新增贡献者指南**：创建 `.doc/contributor_logging_guide.md`，规范日志使用
+  - 详细的日志级别选择指南
+  - 编码规范和最佳实践
+  - 常见问题解答
+- **README 更新**：添加调试日志说明和贡献者链接
+
 ## 0.27.2 - 2025-10-26
 
 ### Enhanced

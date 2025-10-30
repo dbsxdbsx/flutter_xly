@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:ui';
 
-import 'package:flutter/foundation.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 
+import '../logger.dart';
 import '../window_enums.dart';
 import 'window_animator.dart';
 
@@ -68,7 +68,7 @@ class MouseTracker {
       (timer) => _checkEdgeMousePosition(),
     );
 
-    debugPrint('智能隐藏监听已启动，边缘：${edge.name}');
+    XlyLogger.info('智能隐藏监听已启动，边缘：${edge.name}');
   }
 
   /// 托盘左击时：模拟“鼠标悬停唤出”的弹出（不激活、不聚焦）
@@ -79,18 +79,18 @@ class MouseTracker {
           _awaitingFirstEnterAfterReveal = true;
           await WindowAnimationPresets.showToInactive(_alignedPosition!);
           _isWindowHidden = false;
-          debugPrint('托盘恢复：边缘停靠模拟悬停弹出（无激活）');
+          XlyLogger.debug('托盘恢复：边缘停靠模拟悬停弹出（无激活）');
         }
       } else if (_state == MouseTrackingState.cornerTracking) {
         if (_isCornerWindowHidden && _cornerAlignedPosition != null) {
           _awaitingFirstEnterAfterReveal = true;
           await WindowAnimationPresets.showToInactive(_cornerAlignedPosition!);
           _isCornerWindowHidden = false;
-          debugPrint('托盘恢复：角落停靠模拟悬停弹出（无激活）');
+          XlyLogger.debug('托盘恢复：角落停靠模拟悬停弹出（无激活）');
         }
       }
     } catch (e) {
-      debugPrint('托盘恢复模拟悬停失败：$e');
+      XlyLogger.error('托盘恢复模拟悬停失败', e);
     }
   }
 
@@ -105,17 +105,17 @@ class MouseTracker {
         if (!_isWindowHidden && _hiddenPosition != null) {
           await WindowAnimationPresets.hideTo(_hiddenPosition!);
           _isWindowHidden = true;
-          debugPrint('强制收起：边缘停靠 -> 隐藏到边缘');
+          XlyLogger.debug('强制收起：边缘停靠 -> 隐藏到边缘');
         }
       } else if (_state == MouseTrackingState.cornerTracking) {
         if (!_isCornerWindowHidden && _cornerHiddenPosition != null) {
           await WindowAnimationPresets.hideTo(_cornerHiddenPosition!);
           _isCornerWindowHidden = true;
-          debugPrint('强制收起：角落停靠 -> 隐藏到角落');
+          XlyLogger.debug('强制收起：角落停靠 -> 隐藏到角落');
         }
       }
     } catch (e) {
-      debugPrint('强制收起失败：$e');
+      XlyLogger.error('强制收起失败', e);
     }
   }
 
@@ -142,13 +142,13 @@ class MouseTracker {
       (timer) => _checkCornerMousePosition(),
     );
 
-    debugPrint('智能角落隐藏监听已启动，角落：${corner.name}');
+    XlyLogger.info('智能角落隐藏监听已启动，角落：${corner.name}');
   }
 
   /// 停止鼠标跟踪
   static void stopTracking() {
     _stopTracking();
-    debugPrint('鼠标跟踪已停止');
+    XlyLogger.info('鼠标跟踪已停止');
   }
 
   /// 内部停止跟踪方法
@@ -190,7 +190,7 @@ class MouseTracker {
 
         // 如果窗口被移动到了其他位置（距离超过10像素），停止跟踪
         if (positionDifference > 10.0) {
-          debugPrint('窗口已被移动离开对齐位置，停止智能隐藏监听');
+          XlyLogger.debug('窗口已被移动离开对齐位置，停止智能隐藏监听');
           stopTracking();
           return;
         }
@@ -208,12 +208,12 @@ class MouseTracker {
 
       final isMouseInWindow = windowArea.contains(mousePosition);
 
-      // 托盘弹出后的第一次“进入窗口”事件：清除等待标记
+      // 托盘弹出后的第一次"进入窗口"事件：清除等待标记
       if (!_isWindowHidden &&
           isMouseInWindow &&
           _awaitingFirstEnterAfterReveal) {
         _awaitingFirstEnterAfterReveal = false;
-        debugPrint('托盘恢复：首次进入窗口，恢复自动隐藏语义');
+        XlyLogger.debug('托盘恢复：首次进入窗口，恢复自动隐藏语义');
         return;
       }
 
@@ -225,16 +225,16 @@ class MouseTracker {
         }
         await WindowAnimationPresets.hideTo(_hiddenPosition!);
         _isWindowHidden = true;
-        debugPrint('智能隐藏：窗口已隐藏');
+        XlyLogger.debug('智能隐藏：窗口已隐藏');
       } else if (_isWindowHidden && isMouseInWindow) {
         // 窗口已隐藏且鼠标在窗口内，显示窗口（无激活）；并结束等待状态
         await WindowAnimationPresets.showToInactive(_alignedPosition!);
         _isWindowHidden = false;
         _awaitingFirstEnterAfterReveal = false;
-        debugPrint('智能隐藏：窗口已显示（无激活）');
+        XlyLogger.debug('智能隐藏：窗口已显示（无激活）');
       }
     } catch (e) {
-      debugPrint('智能隐藏检查出错：$e');
+      XlyLogger.error('智能隐藏检查出错', e);
     }
   }
 
@@ -261,7 +261,7 @@ class MouseTracker {
 
         // 如果窗口被移动到了其他位置（距离超过10像素），停止跟踪
         if (positionDifference > 10.0) {
-          debugPrint('窗口已被移动离开角落对齐位置，停止智能角落隐藏监听');
+          XlyLogger.debug('窗口已被移动离开角落对齐位置，停止智能角落隐藏监听');
           stopTracking();
           return;
         }
@@ -280,12 +280,12 @@ class MouseTracker {
 
       final isMouseInWindow = windowArea.contains(mousePosition);
 
-      // 托盘弹出后的第一次“进入窗口”事件：清除等待标记
+      // 托盘弹出后的第一次"进入窗口"事件：清除等待标记
       if (!_isCornerWindowHidden &&
           isMouseInWindow &&
           _awaitingFirstEnterAfterReveal) {
         _awaitingFirstEnterAfterReveal = false;
-        debugPrint('托盘恢复：首次进入窗口（角落），恢复自动隐藏语义');
+        XlyLogger.debug('托盘恢复：首次进入窗口（角落），恢复自动隐藏语义');
         return;
       }
 
@@ -297,16 +297,16 @@ class MouseTracker {
         }
         await WindowAnimationPresets.hideTo(_cornerHiddenPosition!);
         _isCornerWindowHidden = true;
-        debugPrint('智能角落隐藏：窗口已隐藏到角落');
+        XlyLogger.debug('智能角落隐藏：窗口已隐藏到角落');
       } else if (_isCornerWindowHidden && isMouseInWindow) {
         // 窗口已隐藏且鼠标在窗口内，显示窗口到对齐位置（无激活）；并结束等待状态
         await WindowAnimationPresets.showToInactive(_cornerAlignedPosition!);
         _isCornerWindowHidden = false;
         _awaitingFirstEnterAfterReveal = false;
-        debugPrint('智能角落隐藏：窗口已显示到对齐位置（无激活）');
+        XlyLogger.debug('智能角落隐藏：窗口已显示到对齐位置（无激活）');
       }
     } catch (e) {
-      debugPrint('智能角落隐藏检查出错：$e');
+      XlyLogger.error('智能角落隐藏检查出错', e);
     }
   }
 
@@ -317,7 +317,7 @@ class MouseTracker {
       final cursorPosition = await screenRetriever.getCursorScreenPoint();
       return cursorPosition;
     } catch (e) {
-      debugPrint('获取鼠标位置失败：$e');
+      XlyLogger.error('获取鼠标位置失败', e);
       return null;
     }
   }

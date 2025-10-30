@@ -107,7 +107,7 @@ class CustomDragArea extends StatelessWidget {
           ? () async {
               // 检查是否处于智能停靠状态
               if (MyApp.isSmartDockingEnabled()) {
-                debugPrint('智能停靠状态下已禁用双击最大化功能');
+                XlyLogger.debug('智能停靠状态下已禁用双击最大化功能');
                 return;
               }
 
@@ -220,6 +220,7 @@ class MyApp extends StatelessWidget {
     String backInfoText = '再按一次返回上一页',
     Duration exitGapTime = const Duration(seconds: 2),
     bool useOKToast = true,
+    bool enableDebugLogging = false, // 包调试日志开关（默认关闭，避免污染用户日志）
 
     // 单实例配置
     bool singleInstance = true,
@@ -232,6 +233,10 @@ class MyApp extends StatelessWidget {
     bool initializeWindowManager = true,
     bool initializeGetStorage = true,
   }) async {
+    // 首先初始化日志系统，以便后续初始化步骤可以使用日志
+    XlyLogger.init(enabled: enableDebugLogging);
+    XlyLogger.info('MyApp 初始化开始');
+
     if (ensureScreenSize) {
       await ScreenUtil.ensureScreenSize();
     }
@@ -260,15 +265,11 @@ class MyApp extends StatelessWidget {
                     try {
                       await windowManager.setAlwaysOnTop(false);
                     } catch (e) {
-                      if (kDebugMode) {
-                        print('取消窗口置顶失败: $e');
-                      }
+                      XlyLogger.error('取消窗口置顶失败', e);
                     }
                   });
                 } catch (e) {
-                  if (kDebugMode) {
-                    print('激活窗口失败: $e');
-                  }
+                  XlyLogger.error('激活窗口失败', e);
                 }
               }
             : null,
@@ -276,9 +277,7 @@ class MyApp extends StatelessWidget {
 
       if (!isFirstInstance) {
         // 不是首个实例，退出当前实例
-        if (kDebugMode) {
-          print('检测到应用已在运行，当前实例即将退出');
-        }
+        XlyLogger.info('检测到应用已在运行，当前实例即将退出');
         await exitApp();
         return;
       }
@@ -351,9 +350,7 @@ class MyApp extends StatelessWidget {
           }
         });
 
-        if (kDebugMode) {
-          print('MyApp: 检测到services中已有MyTray配置，将使用tray参数提供的配置覆盖');
-        }
+        XlyLogger.warning('MyApp: 检测到services中已有MyTray配置，将使用tray参数提供的配置覆盖');
       }
 
       // 添加tray参数提供的MyTray服务
@@ -780,7 +777,7 @@ class MyApp extends StatelessWidget {
   /// 在智能停靠状态下此方法无效
   static Future<void> toggleFullScreen() async {
     if (!isFullScreenEnabled()) {
-      debugPrint('全屏功能已禁用（可能处于智能停靠状态）');
+      XlyLogger.debug('全屏功能已禁用（可能处于智能停靠状态）');
       return;
     }
 
@@ -790,13 +787,13 @@ class MyApp extends StatelessWidget {
       final isFullScreen = await windowManager.isFullScreen();
       if (isFullScreen) {
         await windowManager.setFullScreen(false);
-        debugPrint('已退出全屏模式');
+        XlyLogger.info('已退出全屏模式');
       } else {
         await windowManager.setFullScreen(true);
-        debugPrint('已进入全屏模式');
+        XlyLogger.info('已进入全屏模式');
       }
     } catch (e) {
-      debugPrint('切换全屏状态时出错：$e');
+      XlyLogger.error('切换全屏状态时出错', e);
     }
   }
 
@@ -807,7 +804,7 @@ class MyApp extends StatelessWidget {
       try {
         await windowManager.setTitle(title);
       } catch (e) {
-        debugPrint('设置窗口标题失败：$e');
+        XlyLogger.error('设置窗口标题失败', e);
       }
     }
   }
@@ -859,7 +856,7 @@ class MyApp extends StatelessWidget {
 
       // 顶部边缘需要额外的偏移，因为Windows标题栏区域的处理方式不同
       // final topEdgeOffset = scaleFactor > 1.0 ? 20.0 / scaleFactor : 14.0;
-      debugPrint("""scaleFactor: $scaleFactor, edgeOffset: $edgeOffset""");
+      XlyLogger.debug('scaleFactor: $scaleFactor, edgeOffset: $edgeOffset');
       final topEdgeOffset = edgeOffset - 0.95 * edgeOffset;
 
       late Offset position;
@@ -988,7 +985,7 @@ class MyApp extends StatelessWidget {
 
       return true;
     } catch (e) {
-      debugPrint('启用边缘停靠失败：$e');
+      XlyLogger.error('启用边缘停靠失败', e);
       return false;
     }
   }
@@ -1137,7 +1134,7 @@ class MyApp extends StatelessWidget {
         }
       }
     } catch (e) {
-      debugPrint('检查鼠标位置时出错：$e');
+      XlyLogger.error('检查鼠标位置时出错', e);
     }
   }
 
@@ -1149,7 +1146,7 @@ class MyApp extends StatelessWidget {
       await windowManager.setPosition(_expandPosition!);
       _isWindowExpanded = true;
     } catch (e) {
-      debugPrint('展开窗口时出错：$e');
+      XlyLogger.error('展开窗口时出错', e);
     }
   }
 
@@ -1161,7 +1158,7 @@ class MyApp extends StatelessWidget {
       await windowManager.setPosition(_dockPosition!);
       _isWindowExpanded = false;
     } catch (e) {
-      debugPrint('收缩窗口时出错：$e');
+      XlyLogger.error('收缩窗口时出错', e);
     }
   }
 
@@ -1172,7 +1169,7 @@ class MyApp extends StatelessWidget {
       final cursorPosition = await screenRetriever.getCursorScreenPoint();
       return cursorPosition;
     } catch (e) {
-      debugPrint('获取鼠标位置失败：$e');
+      XlyLogger.error('获取鼠标位置失败', e);
       return null;
     }
   }
@@ -1252,7 +1249,7 @@ class MyApp extends StatelessWidget {
 
       return true;
     } catch (e) {
-      debugPrint('启用简单边缘停靠失败：$e');
+      XlyLogger.error('启用简单边缘停靠失败', e);
       return false;
     }
   }
@@ -1357,7 +1354,7 @@ class MyApp extends StatelessWidget {
 
       return true;
     } catch (e) {
-      debugPrint('启用角落停靠失败：$e');
+      XlyLogger.error('启用角落停靠失败', e);
       return false;
     }
   }
@@ -1542,7 +1539,7 @@ class MyApp extends StatelessWidget {
         }
       }
     } catch (e) {
-      debugPrint('检查角落鼠标位置时出错：$e');
+      XlyLogger.error('检查角落鼠标位置时出错', e);
     }
   }
 }

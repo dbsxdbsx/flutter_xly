@@ -2335,10 +2335,17 @@ class MyHomePage extends StatelessWidget {
 
 - 确保在使用 XLY 包的功能之前已经正确初始化了应用。
 - 某些功能可能需要额外的设置或权限，请参考具体组件的文档。
+- **调试日志**：XLY 包默认不会输出调试日志，避免污染您的项目日志。如需排查问题，可在 `MyApp.initialize()` 中设置 `enableDebugLogging: true` 来启用详细日志。
 
 ## 贡献
 
 欢迎提交问题和拉取请求。对于重大更改，请先开启一个问题讨论您想要改的内容。
+
+### 贡献者必读
+
+如果您想为 XLY 包贡献代码，请务必阅读：
+
+- [日志系统规范](.doc/contributor_logging_guide.md) - 了解如何正确使用 `XlyLogger` 进行日志输出
 
 ## 许可证
 

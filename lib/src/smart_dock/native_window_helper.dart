@@ -1,8 +1,9 @@
 import 'dart:ffi';
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:window_manager/window_manager.dart';
+
+import '../logger.dart';
 
 /// 原生窗口助手
 ///
@@ -18,9 +19,9 @@ class NativeWindowHelper {
     try {
       _user32 = DynamicLibrary.open('user32.dll');
       _initialized = true;
-      debugPrint('原生窗口助手：已初始化');
+      XlyLogger.info('原生窗口助手：已初始化');
     } catch (e) {
-      debugPrint('原生窗口助手：初始化失败：$e');
+      XlyLogger.error('原生窗口助手：初始化失败', e);
     }
   }
 
@@ -80,15 +81,15 @@ class NativeWindowHelper {
       );
 
       if (result != 0) {
-        debugPrint('原生窗口助手：成功设置智能停靠层级：$enable');
+        XlyLogger.debug('原生窗口助手：成功设置智能停靠层级：$enable');
         return true;
       } else {
-        debugPrint('原生窗口助手：设置智能停靠层级失败，回退到标准方法');
+        XlyLogger.warning('原生窗口助手：设置智能停靠层级失败，回退到标准方法');
         await windowManager.setAlwaysOnTop(enable);
         return false;
       }
     } catch (e) {
-      debugPrint('原生窗口助手：设置智能停靠层级出错：$e，回退到标准方法');
+      XlyLogger.warning('原生窗口助手：设置智能停靠层级出错：$e，回退到标准方法');
       await windowManager.setAlwaysOnTop(enable);
       return false;
     }
@@ -124,10 +125,10 @@ class NativeWindowHelper {
 
       final result = showWindow(hwnd.address, SW_SHOWNOACTIVATE);
 
-      debugPrint('原生窗口助手：显示窗口（无激活）：$result');
+      XlyLogger.debug('原生窗口助手：显示窗口（无激活）：$result');
       return result != 0;
     } catch (e) {
-      debugPrint('原生窗口助手：显示窗口出错：$e，回退到标准方法');
+      XlyLogger.warning('原生窗口助手：显示窗口出错：$e，回退到标准方法');
       await windowManager.show(inactive: true);
       return false;
     }
@@ -177,15 +178,15 @@ class NativeWindowHelper {
       );
 
       if (result1 != 0) {
-        debugPrint('原生窗口助手：成功设置窗口在任务栏下方但在其他应用上方');
+        XlyLogger.debug('原生窗口助手：成功设置窗口在任务栏下方但在其他应用上方');
         return true;
       } else {
-        debugPrint('原生窗口助手：设置窗口层级失败，回退到标准方法');
+        XlyLogger.warning('原生窗口助手：设置窗口层级失败，回退到标准方法');
         await windowManager.setAlwaysOnTop(true);
         return false;
       }
     } catch (e) {
-      debugPrint('原生窗口助手：设置窗口层级出错：$e，回退到标准方法');
+      XlyLogger.warning('原生窗口助手：设置窗口层级出错：$e，回退到标准方法');
       await windowManager.setAlwaysOnTop(true);
       return false;
     }
@@ -197,7 +198,7 @@ class NativeWindowHelper {
   /// 主要用于托盘模式下的智能停靠窗口
   static Future<bool> setNoActivateTaskbar(bool enable) async {
     if (!Platform.isWindows || !_initialized || _user32 == null) {
-      debugPrint('原生窗口助手：非Windows平台或未初始化，跳过任务栏激活控制');
+      XlyLogger.debug('原生窗口助手：非Windows平台或未初始化，跳过任务栏激活控制');
       return true;
     }
 
@@ -235,14 +236,14 @@ class NativeWindowHelper {
       final result = setWindowLongPtr(hwnd.address, GWL_EXSTYLE, newExStyle);
 
       if (result != 0) {
-        debugPrint('原生窗口助手：成功设置不激活任务栏模式：$enable');
+        XlyLogger.debug('原生窗口助手：成功设置不激活任务栏模式：$enable');
         return true;
       } else {
-        debugPrint('原生窗口助手：设置不激活任务栏模式失败');
+        XlyLogger.warning('原生窗口助手：设置不激活任务栏模式失败');
         return false;
       }
     } catch (e) {
-      debugPrint('原生窗口助手：设置不激活任务栏模式出错：$e');
+      XlyLogger.error('原生窗口助手：设置不激活任务栏模式出错', e);
       return false;
     }
   }

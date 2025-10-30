@@ -1,8 +1,8 @@
 import 'dart:ui';
 
-import 'package:flutter/foundation.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 
+import '../logger.dart';
 import '../window_enums.dart';
 
 /// Taskbar位置信息
@@ -113,7 +113,7 @@ class TaskbarDetector {
             (workAreaPosition.dy + workAreaSize.height);
       }
 
-      debugPrint(
+      XlyLogger.debug(
           'Taskbar检测结果: edge=${taskbarEdge?.name}, thickness=${taskbarThickness.toStringAsFixed(1)}px');
 
       return TaskbarInfo(
@@ -125,7 +125,7 @@ class TaskbarDetector {
         workAreaPosition: workAreaPosition,
       );
     } catch (e) {
-      debugPrint('Taskbar检测失败: $e');
+      XlyLogger.error('Taskbar检测失败', e);
       return const TaskbarInfo(
         edge: null,
         thickness: 0.0,

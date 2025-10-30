@@ -8,6 +8,8 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:xly/src/platform.dart';
 import 'package:xly/src/toast/toast.dart';
 
+import 'logger.dart';
+
 /// 自启动管理类，提供跨平台的开机自启动功能
 class MyAutoStart {
   const MyAutoStart._();
@@ -25,7 +27,7 @@ class MyAutoStart {
   /// - 桌面平台需要提供正确的包名
   static Future<bool> setAutoStart(bool enable, {String? packageName}) async {
     if (kIsWeb) {
-      debugPrint('Web平台不支持开机自启动');
+      XlyLogger.info('Web平台不支持开机自启动');
       return false;
     }
 
@@ -37,7 +39,7 @@ class MyAutoStart {
       }
       return false;
     } catch (e) {
-      debugPrint('设置开机自启动时出错：$e');
+      XlyLogger.error('设置开机自启动时出错', e);
       return false;
     }
   }
@@ -61,15 +63,15 @@ class MyAutoStart {
       // 根据 enable 参数启用或禁用自启动
       if (enable) {
         final result = await launchAtStartup.enable();
-        debugPrint('启用开机自启动${result ? '成功' : '失败'}');
+        XlyLogger.info('启用开机自启动${result ? '成功' : '失败'}');
         return result;
       } else {
         final result = await launchAtStartup.disable();
-        debugPrint('禁用开机自启动${result ? '成功' : '失败'}');
+        XlyLogger.info('禁用开机自启动${result ? '成功' : '失败'}');
         return result;
       }
     } catch (e) {
-      debugPrint('设置桌面平台开机自启动时出错：$e');
+      XlyLogger.error('设置桌面平台开机自启动时出错', e);
       return false;
     }
   }
@@ -90,14 +92,14 @@ class MyAutoStart {
           autoStart: true,
           batterySafer: true,
         );
-        debugPrint('打开Android自启动设置页面${result ? '���功' : '失败'}');
+        XlyLogger.info('打开Android自启动设置页面${result ? '成功' : '失败'}');
         return result;
       } else {
-        debugPrint('无法打开Android自启动设置页面');
+        XlyLogger.warning('无法打开Android自启动设置页面');
         return false;
       }
     } catch (e) {
-      debugPrint('设置Android平台开机自启动时出错：$e');
+      XlyLogger.error('设置Android平台开机自启动时出错', e);
       return false;
     }
   }

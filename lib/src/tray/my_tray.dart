@@ -1,11 +1,12 @@
 import 'dart:io';
+import 'dart:ui';
 
-import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:xly/src/smart_dock/smart_dock.dart';
 
+import '../logger.dart';
 import '../platform.dart';
 import '../smart_dock/mouse_tracker.dart';
 import '../smart_dock/native_window_helper.dart';
@@ -246,13 +247,9 @@ class MyTray extends GetxService with TrayListener {
       // 应用任务栏图标显示策略（隐藏/显示）
       await windowManager.setSkipTaskbar(_hideTaskBarIcon.value);
 
-      if (kDebugMode) {
-        print('MyTray: 托盘初始化成功，使用图标: $absoluteIconPath');
-      }
+      XlyLogger.info('MyTray: 托盘初始化成功，使用图标: $absoluteIconPath');
     } catch (e) {
-      if (kDebugMode) {
-        print('MyTray: 托盘初始化失败: $e');
-      }
+      XlyLogger.error('MyTray: 托盘初始化失败', e);
     }
   }
 
@@ -260,13 +257,9 @@ class MyTray extends GetxService with TrayListener {
   Future<void> _initializeNotifications() async {
     try {
       // 通知功能现在由 MyNotify 组件处理
-      if (kDebugMode) {
-        print('MyTray: 通知插件初始化成功（由MyNotify处理）');
-      }
+      XlyLogger.info('MyTray: 通知插件初始化成功（由MyNotify处理）');
     } catch (e) {
-      if (kDebugMode) {
-        print('MyTray: 通知插件初始化失败: $e');
-      }
+      XlyLogger.error('MyTray: 通知插件初始化失败', e);
     }
   }
 
@@ -278,9 +271,7 @@ class MyTray extends GetxService with TrayListener {
       final menu = Menu(items: _buildMenuItems(initialMenuItems!));
       await trayManager.setContextMenu(menu);
     } catch (e) {
-      if (kDebugMode) {
-        print('MyTray: 更新右键菜单失败: $e');
-      }
+      XlyLogger.error('MyTray: 更新右键菜单失败', e);
     }
   }
 
@@ -355,18 +346,14 @@ class MyTray extends GetxService with TrayListener {
   @override
   Future<void> onTrayIconRightMouseDown() async {
     // 右键点击显示菜单
-    if (kDebugMode) {
-      print('MyTray: 托盘图标右键点击');
-    }
+    XlyLogger.debug('MyTray: 托盘图标右键点击');
     await trayManager.popUpContextMenu();
   }
 
   @override
   Future<void> onTrayMenuItemClick(MenuItem menuItem) async {
     // 原生 onClick 已触发回调，这里仅记录日志与兼容处理
-    if (kDebugMode) {
-      print('MyTray: 菜单项点击: ${menuItem.key}/${menuItem.label}');
-    }
+    XlyLogger.debug('MyTray: 菜单项点击: ${menuItem.key}/${menuItem.label}');
   }
 
   /// 设置托盘图标
@@ -418,13 +405,9 @@ class MyTray extends GetxService with TrayListener {
       await trayManager.setIcon(absoluteIconPath);
       currentIcon.value = absoluteIconPath;
 
-      if (kDebugMode) {
-        print('MyTray: 设置图标成功: $absoluteIconPath');
-      }
+      XlyLogger.info('MyTray: 设置图标成功: $absoluteIconPath');
     } catch (e) {
-      if (kDebugMode) {
-        print('MyTray: 设置图标失败: $e');
-      }
+      XlyLogger.error('MyTray: 设置图标失败', e);
     }
   }
 
@@ -436,13 +419,9 @@ class MyTray extends GetxService with TrayListener {
       await trayManager.setToolTip(text);
       tooltip.value = text;
 
-      if (kDebugMode) {
-        print('MyTray: 设置工具提示成功: $text');
-      }
+      XlyLogger.info('MyTray: 设置工具提示成功: $text');
     } catch (e) {
-      if (kDebugMode) {
-        print('MyTray: 设置工具提示失败: $e');
-      }
+      XlyLogger.error('MyTray: 设置工具提示失败', e);
     }
   }
 
@@ -457,13 +436,9 @@ class MyTray extends GetxService with TrayListener {
       final menu = Menu(items: _buildMenuItems(items));
       await trayManager.setContextMenu(menu);
 
-      if (kDebugMode) {
-        print('MyTray: 设置右键菜单成功');
-      }
+      XlyLogger.info('MyTray: 设置右键菜单成功');
     } catch (e) {
-      if (kDebugMode) {
-        print('MyTray: 设置右键菜单失败: $e');
-      }
+      XlyLogger.error('MyTray: 设置右键菜单失败', e);
     }
   }
 
@@ -542,9 +517,7 @@ class MyTray extends GetxService with TrayListener {
       return SmartDockManager.isSmartDockingEnabled() &&
           MouseTracker.state != MouseTrackingState.disabled;
     } catch (e) {
-      if (kDebugMode) {
-        print('MyTray: 检查智能停靠状态失败: $e');
-      }
+      XlyLogger.error('MyTray: 检查智能停靠状态失败', e);
       return false;
     }
   }
@@ -564,9 +537,7 @@ class MyTray extends GetxService with TrayListener {
         await windowManager.hide();
         isVisible.value = false;
 
-        if (kDebugMode) {
-          print('MyTray: 已进入托盘模式（窗口UI已隐藏）');
-        }
+        XlyLogger.info('MyTray: 已进入托盘模式（窗口UI已隐藏）');
       } else {
         // 在智能停靠状态：
         // 1) 隐藏任务栏图标（已执行）
@@ -579,18 +550,14 @@ class MyTray extends GetxService with TrayListener {
         // 强制收起到隐藏位置（不会禁用悬停，仅改变当前可见状态）
         await MouseTracker.forceCollapseToHidden();
 
-        if (kDebugMode) {
-          print(
-            'MyTray: 已进入托盘模式（智能停靠），已强制收起到隐藏位；任务栏激活控制：${noActivateResult ? "成功" : "失败"}',
-          );
-        }
+        XlyLogger.info(
+          'MyTray: 已进入托盘模式（智能停靠），已强制收起到隐藏位；任务栏激活控制：${noActivateResult ? "成功" : "失败"}',
+        );
       }
       // 无论普通/智能停靠，隐藏后重置托盘展开记忆
       _smartDockShownByTray = false;
     } catch (e) {
-      if (kDebugMode) {
-        print('MyTray: 进入托盘模式失败: $e');
-      }
+      XlyLogger.error('MyTray: 进入托盘模式失败', e);
     }
   }
 
@@ -613,13 +580,9 @@ class MyTray extends GetxService with TrayListener {
       // 退出托盘模式后，重置托盘展开记忆
       _smartDockShownByTray = false;
 
-      if (kDebugMode) {
-        print('MyTray: 已退出托盘模式（窗口已恢复，任务栏激活已恢复）');
-      }
+      XlyLogger.info('MyTray: 已退出托盘模式（窗口已恢复，任务栏激活已恢复）');
     } catch (e) {
-      if (kDebugMode) {
-        print('MyTray: 从托盘恢复失败: $e');
-      }
+      XlyLogger.error('MyTray: 从托盘恢复失败', e);
     }
   }
 
@@ -635,13 +598,9 @@ class MyTray extends GetxService with TrayListener {
 
       _isInitialized.value = false;
 
-      if (kDebugMode) {
-        print('MyTray: 托盘已销毁');
-      }
+      XlyLogger.info('MyTray: 托盘已销毁');
     } catch (e) {
-      if (kDebugMode) {
-        print('MyTray: 销毁托盘失败: $e');
-      }
+      XlyLogger.error('MyTray: 销毁托盘失败', e);
     }
   }
 

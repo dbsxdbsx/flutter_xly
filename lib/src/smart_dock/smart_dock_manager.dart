@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:ui';
 
-import 'package:flutter/foundation.dart';
 import 'package:window_manager/window_manager.dart';
 
+import '../logger.dart';
 import '../platform.dart';
 import '../window_enums.dart';
 import 'dock_detector.dart';
@@ -77,7 +77,7 @@ class SmartDockManager {
       (timer) => _checkSmartDocking(),
     );
 
-    debugPrint('智能停靠监听已启动');
+    XlyLogger.info('智能停靠监听已启动');
   }
 
   /// 停止智能停靠监听
@@ -121,7 +121,7 @@ class SmartDockManager {
 
       _lastWindowPosition = currentPosition;
     } catch (e) {
-      debugPrint('智能停靠检查出错：$e');
+      XlyLogger.error('智能停靠检查出错', e);
     }
   }
 
@@ -137,16 +137,16 @@ class SmartDockManager {
       if (!result.shouldDock) {
         // 如果没有检测到停靠需求，且当前没有活跃的鼠标跟踪，则输出调试信息
         if (MouseTracker.state == MouseTrackingState.disabled) {
-          debugPrint('窗口未停靠在边缘或角落，且无活跃隐藏监听，停止所有智能隐藏监听。');
+          XlyLogger.debug('窗口未停靠在边缘或角落，且无活跃隐藏监听，停止所有智能隐藏监听。');
         } else {
-          debugPrint('窗口未溢出但有活跃的隐藏监听，保持监听状态。');
+          XlyLogger.debug('窗口未溢出但有活跃的隐藏监听，保持监听状态。');
         }
         return;
       }
 
       // 检查是否已经有活跃的鼠标跟踪，避免重复启动
       if (MouseTracker.state != MouseTrackingState.disabled) {
-        debugPrint('已有活跃的鼠标跟踪，跳过重复停靠触发');
+        XlyLogger.debug('已有活跃的鼠标跟踪，跳过重复停靠触发');
         return;
       }
 
@@ -164,7 +164,7 @@ class SmartDockManager {
         );
       }
     } catch (e) {
-      debugPrint('智能停靠触发出错：$e');
+      XlyLogger.error('智能停靠触发出错', e);
     }
   }
 
@@ -193,7 +193,7 @@ class SmartDockManager {
         hiddenPosition: positions.hiddenPosition,
       );
     } catch (e) {
-      debugPrint('智能边缘对齐失败：$e');
+      XlyLogger.error('智能边缘对齐失败', e);
     }
   }
 
@@ -219,7 +219,7 @@ class SmartDockManager {
         hiddenPosition: positions.hiddenPosition,
       );
     } catch (e) {
-      debugPrint('智能角落对齐失败：$e');
+      XlyLogger.error('智能角落对齐失败', e);
     }
   }
 

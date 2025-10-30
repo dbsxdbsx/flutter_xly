@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:window_manager/window_manager.dart';
 
+import '../logger.dart';
 import '../platform.dart';
 import '../tray/my_tray.dart';
 import 'mouse_tracker.dart';
@@ -68,9 +68,9 @@ class WindowFocusManager with WindowListener {
       // 禁用窗口最大化功能，防止触碰屏幕顶部时自动最大化
       await windowManager.setMaximizable(false);
 
-      debugPrint('智能停靠：已禁用Windows自动最大化功能');
+      XlyLogger.info('智能停靠：已禁用Windows自动最大化功能');
     } catch (e) {
-      debugPrint('智能停靠：禁用Windows自动最大化功能时出错：$e');
+      XlyLogger.error('智能停靠：禁用Windows自动最大化功能时出错', e);
     }
   }
 
@@ -83,10 +83,10 @@ class WindowFocusManager with WindowListener {
       if (_originalMaximizable != null) {
         await windowManager.setMaximizable(_originalMaximizable!);
         _originalMaximizable = null;
-        debugPrint('智能停靠：已恢复Windows自动最大化功能');
+        XlyLogger.info('智能停靠：已恢复Windows自动最大化功能');
       }
     } catch (e) {
-      debugPrint('智能停靠：恢复Windows自动最大化功能时出错：$e');
+      XlyLogger.error('智能停靠：恢复Windows自动最大化功能时出错', e);
     }
   }
 
@@ -104,7 +104,7 @@ class WindowFocusManager with WindowListener {
   @override
   void onWindowFocus() {
     _isWindowFocused = true;
-    debugPrint('智能停靠：窗口获得焦点');
+    XlyLogger.debug('智能停靠：窗口获得焦点');
 
     // 窗口重新获得焦点时，取消置顶状态（如果之前设置了的话）
     _restoreNormalStateOnFocus();
@@ -119,22 +119,22 @@ class WindowFocusManager with WindowListener {
           // 处于托盘模式，不恢复任务栏显示，但可以取消置顶状态
           if (MouseTracker.state != MouseTrackingState.disabled) {
             await windowManager.setAlwaysOnTop(false);
-            debugPrint('智能停靠：窗口获得焦点，但处于托盘模式，保持任务栏隐藏');
+            XlyLogger.debug('智能停靠：窗口获得焦点，但处于托盘模式，保持任务栏隐藏');
           }
           return;
         }
       } catch (e) {
         // MyTray可能未初始化，继续执行原有逻辑
-        debugPrint('智能停靠：检查托盘模式状态失败：$e');
+        XlyLogger.debug('智能停靠：检查托盘模式状态失败：$e');
       }
 
       // 如果当前处于智能停靠状态，取消置顶设置
       if (MouseTracker.state != MouseTrackingState.disabled) {
         await windowManager.setAlwaysOnTop(false);
-        debugPrint('智能停靠：窗口获得焦点，取消置顶状态');
+        XlyLogger.debug('智能停靠：窗口获得焦点，取消置顶状态');
       }
     } catch (e) {
-      debugPrint('智能停靠：恢复正常状态时出错：$e');
+      XlyLogger.error('智能停靠：恢复正常状态时出错', e);
     }
   }
 
@@ -142,7 +142,7 @@ class WindowFocusManager with WindowListener {
   @override
   void onWindowBlur() {
     _isWindowFocused = false;
-    debugPrint('智能停靠：窗口失去焦点');
+    XlyLogger.debug('智能停靠：窗口失去焦点');
 
     // 当窗口失去焦点时，强制保持智能停靠状态
     _maintainSmartDockStateOnBlur();
@@ -167,11 +167,11 @@ class WindowFocusManager with WindowListener {
             await windowManager.show(inactive: true);
             await windowManager.setAlwaysOnTop(true);
           }
-          debugPrint('智能停靠：失去焦点时维持停靠状态（${success ? "任务栏下方" : "标准"}方法）');
+          XlyLogger.debug('智能停靠：失去焦点时维持停靠状态（${success ? "任务栏下方" : "标准"}方法）');
         }
       }
     } catch (e) {
-      debugPrint('智能停靠：维持失去焦点状态时出错：$e');
+      XlyLogger.error('智能停靠：维持失去焦点状态时出错', e);
     }
   }
 }

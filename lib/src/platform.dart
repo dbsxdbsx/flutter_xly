@@ -1,12 +1,14 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart' show debugPrint, kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:window_manager/window_manager.dart';
+
+import 'logger.dart';
 
 /// 平台工具类，提供跨平台的文件操作、权限管理和窗口控制等功能
 class MyPlatform {
@@ -71,14 +73,14 @@ class MyPlatform {
     try {
       final status = await permission.request();
       if (status.isGranted) {
-        debugPrint('获取权限成功：$permission');
+        XlyLogger.info('获取权限成功：$permission');
         return true;
       } else {
-        debugPrint('无法获取权限：$permission');
+        XlyLogger.warning('无法获取权限：$permission');
         return false;
       }
     } catch (e) {
-      debugPrint('请求权限时出错：$e');
+      XlyLogger.error('请求权限时出错', e);
       return false;
     }
   }
@@ -90,7 +92,7 @@ class MyPlatform {
       await windowManager.show();
       await windowManager.focus();
     } catch (e) {
-      debugPrint('显示窗口时出错：$e');
+      XlyLogger.error('显示窗口时出错', e);
     }
   }
 
@@ -100,7 +102,7 @@ class MyPlatform {
     try {
       await windowManager.hide();
     } catch (e) {
-      debugPrint('隐藏窗口时出错：$e');
+      XlyLogger.error('隐藏窗口时出错', e);
     }
   }
 
@@ -122,7 +124,7 @@ class MyPlatform {
         return appDocDir.path;
       }
     } catch (e) {
-      debugPrint('获取应用程序目录时出错：$e');
+      XlyLogger.error('获取应用程序目录时出错', e);
       rethrow;
     }
   }
@@ -155,7 +157,7 @@ class MyPlatform {
         return externalStorageDirectories[0].path;
       }
     } catch (e) {
-      debugPrint('获取外部存储路径时出错：$e');
+      XlyLogger.error('获取外部存储路径时出错', e);
     }
     return null;
   }
@@ -181,7 +183,7 @@ class MyPlatform {
       }
       return path.join(appDir, fileName);
     } catch (e) {
-      debugPrint('获取文件路径时出错：$e');
+      XlyLogger.error('获取文件路径时出错', e);
       rethrow;
     }
   }
@@ -209,7 +211,7 @@ class MyPlatform {
           try {
             await Process.run('chmod', ['777', targetFile.path]);
           } catch (e) {
-            debugPrint('无法设置文件权限: $e');
+            XlyLogger.error('无法设置文件权限', e);
           }
         }
         await targetFile.writeAsBytes(byteData.buffer.asUint8List());
@@ -217,7 +219,7 @@ class MyPlatform {
 
       return targetFile;
     } catch (e) {
-      debugPrint('从assets复制文件时出错：$e');
+      XlyLogger.error('从assets复制文件时出错', e);
       rethrow;
     }
   }

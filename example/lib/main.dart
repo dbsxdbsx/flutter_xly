@@ -20,6 +20,7 @@ import 'widgets/platform_info_widget.dart';
 
 void main() async {
   await MyApp.initialize(
+    enableDebugLogging: true, // 开发时启用调试日志
     showWindowOnInit: false,
     focusWindowOnInit: false,
     appName: "示例App",

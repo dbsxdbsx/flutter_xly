@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:ui';
 
-import 'package:flutter/foundation.dart';
+import 'logger.dart';
 
 /// 单实例管理器
 /// 使用本地TCP端口锁确保应用只能运行一个实例
@@ -45,9 +46,7 @@ class SingleInstanceManager {
       // 后台启动请求循环，避免阻塞初始化从而卡住窗口创建
       unawaited(_setupServer());
 
-      if (kDebugMode) {
-        print('SingleInstance: 首个实例启动，监听端口 $_port');
-      }
+      XlyLogger.info('SingleInstance: 首个实例启动，监听端口 $_port');
 
       return true;
     } catch (e) {
@@ -56,9 +55,7 @@ class SingleInstanceManager {
         await _activateExistingInstance();
       }
 
-      if (kDebugMode) {
-        print('SingleInstance: 检测到已有实例在运行，当前实例将退出');
-      }
+      XlyLogger.info('SingleInstance: 检测到已有实例在运行，当前实例将退出');
 
       return false;
     }
@@ -95,9 +92,7 @@ class SingleInstanceManager {
 
         await request.response.close();
       } catch (e) {
-        if (kDebugMode) {
-          print('SingleInstance: 处理请求时出错: $e');
-        }
+        XlyLogger.error('SingleInstance: 处理请求时出错', e);
         try {
           request.response
             ..statusCode = HttpStatus.internalServerError
@@ -126,13 +121,9 @@ class SingleInstanceManager {
       await response.drain();
       client.close();
 
-      if (kDebugMode) {
-        print('SingleInstance: 已发送激活请求到现有实例');
-      }
+      XlyLogger.info('SingleInstance: 已发送激活请求到现有实例');
     } catch (e) {
-      if (kDebugMode) {
-        print('SingleInstance: 激活现有实例失败: $e');
-      }
+      XlyLogger.error('SingleInstance: 激活现有实例失败', e);
     }
   }
 
@@ -143,9 +134,7 @@ class SingleInstanceManager {
       _server = null;
       _isRunning = false;
 
-      if (kDebugMode) {
-        print('SingleInstance: 单实例服务器已关闭');
-      }
+      XlyLogger.info('SingleInstance: 单实例服务器已关闭');
     }
   }
 

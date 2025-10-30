@@ -1,9 +1,9 @@
 import 'dart:ui';
 
-import 'package:flutter/foundation.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
 
+import '../logger.dart';
 import '../window_enums.dart';
 import 'taskbar_detector.dart';
 
@@ -118,7 +118,7 @@ class DockDetector {
         bottomOverflow,
       );
     } catch (e) {
-      debugPrint('停靠检测出错：$e');
+      XlyLogger.error('停靠检测出错', e);
       return const DockDetectionResult.none();
     }
   }
@@ -177,7 +177,7 @@ class DockDetector {
 
     // 如果检测到角落停靠且总超出量足够
     if (targetCorner != null && maxCornerOverflow > minCornerTotalOverflow) {
-      debugPrint(
+      XlyLogger.debug(
         '触发智能角落停靠到${targetCorner.name}，超出屏幕：${maxCornerOverflow.toStringAsFixed(1)}px',
       );
       return DockDetectionResult.corner(targetCorner, maxCornerOverflow);
@@ -215,7 +215,7 @@ class DockDetector {
 
     // 如果找到了需要停靠的边缘且超出量足够
     if (targetEdge != null && maxOverflow > minEdgeOverflow) {
-      debugPrint(
+      XlyLogger.debug(
         '触发智能边缘停靠到${targetEdge.name}，超出屏幕：${maxOverflow.toStringAsFixed(1)}px',
       );
       return DockDetectionResult.edge(targetEdge, maxOverflow);
@@ -258,7 +258,7 @@ class DockDetector {
 
         alignedPosition = Offset(alignX, clampedY);
 
-        debugPrint('左边缘停靠 - 对齐到屏幕边缘X: $alignX');
+        XlyLogger.debug('左边缘停靠 - 对齐到屏幕边缘X: $alignX');
 
         // 隐藏位置：隐藏到真正的屏幕边缘（完整屏幕边界）
         final hiddenX =
@@ -282,7 +282,7 @@ class DockDetector {
 
         alignedPosition = Offset(alignX, clampedY);
 
-        debugPrint('右边缘停靠 - 对齐到屏幕边缘X: $alignX');
+        XlyLogger.debug('右边缘停靠 - 对齐到屏幕边缘X: $alignX');
 
         // 隐藏位置：隐藏到真正的屏幕边缘（完整屏幕边界）
         final hiddenX = taskbarInfo.fullScreenPosition.dx +
@@ -305,7 +305,7 @@ class DockDetector {
 
         alignedPosition = Offset(clampedX, alignY);
 
-        debugPrint('上边缘停靠 - 对齐到屏幕边缘Y: $alignY');
+        XlyLogger.debug('上边缘停靠 - 对齐到屏幕边缘Y: $alignY');
 
         // 隐藏位置：隐藏到真正的屏幕边缘（完整屏幕边界）
         final hiddenY = taskbarInfo.fullScreenPosition.dy -
@@ -330,7 +330,7 @@ class DockDetector {
 
         alignedPosition = Offset(clampedX, alignY);
 
-        debugPrint('下边缘停靠 - 对齐到屏幕边缘Y: $alignY');
+        XlyLogger.debug('下边缘停靠 - 对齐到屏幕边缘Y: $alignY');
 
         // 隐藏位置：隐藏到真正的屏幕边缘（完整屏幕边界）
         final hiddenY = taskbarInfo.fullScreenPosition.dy +
@@ -376,7 +376,7 @@ class DockDetector {
 
         alignedPosition = Offset(alignX, alignY);
 
-        debugPrint('左上角停靠 - 对齐到屏幕角落: ($alignX, $alignY)');
+        XlyLogger.debug('左上角停靠 - 对齐到屏幕角落: ($alignX, $alignY)');
 
         // 隐藏位置：隐藏到真正的屏幕边缘（完整屏幕边界）
         final hiddenX = taskbarInfo.fullScreenPosition.dx -
@@ -397,7 +397,7 @@ class DockDetector {
 
         alignedPosition = Offset(alignX, alignY);
 
-        debugPrint('右上角停靠 - 对齐到屏幕角落: ($alignX, $alignY)');
+        XlyLogger.debug('右上角停靠 - 对齐到屏幕角落: ($alignX, $alignY)');
 
         // 隐藏位置：隐藏到真正的屏幕边缘（完整屏幕边界）
         final hiddenX = taskbarInfo.fullScreenPosition.dx +
@@ -418,7 +418,7 @@ class DockDetector {
 
         alignedPosition = Offset(alignX, alignY);
 
-        debugPrint('左下角停靠 - 对齐到屏幕角落: ($alignX, $alignY)');
+        XlyLogger.debug('左下角停靠 - 对齐到屏幕角落: ($alignX, $alignY)');
 
         // 隐藏位置：隐藏到真正的屏幕边缘（完整屏幕边界）
         final hiddenX = taskbarInfo.fullScreenPosition.dx -
@@ -441,7 +441,7 @@ class DockDetector {
 
         alignedPosition = Offset(alignX, alignY);
 
-        debugPrint('右下角停靠 - 对齐到屏幕角落: ($alignX, $alignY)');
+        XlyLogger.debug('右下角停靠 - 对齐到屏幕角落: ($alignX, $alignY)');
 
         // 隐藏位置：隐藏到真正的屏幕边缘（完整屏幕边界）
         final hiddenX = taskbarInfo.fullScreenPosition.dx +
