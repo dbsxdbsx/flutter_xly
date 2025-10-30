@@ -84,6 +84,21 @@ graph TD
     K --> L
 ```
 
+## 🔌 依赖关系
+
+### 与 MyTray 的关系
+
+SmartDock 与 MyTray（系统托盘）功能**完全解耦**，可以独立使用：
+
+- ✅ **仅使用 SmartDock**（不需要 MyTray）- 完全正常工作
+- ✅ **仅使用 MyTray**（不需要 SmartDock）- 完全正常工作
+- ✅ **同时使用两者** - 自动协调窗口状态（如任务栏图标显示）
+
+**技术实现**：
+- 使用 `Get.isRegistered<MyTray>()` 检查 MyTray 是否已注册
+- 如果 MyTray 存在，SmartDock 会考虑托盘模式状态（避免任务栏图标冲突）
+- 如果 MyTray 不存在，SmartDock 使用默认行为
+
 ## 🎯 使用示例
 
 ### 基本使用
@@ -91,7 +106,7 @@ graph TD
 ```dart
 import 'package:xly/xly.dart';
 
-// 启用智能停靠
+// 启用智能停靠（无需 MyTray）
 await SmartDockManager.setSmartEdgeDocking(
   enabled: true,
   visibleWidth: 5.0, // 隐藏时可见宽度

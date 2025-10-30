@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:get/get.dart';
 import 'package:window_manager/window_manager.dart';
 
 import '../logger.dart';
@@ -113,8 +114,8 @@ class WindowFocusManager with WindowListener {
   /// 在窗口重新获得焦点时恢复正常状态
   static void _restoreNormalStateOnFocus() async {
     try {
-      // 检查是否处于托盘模式
-      try {
+      // 检查是否处于托盘模式（仅当 MyTray 服务已注册时）
+      if (Get.isRegistered<MyTray>()) {
         if (MyTray.to.isTrayMode.value) {
           // 处于托盘模式，不恢复任务栏显示，但可以取消置顶状态
           if (MouseTracker.state != MouseTrackingState.disabled) {
@@ -123,9 +124,6 @@ class WindowFocusManager with WindowListener {
           }
           return;
         }
-      } catch (e) {
-        // MyTray可能未初始化，继续执行原有逻辑
-        XlyLogger.debug('智能停靠：检查托盘模式状态失败：$e');
       }
 
       // 如果当前处于智能停靠状态，取消置顶设置

@@ -1,3 +1,20 @@
+## 0.28.1 - 2025-10-30
+
+### Fixed
+
+- **SmartDock 与 MyTray 依赖解耦**：修复智能停靠功能与托盘功能的可选依赖关系
+  - 使用 `Get.isRegistered<MyTray>()` 检查服务是否已注册，替代 try-catch 方式
+  - 消除未使用 MyTray 时的错误日志 `"MyTray" not found`
+  - 确保 SmartDock 和 MyTray 功能完全正交，可独立使用
+  - 两个功能同时使用时仍能正确协调窗口状态（如任务栏图标显示）
+
+### Added
+
+- **测试覆盖**：新增 `smart_dock_without_tray_test.dart` 测试文件
+  - 验证 SmartDock 在无 MyTray 时正常工作
+  - 覆盖三种使用场景：仅 SmartDock、仅 MyTray、两者同时使用
+  - 12 个测试用例确保功能独立性和协同性
+
 ## 0.28.0 - 2025-10-30
 
 ### Added
