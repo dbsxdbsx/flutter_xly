@@ -2,14 +2,16 @@ import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
 import 'package:flutter_inset_shadow/flutter_inset_shadow.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import 'lib.dart';
+import 'menu_models.dart';
+import 'style.dart';
+import 'widget.dart';
 
 class MyMenuButton extends StatefulWidget {
   final IconData icon;
   final double iconSize;
   final Color iconColor;
   final List<MyMenuItem> menuItems;
-  final MyMenuStyle menuStyle;
+  final MyMenuStyle? menuStyle;
   final Color shadowColor1;
   final Color shadowColor2;
   final double containerSizeRatio;
@@ -22,7 +24,7 @@ class MyMenuButton extends StatefulWidget {
     this.iconSize = 24,
     this.iconColor = Colors.black87,
     required this.menuItems,
-    this.menuStyle = const MyMenuStyle(),
+    this.menuStyle,
     this.shadowColor1 = const Color(0xff494d52),
     this.shadowColor2 = const Color(0xff090d12),
     this.containerSizeRatio = 1.39,
@@ -124,7 +126,7 @@ class MyMenuButtonState extends State<MyMenuButton> {
         position,
         widget.menuItems,
         animationStyle: MyMenuPopStyle.scale,
-        style: widget.menuStyle,
+        style: widget.menuStyle ?? MyMenuStyle(),
       );
     } finally {
       // 菜单关闭后恢复按钮原始状态

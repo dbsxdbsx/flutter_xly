@@ -3,12 +3,12 @@ import 'package:flutter/foundation.dart';
 /// Xly包的统一日志工具
 ///
 /// 用于控制包内部的调试日志输出，避免污染用户项目的日志。
-/// 
+///
 /// 使用方式:
 /// ```dart
 /// // 在 MyApp.initialize() 中初始化
 /// XlyLogger.init(enableDebugLogging: true);
-/// 
+///
 /// // 在包内部使用
 /// XlyLogger.debug('调试信息');
 /// XlyLogger.info('一般信息');
@@ -23,7 +23,7 @@ class XlyLogger {
   static const String _prefix = '[Xly]';
 
   /// 初始化日志系统
-  /// 
+  ///
   /// [enabled] 是否启用调试日志输出
   static void init({required bool enabled}) {
     _enabled = enabled;
@@ -33,7 +33,7 @@ class XlyLogger {
   }
 
   /// 调试级别日志（默认关闭，用于详细的内部状态跟踪）
-  /// 
+  ///
   /// 示例: 智能停靠的位置检测、鼠标追踪等
   static void debug(String message) {
     if (_enabled) {
@@ -42,7 +42,7 @@ class XlyLogger {
   }
 
   /// 信息级别日志（默认关闭，用于一般性信息）
-  /// 
+  ///
   /// 示例: 服务初始化成功、功能启用等
   static void info(String message) {
     if (_enabled) {
@@ -51,7 +51,7 @@ class XlyLogger {
   }
 
   /// 警告级别日志（默认关闭，用于潜在问题）
-  /// 
+  ///
   /// 示例: 配置不当、降级处理等
   static void warning(String message) {
     if (_enabled) {
@@ -60,7 +60,7 @@ class XlyLogger {
   }
 
   /// 错误级别日志（始终输出，用于严重错误）
-  /// 
+  ///
   /// 注意: 错误日志不受 _enabled 控制，始终输出
   static void error(String message, [Object? error, StackTrace? stackTrace]) {
     debugPrint('$_prefix [ERROR] $message');
@@ -75,4 +75,3 @@ class XlyLogger {
   /// 检查是否启用了调试日志
   static bool get isEnabled => _enabled;
 }
-

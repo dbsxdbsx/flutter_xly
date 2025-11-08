@@ -1,3 +1,14 @@
+## 0.28.2 - 2025-11-08
+
+### Enhanced
+
+- **菜单模块代码重构**：优化菜单组件的代码结构和可维护性
+  - 新增 `menu_models.dart` 独立文件，集中管理菜单模型类（MyMenuItem、MyMenuDivider、MyMenuPopStyle）
+  - 优化 `MyMenuStyle` 为可选参数，提供更灵活的默认值处理
+  - 修复内部导入路径，使用相对路径替代绝对路径
+  - 重构 `widget.dart` 菜单核心逻辑，改进代码可读性
+  - 统一 `lib.dart` 导出顺序，优化模块对外接口
+
 ## 0.28.1 - 2025-10-30
 
 ### Fixed

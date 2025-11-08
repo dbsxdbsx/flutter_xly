@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:get/get.dart';
 import 'package:xly/xly.dart';
 
 void main() {
@@ -60,8 +59,7 @@ void main() {
 
       // 模拟 _restoreNormalStateOnFocus 中的检查逻辑
       bool shouldCheckTrayMode = Get.isRegistered<MyTray>();
-      expect(shouldCheckTrayMode, false,
-          reason: 'MyTray未注册时，不应该尝试访问MyTray.to');
+      expect(shouldCheckTrayMode, false, reason: 'MyTray未注册时，不应该尝试访问MyTray.to');
 
       // 这个逻辑应该不会抛出异常
       expect(() {
@@ -98,8 +96,7 @@ void main() {
       expect(hasTray, false);
 
       final statusAfterCheck = SmartDockManager.isSmartDockingEnabled();
-      expect(statusAfterCheck, statusBeforeTray,
-          reason: 'SmartDock状态应该保持一致');
+      expect(statusAfterCheck, statusBeforeTray, reason: 'SmartDock状态应该保持一致');
     });
   });
 
@@ -201,4 +198,3 @@ void main() {
     });
   });
 }
-

@@ -65,7 +65,7 @@ class Page1View extends GetView<Page1Controller> {
         ).showRightMenu(
           context: context,
           menuElements: _buildRightMenuItems(),
-          style: const MyMenuStyle(shadowRatio: 0.2),
+          style: MyMenuStyle(shadowRatio: 0.2),
         ),
       ],
     );
