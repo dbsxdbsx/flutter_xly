@@ -1,4 +1,12 @@
-## 0.28.2 - 2025-11-08
+## 0.28.2 - 2025-11-09
+
+### Fixed
+
+- **Windows托盘菜单关闭问题修复**：修复Windows平台上托盘右键菜单无法通过点击空白区域关闭的问题
+  - 在`popUpContextMenu()`调用中添加`bringAppToFront: true`参数
+  - 虽然该参数已被标记为deprecated，但仍是解决此问题的最简单有效方案
+  - 参考：[tray_manager#63](https://github.com/leanflutter/tray_manager/issues/63)
+  - 用户现在可以通过点击窗口区域、按ESC键或再次右键托盘图标来关闭菜单
 
 ### Enhanced
 

@@ -347,7 +347,11 @@ class MyTray extends GetxService with TrayListener {
   Future<void> onTrayIconRightMouseDown() async {
     // 右键点击显示菜单
     XlyLogger.debug('MyTray: 托盘图标右键点击');
-    await trayManager.popUpContextMenu();
+
+    // 修复Windows上托盘菜单无法通过点击空白区域关闭的问题
+    // 参考：https://github.com/leanflutter/tray_manager/issues/63
+    // 注意：bringAppToFront参数虽被标记为deprecated，但仍是解决此问题的最简方案
+    await trayManager.popUpContextMenu(bringAppToFront: true);
   }
 
   @override
