@@ -1,4 +1,4 @@
-## 0.28.2 - 2025-11-09
+## 0.28.3 - 2025-11-09
 
 ### Fixed
 
@@ -7,6 +7,8 @@
   - 虽然该参数已被标记为deprecated，但仍是解决此问题的最简单有效方案
   - 参考：[tray_manager#63](https://github.com/leanflutter/tray_manager/issues/63)
   - 用户现在可以通过点击窗口区域、按ESC键或再次右键托盘图标来关闭菜单
+
+## 0.28.2 - 2025-11-09
 
 ### Enhanced
 
