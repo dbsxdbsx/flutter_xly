@@ -147,7 +147,8 @@ class _MenuStateManager {
       ),
     );
 
-    Overlay.of(context).insert(_mainMenuEntry!);
+    // 使用 rootOverlay 确保在 Dialog/BottomSheet 内也能正常显示
+    Overlay.of(context, rootOverlay: true).insert(_mainMenuEntry!);
     _addNavigationListener(context);
   }
 
@@ -290,7 +291,10 @@ class _MenuPositionCalculator {
 
   /// 获取屏幕尺寸
   static Size _getScreenSize(BuildContext context) {
-    final overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+    // 使用 rootOverlay 确保在 Dialog/BottomSheet 内也能正常获取
+    final overlay =
+        Overlay.of(context, rootOverlay: true).context.findRenderObject()
+            as RenderBox;
     return overlay.size;
   }
 
@@ -528,8 +532,10 @@ class _MenuOverlay extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         // 🔧 关键修复：将全局坐标转换为 Overlay 的本地坐标
+        // 使用 rootOverlay 确保在 Dialog/BottomSheet 内也能正常显示
         final overlayBox =
-            Overlay.of(context).context.findRenderObject() as RenderBox;
+            Overlay.of(context, rootOverlay: true).context.findRenderObject()
+                as RenderBox;
         final localPosition = overlayBox.globalToLocal(position);
 
         // 在实际渲染时重新计算位置，使用本地坐标
@@ -865,8 +871,10 @@ class _MenuItemWidgetState extends State<_MenuItemWidget> {
     _closeSubMenusAfterLevel(widget.level);
 
     // 🔧 关键修复：使用 Overlay 作为 ancestor 进行坐标转换
+    // 使用 rootOverlay 确保在 Dialog/BottomSheet 内也能正常显示
     final overlayBox =
-        Overlay.of(context).context.findRenderObject() as RenderBox;
+        Overlay.of(context, rootOverlay: true).context.findRenderObject()
+            as RenderBox;
     final itemBox = context.findRenderObject() as RenderBox;
 
     // 获取菜单项在 Overlay 坐标系中的位置
@@ -933,7 +941,8 @@ class _MenuItemWidgetState extends State<_MenuItemWidget> {
       ),
     );
 
-    Overlay.of(context).insert(subMenuEntry);
+    // 使用 rootOverlay 确保在 Dialog/BottomSheet 内也能正常显示
+    Overlay.of(context, rootOverlay: true).insert(subMenuEntry);
     MyMenu._activeSubMenus.value = [
       ...MyMenu._activeSubMenus.value,
       subMenuEntry,

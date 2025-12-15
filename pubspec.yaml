@@ -1,12 +1,13 @@
 name: xly
 description: "A Test Flutter Package， DO NOT USE IT at present"
-version: 0.28.3
+version: 0.28.4
 homepage: https://github.com/dbsxdbsx/flutter_xly
 repository: https://github.com/dbsxdbsx/flutter_xly
 
 environment:
   sdk: ^3.5.3
-  flutter: ">=1.17.0"
+  # 需要 Flutter 3.7+ 以支持 Overlay.of(context, rootOverlay: true)
+  flutter: ">=3.7.0"
 
 dependencies:
   flutter:
