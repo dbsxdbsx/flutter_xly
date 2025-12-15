@@ -1,5 +1,6 @@
 import 'package:example/main.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart' as raw_get;
 import 'package:xly/xly.dart';
 
 class Page3View extends GetView<Page3Controller> {
@@ -44,6 +45,50 @@ class Page3View extends GetView<Page3Controller> {
                       text: '删除(严格)',
                       onPressed: controller.showDeleteDialog,
                       width: 160.w,
+                    ),
+                  ],
+                ),
+
+                SizedBox(height: 30.h),
+
+                // Overlay 问题测试（已修复）
+                // 自 Flutter 3.38.1 起，GetX 的 overlayContext 在对话框关闭后可能失效
+                // 参考: https://github.com/jonataslaw/getx/issues/3425
+                Text('✅ Overlay 问题测试',
+                    style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.green)),
+                SizedBox(height: 8.h),
+                Text(
+                  'Flutter 3.38.1+ Overlay 问题已修复',
+                  style: TextStyle(fontSize: 12.sp, color: Colors.grey),
+                ),
+                SizedBox(height: 15.h),
+                Wrap(
+                  spacing: 8.w,
+                  runSpacing: 10.h,
+                  alignment: WrapAlignment.center,
+                  children: [
+                    MyButton(
+                      text: '顶部Snackbar',
+                      onPressed: controller.testRawSnackbarInDialog,
+                      backgroundColor: Colors.green.shade100,
+                    ),
+                    MyButton(
+                      text: '顶部Toast',
+                      onPressed: controller.testMyToastInDialog,
+                      backgroundColor: Colors.green.shade100,
+                    ),
+                    MyButton(
+                      text: '中间Toast',
+                      onPressed: controller.testCenterToastInDialog,
+                      backgroundColor: Colors.blue.shade100,
+                    ),
+                    MyButton(
+                      text: '底部Toast',
+                      onPressed: controller.testBottomToastInDialog,
+                      backgroundColor: Colors.green.shade100,
                     ),
                   ],
                 ),
@@ -334,6 +379,147 @@ class Page3Controller extends GetxController {
       },
       onExit: () {
         MyToast.show('取消设置');
+        Get.back();
+      },
+    );
+  }
+
+  // ========== Overlay 问题测试 ==========
+  // 自 Flutter 3.38.1 起，GetX 的 overlayContext 在对话框关闭后可能失效
+  // 导致 "No Overlay widget found" 异常
+  // 已通过在 GetMaterialApp builder 中包裹 Overlay 修复
+  // 参考: https://github.com/jonataslaw/getx/issues/3425
+
+  /// 测试原生 Get.snackbar 在对话框关闭回调中的行为
+  void testRawSnackbarInDialog() {
+    MyDialogSheet.showCenter(
+      title: '原生 Get.snackbar 测试',
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '点击"确认"后将直接调用原生 Get.snackbar\n'
+            '已通过在 App 根部包裹 Overlay 修复\n'
+            '现在可以正常工作',
+            style: TextStyle(fontSize: 14.sp),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 10.h),
+          Text(
+            '✅ 已修复：应该正常显示',
+            style: TextStyle(fontSize: 12.sp, color: Colors.green),
+          ),
+        ],
+      ),
+      onConfirm: () {
+        // 先关闭对话框
+        Get.back();
+        // 然后直接调用原生 Get.snackbar（可能失败）
+        raw_get.Get.snackbar(
+          '原生测试',
+          '这是直接调用 Get.snackbar 的测试',
+          snackPosition: raw_get.SnackPosition.TOP,
+          backgroundColor: Colors.amber[50],
+          colorText: Colors.amber[900],
+          duration: const Duration(seconds: 3),
+        );
+      },
+      onExit: () {
+        Get.back();
+      },
+    );
+  }
+
+  /// 测试 MyToast.showUpWarn 在对话框关闭回调中的行为
+  /// ✅ 这应该是安全的，因为内部有保护性处理
+  void testMyToastInDialog() {
+    MyDialogSheet.showCenter(
+      title: '顶部 Toast 测试',
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '点击"确认"后将调用 MyToast.showUpWarn\n'
+            '已通过在 App 根部包裹 Overlay 修复',
+            style: TextStyle(fontSize: 14.sp),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 10.h),
+          Text(
+            '✅ 已修复：应该正常显示',
+            style: TextStyle(fontSize: 12.sp, color: Colors.green),
+          ),
+        ],
+      ),
+      onConfirm: () {
+        Get.back();
+        MyToast.showUpWarn('这是顶部 Toast 的测试');
+      },
+      onExit: () {
+        Get.back();
+      },
+    );
+  }
+
+  /// 测试 MyToast.show（中间 Toast）在对话框关闭回调中的行为
+  /// ✅ 使用自定义 Toast 实现，不依赖 GetX Overlay，天然安全
+  void testCenterToastInDialog() {
+    MyDialogSheet.showCenter(
+      title: '中间 Toast 测试',
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '点击"确认"后将调用 MyToast.show\n'
+            '使用自定义 Toast 实现\n'
+            '不依赖 GetX Overlay',
+            style: TextStyle(fontSize: 14.sp),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 10.h),
+          Text(
+            '✅ 天然安全：不依赖 GetX',
+            style: TextStyle(fontSize: 12.sp, color: Colors.blue),
+          ),
+        ],
+      ),
+      onConfirm: () {
+        Get.back();
+        MyToast.show('这是中间 Toast 的测试');
+      },
+      onExit: () {
+        Get.back();
+      },
+    );
+  }
+
+  /// 测试 MyToast.showBottom（底部 Toast）在对话框关闭回调中的行为
+  /// 使用 Get.showSnackbar，依赖 GetX Overlay
+  void testBottomToastInDialog() {
+    MyDialogSheet.showCenter(
+      title: '底部 Toast 测试',
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '点击"确认"后将调用 MyToast.showBottom\n'
+            '使用 Get.showSnackbar 实现\n'
+            '依赖 GetX Overlay',
+            style: TextStyle(fontSize: 14.sp),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 10.h),
+          Text(
+            '✅ 已修复：App 根部包裹 Overlay',
+            style: TextStyle(fontSize: 12.sp, color: Colors.green),
+          ),
+        ],
+      ),
+      onConfirm: () {
+        Get.back();
+        MyToast.showBottom('这是底部 Toast 的测试');
+      },
+      onExit: () {
         Get.back();
       },
     );

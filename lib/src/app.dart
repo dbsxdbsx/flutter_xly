@@ -493,7 +493,20 @@ class MyApp extends StatelessWidget {
                 transitionDuration: pageTransitionDuration,
               )),
         ],
-        builder: (context, child) => _buildAppContent(context, child),
+        // 使用 builder 包裹一层 Overlay，确保 Get.snackbar 等依赖 overlayContext
+        // 的功能在对话框关闭回调等边界场景下仍能正常工作
+        // 参考: https://github.com/jonataslaw/getx/issues/3425
+        builder: (context, child) {
+          return Overlay(
+            initialEntries: [
+              OverlayEntry(
+                builder: (context) {
+                  return _buildAppContent(context, child);
+                },
+              ),
+            ],
+          );
+        },
         theme: _buildTheme(),
         defaultTransition: pageTransitionStyle,
         transitionDuration: pageTransitionDuration,

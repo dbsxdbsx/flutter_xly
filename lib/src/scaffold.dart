@@ -437,17 +437,9 @@ class _MyScaffoldState extends State<MyScaffold> {
           : null,
     );
 
-    // 如果需要显示抽屉且有AppBar，包装一个Overlay以支持Tooltip
-    if (shouldShowDrawer && widget.appBar != null) {
-      return Overlay(
-        initialEntries: [
-          OverlayEntry(
-            builder: (context) => scaffold,
-          ),
-        ],
-      );
-    }
-
+    // 注意：之前这里有 Overlay 包装以支持 Tooltip，现已移除
+    // 因为 App 根部已包裹永久 Overlay（解决 Flutter 3.38.1+ 的 Overlay 问题）
+    // 参考: https://github.com/jonataslaw/getx/issues/3425
     return scaffold;
   }
 }

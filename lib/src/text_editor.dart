@@ -590,9 +590,9 @@ class MyTextEditor extends GetView<MyTextEditorController> {
     }
     final box = ctx.findRenderObject() as RenderBox?;
     // 使用 rootOverlay 确保在 Dialog/BottomSheet 内也能正常显示
-    final overlay =
-        Overlay.of(context, rootOverlay: true).context.findRenderObject()
-            as RenderBox?;
+    final overlay = Overlay.of(context, rootOverlay: true)
+        .context
+        .findRenderObject() as RenderBox?;
     if (box == null || overlay == null) {
       return OptionsViewOpenDirection.down;
     }
@@ -640,9 +640,9 @@ class MyTextEditor extends GetView<MyTextEditorController> {
     if (_fieldKey.currentContext != null) {
       final box = _fieldKey.currentContext!.findRenderObject() as RenderBox?;
       // 使用 rootOverlay 确保在 Dialog/BottomSheet 内也能正常显示
-      final overlay =
-          Overlay.of(context, rootOverlay: true).context.findRenderObject()
-              as RenderBox?;
+      final overlay = Overlay.of(context, rootOverlay: true)
+          .context
+          .findRenderObject() as RenderBox?;
       if (box != null && overlay != null) {
         final fieldTopLeft = box.localToGlobal(Offset.zero, ancestor: overlay);
         final fieldSize = box.size;

@@ -618,6 +618,10 @@ MyToast.hideAll();
 MyToast.hideAll(1000); // 1秒后关闭
 ```
 
+#### Snackbar 说明（顶部/底部通知栏）
+
+`MyToast.showUpInfo/showUpWarn/showUpError/showBottom` 基于 GetX 的 Snackbar 能力。若在 Dialog/BottomSheet 关闭的同一帧触发导致 `Get.overlayContext` 暂不可用，内部会自动延迟到下一帧重试；仍不可用则静默跳过（开启 `XlyLogger` 调试日志可查看原因）。
+
 Toast 特性：
 
 - 支持多种预设样式：成功、信息、警告、错误

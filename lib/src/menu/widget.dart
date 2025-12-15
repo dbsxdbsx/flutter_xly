@@ -135,17 +135,17 @@ class _MenuStateManager {
         animationStyle: _currentAnimationStyle,
         style: style,
         onClose: _closeMainMenu,
-        onItemSelected: (item) {
+        onItemSelected: (item) async {
           if (item.onTap != null) {
             _closeMainMenu();
-            // 使用 microtask 确保菜单关闭动画完成后再执行回调
-            Future.microtask(() async {
-              try {
-                await item.onTap!();
-              } catch (e, s) {
-                XlyLogger.error('MyMenuItem.onTap error', e, s);
-              }
-            });
+            // 直接执行回调，无需 microtask 包装
+            // Overlay 问题已通过在 App 根部包裹 Overlay 解决
+            // 参考: https://github.com/jonataslaw/getx/issues/3425
+            try {
+              await item.onTap!();
+            } catch (e, s) {
+              XlyLogger.error('MyMenuItem.onTap error', e, s);
+            }
           }
         },
         onLayoutRect: (rect) {
@@ -299,9 +299,9 @@ class _MenuPositionCalculator {
   /// 获取屏幕尺寸
   static Size _getScreenSize(BuildContext context) {
     // 使用 rootOverlay 确保在 Dialog/BottomSheet 内也能正常获取
-    final overlay =
-        Overlay.of(context, rootOverlay: true).context.findRenderObject()
-            as RenderBox;
+    final overlay = Overlay.of(context, rootOverlay: true)
+        .context
+        .findRenderObject() as RenderBox;
     return overlay.size;
   }
 
@@ -540,9 +540,9 @@ class _MenuOverlay extends StatelessWidget {
       builder: (context, constraints) {
         // 🔧 关键修复：将全局坐标转换为 Overlay 的本地坐标
         // 使用 rootOverlay 确保在 Dialog/BottomSheet 内也能正常显示
-        final overlayBox =
-            Overlay.of(context, rootOverlay: true).context.findRenderObject()
-                as RenderBox;
+        final overlayBox = Overlay.of(context, rootOverlay: true)
+            .context
+            .findRenderObject() as RenderBox;
         final localPosition = overlayBox.globalToLocal(position);
 
         // 在实际渲染时重新计算位置，使用本地坐标
@@ -879,9 +879,9 @@ class _MenuItemWidgetState extends State<_MenuItemWidget> {
 
     // 🔧 关键修复：使用 Overlay 作为 ancestor 进行坐标转换
     // 使用 rootOverlay 确保在 Dialog/BottomSheet 内也能正常显示
-    final overlayBox =
-        Overlay.of(context, rootOverlay: true).context.findRenderObject()
-            as RenderBox;
+    final overlayBox = Overlay.of(context, rootOverlay: true)
+        .context
+        .findRenderObject() as RenderBox;
     final itemBox = context.findRenderObject() as RenderBox;
 
     // 获取菜单项在 Overlay 坐标系中的位置

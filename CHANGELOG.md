@@ -7,6 +7,7 @@
   - 所有回调调用处添加 `await` + `try-catch` 兜底，防止用户未处理的异常导致应用崩溃
   - 使用 `XlyLogger.error` 统一记录异常，Debug 模式可见，Release 模式不显示
   - 向后兼容：现有同步回调无需任何修改
+- **修复 Snackbar 在弹层关闭过程中的边缘崩溃**：`MyToast.showUpInfo/showUpWarn/showUpError/showBottom` 在 `Get.overlayContext` 暂不可用时自动延迟到下一帧重试，避免异常
 
 ### Changed
 
@@ -23,7 +24,7 @@
 
 ## 0.28.4 - 2025-12-15
 
-### Fixed
+### Fixed 
 
 - **修复 Dialog/BottomSheet 内 Overlay 组件崩溃问题**：解决在 Dialog 或 BottomSheet 内部使用 `MyMenu` 或 `MyTextEditor` 下拉功能时触发 "No Overlay widget found" 错误
   - 为所有 `Overlay.of(context)` 调用添加 `rootOverlay: true` 参数
@@ -35,11 +36,11 @@
 
 ### Fixed
 
-- **Windows托盘菜单关闭问题修复**：修复Windows平台上托盘右键菜单无法通过点击空白区域关闭的问题
+- **Windows 托盘菜单关闭问题修复**：修复 Windows 平台上托盘右键菜单无法通过点击空白区域关闭的问题
   - 在`popUpContextMenu()`调用中添加`bringAppToFront: true`参数
-  - 虽然该参数已被标记为deprecated，但仍是解决此问题的最简单有效方案
+  - 虽然该参数已被标记为 deprecated，但仍是解决此问题的最简单有效方案
   - 参考：[tray_manager#63](https://github.com/leanflutter/tray_manager/issues/63)
-  - 用户现在可以通过点击窗口区域、按ESC键或再次右键托盘图标来关闭菜单
+  - 用户现在可以通过点击窗口区域、按 ESC 键或再次右键托盘图标来关闭菜单
 
 ## 0.28.2 - 2025-11-09
 
