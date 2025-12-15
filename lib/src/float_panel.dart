@@ -4,7 +4,7 @@ part of '../xly.dart';
 class FloatPanelIconBtn {
   final IconData icon;
   final String? id; // 参与联动时填写；不需要联动可为空
-  final VoidCallback? onTap;
+  final FutureOr<void> Function()? onTap;
   final String? tooltip;
   final bool? disabled; // 显式禁用优先于联动
 
@@ -666,9 +666,16 @@ class _FloatBoxPanel extends StatelessWidget {
                                 ctrl.onPanStartGesture(d.globalPosition),
                             onPanUpdate: (d) =>
                                 ctrl.onPanUpdateGesture(d.globalPosition),
-                            onTap: () {
+                            onTap: () async {
                               if (!isEnabled) return;
-                              item.onTap?.call();
+                              if (item.onTap != null) {
+                                try {
+                                  await item.onTap!();
+                                } catch (e, s) {
+                                  XlyLogger.error(
+                                      'FloatPanelIconBtn.onTap error', e, s);
+                                }
+                              }
                             },
                             child: MouseRegion(
                               onEnter: (_) =>

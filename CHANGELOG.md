@@ -1,3 +1,26 @@
+## 0.28.5 - 2025-12-15
+
+### Fixed
+
+- **修复异步回调导致的 Unhandled Future Exception 问题**：解决当用户传入 async 回调时，内部异常变成未处理 Future 异常的问题
+  - 将所有用户回调类型从 `VoidCallback?` 改为 `FutureOr<void> Function()?`，同时支持同步和异步回调
+  - 所有回调调用处添加 `await` + `try-catch` 兜底，防止用户未处理的异常导致应用崩溃
+  - 使用 `XlyLogger.error` 统一记录异常，Debug 模式可见，Release 模式不显示
+  - 向后兼容：现有同步回调无需任何修改
+
+### Changed
+
+- **受影响的组件和参数**：
+  - `MyDialogSheet.showCenter`: `onConfirm`, `onExit`
+  - `MyDialog.show` / `showIos`: `onLeftButtonPressed`, `onRightButtonPressed`
+  - `MyMenuItem`: `onTap`
+  - `MyTrayMenuItem`: `onTap`
+  - `FloatPanelIconBtn`: `onTap`
+  - `MyAdaptiveNavigationItem`: `onTap`
+  - `MyEndOfListWidget`: `onRetry`
+  - `MyTextEditor`: `onCleared`
+  - `SingleInstanceManager.initialize`: `onActivate`
+
 ## 0.28.4 - 2025-12-15
 
 ### Fixed

@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:xly/xly.dart';
+
+import 'logger.dart';
 
 // 打开下拉的触发来源：输入、获取焦点、点击箭头
 enum _OpenTrigger { typing, focus, arrow }
@@ -20,7 +24,7 @@ class MyTextEditor extends GetView<MyTextEditorController> {
   final bool enabled;
   final bool readOnly;
   final bool clearable;
-  final VoidCallback? onCleared;
+  final FutureOr<void> Function()? onCleared;
   final ValueChanged<String>? onChanged;
 
   // Input properties
@@ -542,10 +546,16 @@ class MyTextEditor extends GetView<MyTextEditorController> {
             child: IconButton(
               iconSize: defaultIconSize.w,
               icon: const Icon(Icons.clear, color: Colors.grey),
-              onPressed: () {
+              onPressed: () async {
                 textController.clear();
                 controller.updateHasText('');
-                onCleared?.call();
+                if (onCleared != null) {
+                  try {
+                    await onCleared!();
+                  } catch (e, s) {
+                    XlyLogger.error('MyTextEditor.onCleared error', e, s);
+                  }
+                }
               },
               padding: EdgeInsets.zero,
               constraints: BoxConstraints(

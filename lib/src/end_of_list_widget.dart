@@ -1,11 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+
+import 'logger.dart';
 
 class MyEndOfListWidget extends StatelessWidget {
   final bool isLoading;
   final bool hasError;
   final bool hasMoreData;
-  final VoidCallback onRetry;
+  final FutureOr<void> Function() onRetry;
   final String loadingText;
   final String errorText;
   final String deadLineText;
@@ -75,7 +79,13 @@ class MyEndOfListWidget extends StatelessWidget {
 
   Widget _buildErrorWidget() {
     return GestureDetector(
-      onTap: onRetry,
+      onTap: () async {
+        try {
+          await onRetry();
+        } catch (e, s) {
+          XlyLogger.error('MyEndOfListWidget.onRetry error', e, s);
+        }
+      },
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 20.h),
         child: Center(

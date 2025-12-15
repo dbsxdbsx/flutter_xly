@@ -6,6 +6,8 @@ import 'package:flutter_adaptive_scaffold/flutter_adaptive_scaffold.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+import 'logger.dart';
+
 /// 自适应根脚手架
 ///
 /// 根据屏幕尺寸自动切换显示模式：
@@ -279,7 +281,13 @@ class _MyScaffoldState extends State<MyScaffold> {
 
         // 优先使用自定义onTap，如果没有则使用route自动导航
         if (item.onTap != null) {
-          item.onTap!.call();
+          () async {
+            try {
+              await item.onTap!();
+            } catch (e, s) {
+              XlyLogger.error('MyAdaptiveNavigationItem.onTap error', e, s);
+            }
+          }();
         } else if (item.route != null) {
           Get.toNamed(item.route!);
         }
@@ -456,7 +464,7 @@ class MyAdaptiveNavigationItem {
   final String label;
 
   /// 点击回调
-  final VoidCallback? onTap;
+  final FutureOr<void> Function()? onTap;
 
   /// 通知徽章数量（可选）
   final int? badgeCount;

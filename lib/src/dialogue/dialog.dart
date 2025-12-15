@@ -1,14 +1,18 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
+import '../logger.dart';
 
 enum MyDialogChosen { left, right, canceled }
 
 class MyDialog {
   static Future<MyDialogChosen> show({
     required Widget content,
-    VoidCallback? onLeftButtonPressed,
-    VoidCallback? onRightButtonPressed,
+    FutureOr<void> Function()? onLeftButtonPressed,
+    FutureOr<void> Function()? onRightButtonPressed,
     String title = '提示',
     String leftButtonText = '取消',
     String rightButtonText = '确定',
@@ -55,8 +59,8 @@ class MyDialog {
 
   static Future<MyDialogChosen> showIos({
     required Widget content,
-    VoidCallback? onLeftButtonPressed,
-    VoidCallback? onRightButtonPressed,
+    FutureOr<void> Function()? onLeftButtonPressed,
+    FutureOr<void> Function()? onRightButtonPressed,
     String title = '提示',
     String leftButtonText = '取消',
     String rightButtonText = '确定',
@@ -111,20 +115,28 @@ class MyDialog {
     required String rightButtonText,
     required Color? leftButtonColor,
     required Color? rightButtonColor,
-    required VoidCallback? onLeftButtonPressed,
-    required VoidCallback? onRightButtonPressed,
+    required FutureOr<void> Function()? onLeftButtonPressed,
+    required FutureOr<void> Function()? onRightButtonPressed,
     required bool isMaterial,
   }) {
-    void onLeftPressed() {
+    Future<void> onLeftPressed() async {
       if (onLeftButtonPressed != null) {
-        onLeftButtonPressed();
+        try {
+          await onLeftButtonPressed();
+        } catch (e, s) {
+          XlyLogger.error('onLeftButtonPressed error', e, s);
+        }
       }
       Get.back(result: MyDialogChosen.left);
     }
 
-    void onRightPressed() {
+    Future<void> onRightPressed() async {
       if (onRightButtonPressed != null) {
-        onRightButtonPressed();
+        try {
+          await onRightButtonPressed();
+        } catch (e, s) {
+          XlyLogger.error('onRightButtonPressed error', e, s);
+        }
       }
       Get.back(result: MyDialogChosen.right);
     }

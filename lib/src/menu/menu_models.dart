@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -8,7 +10,7 @@ abstract class MyMenuElement {}
 class MyMenuItem extends MyMenuElement {
   final String? text;
   final IconData? icon;
-  final VoidCallback? onTap;
+  final FutureOr<void> Function()? onTap;
   final List<MyMenuElement>? subItems;
   final bool enabled;
 

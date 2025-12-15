@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:xly/xly.dart';
+
+import '../logger.dart';
 
 /// 统一的对话框管理类
 class MyDialogSheet {
@@ -38,8 +42,8 @@ class MyDialogSheet {
     EdgeInsets? insetPadding,
     double? titleFontSize,
     bool centerTitle = true,
-    VoidCallback? onConfirm,
-    VoidCallback? onExit,
+    FutureOr<void> Function()? onConfirm,
+    FutureOr<void> Function()? onExit,
     String confirmText = '确定',
     String exitText = '取消',
     bool barrierDismissible = true,
@@ -122,8 +126,8 @@ class _CenterDialogSheet extends StatelessWidget {
   final EdgeInsets? insetPadding;
   final double? titleFontSize;
   final bool centerTitle;
-  final VoidCallback? onConfirm;
-  final VoidCallback? onExit;
+  final FutureOr<void> Function()? onConfirm;
+  final FutureOr<void> Function()? onExit;
   final String confirmText;
   final String exitText;
 
@@ -202,9 +206,13 @@ class _CenterDialogSheet extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton(
-                    onPressed: () {
+                    onPressed: () async {
                       if (onExit != null) {
-                        onExit!();
+                        try {
+                          await onExit!();
+                        } catch (e, s) {
+                          XlyLogger.error('onExit error', e, s);
+                        }
                       } else {
                         Get.back();
                       }
@@ -223,7 +231,15 @@ class _CenterDialogSheet extends StatelessWidget {
                     ),
                   ),
                   TextButton(
-                    onPressed: onConfirm,
+                    onPressed: onConfirm != null
+                        ? () async {
+                            try {
+                              await onConfirm!();
+                            } catch (e, s) {
+                              XlyLogger.error('onConfirm error', e, s);
+                            }
+                          }
+                        : null,
                     style: ButtonStyle(
                       overlayColor: WidgetStateProperty.all(
                         Colors.blue.withValues(alpha: 0.1),

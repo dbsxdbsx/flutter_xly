@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:ui';
 
 import 'logger.dart';
 
@@ -15,7 +14,7 @@ class SingleInstanceManager {
 
   HttpServer? _server;
   int? _port;
-  VoidCallback? _onActivateCallback;
+  FutureOr<void> Function()? _onActivateCallback;
   bool _isRunning = false;
 
   /// 检查并初始化单实例
@@ -29,7 +28,7 @@ class SingleInstanceManager {
   Future<bool> initialize({
     required String instanceKey,
     bool activateExisting = true,
-    VoidCallback? onActivate,
+    FutureOr<void> Function()? onActivate,
   }) async {
     // 移动端和Web端直接返回true，不支持单实例
     if (!Platform.isWindows && !Platform.isMacOS && !Platform.isLinux) {
@@ -77,7 +76,11 @@ class SingleInstanceManager {
         if (request.method == 'POST' && request.uri.path == '/activate') {
           // 收到激活请求
           if (_onActivateCallback != null) {
-            _onActivateCallback!();
+            try {
+              await _onActivateCallback!();
+            } catch (e, s) {
+              XlyLogger.error('SingleInstance: onActivate error: $e', s);
+            }
           }
 
           request.response

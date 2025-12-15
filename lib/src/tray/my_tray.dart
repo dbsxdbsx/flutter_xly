@@ -1,5 +1,5 @@
+import 'dart:async';
 import 'dart:io';
-import 'dart:ui';
 
 import 'package:get/get.dart';
 import 'package:tray_manager/tray_manager.dart';
@@ -16,7 +16,7 @@ class MyTrayMenuItem {
   /// 稳定键，用于唯一标识菜单项；不提供时回退使用 label
   final String? key;
   final String label;
-  final VoidCallback? onTap;
+  final FutureOr<void> Function()? onTap;
   final String? icon;
   final bool enabled;
   final bool isSeparator;
@@ -46,7 +46,7 @@ class MyTrayMenuItem {
   MyTrayMenuItem copyWith({
     String? key,
     String? label,
-    VoidCallback? onTap,
+    FutureOr<void> Function()? onTap,
     String? icon,
     bool? enabled,
     bool? isSeparator,
@@ -291,7 +291,15 @@ class MyTray extends GetxService with TrayListener {
             label: item.label,
             disabled: !item.enabled,
             submenu: Menu(items: _buildMenuItems(item.submenu!)),
-            onClick: (_) => item.onTap?.call(),
+            onClick: (_) async {
+              if (item.onTap != null) {
+                try {
+                  await item.onTap!();
+                } catch (e, s) {
+                  XlyLogger.error('MyTrayMenuItem.onTap error: $e', s);
+                }
+              }
+            },
           ),
         );
       } else {
@@ -300,7 +308,15 @@ class MyTray extends GetxService with TrayListener {
             key: displayKey,
             label: item.label,
             disabled: !item.enabled,
-            onClick: (_) => item.onTap?.call(),
+            onClick: (_) async {
+              if (item.onTap != null) {
+                try {
+                  await item.onTap!();
+                } catch (e, s) {
+                  XlyLogger.error('MyTrayMenuItem.onTap error: $e', s);
+                }
+              }
+            },
           ),
         );
       }

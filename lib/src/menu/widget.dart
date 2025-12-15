@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../logger.dart';
 import 'menu_models.dart';
 import 'style.dart';
 
@@ -138,7 +139,13 @@ class _MenuStateManager {
           if (item.onTap != null) {
             _closeMainMenu();
             // 使用 microtask 确保菜单关闭动画完成后再执行回调
-            Future.microtask(item.onTap!);
+            Future.microtask(() async {
+              try {
+                await item.onTap!();
+              } catch (e, s) {
+                XlyLogger.error('MyMenuItem.onTap error', e, s);
+              }
+            });
           }
         },
         onLayoutRect: (rect) {
