@@ -1,3 +1,18 @@
+## 0.28.6 - 2025-12-16
+
+### Fixed
+
+- **修复 Snackbar 在弹层关闭过程中的 Overlay 崩溃问题**：解决 Flutter 3.38.1+ 对话框关闭回调中调用 `Get.snackbar` 导致 "No Overlay widget found" 异常
+  - 在 `GetMaterialApp` 的 builder 中包裹永久 `Overlay`，确保 `Get.overlayContext` 始终可用
+  - 移除 `menu/widget.dart` 中的 `microtask` 包装，简化代码逻辑
+  - 移除 `MyScaffold` 中冗余的 Overlay 包装（因 App 根部已包裹）
+  - 参考：[getx#3425](https://github.com/jonataslaw/getx/issues/3425)
+
+### Enhanced
+
+- **README 文档完善**：新增 Snackbar 说明章节，解释顶部/底部通知栏的行为和边界场景处理
+- **示例项目**：Page3 新增 Overlay 问题测试按钮，方便验证修复效果
+
 ## 0.28.5 - 2025-12-15
 
 ### Fixed
@@ -7,7 +22,6 @@
   - 所有回调调用处添加 `await` + `try-catch` 兜底，防止用户未处理的异常导致应用崩溃
   - 使用 `XlyLogger.error` 统一记录异常，Debug 模式可见，Release 模式不显示
   - 向后兼容：现有同步回调无需任何修改
-- **修复 Snackbar 在弹层关闭过程中的边缘崩溃**：`MyToast.showUpInfo/showUpWarn/showUpError/showBottom` 在 `Get.overlayContext` 暂不可用时自动延迟到下一帧重试，避免异常
 
 ### Changed
 
