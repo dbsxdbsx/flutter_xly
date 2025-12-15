@@ -620,7 +620,7 @@ MyToast.hideAll(1000); // 1秒后关闭
 
 #### Snackbar 说明（顶部/底部通知栏）
 
-`MyToast.showUpInfo/showUpWarn/showUpError/showBottom` 基于 GetX 的 Snackbar 能力。若在 Dialog/BottomSheet 关闭的同一帧触发导致 `Get.overlayContext` 暂不可用，内部会自动延迟到下一帧重试；仍不可用则静默跳过（开启 `XlyLogger` 调试日志可查看原因）。
+`MyToast.showUpInfo/showUpWarn/showUpError/showBottom` 基于 GetX 的 Snackbar 能力。自 Flutter 3.38.1 起，GetX 的 `overlayContext` 在对话框关闭后可能失效（参考 [getx#3425](https://github.com/jonataslaw/getx/issues/3425)）。本包已通过在 App 根部包裹永久 `Overlay` 解决此问题，现在可以在任意场景（包括 Dialog/BottomSheet 关闭回调）中安全调用。
 
 Toast 特性：
 

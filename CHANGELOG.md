@@ -38,7 +38,7 @@
 
 ## 0.28.4 - 2025-12-15
 
-### Fixed 
+### Fixed
 
 - **修复 Dialog/BottomSheet 内 Overlay 组件崩溃问题**：解决在 Dialog 或 BottomSheet 内部使用 `MyMenu` 或 `MyTextEditor` 下拉功能时触发 "No Overlay widget found" 错误
   - 为所有 `Overlay.of(context)` 调用添加 `rootOverlay: true` 参数
