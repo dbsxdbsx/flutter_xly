@@ -22,9 +22,36 @@ user_code/
 # is commented out by default.
 #.vscode/
 
+# Cursor IDE (personal AI assistant preferences)
+.cursor/
+
 # Flutter/Dart/Pub related
 # Libraries should not include pubspec.lock, per https://dart.dev/guides/libraries/private-files#pubspeclock.
 /pubspec.lock
 **/doc/api/
 .dart_tool/
 build/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Flutter Version Management
+.fvm/
+
+# Test coverage
+coverage/
+
+# Generated files (uncomment if not using code generation)
+# *.g.dart
+# *.freezed.dart
+# *.mocks.dart
+
+# macOS
+*.dmg
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
