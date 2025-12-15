@@ -165,19 +165,20 @@ keyToRollBack: LogicalKeyboardKey.escape,  // 或 backspace、f1 等
 - 仅在桌面平台（Windows/macOS/Linux）可用
 - **智能默认图标**：`iconPath` 参数现在可选，为空时自动使用各平台的默认应用图标，图标缺失时提供详细错误信息和解决方案
 
-#### Windows托盘菜单关闭问题及解决方案
+#### Windows 托盘菜单关闭问题及解决方案
 
-**已知问题**：在Windows平台上，托盘右键菜单弹出后，点击屏幕其他区域可能无法关闭菜单（参考：[tray_manager#63](https://github.com/leanflutter/tray_manager/issues/63)）
+**已知问题**：在 Windows 平台上，托盘右键菜单弹出后，点击屏幕其他区域可能无法关闭菜单（参考：[tray_manager#63](https://github.com/leanflutter/tray_manager/issues/63)）
 
-**解决方案**：XLY包已内置修复，使用`bringAppToFront: true`参数调用`popUpContextMenu()`。虽然此参数已被标记为deprecated，但它是目前最简单有效的解决方案。
+**解决方案**：XLY 包已内置修复，使用`bringAppToFront: true`参数调用`popUpContextMenu()`。虽然此参数已被标记为 deprecated，但它是目前最简单有效的解决方案。
 
 **用户如何关闭菜单**：
+
 - ✅ 点击任意菜单项（菜单自动关闭）
-- ✅ 按ESC键（标准Windows行为）
+- ✅ 按 ESC 键（标准 Windows 行为）
 - ✅ 再次右键托盘图标（新菜单替换旧菜单）
 - ✅ 点击窗口区域（在应用了修复后可用）
 
-**注意**：此修复已自动应用，开发者无需额外操作。如遇到菜单无法关闭的问题，可能是使用了较旧版本的tray_manager包，建议升级到最新版本。
+**注意**：此修复已自动应用，开发者无需额外操作。如遇到菜单无法关闭的问题，可能是使用了较旧版本的 tray_manager 包，建议升级到最新版本。
 
 ### MyNotify 系统通知组件
 
