@@ -1,3 +1,25 @@
+## 0.29.2 - 2025-12-16
+
+### Fixed
+
+- **修复 MyCardList.scrollToIndex 滚动定位不准问题**：原实现使用硬编码卡片高度，导致目标节点无法正确居中
+  - 改用动态计算：`cardHeight = (maxScrollExtent + viewportHeight) / itemCount`
+  - 自动适应缩放、屏幕变化等情况，无累积偏移误差
+
+### Enhanced
+
+- **scrollToIndex 健壮性增强**：
+  - 添加 `index` 越界保护（自动 clamp 到有效范围）
+  - 添加 `hasClients` 检查 + `postFrameCallback` 延迟执行，避免首帧访问异常
+  - 添加 `RenderBox` 检查 + 延迟重试，确保列表已渲染
+  - 添加 `maxScrollExtent ≤ 0` 保护，内容不足时不执行无意义滚动
+  - 完善 API 文档注释
+
+- **Example Page4 滚动测试 UI 优化**：
+  - 为可拖动列表和静态列表分别添加独立的滚动控制组件
+  - 重新设计底部控制区布局，两组控件对称排列，颜色区分
+  - 每组包含：标签、自动滚动开关（Checkbox）、目标选择（Dropdown）
+
 ## 0.29.1 - 2025-12-16
 
 ### Added

@@ -21,6 +21,12 @@ class Page4View extends GetView<Page4Controller> {
                       title: '可拖动列表',
                       // style: SectionBorderStyle.inset,
                       child: MyCardList(
+                        onStateCreated: (state) =>
+                            controller._draggableCardListState = state,
+                        indexToScroll: controller.draggableAutoScroll.value &&
+                                controller.draggableSelectedIndex.value != -1
+                            ? controller.draggableSelectedIndex.value
+                            : null,
                         itemCount: controller.draggableCards.length,
                         cardLeading: (index) =>
                             Obx(() => controller.showDragHandle.value
@@ -82,10 +88,10 @@ class Page4View extends GetView<Page4Controller> {
                       title: '不可拖动列表',
                       child: MyCardList(
                         onStateCreated: (state) =>
-                            controller._cardListState = state,
-                        indexToScroll: controller.enableAutoScroll.value &&
-                                controller.selectedCardIndex.value != -1
-                            ? controller.selectedCardIndex.value
+                            controller._staticCardListState = state,
+                        indexToScroll: controller.staticAutoScroll.value &&
+                                controller.staticSelectedIndex.value != -1
+                            ? controller.staticSelectedIndex.value
                             : null,
                         cardLeading: (index) => Icon(
                           Icons.download_outlined,
@@ -152,10 +158,40 @@ class Page4View extends GetView<Page4Controller> {
           ),
         ),
         Padding(
-          padding: EdgeInsets.all(16.w),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // 滚动控制区：两组控件对称排列
+              Row(
+                children: [
+                  // 左侧：可拖动列表滚动控制
+                  Expanded(
+                    child: _buildScrollControlGroup(
+                      label: '可拖动列表',
+                      labelColor: Colors.blue[700]!,
+                      autoScroll: controller.draggableAutoScroll,
+                      selectedIndex: controller.draggableSelectedIndex,
+                      itemCount: controller.draggableCards.length,
+                      onScrollToIndex: controller.scrollToDraggableIndex,
+                    ),
+                  ),
+                  SizedBox(width: 16.w),
+                  // 右侧：静态列表滚动控制
+                  Expanded(
+                    child: _buildScrollControlGroup(
+                      label: '静态列表',
+                      labelColor: Colors.green[700]!,
+                      autoScroll: controller.staticAutoScroll,
+                      selectedIndex: controller.staticSelectedIndex,
+                      itemCount: controller.staticCards.length,
+                      onScrollToIndex: controller.scrollToStaticIndex,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 12.h),
+              // 功能按钮行
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
@@ -178,53 +214,16 @@ class Page4View extends GetView<Page4Controller> {
                             : '显示拖拽手柄',
                         size: 80.w,
                       )),
-                  Row(
-                    children: [
-                      MyButton(
-                        onPressed: () => MyToast.show(
-                            '静态列表项数量：${controller.staticCards.length}'),
-                        text: '静态列表数量',
-                        size: 80.w,
-                      ),
-                      SizedBox(width: 8.w),
-                      // 添加复选框
-                      Obx(() => Checkbox(
-                            value: controller.enableAutoScroll.value,
-                            onChanged: (value) =>
-                                controller.enableAutoScroll.value = value!,
-                          )),
-                      // 下拉列表
-                      SizedBox(
-                        width: 120.w,
-                        child: Obx(() => DropdownButtonFormField<int>(
-                              initialValue:
-                                  controller.selectedCardIndex.value == -1
-                                      ? null
-                                      : controller.selectedCardIndex.value,
-                              decoration: InputDecoration(
-                                contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 12.w, vertical: 8.h),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8.r),
-                                ),
-                                hintText: '跳转到...',
-                              ),
-                              items: List.generate(
-                                controller.staticCards.length,
-                                (index) => DropdownMenuItem(
-                                  value: index,
-                                  child: Text('第 ${index + 1} 项',
-                                      style: TextStyle(fontSize: 14.sp)),
-                                ),
-                              ),
-                              onChanged: controller.scrollToIndex,
-                            )),
-                      ),
-                    ],
+                  MyButton(
+                    onPressed: () => MyToast.show(
+                        '静态列表项数量：${controller.staticCards.length}'),
+                    text: '静态列表数量',
+                    size: 80.w,
                   ),
                 ],
               ),
-              SizedBox(height: 16.h),
+              SizedBox(height: 12.h),
+              // 导航按钮行
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
@@ -281,6 +280,93 @@ class Page4View extends GetView<Page4Controller> {
   void _onCopyCard(int index) {
     MyToast.show('复制链接：${controller.staticCards[index]}');
   }
+
+  /// 构建滚动控制组件
+  Widget _buildScrollControlGroup({
+    required String label,
+    required Color labelColor,
+    required RxBool autoScroll,
+    required RxInt selectedIndex,
+    required int itemCount,
+    required void Function(int?) onScrollToIndex,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+      decoration: BoxDecoration(
+        color: labelColor.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(8.r),
+        border: Border.all(color: labelColor.withOpacity(0.2)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 标签
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12.sp,
+              fontWeight: FontWeight.w500,
+              color: labelColor,
+            ),
+          ),
+          SizedBox(width: 8.w),
+          // 自动滚动开关
+          Obx(() => SizedBox(
+                width: 24.w,
+                height: 24.h,
+                child: Checkbox(
+                  value: autoScroll.value,
+                  onChanged: (value) => autoScroll.value = value!,
+                  activeColor: labelColor,
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  visualDensity: VisualDensity.compact,
+                ),
+              )),
+          SizedBox(width: 4.w),
+          // 下拉选择
+          Expanded(
+            child: SizedBox(
+              height: 36.h,
+              child: Obx(() => DropdownButtonFormField<int>(
+                    value: selectedIndex.value == -1
+                        ? null
+                        : selectedIndex.value,
+                    decoration: InputDecoration(
+                      contentPadding: EdgeInsets.symmetric(
+                          horizontal: 10.w, vertical: 0),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(6.r),
+                        borderSide: BorderSide(color: labelColor.withOpacity(0.3)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(6.r),
+                        borderSide: BorderSide(color: labelColor.withOpacity(0.3)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(6.r),
+                        borderSide: BorderSide(color: labelColor),
+                      ),
+                      hintText: '跳转到...',
+                      hintStyle: TextStyle(fontSize: 12.sp),
+                      isDense: true,
+                    ),
+                    style: TextStyle(fontSize: 12.sp, color: Colors.black87),
+                    icon: Icon(Icons.arrow_drop_down, size: 20.w, color: labelColor),
+                    items: List.generate(
+                      itemCount,
+                      (index) => DropdownMenuItem(
+                        value: index,
+                        child: Text('第 ${index + 1} 项'),
+                      ),
+                    ),
+                    onChanged: onScrollToIndex,
+                  )),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class Page4Controller extends GetxController {
@@ -292,12 +378,17 @@ class Page4Controller extends GetxController {
   final staticCards = <String>[].obs;
   final draggableListState = ListState().obs;
   final staticListState = ListState().obs;
-  final selectedCardIndex = (-1).obs;
-  final enableAutoScroll = false.obs;
   final showDragHandle = true.obs;
 
-  // MyCardList 的引用，用于访问滚动方法
-  MyCardListState? _cardListState;
+  // 可拖动列表滚动控制
+  final draggableSelectedIndex = (-1).obs;
+  final draggableAutoScroll = false.obs;
+  MyCardListState? _draggableCardListState;
+
+  // 静态列表滚动控制
+  final staticSelectedIndex = (-1).obs;
+  final staticAutoScroll = false.obs;
+  MyCardListState? _staticCardListState;
 
   @override
   void onInit() {
@@ -382,23 +473,42 @@ class Page4Controller extends GetxController {
     }
   }
 
-  void scrollToIndex(int? index) {
+  /// 滚动到可拖动列表指定索引
+  void scrollToDraggableIndex(int? index) {
     if (index == null) return;
-    selectedCardIndex.value = index;
+    draggableSelectedIndex.value = index;
 
-    // 如果启用了自动滚动，立即强制滚动到目标位置
-    if (enableAutoScroll.value) {
-      forceScrollToIndex();
+    if (draggableAutoScroll.value) {
+      _forceDraggableScroll();
     }
   }
 
-  // 添加强制滚动方法
-  void forceScrollToIndex() {
-    if (selectedCardIndex.value >= 0) {
-      _cardListState?.scrollToIndex(
-        selectedCardIndex.value,
+  void _forceDraggableScroll() {
+    if (draggableSelectedIndex.value >= 0) {
+      _draggableCardListState?.scrollToIndex(
+        draggableSelectedIndex.value,
         duration: const Duration(milliseconds: 300),
-        alignment: 0.5, // 居中对齐
+        alignment: 0.5,
+      );
+    }
+  }
+
+  /// 滚动到静态列表指定索引
+  void scrollToStaticIndex(int? index) {
+    if (index == null) return;
+    staticSelectedIndex.value = index;
+
+    if (staticAutoScroll.value) {
+      _forceStaticScroll();
+    }
+  }
+
+  void _forceStaticScroll() {
+    if (staticSelectedIndex.value >= 0) {
+      _staticCardListState?.scrollToIndex(
+        staticSelectedIndex.value,
+        duration: const Duration(milliseconds: 300),
+        alignment: 0.5,
       );
     }
   }

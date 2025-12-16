@@ -179,33 +179,72 @@ class MyCardListState extends State<MyCardList> {
   late final GlobalKey _listViewKey;
 
   // 暴露命令式滚动方法
+  /// 滚动到指定索引位置
+  ///
+  /// [index] 目标卡片索引（会自动 clamp 到有效范围）
+  /// [duration] 滚动动画时长
+  /// [curve] 滚动动画曲线
+  /// [alignment] 对齐方式：0.0 顶部对齐, 0.5 居中, 1.0 底部对齐
   void scrollToIndex(
     int index, {
     Duration duration = const Duration(milliseconds: 500),
     Curve curve = Curves.easeInOut,
-    double alignment = 0.5, // 0.0 顶部, 0.5 居中, 1.0 底部
+    double alignment = 0.5,
   }) {
     if (!mounted) return;
+    if (widget.itemCount <= 0) return;
 
+    // 1. index 越界保护：clamp 到有效范围 [0, itemCount-1]
+    final safeIndex = index.clamp(0, widget.itemCount - 1);
+
+    // 2. 检查 ScrollController 是否已附加到 ScrollView
+    if (!_scrollController.hasClients) {
+      // 还没准备好，延迟到下一帧再执行
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          scrollToIndex(safeIndex,
+              duration: duration, curve: curve, alignment: alignment);
+        }
+      });
+      return;
+    }
+
+    // 3. 检查 RenderBox 是否已渲染
     final RenderBox? listViewBox =
         _listViewKey.currentContext?.findRenderObject() as RenderBox?;
-    if (listViewBox == null) return;
+    if (listViewBox == null) {
+      // RenderBox 还没准备好，延迟到下一帧
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          scrollToIndex(safeIndex,
+              duration: duration, curve: curve, alignment: alignment);
+        }
+      });
+      return;
+    }
 
-    // 计算滚动位置
     final listViewHeight = listViewBox.size.height;
-    final cardTotalHeight = (widget.cardHeight ?? 80.h) +
-        (widget.cardMargin?.call(index)?.vertical ?? 3.h);
+    final maxScrollExtent = _scrollController.position.maxScrollExtent;
 
-    final targetCard = index * cardTotalHeight;
-    final viewportMiddle = listViewHeight * alignment;
-    final cardOffset = cardTotalHeight * alignment;
+    // 4. 如果内容不足以滚动（所有项都在视口内），直接返回
+    if (maxScrollExtent <= 0) return;
 
-    double targetPosition = targetCard - (viewportMiddle - cardOffset);
-    targetPosition = targetPosition.clamp(
-      0.0,
-      _scrollController.position.maxScrollExtent,
-    );
+    // 5. 动态计算卡片高度：基于实际滚动范围和列表项数推算
+    //    totalContentHeight = maxScrollExtent + viewportHeight
+    //    cardAverageHeight = totalContentHeight / itemCount
+    //    此方法自动适应缩放、屏幕变化等情况
+    final totalContentHeight = maxScrollExtent + listViewHeight;
+    final cardTotalHeight = totalContentHeight / widget.itemCount;
 
+    // 6. 计算目标滚动位置，使目标卡片按 alignment 对齐
+    final targetCardTop = safeIndex * cardTotalHeight;
+    final viewportAlignPoint = listViewHeight * alignment;
+    final cardAlignPoint = cardTotalHeight * alignment;
+
+    double targetPosition = targetCardTop - (viewportAlignPoint - cardAlignPoint);
+    targetPosition = targetPosition.clamp(0.0, maxScrollExtent);
+
+    // 7. 执行滚动动画
     _scrollController.animateTo(
       targetPosition,
       duration: duration,
