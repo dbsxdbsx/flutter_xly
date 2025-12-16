@@ -37,6 +37,7 @@ class MySpinBox extends StatefulWidget {
   final double step;
   final double? inSetVerticalPadding;
   final double? inSetHorizontalPadding;
+  final FloatingLabelAlignment floatingLabelAlignment;
 
   const MySpinBox({
     super.key,
@@ -55,6 +56,7 @@ class MySpinBox extends StatefulWidget {
     this.spinButtonSize,
     this.inSetVerticalPadding,
     this.inSetHorizontalPadding,
+    this.floatingLabelAlignment = FloatingLabelAlignment.center,
   });
 
   @override
@@ -190,9 +192,34 @@ class _MySpinBoxState extends State<MySpinBox> {
     _continuousUpdateTimer = null;
   }
 
+  /// 根据 max 值的位数自动计算组件所需的最小宽度
+  double _calculateMinWidth() {
+    final maxDigits = widget.max.toInt().toString().length;
+    final fontSize =
+        widget.centerTextFontSize ?? MySpinBox.defaultCenterFontSize;
+    final buttonSize = widget.spinButtonSize ?? MySpinBox.defaultButtonSize;
+
+    // 计算各部分宽度
+    final buttonsWidth = buttonSize * 2; // 两个按钮
+    final digitWidth = maxDigits * fontSize * 0.7; // 数字区域（每位数约0.7倍字体大小）
+    final padding = 16.w; // 额外padding
+
+    // 如果有后缀，需要额外空间
+    double suffixWidth = 0;
+    if (widget.suffix != null) {
+      final suffixFontSize =
+          widget.suffixFontSize ?? MySpinBox.defaultSuffixFontSize;
+      suffixWidth = widget.suffix!.length * suffixFontSize * 0.6 + 8.w;
+    }
+
+    return buttonsWidth + digitWidth + padding + suffixWidth;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return KeyboardListener(
+    return ConstrainedBox(
+      constraints: BoxConstraints(minWidth: _calculateMinWidth()),
+      child: KeyboardListener(
       focusNode: FocusNode(),
       onKeyEvent: (event) {
         if (event is KeyDownEvent) {
@@ -233,6 +260,7 @@ class _MySpinBoxState extends State<MySpinBox> {
               fontSize: widget.labelFontSize ?? MySpinBox.defaultTitleFontSize,
               color: Colors.grey[700],
             ),
+            floatingLabelAlignment: widget.floatingLabelAlignment,
             isDense: true,
             contentPadding: _getContentPadding(),
             border: _buildBorder(Colors.grey[300]!),
@@ -283,6 +311,7 @@ class _MySpinBoxState extends State<MySpinBox> {
           ),
           textAlign: TextAlign.center,
         ),
+      ),
       ),
     );
   }

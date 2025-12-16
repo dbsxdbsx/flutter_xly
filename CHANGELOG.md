@@ -1,3 +1,19 @@
+## 0.29.0 - 2025-12-16
+
+### Added
+
+- **MySpinBox 动态最小宽度**：根据 `max` 值的位数自动计算组件最小宽度，修复数字显示区域被压缩导致截断的问题（如 "30" 显示为 "3("）
+  - 新增 `_calculateMinWidth()` 方法，综合考虑按钮宽度、数字位数、字体大小、后缀文字等因素
+  - 使用 `ConstrainedBox` 包裹组件确保最小宽度
+  - 无需手动设置，自动适配各种 `max` 值场景
+
+- **编辑器标签对齐选项**：`MyTextEditor` 和 `MySpinBox` 均新增 `floatingLabelAlignment` 参数，支持标签水平位置设置
+  - `FloatingLabelAlignment.start`：左对齐
+  - `FloatingLabelAlignment.center`：居中对齐
+  - `MyTextEditor` 默认左对齐（适合文本输入）
+  - `MySpinBox` 默认居中（适合数字选择器）
+  - 示例页面 Page6 的"综合自定义样式输入框"已更新为居中标签展示
+
 ## 0.28.6 - 2025-12-16
 
 ### Fixed

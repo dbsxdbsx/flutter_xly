@@ -178,7 +178,7 @@ class Page6View extends GetView<Page6Controller> {
         MyTextEditor(
           textController: controller.styledController1,
           label: '综合自定义样式输入框',
-          hint: '圆角边框+蓝色背景+绿色标签+红色边框',
+          hint: '圆角边框+蓝色背景+绿色标签+红色边框+居中标签',
           clearable: true,
           onCleared: controller.onStyled1Cleared,
           // 综合样式设置
@@ -189,6 +189,7 @@ class Page6View extends GetView<Page6Controller> {
           normalBorderColor: Colors.red,
           enabledBorderColor: Colors.red,
           focusedBorderColor: Colors.blue,
+          floatingLabelAlignment: FloatingLabelAlignment.center,
         ),
       ],
 

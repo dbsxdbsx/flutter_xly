@@ -77,6 +77,7 @@ class MyTextEditor extends GetView<MyTextEditorController> {
   final bool isDense;
   final bool showScrollbar;
   final FloatingLabelBehavior floatingLabelBehavior;
+  final FloatingLabelAlignment floatingLabelAlignment;
 
   // Internal properties
   final String uniqueId;
@@ -163,6 +164,7 @@ class MyTextEditor extends GetView<MyTextEditorController> {
     this.isDense = true,
     this.showScrollbar = true,
     this.floatingLabelBehavior = FloatingLabelBehavior.always,
+    this.floatingLabelAlignment = FloatingLabelAlignment.start,
   }) : uniqueId = UniqueKey().toString() {
     Get.put(MyTextEditorController(), tag: uniqueId);
   }
@@ -431,24 +433,25 @@ class MyTextEditor extends GetView<MyTextEditorController> {
           color: textColor,
           fontWeight: textFontWeight,
         ),
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: TextStyle(
-            fontSize: (labelFontSize ?? defaultLabelFontSize).sp,
-            color: enabled ? labelColor : Colors.grey,
-            fontWeight: labelFontWeight,
-          ),
-          hintText: hint,
-          hintStyle: TextStyle(
-            color: hintColor ?? Colors.grey[400],
-            fontSize: (hintFontSize ?? defaultHintFontSize).sp,
-            height: 1.0,
-          ),
-          isDense: true,
-          filled: backgroundColor != null,
-          fillColor: backgroundColor,
-          floatingLabelBehavior: floatingLabelBehavior,
-          contentPadding: _getEditorBoxContentPadding(),
+          decoration: InputDecoration(
+            labelText: label,
+            labelStyle: TextStyle(
+              fontSize: (labelFontSize ?? defaultLabelFontSize).sp,
+              color: enabled ? labelColor : Colors.grey,
+              fontWeight: labelFontWeight,
+            ),
+            hintText: hint,
+            hintStyle: TextStyle(
+              color: hintColor ?? Colors.grey[400],
+              fontSize: (hintFontSize ?? defaultHintFontSize).sp,
+              height: 1.0,
+            ),
+            isDense: true,
+            filled: backgroundColor != null,
+            fillColor: backgroundColor,
+            floatingLabelBehavior: floatingLabelBehavior,
+            floatingLabelAlignment: floatingLabelAlignment,
+            contentPadding: _getEditorBoxContentPadding(),
           border: _buildBorder(normalBorderColor),
           enabledBorder: _buildBorder(enabledBorderColor),
           focusedBorder: _buildBorder(focusedBorderColor),
