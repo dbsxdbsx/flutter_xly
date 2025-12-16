@@ -1,3 +1,9 @@
+## 0.29.1 - 2025-12-16
+
+### Added
+
+- **MySpinBox 标签对齐选项**：新增 `floatingLabelAlignment` 参数，默认居中对齐（适合数字选择器的对称布局）
+
 ## 0.29.0 - 2025-12-16
 
 ### Added
@@ -7,11 +13,9 @@
   - 使用 `ConstrainedBox` 包裹组件确保最小宽度
   - 无需手动设置，自动适配各种 `max` 值场景
 
-- **编辑器标签对齐选项**：`MyTextEditor` 和 `MySpinBox` 均新增 `floatingLabelAlignment` 参数，支持标签水平位置设置
-  - `FloatingLabelAlignment.start`：左对齐
+- **MyTextEditor 标签对齐选项**：新增 `floatingLabelAlignment` 参数，支持标签水平位置设置
+  - `FloatingLabelAlignment.start`（默认）：左对齐
   - `FloatingLabelAlignment.center`：居中对齐
-  - `MyTextEditor` 默认左对齐（适合文本输入）
-  - `MySpinBox` 默认居中（适合数字选择器）
   - 示例页面 Page6 的"综合自定义样式输入框"已更新为居中标签展示
 
 ## 0.28.6 - 2025-12-16
