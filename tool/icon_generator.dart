@@ -2,7 +2,6 @@
 
 import 'dart:io';
 
-import 'package:args/args.dart';
 import 'package:image/image.dart' as img;
 import 'package:path/path.dart' as path;
 import 'package:xml/xml.dart' as xml;
@@ -11,55 +10,11 @@ import 'package:xml/xml.dart' as xml;
 ///
 /// ⚠️ 警告：此类仅供命令行工具使用，不应在Flutter应用代码中导入！
 ///
-/// 使用方式：
+/// 推荐通过 generate.dart 调用：
 /// ```bash
-/// dart run tool/icon_generator.dart --source="assets/my_icon.png"
+/// dart run xly:generate icon=path/to/icon.png
 /// ```
 class IconGenerator {
-  /// 命令行入口
-  static Future<void> main(List<String> args) async {
-    print('🎨 开始生成应用图标...\n');
-
-    final parser = ArgParser();
-    parser.addOption('source', abbr: 's', help: '源图标文件路径 (PNG/JPEG/JPG)');
-    parser.addFlag('help', abbr: 'h', help: '显示帮助信息', negatable: false);
-
-    try {
-      final results = parser.parse(args);
-
-      if (results['help'] == true) {
-        _showHelp(parser);
-        return;
-      }
-
-      final sourcePath = results['source'] as String?;
-      if (sourcePath == null || sourcePath.isEmpty) {
-        print('❌ 错误：请指定源图标文件路径');
-        print('使用 --help 查看帮助信息');
-        exit(1);
-      }
-
-      final generator = IconGenerator();
-      await generator.generateIcons(sourcePath);
-
-      print('\n🎉 图标生成完成！');
-    } catch (e) {
-      print('❌ 参数解析错误: $e');
-      _showHelp(parser);
-      exit(1);
-    }
-  }
-
-  /// 显示帮助信息
-  static void _showHelp(ArgParser parser) {
-    print('图标生成工具 - 为Flutter应用生成所有平台的图标');
-    print('\n用法:');
-    print('  dart run tool/icon_generator.dart --source="path/to/icon.png"');
-    print('\n选项:');
-    print(parser.usage);
-    print('\n支持的图像格式: PNG, JPEG, JPG');
-    print('建议源图标尺寸: 1024x1024 像素或更大');
-  }
 
   /// 生成所有平台图标
   Future<void> generateIcons(String sourcePath) async {
@@ -176,7 +131,7 @@ class IconGenerator {
         await _generateWebIcons(sourceImage);
         break;
       default:
-        print('⚠️ 不支持的平台: $platform');
+        print('🚫 跳过 [$platform]: 不支持的平台');
     }
   }
 
@@ -308,22 +263,50 @@ class IconGenerator {
   }
 
   /// 保存调整尺寸后的图像
-  Future<void> _saveResizedImage(
+  Future<bool> _saveResizedImage(
       img.Image sourceImage, int size, String filePath) async {
-    final resized = img.copyResize(sourceImage, width: size, height: size);
-    final bytes = img.encodePng(resized);
-    await File(filePath).writeAsBytes(bytes);
+    try {
+      final resized = img.copyResize(sourceImage, width: size, height: size);
+      final bytes = img.encodePng(resized);
+      await File(filePath).writeAsBytes(bytes);
+      return true;
+    } catch (e) {
+      print('❌ 保存图像失败 ($filePath): ${_getFriendlyErrorMessage(e)}');
+      return false;
+    }
+  }
+
+  /// 检测是否为文件锁定错误，并返回友好的错误信息
+  static String _getFriendlyErrorMessage(Object error) {
+    final errorStr = error.toString().toLowerCase();
+    // 检测常见的文件锁定/访问拒绝错误
+    if (errorStr.contains('access') ||
+        errorStr.contains('denied') ||
+        errorStr.contains('locked') ||
+        errorStr.contains('being used') ||
+        errorStr.contains('permission') ||
+        errorStr.contains('cannot open') ||
+        errorStr.contains('sharing violation')) {
+      return '文件被占用，可能是应用正在运行中。请先关闭 Flutter 应用后再试。';
+    }
+    return error.toString();
   }
 
   /// 保存ICO文件
-  Future<void> _saveIcoFile(List<img.Image> images, String filePath) async {
-    // 创建一个包含多个尺寸的图像
-    final icoImage = img.Image(width: 256, height: 256);
-    icoImage.frames = images;
-    icoImage.frameType = img.FrameType.sequence;
+  Future<bool> _saveIcoFile(List<img.Image> images, String filePath) async {
+    try {
+      // 创建一个包含多个尺寸的图像
+      final icoImage = img.Image(width: 256, height: 256);
+      icoImage.frames = images;
+      icoImage.frameType = img.FrameType.sequence;
 
-    final bytes = img.encodeIco(icoImage);
-    await File(filePath).writeAsBytes(bytes);
+      final bytes = img.encodeIco(icoImage);
+      await File(filePath).writeAsBytes(bytes);
+      return true;
+    } catch (e) {
+      print('❌ 保存 ICO 文件失败 ($filePath): ${_getFriendlyErrorMessage(e)}');
+      return false;
+    }
   }
 
   /// 生成macOS图标
@@ -487,7 +470,11 @@ class IconGenerator {
   }
 }''';
 
-    await File('$dir/Contents.json').writeAsString(contentsJson);
+    try {
+      await File('$dir/Contents.json').writeAsString(contentsJson);
+    } catch (e) {
+      print('❌ 保存 iOS Contents.json 失败: ${_getFriendlyErrorMessage(e)}');
+    }
   }
 
   /// 更新Android Manifest文件
@@ -496,7 +483,7 @@ class IconGenerator {
     final manifestFile = File(manifestPath);
 
     if (!await manifestFile.exists()) {
-      print('⚠️ Android Manifest文件不存在，跳过更新');
+      print('🚫 跳过 [Android Manifest]: 文件不存在');
       return;
     }
 
@@ -513,7 +500,7 @@ class IconGenerator {
       await manifestFile.writeAsString(document.toString());
       print('✅ 已更新 Android Manifest');
     } catch (e) {
-      print('⚠️ 更新 Android Manifest 失败: $e');
+      print('❌ 更新 Android Manifest 失败: ${_getFriendlyErrorMessage(e)}');
     }
   }
 
@@ -589,7 +576,11 @@ class IconGenerator {
   }
 }''';
 
-    await File('$dir/Contents.json').writeAsString(contentsJson);
+    try {
+      await File('$dir/Contents.json').writeAsString(contentsJson);
+    } catch (e) {
+      print('❌ 保存 macOS Contents.json 失败: ${_getFriendlyErrorMessage(e)}');
+    }
   }
 
   /// 复制托盘图标到Flutter assets目录（用于MyTray运行时访问）
@@ -629,13 +620,17 @@ class IconGenerator {
     // 复制文件
     final sourceFile = File(sourceFilePath);
     if (await sourceFile.exists()) {
-      await sourceFile.copy(assetPath);
-      print('✅ 托盘图标已复制到: $assetPath');
+      try {
+        await sourceFile.copy(assetPath);
+        print('✅ 托盘图标已复制到: $assetPath');
 
-      // 更新pubspec.yaml
-      await _updatePubspecAssets(assetDir);
+        // 更新pubspec.yaml
+        await _updatePubspecAssets(assetDir);
+      } catch (e) {
+        print('❌ 复制托盘图标失败: ${_getFriendlyErrorMessage(e)}');
+      }
     } else {
-      print('⚠️ 源文件不存在，跳过复制: $sourceFilePath');
+      print('🚫 跳过 [托盘图标]: 源文件不存在 ($sourceFilePath)');
     }
   }
 
@@ -643,7 +638,7 @@ class IconGenerator {
   Future<void> _updatePubspecAssets(String assetDir) async {
     final pubspecFile = File('pubspec.yaml');
     if (!await pubspecFile.exists()) {
-      print('⚠️ pubspec.yaml 文件不存在，跳过更新');
+      print('🚫 跳过 [pubspec.yaml]: 文件不存在');
       return;
     }
 
@@ -716,12 +711,7 @@ class IconGenerator {
         print('ℹ️ pubspec.yaml 中已存在资产路径: $normalizedAssetDir');
       }
     } catch (e) {
-      print('⚠️ 更新 pubspec.yaml 失败: $e');
+      print('❌ 更新 pubspec.yaml 失败: ${_getFriendlyErrorMessage(e)}');
     }
   }
-}
-
-/// 程序入口点
-void main(List<String> args) async {
-  await IconGenerator.main(args);
 }

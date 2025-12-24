@@ -67,13 +67,35 @@ XLY 是一个 Flutter 懒人工具包，提供了一些常用的功能和组件�
 - `flutter_local_notifications: ^19.4.0` - 本地通知
 - `timezone: ^0.10.0` - 时区处理
 
+## 命令行工具
+
+XLY 提供了便捷的命令行工具，可通过交互式菜单或直接执行子命令：
+
+```bash
+# 显示交互式菜单（推荐新手使用）
+dart run xly
+
+# 直接执行子命令
+dart run xly generate icon "path/to/icon.png"
+dart run xly rename all "应用名称"
+dart run xly win_setup
+
+# 或使用冒号语法直接调用
+dart run xly:generate icon "path/to/icon.png"
+```
+
+> ⚠️ **非 ASCII 字符提示**：如果路径或名称包含非 ASCII 字符（如中文、日文等），建议使用 `dart run xly:<command>` 直接执行，而非通过交互式菜单输入，以避免终端编码问题。
+
 ## 应用图标生成
 
 本包内置自研的图标生成工具，支持一键为所有平台生成应用图标。
 
 ```bash
 # 从单个源图标生成所有平台的图标
-dart run xly:generate icon="path/to/your/icon.png"
+dart run xly:generate icon "path/to/your/icon.png"
+
+# 支持带空格的路径
+dart run xly:generate icon "C:\My Images\app icon.png"
 ```
 
 支持的平台：
@@ -748,7 +770,7 @@ MyTray 提供跨平台的系统托盘功能：
 
 ```bash
 # 1. 一键生成所有平台图标（包括托盘图标资产）
-dart run xly:generate icon="assets/app_icon.png"
+dart run xly:generate icon "assets/app_icon.png"
 
 # 2. 在代码中不指定 iconPath，自动使用一致图标
 tray: MyTray(
@@ -2239,10 +2261,13 @@ await MyAutoStart.setAutoStart(false);
 
 ```bash
 # 为所有平台设置相同名称
-dart run xly:rename all="新应用名称"
+dart run xly:rename all "新应用名称"
+
+# 支持带空格的应用名
+dart run xly:rename all "好人 平安"
 
 # 为不同平台设置不同名称
-dart run xly:rename android="Android版本" ios="iOS版本" windows="Windows版本"
+dart run xly:rename android "Android版本" ios "iOS版本" windows "Windows版本"
 ```
 
 ### FloatPanel 多选禁用与常亮控制

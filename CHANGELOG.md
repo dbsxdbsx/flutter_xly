@@ -1,3 +1,31 @@
+## 0.30.0 - 2025-12-24
+
+### ⚠️ Breaking Changes
+
+- **命令行参数语法变更**：从 `key="value"` 改为 `key "value"` 风格
+  - 新：`dart run xly:generate icon "path/to/icon.png"`
+  - 旧：`dart run xly:generate icon="path/to/icon.png"`（不再支持）
+  - 新：`dart run xly:rename all "应用名称"`
+  - 旧：`dart run xly:rename all="应用名称"`（不再支持）
+  - 更好地支持带空格的路径和名称
+
+### Added
+
+- **命令行工具统一入口**：新增 `dart run xly` 交互式菜单
+  - 运行 `dart run xly` 显示可选命令菜单，方便新手使用
+  - 支持 `dart run xly <command>` 直接执行子命令（如 `dart run xly generate icon "path"`）
+  - 自动检测终端编码，尝试处理 UTF-8 输入
+
+### Enhanced
+
+- **非 ASCII 字符提示优化**：交互式菜单中的提示从"如含中文"改为"如含非 ASCII 字符（如中文、日文等）"，更准确描述编码问题适用场景
+- **错误处理优化**：添加友好的文件锁定错误提示（如"文件被占用，可能是应用正在运行中"）
+- **日志格式统一**：跳过用 🚫，成功用 ✅，错误用 ❌
+
+### Documentation
+
+- **README 新增"命令行工具"章节**：介绍交互式菜单和直接执行子命令的两种使用方式
+
 ## 0.29.3 - 2025-12-24
 
 ### Enhanced

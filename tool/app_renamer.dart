@@ -11,7 +11,11 @@ import 'package:xml/xml.dart' as xml;
 ///
 /// 使用方式：
 /// ```bash
-/// dart run xly:rename all="应用名称"
+/// # 为所有平台设置相同名称
+/// dart run xly:rename all "好人 平安"
+///
+/// # 为不同平台设置不同名称
+/// dart run xly:rename android "Android版" ios "iOS版"
 /// ```
 ///
 /// 如果你在Flutter代码中看到此导入，请立即移除：
@@ -75,71 +79,98 @@ class AppRenamer {
   }
 
   /// 解析命令行参数
+  ///
+  /// 使用 `<field> "<content>"` 风格，例如：
+  /// - `dart run xly:rename all "好人 平安"` → appName = "好人 平安"
+  /// - `dart run xly:rename android "Android版" ios "iOS版"`
   static Map<String, String> _parseArgs(List<String> args) {
     final params = <String, String>{};
-    for (final arg in args) {
-      if (arg.contains('=')) {
-        final parts = arg.split('=');
-        if (parts.length == 2) {
-          params[parts[0]] = parts[1].replaceAll('"', '');
-        }
+    final validKeys = [
+      'all',
+      'android',
+      'ios',
+      'web',
+      'windows',
+      'linux',
+      'mac'
+    ];
+
+    int i = 0;
+    while (i < args.length) {
+      final key = args[i];
+
+      // 如果是有效的 key，下一个参数就是值
+      if (validKeys.contains(key) && i + 1 < args.length) {
+        final value = args[i + 1].replaceAll('"', '');
+        params[key] = value;
+        i += 2;
+        continue;
       }
+      i++;
     }
     return params;
   }
 
   /// 修改 Android 应用名称
   static Future<void> _renameAndroid(String name) async {
-    final manifestFile = File('android/app/src/main/AndroidManifest.xml');
-    if (!manifestFile.existsSync()) {
-      _logSkipped('Android', '找不到 AndroidManifest.xml 文件');
-      return;
-    }
+    try {
+      final manifestFile = File('android/app/src/main/AndroidManifest.xml');
+      if (!manifestFile.existsSync()) {
+        _logSkipped('Android', '找不到 AndroidManifest.xml 文件');
+        return;
+      }
 
-    final document = xml.XmlDocument.parse(await manifestFile.readAsString());
-    final application = document.findAllElements('application').first;
-    application.setAttribute('android:label', name);
-    await manifestFile.writeAsString(document.toString());
-    _logSuccess('Android', name);
+      final document = xml.XmlDocument.parse(await manifestFile.readAsString());
+      final application = document.findAllElements('application').first;
+      application.setAttribute('android:label', name);
+      await manifestFile.writeAsString(document.toString());
+      _logSuccess('Android', name);
+    } catch (e) {
+      _logError('Android', _getFriendlyErrorMessage(e));
+    }
   }
 
   /// 修改 iOS 应用名称
   static Future<void> _renameIOS(String name) async {
-    final plistPaths = [
-      'ios/Runner/Info.plist',
-      'ios/Runner/Info-Debug.plist',
-      'ios/Runner/Info-Release.plist'
-    ];
+    try {
+      final plistPaths = [
+        'ios/Runner/Info.plist',
+        'ios/Runner/Info-Debug.plist',
+        'ios/Runner/Info-Release.plist'
+      ];
 
-    for (final plistPath in plistPaths) {
-      final plistFile = File(plistPath);
-      if (!plistFile.existsSync()) continue;
+      for (final plistPath in plistPaths) {
+        final plistFile = File(plistPath);
+        if (!plistFile.existsSync()) continue;
 
-      final document = xml.XmlDocument.parse(await plistFile.readAsString());
-      var keys = document
-          .findElements('plist')
-          .first
-          .findElements('dict')
-          .first
-          .children;
+        final document = xml.XmlDocument.parse(await plistFile.readAsString());
+        var keys = document
+            .findElements('plist')
+            .first
+            .findElements('dict')
+            .first
+            .children;
 
-      // 移除由换行符生成的 XmlText 元素
-      keys.removeWhere((element) => element is xml.XmlText);
+        // 移除由换行符生成的 XmlText 元素
+        keys.removeWhere((element) => element is xml.XmlText);
 
-      // 修改 CFBundleName 和 CFBundleDisplayName
-      for (int i = 0; i < keys.length; i++) {
-        if (keys[i].innerText == 'CFBundleName' ||
-            keys[i].innerText == 'CFBundleDisplayName') {
-          var value = xml.XmlElement(xml.XmlName('string'));
-          value.innerText = name;
-          keys.removeAt(i + 1);
-          keys.insert(i + 1, value);
+        // 修改 CFBundleName 和 CFBundleDisplayName
+        for (int i = 0; i < keys.length; i++) {
+          if (keys[i].innerText == 'CFBundleName' ||
+              keys[i].innerText == 'CFBundleDisplayName') {
+            var value = xml.XmlElement(xml.XmlName('string'));
+            value.innerText = name;
+            keys.removeAt(i + 1);
+            keys.insert(i + 1, value);
+          }
         }
-      }
 
-      await plistFile.writeAsString(document.toXmlString(pretty: true));
+        await plistFile.writeAsString(document.toXmlString(pretty: true));
+      }
+      _logSuccess('iOS', name);
+    } catch (e) {
+      _logError('iOS', _getFriendlyErrorMessage(e));
     }
-    _logSuccess('iOS', name);
   }
 
   /// 修改 Web 应用名称
@@ -175,7 +206,7 @@ class AppRenamer {
       }
       _logSuccess('Web', name);
     } catch (e) {
-      _logError('Web', e.toString());
+      _logError('Web', _getFriendlyErrorMessage(e));
     }
   }
 
@@ -223,7 +254,7 @@ class AppRenamer {
       }
       _logSuccess('Windows', name);
     } catch (e) {
-      _logError('Windows', e.toString());
+      _logError('Windows', _getFriendlyErrorMessage(e));
     }
   }
 
@@ -248,24 +279,40 @@ class AppRenamer {
 
   /// 修改 Linux 应用名称
   static Future<void> _renameLinux(String name) async {
-    final ccFile = File('linux/my_application.cc');
-    if (!ccFile.existsSync()) return;
+    try {
+      final ccFile = File('linux/my_application.cc');
+      if (!ccFile.existsSync()) {
+        _logSkipped('Linux', '找不到 my_application.cc 文件');
+        return;
+      }
 
-    String content = await ccFile.readAsString();
-    final regex = RegExp(r'gtk_window_set_title\(window, ".*"\);');
-    content =
-        content.replaceAll(regex, 'gtk_window_set_title(window, "$name");');
-    await ccFile.writeAsString(content);
+      String content = await ccFile.readAsString();
+      final regex = RegExp(r'gtk_window_set_title\(window, ".*"\);');
+      content =
+          content.replaceAll(regex, 'gtk_window_set_title(window, "$name");');
+      await ccFile.writeAsString(content);
+      _logSuccess('Linux', name);
+    } catch (e) {
+      _logError('Linux', _getFriendlyErrorMessage(e));
+    }
   }
 
   /// 修改 macOS 应用名称
   static Future<void> _renameMacOS(String name) async {
-    final plistFile = File('macos/Runner/Info.plist');
-    if (!plistFile.existsSync()) return;
+    try {
+      final plistFile = File('macos/Runner/Info.plist');
+      if (!plistFile.existsSync()) {
+        _logSkipped('macOS', '找不到 Info.plist 文件');
+        return;
+      }
 
-    String content = await plistFile.readAsString();
-    content = _replacePlistValue(content, 'CFBundleName', name);
-    await plistFile.writeAsString(content);
+      String content = await plistFile.readAsString();
+      content = _replacePlistValue(content, 'CFBundleName', name);
+      await plistFile.writeAsString(content);
+      _logSuccess('macOS', name);
+    } catch (e) {
+      _logError('macOS', _getFriendlyErrorMessage(e));
+    }
   }
 
   /// 替换 plist 文件中的值
@@ -285,9 +332,25 @@ class AppRenamer {
     print('❌ 重命名 [$platform] 平台应用时出错: $error');
   }
 
+  /// 检测是否为文件锁定错误，并返回友好的错误信息
+  static String _getFriendlyErrorMessage(Object error) {
+    final errorStr = error.toString().toLowerCase();
+    // 检测常见的文件锁定/访问拒绝错误
+    if (errorStr.contains('access') ||
+        errorStr.contains('denied') ||
+        errorStr.contains('locked') ||
+        errorStr.contains('being used') ||
+        errorStr.contains('permission') ||
+        errorStr.contains('cannot open') ||
+        errorStr.contains('sharing violation')) {
+      return '文件被占用，可能是应用正在运行中。请先关闭 Flutter 应用后再试。';
+    }
+    return error.toString();
+  }
+
   /// 打印跳过消息
   static void _logSkipped(String platform, String reason) {
-    print('⏭️  跳过 [$platform] 平台的重命名: $reason');
+    print('🚫 跳过 [$platform]: $reason');
   }
 
   /// 修改 main.dart 中的 MyApp.initialize 配置
@@ -346,7 +409,7 @@ class AppRenamer {
         print('⚠️ 运行格式化命令失败: $e');
       }
     } catch (e) {
-      _logError(_mainDartFile, e.toString());
+      _logError(_mainDartFile, _getFriendlyErrorMessage(e));
     }
   }
 }

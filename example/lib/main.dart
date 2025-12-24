@@ -20,10 +20,12 @@ import 'widgets/platform_info_widget.dart';
 
 void main() async {
   await MyApp.initialize(
+    appName: "测试用例 test",
+
     enableDebugLogging: true, // 开发时启用调试日志
     showWindowOnInit: false,
     focusWindowOnInit: false,
-    appName: "示例App",
+
     setTitleBarHidden: false,
     designSize: const Size(900, 700),
     // 使用新的简化托盘配置方式
