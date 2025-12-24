@@ -28,6 +28,7 @@ class MyCard extends StatelessWidget {
 
   static EdgeInsets defaultPadding(BuildContext context) =>
       EdgeInsets.symmetric(horizontal: 4.w);
+  /// 默认 margin，返回的值已经是转换后的 screenutil 值
   static EdgeInsets defaultMargin(BuildContext context) => EdgeInsets.symmetric(
         horizontal: 6.w,
         vertical: 1.5.h,
@@ -62,13 +63,17 @@ class MyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 用户传入的 margin 需要转换，defaultMargin 已经转换过
+    final effectiveMargin = margin != null
+        ? EdgeInsets.only(
+            left: margin!.left.w,
+            right: margin!.right.w,
+            top: margin!.top.h,
+            bottom: margin!.bottom.h,
+          )
+        : defaultMargin(context);
     Widget cardContent = Card(
-      margin: EdgeInsets.only(
-        left: (margin ?? defaultMargin(context)).left.w,
-        right: (margin ?? defaultMargin(context)).right.w,
-        top: (margin ?? defaultMargin(context)).top.h,
-        bottom: (margin ?? defaultMargin(context)).bottom.h,
-      ),
+      margin: effectiveMargin,
       elevation: cardElevation?.h ?? 2.h,
       shadowColor: cardShadowColor,
       shape: RoundedRectangleBorder(

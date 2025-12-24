@@ -27,6 +27,21 @@ class MyGroupBox extends StatelessWidget {
     this.style = SectionBorderStyle.normal,
   });
 
+  /// 将 EdgeInsetsGeometry 转换为 screenutil 适配后的值
+  EdgeInsetsGeometry _convertPadding(EdgeInsetsGeometry padding) {
+    if (padding is EdgeInsets) {
+      return EdgeInsets.only(
+        left: padding.left.w,
+        right: padding.right.w,
+        top: padding.top.h,
+        bottom: padding.bottom.h,
+      );
+    }
+    // 对于其他类型的 EdgeInsetsGeometry（如 EdgeInsetsDirectional），直接返回
+    // 调用者需要自行确保传入的值已经适配
+    return padding;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -55,7 +70,7 @@ class MyGroupBox extends StatelessWidget {
                   borderRadius: BorderRadius.circular(borderRadius.r),
                 ),
           child: Padding(
-            padding: padding,
+            padding: _convertPadding(padding),
             child: child,
           ),
         ),

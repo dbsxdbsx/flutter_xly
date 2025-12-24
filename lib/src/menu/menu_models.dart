@@ -43,8 +43,15 @@ class MyMenuDivider extends MyMenuElement {
   });
 
   Widget build(BuildContext context) {
+    // 转换 margin 为 screenutil 适配后的值
+    final adaptiveMargin = EdgeInsets.only(
+      left: margin.left.w,
+      right: margin.right.w,
+      top: margin.top.h,
+      bottom: margin.bottom.h,
+    );
     return Padding(
-      padding: margin,
+      padding: adaptiveMargin,
       child: Container(
         height: (height * thicknessMultiplier).h,
         color: color,

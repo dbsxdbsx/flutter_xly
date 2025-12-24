@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 class Toast extends StatelessWidget {
@@ -85,7 +86,7 @@ class Toast extends StatelessWidget {
                       },
                       child: Container(
                         alignment: entry.alignment,
-                        padding: const EdgeInsets.all(16),
+                        padding: EdgeInsets.all(16.w),
                         child: entry.widget,
                       ),
                     ),

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../logger.dart';
@@ -32,7 +33,7 @@ class MyDialog {
           title,
           style: TextStyle(
             color: titleColor,
-            fontSize: 20.0,
+            fontSize: 20.sp,
             fontWeight: FontWeight.w500,
           ),
         ),
