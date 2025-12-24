@@ -8,6 +8,12 @@
   - 新增 `--no-clangd` 参数：跳过询问（适用于自动化场景）
   - `.clangd` 配置可抑制 clangd 对 Windows SDK 头文件的误报（如 `<optional>` 未使用警告）
 
+### Documentation
+
+- **静默启动文档完善**：README 中新增"完整静默启动配置"章节
+  - 明确说明需要 `win_setup` 工具配合 `showWindowOnInit: false` 和 `focusWindowOnInit: false` 参数
+  - 提供完整的代码示例，帮助用户快速配置
+
 ## 0.29.2 - 2025-12-16
 
 ### Fixed

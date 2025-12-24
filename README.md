@@ -294,9 +294,22 @@ XLY 包内置单实例管理功能，确保应用在同一台设备上只能运�
 - **保持安全**：它不会删除或覆盖你的任何其他自定义代码。如果你的文件已被修改过，它会安全跳过。
 - **自动备份**：默认情况下，它会为你创建一个 `flutter_window.cpp.bak` 备份文件。
 
-**效果**：
+**完整静默启动配置**：
 
-应用此补丁后，当你设置 `showWindowOnInit: false` 时，应用将真正地在后台完成初始化，直到你通过 `windowManager.show()` 或 `MyTray.to.pop()` 等方式主动显示它，从而彻底告别启动闪现。这是一个**一劳永逸**的优化。
+要实现完美的静默启动（无闪现、不抢焦点），需要两步配合：
+
+1. **运行补丁工具**（一次性）：`dart run xly:win_setup`
+2. **设置初始化参数**（在 Dart 代码中）：
+
+```dart
+await MyApp.initialize(
+  showWindowOnInit: false,   // 不自动显示窗口
+  focusWindowOnInit: false,  // 不抢夺用户焦点
+  // ... 其他参数
+);
+```
+
+应用此补丁后，窗口显示时机完全由 Dart 侧控制，直到你通过 `windowManager.show()` 或 `MyTray.to.pop()` 等方式主动显示它，从而彻底告别启动闪现。这是一个**一劳永逸**的优化。
 
 **高级选项**：
 

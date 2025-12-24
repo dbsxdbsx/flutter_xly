@@ -1,0 +1,17 @@
+# XLY: 由 xly 包自动生成
+# 告诉 clangd 忽略 Flutter Windows runner 的头文件查找问题
+# 这些文件在实际编译时由 CMake 正确配置路径
+CompileFlags:
+  Add:
+    - "-Wno-error"
+  Remove:
+    - "-W*"
+
+Diagnostics:
+  Suppress:
+    - "pp_file_not_found"
+    - "undeclared_var_use"
+    - "member_function_call_bad_type"
+    - "no_member"
+    - "unexpected_typedef"  # LRESULT 等 Windows SDK 类型的误报
+  UnusedIncludes: None  # 禁用未使用头文件检查（clangd 无法正确解析 Windows SDK）
