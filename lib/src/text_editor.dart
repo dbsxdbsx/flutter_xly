@@ -83,21 +83,21 @@ class MyTextEditor extends GetView<MyTextEditorController> {
   final String uniqueId;
   final GlobalKey _fieldKey = GlobalKey();
 
-  // Default style constants
-  static const double defaultLabelFontSize = 15.0;
-  static const double defaultTextFontSize = 12.0;
-  static const double defaultHintFontSize = 11.0;
-  static const double defaultIconSize = 23.0;
-  static const double defaultIconBoxSize = 32.0;
+  // Default style constants - 使用 getter 以支持热重载
+  static double get defaultLabelFontSize => 15.sp;
+  static double get defaultTextFontSize => 12.sp;
+  static double get defaultHintFontSize => 11.sp;
+  static double get defaultIconSize => 23.w;
+  static double get defaultIconBoxSize => 32.w;
 
-  static const double defaultHorizontalPadding = 4.0;
-  static const double defaultVerticalPadding = 8.0;
-  static const double defaultBorderRadius = 4.0;
-  static const double defaultDropdownItemHorizontalPadding = 8.0;
-  static const double defaultDropdownItemVerticalPadding = 12.0;
-  static const double defaultDropdownItemSpacing = 8.0;
-  static const double defaultTextEditorHeight = 48.0;
-  static const double defaultDropdownItemHeight = 48.0;
+  static double get defaultHorizontalPadding => 4.w;
+  static double get defaultVerticalPadding => 8.h;
+  static double get defaultBorderRadius => 4.r;
+  static double get defaultDropdownItemHorizontalPadding => 8.w;
+  static double get defaultDropdownItemVerticalPadding => 12.h;
+  static double get defaultDropdownItemSpacing => 8.w;
+  static double get defaultTextEditorHeight => 48.h;
+  static double get defaultDropdownItemHeight => 48.h;
 
   @override
   String? get tag => uniqueId;
@@ -428,7 +428,7 @@ class MyTextEditor extends GetView<MyTextEditorController> {
         textAlign: textAlign,
         textAlignVertical: TextAlignVertical.center,
         style: TextStyle(
-          fontSize: (textFontSize ?? defaultTextFontSize).sp,
+          fontSize: textFontSize?.sp ?? defaultTextFontSize,
           height: 1.0,
           color: textColor,
           fontWeight: textFontWeight,
@@ -436,14 +436,14 @@ class MyTextEditor extends GetView<MyTextEditorController> {
           decoration: InputDecoration(
             labelText: label,
             labelStyle: TextStyle(
-              fontSize: (labelFontSize ?? defaultLabelFontSize).sp,
+              fontSize: labelFontSize?.sp ?? defaultLabelFontSize,
               color: enabled ? labelColor : Colors.grey,
               fontWeight: labelFontWeight,
             ),
             hintText: hint,
             hintStyle: TextStyle(
               color: hintColor ?? Colors.grey[400],
-              fontSize: (hintFontSize ?? defaultHintFontSize).sp,
+              fontSize: hintFontSize?.sp ?? defaultHintFontSize,
               height: 1.0,
             ),
             isDense: true,
@@ -474,11 +474,11 @@ class MyTextEditor extends GetView<MyTextEditorController> {
         final Color iconColor =
             canTap ? Colors.grey : Colors.grey.withValues(alpha: 0.4);
         return SizedBox(
-          width: defaultIconBoxSize.w,
-          height: defaultIconBoxSize.h,
+          width: defaultIconBoxSize,
+          height: defaultIconBoxSize,
           child: Center(
             child: IconButton(
-              iconSize: defaultIconSize.w,
+              iconSize: defaultIconSize,
               icon: AnimatedRotation(
                 turns: turns,
                 duration: const Duration(milliseconds: 150),
@@ -488,12 +488,12 @@ class MyTextEditor extends GetView<MyTextEditorController> {
               onPressed: canTap ? onSuffixIconTap : null,
               padding: EdgeInsets.zero,
               constraints: BoxConstraints(
-                maxWidth: defaultIconBoxSize.w,
-                maxHeight: defaultIconBoxSize.h,
-                minWidth: defaultIconBoxSize.w,
-                minHeight: defaultIconBoxSize.h,
+                maxWidth: defaultIconBoxSize,
+                maxHeight: defaultIconBoxSize,
+                minWidth: defaultIconBoxSize,
+                minHeight: defaultIconBoxSize,
               ),
-              splashRadius: (defaultIconBoxSize / 2).r,
+              splashRadius: defaultIconBoxSize / 2,
             ),
           ),
         );
@@ -509,11 +509,11 @@ class MyTextEditor extends GetView<MyTextEditorController> {
           final Color iconColor =
               canTap ? Colors.grey : Colors.grey.withValues(alpha: 0.4);
           return SizedBox(
-            width: defaultIconBoxSize.w,
-            height: defaultIconBoxSize.h,
+            width: defaultIconBoxSize,
+            height: defaultIconBoxSize,
             child: Center(
               child: IconButton(
-                iconSize: defaultIconSize.w,
+                iconSize: defaultIconSize,
                 icon: AnimatedRotation(
                   turns: turns,
                   duration: const Duration(milliseconds: 150),
@@ -523,12 +523,12 @@ class MyTextEditor extends GetView<MyTextEditorController> {
                 onPressed: canTap ? onSuffixIconTap : null,
                 padding: EdgeInsets.zero,
                 constraints: BoxConstraints(
-                  maxWidth: defaultIconBoxSize.w,
-                  maxHeight: defaultIconBoxSize.h,
-                  minWidth: defaultIconBoxSize.w,
-                  minHeight: defaultIconBoxSize.h,
+                  maxWidth: defaultIconBoxSize,
+                  maxHeight: defaultIconBoxSize,
+                  minWidth: defaultIconBoxSize,
+                  minHeight: defaultIconBoxSize,
                 ),
-                splashRadius: (defaultIconBoxSize / 2).r,
+                splashRadius: defaultIconBoxSize / 2,
               ),
             ),
           );
@@ -543,11 +543,11 @@ class MyTextEditor extends GetView<MyTextEditorController> {
         }
 
         return SizedBox(
-          width: defaultIconBoxSize.w,
-          height: defaultIconBoxSize.h,
+          width: defaultIconBoxSize,
+          height: defaultIconBoxSize,
           child: Center(
             child: IconButton(
-              iconSize: defaultIconSize.w,
+              iconSize: defaultIconSize,
               icon: const Icon(Icons.clear, color: Colors.grey),
               onPressed: () async {
                 textController.clear();
@@ -562,12 +562,12 @@ class MyTextEditor extends GetView<MyTextEditorController> {
               },
               padding: EdgeInsets.zero,
               constraints: BoxConstraints(
-                maxWidth: defaultIconBoxSize.w,
-                maxHeight: defaultIconBoxSize.h,
-                minWidth: defaultIconBoxSize.w,
-                minHeight: defaultIconBoxSize.h,
+                maxWidth: defaultIconBoxSize,
+                maxHeight: defaultIconBoxSize,
+                minWidth: defaultIconBoxSize,
+                minHeight: defaultIconBoxSize,
               ),
-              splashRadius: (defaultIconBoxSize / 2).r,
+              splashRadius: defaultIconBoxSize / 2,
             ),
           ),
         );
@@ -608,7 +608,7 @@ class MyTextEditor extends GetView<MyTextEditorController> {
     final spaceAbove = fieldTopLeft.dy;
 
     // 以“完整显示预计高度”为标准选择方向（优先向下）
-    final double itemHeight = defaultDropdownItemHeight.h;
+    final double itemHeight = defaultDropdownItemHeight;
     final double expectedHeight = itemHeight * maxShowDropDownItems;
 
     if (spaceBelow >= expectedHeight || spaceBelow >= spaceAbove) {
@@ -627,10 +627,10 @@ class MyTextEditor extends GetView<MyTextEditorController> {
 
     // 将ScrollController和参数传递给控制器
     controller.setDropdownScrollController(scrollController);
-    controller.setDropdownParameters(itemHeight: defaultDropdownItemHeight.h);
+    controller.setDropdownParameters(itemHeight: defaultDropdownItemHeight);
 
     // 计算实际需要的高度
-    final double itemHeight = defaultDropdownItemHeight.h;
+    final double itemHeight = defaultDropdownItemHeight;
     final int totalOptions = options.length;
     final int displayItems = totalOptions.clamp(1, maxShowDropDownItems);
     double desiredHeight = itemHeight * displayItems;
@@ -775,7 +775,7 @@ class MyTextEditor extends GetView<MyTextEditorController> {
       child: InkWell(
         onTap: () => onSelected(option),
         child: Container(
-          height: defaultDropdownItemHeight.h,
+          height: defaultDropdownItemHeight,
           color: isHighlighted
               ? (dropdownHighlightColor ?? Colors.blue.withValues(alpha: 0.1))
               : null,
@@ -794,7 +794,7 @@ class MyTextEditor extends GetView<MyTextEditorController> {
                 child: Text(
                   _displayStringForOption(option),
                   style: TextStyle(
-                    fontSize: (textFontSize ?? defaultTextFontSize).sp,
+                    fontSize: textFontSize?.sp ?? defaultTextFontSize,
                     color: isHighlighted ? Colors.blue[700] : null,
                   ),
                 ),
@@ -807,9 +807,10 @@ class MyTextEditor extends GetView<MyTextEditorController> {
   }
 
   EdgeInsetsGeometry _getEditorBoxContentPadding() {
+    // defaultTextEditorHeight 和 defaultTextFontSize 已经是 screenutil 转换后的值
+    final effectiveFontSize = textFontSize?.sp ?? defaultTextFontSize;
     final double verticalPadding =
-        ((defaultTextEditorHeight - (textFontSize ?? defaultTextFontSize)) / 2)
-            .h;
+        (defaultTextEditorHeight - effectiveFontSize) / 2;
 
     if (inSetHorizontalPadding != null && inSetVerticalPadding != null) {
       return EdgeInsets.symmetric(

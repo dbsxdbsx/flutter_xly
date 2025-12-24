@@ -19,34 +19,35 @@ enum ToastPosition {
 
 /// MyToast 提供了一个统一的 Toast 显示组件
 class MyToast extends StatelessWidget {
-  // 添加常用样式配置
-  static const Duration _defaultDuration = Duration(seconds: 3);
-  static const Duration _defaultAnimationDuration = Duration(milliseconds: 500);
-  static const Curve _defaultAnimationCurve = Curves.easeOutCubic;
+  // 常用样式配置 - 使用 getter 以支持热重载
+  static Duration get _defaultDuration => const Duration(seconds: 3);
+  static Duration get _defaultAnimationDuration =>
+      const Duration(milliseconds: 500);
+  static Curve get _defaultAnimationCurve => Curves.easeOutCubic;
 
   // 常用边距
-  static final EdgeInsets _defaultPadding = EdgeInsets.symmetric(
-    horizontal: 24.w,
-    vertical: 16.w,
-  );
-  static final EdgeInsets _defaultSnackBarPadding = EdgeInsets.symmetric(
-    horizontal: 15.w,
-    vertical: 10.w,
-  );
-  static final double _defaultMargin = 10.w;
-  static final double _defaultBorderRadius = 8.w;
+  static EdgeInsets get _defaultPadding => EdgeInsets.symmetric(
+        horizontal: 24.w,
+        vertical: 16.w,
+      );
+  static EdgeInsets get _defaultSnackBarPadding => EdgeInsets.symmetric(
+        horizontal: 15.w,
+        vertical: 10.w,
+      );
+  static double get _defaultMargin => 10.w;
+  static double get _defaultBorderRadius => 8.w;
 
   // 常用文本样式
-  static final TextStyle _defaultTextStyle = TextStyle(
-    fontSize: 16.sp,
-    color: Colors.white,
-  );
+  static TextStyle get _defaultTextStyle => TextStyle(
+        fontSize: 16.sp,
+        color: Colors.white,
+      );
 
   // 常用背景色
-  static final Color _defaultBackgroundColor =
+  static Color get _defaultBackgroundColor =>
       Colors.black87.withValues(alpha: 0.7);
-  static final Color _defaultWarnBackgroundColor = Colors.amber[50]!;
-  static final Color _defaultWarnTextColor = Colors.amber[900]!;
+  static Color get _defaultWarnBackgroundColor => Colors.amber[50]!;
+  static Color get _defaultWarnTextColor => Colors.amber[900]!;
 
   final Widget child;
 

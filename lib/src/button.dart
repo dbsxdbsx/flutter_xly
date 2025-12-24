@@ -36,7 +36,8 @@ class MyButton extends StatelessWidget {
   final double normalAspectRatio;
 
   static const double _goldenRatio = 1.618;
-  static const double _defaultSize = 45.0;
+  // 使用 getter 以支持热重载
+  static double get _defaultSize => 45.w;
 
   const MyButton({
     super.key,
@@ -91,7 +92,7 @@ class MyButton extends StatelessWidget {
       case MyButtonShape.cube:
         return 8.r * cornerRadius;
       case MyButtonShape.round:
-        return (size ?? _defaultSize).w / 2;
+        return (size?.w ?? _defaultSize) / 2;
     }
   }
 
@@ -135,7 +136,7 @@ class MyButton extends StatelessWidget {
   }
 
   Widget _buildCubeButton() {
-    final effectiveSize = (size ?? _defaultSize).w;
+    final effectiveSize = size?.w ?? _defaultSize;
     return Container(
       width: effectiveSize,
       height: effectiveSize,
@@ -168,7 +169,7 @@ class MyButton extends StatelessWidget {
   }
 
   Widget _buildRoundButton() {
-    final effectiveSize = (size ?? _defaultSize).w;
+    final effectiveSize = size?.w ?? _defaultSize;
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
