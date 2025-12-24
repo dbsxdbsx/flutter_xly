@@ -1,3 +1,13 @@
+## 0.29.3 - 2025-12-24
+
+### Enhanced
+
+- **win_setup 工具增强**：新增 `.clangd` 配置文件生成功能
+  - 运行 `dart run xly:win_setup` 后会交互式询问是否生成 `.clangd` 配置
+  - 新增 `--clangd` 参数：自动生成配置文件（适用于 C++ 开发者或 CI/CD）
+  - 新增 `--no-clangd` 参数：跳过询问（适用于自动化场景）
+  - `.clangd` 配置可抑制 clangd 对 Windows SDK 头文件的误报（如 `<optional>` 未使用警告）
+
 ## 0.29.2 - 2025-12-16
 
 ### Fixed

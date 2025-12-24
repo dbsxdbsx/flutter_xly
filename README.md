@@ -306,7 +306,15 @@ dart run xly:win_setup --project-dir="C:/path/to/your/project"
 
 # 演练模式，只看不改
 dart run xly:win_setup --dry-run
+
+# 同时生成 .clangd 配置文件（抑制 C++ IDE 中的 clangd 误报）
+dart run xly:win_setup --clangd
+
+# 跳过 .clangd 提示（用于 CI/CD 自动化）
+dart run xly:win_setup --no-clangd
 ```
+
+> **关于 .clangd**：如果你使用 clangd 作为 C++ 语言服务器（如在 VS Code 或 Neovim 中），可能会看到关于 Windows SDK 头文件的误报警告。使用 `--clangd` 选项可自动生成配置文件来抑制这些误报。对于不使用 clangd 的普通 Flutter 开发者，默认情况下会交互式询问，直接按 Enter 跳过即可。
 
 ## 使用示例（Examples）
 
