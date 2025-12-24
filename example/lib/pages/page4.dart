@@ -293,9 +293,9 @@ class Page4View extends GetView<Page4Controller> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
       decoration: BoxDecoration(
-        color: labelColor.withOpacity(0.05),
+        color: labelColor.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(8.r),
-        border: Border.all(color: labelColor.withOpacity(0.2)),
+        border: Border.all(color: labelColor.withValues(alpha: 0.2)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -328,19 +328,21 @@ class Page4View extends GetView<Page4Controller> {
             child: SizedBox(
               height: 36.h,
               child: Obx(() => DropdownButtonFormField<int>(
-                    value: selectedIndex.value == -1
-                        ? null
-                        : selectedIndex.value,
+                    // ignore: deprecated_member_use, 需要动态更新值，initialValue 仅在首次渲染生效
+                    value:
+                        selectedIndex.value == -1 ? null : selectedIndex.value,
                     decoration: InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(
-                          horizontal: 10.w, vertical: 0),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 10.w, vertical: 0),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(6.r),
-                        borderSide: BorderSide(color: labelColor.withOpacity(0.3)),
+                        borderSide: BorderSide(
+                            color: labelColor.withValues(alpha: 0.3)),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(6.r),
-                        borderSide: BorderSide(color: labelColor.withOpacity(0.3)),
+                        borderSide: BorderSide(
+                            color: labelColor.withValues(alpha: 0.3)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(6.r),
@@ -351,7 +353,8 @@ class Page4View extends GetView<Page4Controller> {
                       isDense: true,
                     ),
                     style: TextStyle(fontSize: 12.sp, color: Colors.black87),
-                    icon: Icon(Icons.arrow_drop_down, size: 20.w, color: labelColor),
+                    icon: Icon(Icons.arrow_drop_down,
+                        size: 20.w, color: labelColor),
                     items: List.generate(
                       itemCount,
                       (index) => DropdownMenuItem(

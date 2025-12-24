@@ -1,6 +1,5 @@
 import 'package:example/main.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart' as raw_get;
 import 'package:xly/xly.dart';
 
 class Page3View extends GetView<Page3Controller> {
@@ -415,10 +414,10 @@ class Page3Controller extends GetxController {
         // 先关闭对话框
         Get.back();
         // 然后直接调用原生 Get.snackbar（可能失败）
-        raw_get.Get.snackbar(
+        Get.snackbar(
           '原生测试',
           '这是直接调用 Get.snackbar 的测试',
-          snackPosition: raw_get.SnackPosition.TOP,
+          snackPosition: SnackPosition.TOP,
           backgroundColor: Colors.amber[50],
           colorText: Colors.amber[900],
           duration: const Duration(seconds: 3),

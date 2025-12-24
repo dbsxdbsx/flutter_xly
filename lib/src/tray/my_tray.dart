@@ -367,6 +367,7 @@ class MyTray extends GetxService with TrayListener {
     // 修复Windows上托盘菜单无法通过点击空白区域关闭的问题
     // 参考：https://github.com/leanflutter/tray_manager/issues/63
     // 注意：bringAppToFront参数虽被标记为deprecated，但仍是解决此问题的最简方案
+    // ignore: deprecated_member_use
     await trayManager.popUpContextMenu(bringAppToFront: true);
   }
 
