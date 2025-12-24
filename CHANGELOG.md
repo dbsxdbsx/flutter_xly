@@ -1,3 +1,24 @@
+## 0.30.1 - 2025-12-24
+
+### Fixed
+
+- **screenutil 适配完善**：修复多个组件的响应式尺寸转换问题
+  - `dialog.dart`: fontSize 添加 `.sp` 适配
+  - `card.dart`: 修复 margin 双重转换问题
+  - `group_box.dart`: 添加 padding 的 screenutil 转换
+  - `menu_models.dart`: 添加 `MyMenuDivider` margin 的适配转换
+  - `toast_core.dart`: EdgeInsets 添加 `.w` 适配
+- **linter 弃用警告修复**：清理所有弃用 API 调用
+  - `my_tray.dart`: 为 `bringAppToFront` 添加 ignore 注释（Windows 托盘菜单必要 workaround）
+  - `page4.dart`: `withOpacity()` 替换为 `withValues(alpha:)`
+
+### Enhanced
+
+- **热重载支持优化**：将 UI 样式默认值从常量改为 getter，确保热重载时能正确应用 screenutil 转换
+  - `text_editor.dart`: 14 个样式常量改为 getter
+  - `toast.dart`: 多个样式常量改为 getter
+  - `button.dart`: `_defaultSize` 改为 getter
+
 ## 0.30.0 - 2025-12-24
 
 ### ⚠️ Breaking Changes
