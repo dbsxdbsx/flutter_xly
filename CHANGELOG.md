@@ -10,9 +10,10 @@
 
 ### Documentation
 
-- **静默启动文档完善**：README 中新增"完整静默启动配置"章节
-  - 明确说明需要 `win_setup` 工具配合 `showWindowOnInit: false` 和 `focusWindowOnInit: false` 参数
-  - 提供完整的代码示例，帮助用户快速配置
+- **窗口参数文档优化**：
+  - 修正 `focusWindowOnInit` 说明：明确指出**仅在 `showWindowOnInit: true` 时生效**
+  - 静默启动配置简化：只需 `showWindowOnInit: false`，移除冗余的 `focusWindowOnInit: false`
+  - 新增提示：说明"显示窗口但不抢焦点"的正确配置方式
 
 ## 0.29.2 - 2025-12-16
 

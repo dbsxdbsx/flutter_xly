@@ -264,9 +264,9 @@ XLY 包内置单实例管理功能，确保应用在同一台设备上只能运�
 
 - **`focusWindowOnInit`**（默认：`true`）：是否在初始化时让窗口获得焦点
 
-  - 仅在初始化时生效，后续可通过 `windowManager.focus()/blur()` 控制
-  - 设置为 `false` 可避免应用启动时抢夺用户焦点
-  - 仅在窗口显示时才会应用焦点设置
+  - **仅在 `showWindowOnInit: true` 时生效**，若窗口不显示则此参数无效
+  - 设置为 `false` 可让窗口显示但不抢夺用户当前焦点（如用户正在其他应用中打字）
+  - 后续可通过 `windowManager.focus()/blur()` 控制
 
 - **`centerWindowOnInit`**（默认：`true`）：是否在初始化时将窗口居中显示
   - 仅在初始化时生效，后续可通过 `windowManager.center()` 或 `windowManager.setPosition()` 控制
@@ -294,22 +294,23 @@ XLY 包内置单实例管理功能，确保应用在同一台设备上只能运�
 - **保持安全**：它不会删除或覆盖你的任何其他自定义代码。如果你的文件已被修改过，它会安全跳过。
 - **自动备份**：默认情况下，它会为你创建一个 `flutter_window.cpp.bak` 备份文件。
 
-**完整静默启动配置**：
+**静默启动配置**：
 
-要实现完美的静默启动（无闪现、不抢焦点），需要两步配合：
+要实现完美的静默启动（窗口不显示、无闪现），需要两步配合：
 
 1. **运行补丁工具**（一次性）：`dart run xly:win_setup`
 2. **设置初始化参数**（在 Dart 代码中）：
 
 ```dart
 await MyApp.initialize(
-  showWindowOnInit: false,   // 不自动显示窗口
-  focusWindowOnInit: false,  // 不抢夺用户焦点
+  showWindowOnInit: false,  // 不自动显示窗口（静默启动只需这一个参数）
   // ... 其他参数
 );
 ```
 
 应用此补丁后，窗口显示时机完全由 Dart 侧控制，直到你通过 `windowManager.show()` 或 `MyTray.to.pop()` 等方式主动显示它，从而彻底告别启动闪现。这是一个**一劳永逸**的优化。
+
+> **注意**：静默启动时 `focusWindowOnInit` 参数无效（因为窗口根本不显示）。若需要"显示窗口但不抢焦点"，请使用 `showWindowOnInit: true` + `focusWindowOnInit: false`。
 
 **高级选项**：
 
