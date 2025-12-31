@@ -645,7 +645,7 @@ MyToast.showSpinner(
 // 5.3 加载完成后显示结果
 await MyToast.showLoadingThenToast(
   loadingMessage: '正在加载数据...',
-  task: () async {
+  task: (_) async {
     await Future.delayed(Duration(seconds: 1));
     return (true, '数据加载完成！'); // 返回(成功状态, 提示消息)
   },
@@ -655,6 +655,18 @@ await MyToast.showLoadingThenToast(
   onOk: (message) => MyToast.showBottom(message),
   onWarn: (message) => MyToast.showUpWarn(message),
   onError: (error) => MyToast.showUpError('错误：$error'),
+);
+
+// 5.4 支持动态更新加载消息（进度提示）
+await MyToast.showLoadingThenToast(
+  loadingMessage: '正在处理 0/10 ...',
+  task: (updateMessage) async {
+    for (var i = 0; i < 10; i++) {
+      await Future.delayed(Duration(milliseconds: 300));
+      updateMessage?.call('正在处理 ${i + 1}/10 ...');  // 动态更新消息
+    }
+    return (true, '处理完成！');
+  },
 );
 
 // 6. 关闭所有显示的 Toast

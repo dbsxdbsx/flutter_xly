@@ -638,6 +638,17 @@ class Page1View extends GetView<Page1Controller> {
                 ),
               ],
             ),
+            SizedBox(height: 4.h),
+            Row(
+              children: [
+                Expanded(
+                  child: MyButton(
+                    text: '动态更新进度消息',
+                    onPressed: () => controller.testDynamicProgressMessage(),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ],
@@ -913,11 +924,10 @@ class Page1Controller extends GetxController {
   }
 
   void testCompoundSpinnerThenToast() async {
-    // 场景1：使用默认提示
-    // 场景1：使用默认提示
+    // 场景1：使用默认提示（不使用动态更新功能，用 _ 忽略参数）
     await MyToast.showLoadingThenToast(
       loadingMessage: 'task1:正在加载数据...',
-      task: () async {
+      task: (_) async {
         await Future.delayed(const Duration(seconds: 1));
         return (true, 'task1结果:数据加载完成！');
       },
@@ -928,7 +938,7 @@ class Page1Controller extends GetxController {
     await MyToast.showLoadingThenToast(
       stackPreviousToasts: true,
       loadingMessage: 'task2结果:正在处理数据...',
-      task: () async {
+      task: (_) async {
         await Future.delayed(const Duration(seconds: 1));
         return (false, 'task2结果:数据格式不正确，请检查后重试');
       },
@@ -941,7 +951,7 @@ class Page1Controller extends GetxController {
     // 场景3：自定义成功和错误提示
     await MyToast.showLoadingThenToast(
       loadingMessage: 'task3:正在保存\n(不堆叠)\n...',
-      task: () async {
+      task: (_) async {
         await Future.delayed(const Duration(seconds: 1));
         if (DateTime.now().second % 2 == 0) {
           throw Exception('task3结果:网络连接错误');
@@ -985,7 +995,7 @@ class Page1Controller extends GetxController {
   void testSilentSuccess() async {
     await MyToast.showLoadingThenToast(
       loadingMessage: '正在执行静默（结果成功）的操作...',
-      task: () async {
+      task: (_) async {
         await Future.delayed(const Duration(seconds: 1));
         return (true, null); // 返回成功但不显示任何提示
       },
@@ -996,11 +1006,29 @@ class Page1Controller extends GetxController {
   void testSilentFailure() async {
     await MyToast.showLoadingThenToast(
       loadingMessage: '正在执行静默（结果失败）的操作...',
-      task: () async {
+      task: (_) async {
         await Future.delayed(const Duration(seconds: 1));
         return (false, ""); // 返回失败但不显示任何提示
       },
       spinnerColor: Colors.orange,
+    );
+  }
+
+  /// 测试动态更新加载消息功能
+  void testDynamicProgressMessage() async {
+    const totalSteps = 10;
+    await MyToast.showLoadingThenToast(
+      loadingMessage: '正在处理 0/$totalSteps ...',
+      task: (updateMessage) async {
+        for (var i = 0; i < totalSteps; i++) {
+          // 模拟耗时操作
+          await Future.delayed(const Duration(milliseconds: 300));
+          // 动态更新进度消息
+          updateMessage?.call('正在处理 ${i + 1}/$totalSteps ...');
+        }
+        return (true, '全部处理完成！');
+      },
+      spinnerColor: Colors.teal,
     );
   }
 

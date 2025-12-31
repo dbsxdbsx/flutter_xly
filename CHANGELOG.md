@@ -1,3 +1,24 @@
+## 0.31.0 - 2025-12-31
+
+### ⚠️ Breaking Changes
+
+- **`showLoadingThenToast` 签名变更**：`task` 参数现在接收一个可选的消息更新回调
+  - 旧：`task: () async { ... }`
+  - 新：`task: (_) async { ... }`（不使用更新功能时）
+  - 新：`task: (updateMessage) async { updateMessage?.call('新消息'); ... }`（使用更新功能时）
+
+### Added
+
+- **加载消息动态更新**：`MyToast.showLoadingThenToast` 现在支持在任务执行期间动态更新显示的消息
+  - 适用于显示进度（如 "正在处理 3/10 ..."）
+  - 通过 `updateMessage` 回调实时更新 Loading 界面的文字
+  - 资源自动管理，无需手动清理
+- **新增 typedef**：`LoadingMessageUpdater` 类型别名，用于消息更新回调
+
+### Documentation
+
+- **README 更新**：新增 "5.4 支持动态更新加载消息（进度提示）" 示例
+
 ## 0.30.1 - 2025-12-24
 
 ### Fixed

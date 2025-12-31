@@ -10,6 +10,11 @@ import 'toast_widget/middle_toast_style_widgets/ok_toast_widget.dart';
 import 'toast_widget/middle_toast_style_widgets/warning_toast_widget.dart';
 import 'toast_widget/toast_core.dart';
 
+/// 加载消息更新回调函数类型
+///
+/// 用于在 [MyToast.showLoadingThenToast] 任务执行期间动态更新显示的消息
+typedef LoadingMessageUpdater = void Function(String message);
+
 /// Toast显示位置枚举
 enum ToastPosition {
   top,
@@ -394,17 +399,35 @@ class MyToast extends StatelessWidget {
 
   /// 显示加载动画，执行任务后显示结果提示
   ///
-  /// [loadingMessage] 加载过程中显示的消息
-  /// [task] 要执行的异步任务，返回 (bool, String?) 元组，bool表示是否成功，String为提示消息（为null时不显示toast）
+  /// [loadingMessage] 加载过程中显示的初始消息
+  /// [task] 要执行的异步任务，接收一个可选的消息更新回调，返回 (bool, String?) 元组
+  ///        - 第一个参数 `updateMessage` 可用于在任务执行期间动态更新加载消息
+  ///        - 返回值的 bool 表示是否成功，String 为提示消息（为 null 时不显示 toast）
   /// [spinnerColor] 加载动画的颜色
   /// [backgroundColor] 背景颜色
   /// [stackPreviousToasts] 是否堆叠显示Toast
   /// [onOk] 自定义成功提示处理函数
   /// [onWarn] 自定义警告提示处理函数
   /// [onError] 自定义错误提示处理函数
+  ///
+  /// 示例：
+  /// ```dart
+  /// await MyToast.showLoadingThenToast(
+  ///   loadingMessage: '正在测试 0/10 ...',
+  ///   task: (updateMessage) async {
+  ///     for (var i = 0; i < 10; i++) {
+  ///       await doSomething(i);
+  ///       updateMessage?.call('正在测试 ${i + 1}/10 ...');
+  ///     }
+  ///     return (true, '测试完成');
+  ///   },
+  /// );
+  /// ```
   static Future<bool> showLoadingThenToast({
     required String loadingMessage,
-    required Future<(bool, String?)> Function() task,
+    required Future<(bool, String?)> Function(
+            void Function(String)? updateMessage)
+        task,
     Color? spinnerColor,
     Color? backgroundColor,
     bool stackPreviousToasts = false,
@@ -415,12 +438,18 @@ class MyToast extends StatelessWidget {
     // 为当前加载动画创建一个唯一的key
     final spinnerKey = UniqueKey();
 
-    // 显示加载动画
+    // 创建消息 ValueNotifier 用于动态更新
+    final messageNotifier = ValueNotifier<String>(loadingMessage);
+
+    // 显示可动态更新的加载动画
     Toast.show(
-      LoadingWidget(
-        message: loadingMessage,
-        spinnerColor: spinnerColor,
-        backgroundColor: backgroundColor ?? _defaultBackgroundColor,
+      ValueListenableBuilder<String>(
+        valueListenable: messageNotifier,
+        builder: (context, message, _) => LoadingWidget(
+          message: message,
+          spinnerColor: spinnerColor,
+          backgroundColor: backgroundColor ?? _defaultBackgroundColor,
+        ),
       ),
       key: spinnerKey,
       dismissOthers: !stackPreviousToasts,
@@ -429,7 +458,10 @@ class MyToast extends StatelessWidget {
     );
 
     try {
-      final (success, message) = await task();
+      // 传入消息更新函数给 task
+      final (success, message) = await task((newMessage) {
+        messageNotifier.value = newMessage;
+      });
 
       // 移除加载动画
       Toast.dismiss(spinnerKey);
@@ -496,6 +528,9 @@ class MyToast extends StatelessWidget {
         );
       }
       return false;
+    } finally {
+      // 清理资源
+      messageNotifier.dispose();
     }
   }
 
