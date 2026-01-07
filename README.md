@@ -202,6 +202,13 @@ keyToRollBack: LogicalKeyboardKey.escape,  // 或 backspace、f1 等
 
 **注意**：此修复已自动应用，开发者无需额外操作。如遇到菜单无法关闭的问题，可能是使用了较旧版本的 tray_manager 包，建议升级到最新版本。
 
+### Flutter 桌面多窗口开发
+
+- 多窗口开发完整指南：[本地](.doc/flutter_multi_window_guide.md) | [GitHub](https://github.com/dbsxdbsx/flutter_xly/blob/main/.doc/flutter_multi_window_guide.md)
+- 详细分析了 Flutter 桌面多窗口的技术现状、实现方案对比、XLY 当前能力和推荐策略
+- **当前状态**：Flutter 官方多窗口（单引擎多视图）仍在开发中，预计 2025 年下半年~2026 年稳定
+- **推荐策略**：使用 XLY 现有的单窗口 + 模式切换能力，等待官方方案稳定后再集成
+
 ### MyNotify 系统通知组件
 
 - 系统通知功能使用指南：[本地](.doc/my_notify_usage_guide.md) | [GitHub](https://github.com/dbsxdbsx/flutter_xly/blob/main/.doc/my_notify_usage_guide.md)
