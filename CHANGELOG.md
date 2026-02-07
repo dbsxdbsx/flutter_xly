@@ -1,4 +1,4 @@
-## 待提交版本
+## 0.32.0 - 2026-02-07
 
 ### New Features
 
@@ -31,11 +31,26 @@
   - **方案**：改用 Flutter 原生 `showModalBottomSheet`，传入 `constraints: const BoxConstraints()` 禁用 640px 限制
   - 使用 `FractionallySizedBox(widthFactor: maxWidthRatio)` 实现比例宽度，窗口变化时自动响应
 - **修复 BottomSheet 高度不跟随窗口缩放问题**：将高度和圆角参数改为"设计稿值"，在 `builder` 内部通过 ScreenUtil 动态转换，确保窗口缩放时等比例更新
+- **修复 `// ignore:` 注释位置不正确导致弃用警告未被抑制的问题**：将 `// ignore: deprecated_member_use_from_same_package` 移到紧靠 `smallBreakpoint` 使用处的前一行
 
 ### Enhanced
 
 - **BottomSheet 内容溢出安全网**：内部 `Expanded` 包裹 `SingleChildScrollView`，当窗口缩小导致内容超出时自动变为可滚动，避免 overflow 错误
 - **BottomSheet 新增 `maxWidthRatio` 参数**：控制 Sheet 宽度占窗口宽度的比例（默认 0.85），替代 Material 3 的固定 640px maxWidth
+- **MyScaffold M3 五层级自适应布局**：从原来的 3 层级（小/中/大）升级为 M3 规范的 5 层级布局
+  - **Compact** (< compactBreakpoint, 默认 600dp)：抽屉式导航或底部导航栏
+  - **Medium** (compact ~ medium, 默认 840dp)：仅图标侧边栏（72dp），hover 显示 Tooltip
+  - **Expanded** (medium ~ expanded, 默认 1200dp)：图标+文字侧边栏（256dp）
+  - **Large** (expanded ~ large, 默认 1600dp)：完整导航抽屉（304dp），含分组标题、副标题、Header
+  - **XLarge** (≥ largeBreakpoint)：宽导航抽屉（360dp），trailing 内嵌、间距更宽松
+  - 使用自定义 `Breakpoint` 对象替代预定义 Material Breakpoints，仅按宽度判断，不受高度约束影响
+  - 新增运行时断点严格递增校验（`assert`）
+- **MyAdaptiveNavigationItem 新增字段**：
+  - `subtitle`：副标题，仅在 Large (1200dp+) 层级显示
+  - `group`：分组名称，仅在 Large (1200dp+) 层级显示分组标题，相同 group 值的连续项归为一组
+- **MyScaffold 新增 `navigationHeader` 参数**：导航侧边栏顶部区域，仅在 Large+ 层级及 Compact 抽屉中显示，适合放置应用 Logo、用户头像等
+- **新增 `_CustomNavigationDrawer` 组件**：Large / XLarge 层级导航抽屉，支持分组标题、副标题、Header、inline trailing 等特性
+- **`_CustomCompactNavigationRail` 优化**：Medium 层级图标项增加 `Tooltip`，hover 时显示标签文字
 
 ### Dependencies
 
@@ -58,37 +73,18 @@
   - `Breakpoints.medium` → `Breakpoints.mediumAndUp`（使用 andUp 变体避免新版包的高度约束影响）
   - `Breakpoints.large` → `Breakpoints.mediumLargeAndUp`（宽度 ≥840 时优先匹配）
 
-### Enhanced
-
-- **MyScaffold M3 五层级自适应布局**：从原来的 3 层级（小/中/大）升级为 M3 规范的 5 层级布局
-  - **Compact** (< compactBreakpoint, 默认 600dp)：抽屉式导航或底部导航栏
-  - **Medium** (compact ~ medium, 默认 840dp)：仅图标侧边栏（72dp），hover 显示 Tooltip
-  - **Expanded** (medium ~ expanded, 默认 1200dp)：图标+文字侧边栏（256dp）
-  - **Large** (expanded ~ large, 默认 1600dp)：完整导航抽屉（304dp），含分组标题、副标题、Header
-  - **XLarge** (≥ largeBreakpoint)：宽导航抽屉（360dp），trailing 内嵌、间距更宽松
-  - 使用自定义 `Breakpoint` 对象替代预定义 Material Breakpoints，仅按宽度判断，不受高度约束影响
-  - 新增运行时断点严格递增校验（`assert`）
-- **MyAdaptiveNavigationItem 新增字段**：
-  - `subtitle`：副标题，仅在 Large (1200dp+) 层级显示
-  - `group`：分组名称，仅在 Large (1200dp+) 层级显示分组标题，相同 group 值的连续项归为一组
-- **MyScaffold 新增 `navigationHeader` 参数**：导航侧边栏顶部区域，仅在 Large+ 层级及 Compact 抽屉中显示，适合放置应用 Logo、用户头像等
-- **新增 `_CustomNavigationDrawer` 组件**：Large / XLarge 层级导航抽屉，支持分组标题、副标题、Header、inline trailing 等特性
-- **`_CustomCompactNavigationRail` 优化**：Medium 层级图标项增加 `Tooltip`，hover 时显示标签文字
-
 ### Deprecated
 
 - **`MyScaffold.smallBreakpoint`**：已废弃，请使用 `compactBreakpoint` 代替。内部通过 `_effectiveCompactBreakpoint` getter 保持向后兼容
 
-### Fixed
-
-- **修复 `// ignore:` 注释位置不正确导致弃用警告未被抑制的问题**：将 `// ignore: deprecated_member_use_from_same_package` 移到紧靠 `smallBreakpoint` 使用处的前一行
-
 ### Documentation
 
+- **新增 Flutter 桌面多窗口开发指南**（`.doc/flutter_multi_window_guide.md`）：详细分析 Flutter 桌面多窗口技术现状、方案对比、XLY 当前能力和推荐策略
 - **README 更新**：完善 BottomSheet 示例代码，体现新 API 和设计说明
 - **README 更新**：更新内置依赖包版本列表，反映所有依赖升级
 - **README 更新**：更新 MyScaffold 功能描述和使用示例，体现 M3 五层级自适应布局
 - **示例项目更新**：为所有导航项添加 `group` 和 `subtitle`，新增 `_NavigationHeader` 和 `_BreakpointIndicator` 辅助组件
+- **示例项目新增**：Page12 演示页，含 MyTabView compact/stretched 对比场景
 
 ## 0.31.0 - 2025-12-31
 
