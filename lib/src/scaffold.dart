@@ -8,14 +8,16 @@ import 'package:get/get.dart';
 
 import 'logger.dart';
 
-/// 自适应根脚手架
+/// 自适应根脚手架（M3 五层级）
 ///
-/// 根据屏幕尺寸自动切换显示模式：
-/// - 小屏幕：传统抽屉式导航或底部导航栏
-/// - 中等屏幕：收缩的图标式侧边栏
-/// - 大屏幕：完整的展开式侧边栏
+/// 根据屏幕宽度自动切换 5 种显示模式：
+/// - Compact  (< compactBreakpoint)  ：抽屉式导航或底部导航栏
+/// - Medium   (compact ~ medium)     ：仅图标侧边栏（72dp），hover 显示 Tooltip
+/// - Expanded (medium ~ expanded)    ：图标+文字侧边栏（256dp）
+/// - Large    (expanded ~ large)     ：完整导航抽屉（304dp），含分组标题、副标题、顶部 Header
+/// - XLarge   (≥ largeBreakpoint)    ：宽导航抽屉（360dp），trailing 内嵌、间距更宽松
 ///
-/// 使用方式类似传统Flutter Scaffold，但增加了自适应导航功能：
+/// 使用方式类似传统 Flutter Scaffold，但增加了自适应导航功能：
 /// ```dart
 /// MyScaffold(
 ///   appBar: AppBar(title: Text('My App')),
@@ -23,9 +25,12 @@ import 'logger.dart';
 ///     MyAdaptiveNavigationItem(
 ///       icon: Icon(Icons.home),
 ///       label: '首页',
+///       subtitle: '数据概览',  // 仅 Large+ 显示
+///       group: '主要功能',     // 仅 Large+ 显示分组标题
 ///       onTap: () => controller.switchToPage(0),
 ///     ),
 ///   ],
+///   navigationHeader: MyHeaderWidget(), // 仅 Large+ 显示
 ///   body: Obx(() => pages[controller.currentIndex]),
 /// )
 /// ```
@@ -49,6 +54,11 @@ class MyScaffold extends StatefulWidget {
   /// 侧边栏底部额外内容（可选）
   final Widget? trailing;
 
+  /// 导航侧边栏顶部区域（可选）
+  /// 仅在 Large (1200dp+) 层级及 Compact 抽屉中显示
+  /// 适合放置应用 Logo、用户头像等
+  final Widget? navigationHeader;
+
   /// 是否在小屏幕使用底部导航栏而不是抽屉
   final bool useBottomNavigationOnSmall;
 
@@ -61,11 +71,25 @@ class MyScaffold extends StatefulWidget {
   /// 抽屉宽度比例（相对于屏幕宽度）
   final double drawerWidthRatio;
 
-  /// 小屏幕断点宽度（默认600.w）
-  final double smallBreakpoint;
+  /// Compact / Medium 分界宽度（默认 600dp）
+  /// 宽度 < 此值时使用抽屉或底部导航栏
+  final double compactBreakpoint;
 
-  /// 大屏幕断点宽度（默认840.w）
+  /// Medium / Expanded 分界宽度（默认 840dp）
+  /// 宽度 ≥ 此值时显示图标+文字侧边栏
+  final double mediumBreakpoint;
+
+  /// Expanded / Large 分界宽度（默认 1200dp）
+  /// 宽度 ≥ 此值时显示完整导航抽屉（含分组、副标题、Header）
+  final double expandedBreakpoint;
+
+  /// Large / XLarge 分界宽度（默认 1600dp）
+  /// 宽度 ≥ 此值时显示宽导航抽屉，trailing 内嵌
   final double largeBreakpoint;
+
+  /// 小屏幕断点宽度（已废弃，请使用 compactBreakpoint）
+  @Deprecated('请使用 compactBreakpoint 代替。此参数将在未来版本中移除。')
+  final double? smallBreakpoint;
 
   /// 初始选中的导航项索引
   final int initialSelectedIndex;
@@ -81,6 +105,11 @@ class MyScaffold extends StatefulWidget {
   /// 获取实际使用的导航项列表
   List<MyAdaptiveNavigationItem>? get _effectiveDrawer => drawer;
 
+  /// 获取实际生效的 compact 断点（兼容已废弃的 smallBreakpoint）
+  double get _effectiveCompactBreakpoint =>
+      // ignore: deprecated_member_use_from_same_package
+      smallBreakpoint ?? compactBreakpoint;
+
   const MyScaffold({
     super.key,
     this.drawer,
@@ -88,19 +117,33 @@ class MyScaffold extends StatefulWidget {
     @Deprecated('不再需要pages参数') this.pages,
     this.body,
     this.trailing,
+    this.navigationHeader,
     this.useBottomNavigationOnSmall = false,
     this.appBar,
     this.floatingActionButton,
     this.drawerWidthRatio = 0.88,
-    this.smallBreakpoint = 600.0,
-    this.largeBreakpoint = 840.0,
+    this.compactBreakpoint = 600.0,
+    this.mediumBreakpoint = 840.0,
+    this.expandedBreakpoint = 1200.0,
+    this.largeBreakpoint = 1600.0,
+    @Deprecated('请使用 compactBreakpoint 代替') this.smallBreakpoint,
     this.initialSelectedIndex = 0,
     this.alwaysShowScrollbar = false,
     this.autoScrollToSelected = true,
-  }) : assert(
+  })  : assert(
           drawer == null || items == null,
           '不能同时提供drawer和items参数，请使用drawer参数。',
+        ),
+        assert(
+          600.0 <= 840.0, // 编译期占位；运行时由下方校验
+          '',
         );
+
+  /// 运行时校验断点严格递增（const 构造函数不能用 this）
+  bool get _breakpointsValid =>
+      _effectiveCompactBreakpoint < mediumBreakpoint &&
+      mediumBreakpoint < expandedBreakpoint &&
+      expandedBreakpoint < largeBreakpoint;
 
   @override
   State<MyScaffold> createState() => _MyScaffoldState();
@@ -123,6 +166,8 @@ class _MyScaffoldState extends State<MyScaffold> {
   @override
   void initState() {
     super.initState();
+    assert(widget._breakpointsValid,
+        '断点值必须严格递增: compactBreakpoint(${widget._effectiveCompactBreakpoint}) < mediumBreakpoint(${widget.mediumBreakpoint}) < expandedBreakpoint(${widget.expandedBreakpoint}) < largeBreakpoint(${widget.largeBreakpoint})');
     _selectedIndex = widget.initialSelectedIndex;
     _buildRouteMapping();
 
@@ -269,7 +314,7 @@ class _MyScaffoldState extends State<MyScaffold> {
         effectiveDrawer.map((item) => item.toNavigationDestination()).toList();
 
     // 判断当前屏幕尺寸
-    final isSmallScreen = screenWidth < widget.smallBreakpoint;
+    final isSmallScreen = screenWidth < widget._effectiveCompactBreakpoint;
 
     // 统一的onDestinationSelected处理逻辑
     void handleDestinationSelected(int index) {
@@ -294,31 +339,70 @@ class _MyScaffoldState extends State<MyScaffold> {
       }
     }
 
-    // 自适应布局，支持所有屏幕尺寸
+    // ── 构造自定义断点（仅按宽度，不受新版包高度约束影响）──
+    final compact = widget._effectiveCompactBreakpoint;
+    final medium = widget.mediumBreakpoint;
+    final expanded = widget.expandedBreakpoint;
+    final large = widget.largeBreakpoint;
+
+    final bpMedium = Breakpoint(beginWidth: compact, endWidth: medium);
+    final bpExpanded = Breakpoint(beginWidth: medium, endWidth: expanded);
+    final bpLarge = Breakpoint(beginWidth: expanded, endWidth: large);
+    final bpExtraLarge = Breakpoint(beginWidth: large, andUp: true);
+
+    // ── 自适应布局，支持 M3 五层级 ──
     final adaptiveLayout = AdaptiveLayout(
       primaryNavigation: SlotLayout(
         config: <Breakpoint, SlotLayoutConfig>{
-          // 中等屏幕（600+）：收缩的侧边栏（仅图标）
-          // 使用 andUp 变体确保仅按宽度判断，不受新版包高度约束影响
-          Breakpoints.mediumAndUp: SlotLayout.from(
-            key: const Key('primaryNavigation'),
+          // Medium：仅图标侧边栏（72dp），hover 显示 Tooltip
+          bpMedium: SlotLayout.from(
+            key: const Key('primaryNavMedium'),
             builder: (_) => _CustomCompactNavigationRail(
               selectedIndex: _selectedIndex,
               onDestinationSelected: handleDestinationSelected,
               destinations: destinations,
             ),
           ),
-          // 大屏幕（840+）：展开的侧边栏（图标+文字+额外内容）
-          // 排在 mediumAndUp 之后，宽度 ≥840 时优先匹配此项
-          Breakpoints.mediumLargeAndUp: SlotLayout.from(
-            key: const Key('primaryNavigationLarge'),
-            builder: (context) => _CustomExtendedNavigationRail(
+          // Expanded：图标+文字侧边栏（256dp）
+          bpExpanded: SlotLayout.from(
+            key: const Key('primaryNavExpanded'),
+            builder: (_) => _CustomExpandedNavigationRail(
               selectedIndex: _selectedIndex,
               onDestinationSelected: handleDestinationSelected,
               destinations: destinations,
               trailing: widget.trailing,
               scrollController: _drawerScrollController,
               alwaysShowScrollbar: widget.alwaysShowScrollbar,
+            ),
+          ),
+          // Large：完整导航抽屉（304dp），含分组标题、副标题、Header
+          bpLarge: SlotLayout.from(
+            key: const Key('primaryNavLarge'),
+            builder: (_) => _CustomNavigationDrawer(
+              selectedIndex: _selectedIndex,
+              onDestinationSelected: handleDestinationSelected,
+              items: effectiveDrawer,
+              navigationHeader: widget.navigationHeader,
+              trailing: widget.trailing,
+              scrollController: _drawerScrollController,
+              alwaysShowScrollbar: widget.alwaysShowScrollbar,
+              width: 304.w,
+            ),
+          ),
+          // XLarge：宽导航抽屉（360dp），trailing 内嵌、间距更宽松
+          bpExtraLarge: SlotLayout.from(
+            key: const Key('primaryNavExtraLarge'),
+            builder: (_) => _CustomNavigationDrawer(
+              selectedIndex: _selectedIndex,
+              onDestinationSelected: handleDestinationSelected,
+              items: effectiveDrawer,
+              navigationHeader: widget.navigationHeader,
+              trailing: widget.trailing,
+              scrollController: _drawerScrollController,
+              alwaysShowScrollbar: widget.alwaysShowScrollbar,
+              width: 360.w,
+              inlineTrailing: true,
+              extraSpacing: true,
             ),
           ),
         },
@@ -410,13 +494,14 @@ class _MyScaffoldState extends State<MyScaffold> {
                 child: Drawer(
                   width: (screenWidth * widget.drawerWidthRatio)
                       .clamp(200.w, 304.w),
-                  child: _CustomExtendedNavigationRail(
+                  child: _CustomNavigationDrawer(
                     selectedIndex: _selectedIndex,
                     onDestinationSelected: (index) {
                       _scaffoldKey.currentState?.closeDrawer();
                       handleDestinationSelected(index);
                     },
-                    destinations: destinations,
+                    items: effectiveDrawer,
+                    navigationHeader: widget.navigationHeader,
                     trailing: widget.trailing,
                     scrollController: _drawerScrollController,
                     alwaysShowScrollbar: widget.alwaysShowScrollbar,
@@ -457,6 +542,13 @@ class MyAdaptiveNavigationItem {
   /// 标签文本
   final String label;
 
+  /// 副标题（仅在 Large 1200dp+ 层级显示）
+  final String? subtitle;
+
+  /// 分组名称（仅在 Large 1200dp+ 层级显示分组标题）
+  /// 相同 group 值的连续项归为一组，首项上方显示分组标题
+  final String? group;
+
   /// 点击回调
   final FutureOr<void> Function()? onTap;
 
@@ -471,6 +563,8 @@ class MyAdaptiveNavigationItem {
     required this.icon,
     this.selectedIcon,
     required this.label,
+    this.subtitle,
+    this.group,
     this.onTap,
     this.badgeCount,
     this.route,
@@ -500,9 +594,9 @@ class MyAdaptiveNavigationItem {
   }
 }
 
-/// 自定义的扩展NavigationRail，支持整行高亮
-class _CustomExtendedNavigationRail extends StatelessWidget {
-  const _CustomExtendedNavigationRail({
+/// Expanded 层级侧边栏（256dp，图标+文字）
+class _CustomExpandedNavigationRail extends StatelessWidget {
+  const _CustomExpandedNavigationRail({
     required this.selectedIndex,
     required this.onDestinationSelected,
     required this.destinations,
@@ -610,8 +704,7 @@ class _CustomExtendedNavigationRail extends StatelessWidget {
   }
 }
 
-/// 自定义的紧凑NavigationRail，用于中等屏幕（min模式）
-/// 只显示图标，菜单项从顶部开始排列，不预留汉堡菜单按钮空间
+/// Medium 层级侧边栏（72dp，仅图标 + hover Tooltip）
 class _CustomCompactNavigationRail extends StatelessWidget {
   const _CustomCompactNavigationRail({
     required this.selectedIndex,
@@ -629,49 +722,52 @@ class _CustomCompactNavigationRail extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Container(
-      width: 72.w, // 标准NavigationRail的紧凑宽度
+      width: 72.w,
       color: theme.navigationRailTheme.backgroundColor ?? colorScheme.surface,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // 导航项列表 - 添加顶部padding以匹配标准NavigationRail的行为
           Expanded(
             child: ListView.builder(
-              padding: EdgeInsets.only(
-                  top: 8.h, bottom: 12.h), // 减少顶部padding，让菜单项更靠近顶部
+              padding: EdgeInsets.only(top: 8.h, bottom: 12.h),
               itemCount: destinations.length,
               itemBuilder: (context, index) {
                 final destination = destinations[index];
                 final isSelected = index == selectedIndex;
 
-                return Container(
-                  margin: EdgeInsets.symmetric(vertical: 4.h),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(16.r),
-                      onTap: () => onDestinationSelected(index),
-                      child: Container(
-                        width: 56.w,
-                        height: 56.h,
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? colorScheme.secondaryContainer
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(16.r),
-                        ),
-                        child: Center(
-                          child: IconTheme(
-                            data: IconThemeData(
-                              color: isSelected
-                                  ? colorScheme.onSecondaryContainer
-                                  : colorScheme.onSurfaceVariant,
-                              size: 24.w,
+                return Tooltip(
+                  message: destination.label,
+                  preferBelow: false,
+                  waitDuration: const Duration(milliseconds: 400),
+                  child: Container(
+                    margin: EdgeInsets.symmetric(vertical: 4.h),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(16.r),
+                        onTap: () => onDestinationSelected(index),
+                        child: Container(
+                          width: 56.w,
+                          height: 56.h,
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? colorScheme.secondaryContainer
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(16.r),
+                          ),
+                          child: Center(
+                            child: IconTheme(
+                              data: IconThemeData(
+                                color: isSelected
+                                    ? colorScheme.onSecondaryContainer
+                                    : colorScheme.onSurfaceVariant,
+                                size: 24.w,
+                              ),
+                              child:
+                                  isSelected && destination.selectedIcon != null
+                                      ? destination.selectedIcon!
+                                      : destination.icon,
                             ),
-                            child:
-                                isSelected && destination.selectedIcon != null
-                                    ? destination.selectedIcon!
-                                    : destination.icon,
                           ),
                         ),
                       ),
@@ -683,6 +779,255 @@ class _CustomCompactNavigationRail extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Large / XLarge 层级导航抽屉（支持分组标题、副标题、Header）
+///
+/// 通过参数控制 Large 与 XLarge 的视觉差异：
+/// - [width]: Large=304dp, XLarge=360dp
+/// - [inlineTrailing]: XLarge 时 trailing 内嵌到列表末尾
+/// - [extraSpacing]: XLarge 时使用更宽松的间距
+class _CustomNavigationDrawer extends StatelessWidget {
+  const _CustomNavigationDrawer({
+    required this.selectedIndex,
+    required this.onDestinationSelected,
+    required this.items,
+    this.navigationHeader,
+    this.trailing,
+    this.scrollController,
+    this.alwaysShowScrollbar = false,
+    this.width,
+    this.inlineTrailing = false,
+    this.extraSpacing = false,
+  });
+
+  final int selectedIndex;
+  final Function(int) onDestinationSelected;
+  final List<MyAdaptiveNavigationItem> items;
+  final Widget? navigationHeader;
+  final Widget? trailing;
+  final ScrollController? scrollController;
+  final bool alwaysShowScrollbar;
+
+  /// 导航抽屉宽度，为 null 时自动填满父容器（用于 Compact 抽屉）
+  final double? width;
+
+  /// 为 true 时 trailing 内嵌在导航列表末尾（XLarge 模式）
+  final bool inlineTrailing;
+
+  /// 为 true 时使用更宽松的间距（XLarge 模式）
+  final bool extraSpacing;
+
+  /// 构建带角标的图标
+  Widget _buildIconWithBadge(MyAdaptiveNavigationItem item, bool isSelected) {
+    Widget iconWidget = isSelected && item.selectedIcon != null
+        ? item.selectedIcon!
+        : item.icon;
+    if (item.badgeCount != null && item.badgeCount! > 0) {
+      iconWidget = Badge(
+        isLabelVisible: true,
+        label: Text('${item.badgeCount}', style: TextStyle(fontSize: 10.sp)),
+        child: iconWidget,
+      );
+    }
+    return iconWidget;
+  }
+
+  /// 构建导航项列表（含分组标题）
+  List<Widget> _buildNavigationItems(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final List<Widget> widgets = [];
+    String? lastGroup;
+
+    // 判断是否有任何 group 数据（有才显示分组标题）
+    final hasGroups = items.any((item) => item.group != null);
+    // 判断是否有任何 subtitle 数据
+    final hasSubtitles = items.any((item) => item.subtitle != null);
+
+    for (int i = 0; i < items.length; i++) {
+      final item = items[i];
+      final isSelected = i == selectedIndex;
+
+      // 分组标题：当 group 值变化时插入
+      if (hasGroups && item.group != null && item.group != lastGroup) {
+        if (widgets.isNotEmpty) {
+          widgets.add(SizedBox(height: 8.h));
+          widgets.add(Divider(
+            height: 1,
+            indent: extraSpacing ? 20.w : 16.w,
+            endIndent: extraSpacing ? 20.w : 16.w,
+          ));
+          widgets.add(SizedBox(height: 8.h));
+        }
+        widgets.add(
+          Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: extraSpacing ? 20.w : 16.w,
+              vertical: 8.h,
+            ),
+            child: Text(
+              item.group!,
+              style: theme.textTheme.titleSmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ),
+        );
+        lastGroup = item.group;
+      }
+
+      // 导航项
+      widgets.add(
+        Container(
+          margin: EdgeInsets.symmetric(
+            vertical: extraSpacing ? 6.h : 4.h,
+            horizontal: extraSpacing ? 16.w : 12.w,
+          ),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? colorScheme.secondaryContainer
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12.r),
+              onTap: () => onDestinationSelected(i),
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 16.w,
+                  vertical: extraSpacing ? 18.h : 16.h,
+                ),
+                child: Row(
+                  children: [
+                    // 图标
+                    IconTheme(
+                      data: IconThemeData(
+                        color: isSelected
+                            ? colorScheme.onSecondaryContainer
+                            : colorScheme.onSurfaceVariant,
+                        size: 24.w,
+                      ),
+                      child: _buildIconWithBadge(item, isSelected),
+                    ),
+                    SizedBox(width: 12.w),
+                    // 标签 + 副标题
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            item.label,
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              color: isSelected
+                                  ? colorScheme.onSecondaryContainer
+                                  : colorScheme.onSurfaceVariant,
+                              fontSize: 14.sp,
+                            ),
+                          ),
+                          if (hasSubtitles && item.subtitle != null) ...[
+                            SizedBox(height: 2.h),
+                            Text(
+                              item.subtitle!,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: isSelected
+                                    ? colorScheme.onSecondaryContainer
+                                        .withValues(alpha: 0.7)
+                                    : colorScheme.onSurfaceVariant
+                                        .withValues(alpha: 0.6),
+                                fontSize: 11.sp,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    // XLarge 模式：trailing 内嵌到列表末尾
+    if (inlineTrailing && trailing != null) {
+      widgets.add(SizedBox(height: 16.h));
+      widgets.add(Divider(
+        height: 1,
+        indent: extraSpacing ? 20.w : 16.w,
+        endIndent: extraSpacing ? 20.w : 16.w,
+      ));
+      widgets.add(Padding(
+        padding: EdgeInsets.all(16.w),
+        child: trailing!,
+      ));
+    }
+
+    return widgets;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 顶部 Header
+        if (navigationHeader != null) ...[
+          navigationHeader!,
+          Divider(
+            height: 1,
+            indent: extraSpacing ? 20.w : 16.w,
+            endIndent: extraSpacing ? 20.w : 16.w,
+          ),
+        ],
+        // 导航项列表
+        Expanded(
+          child: Scrollbar(
+            controller: scrollController,
+            thumbVisibility: alwaysShowScrollbar,
+            child: ListView(
+              controller: scrollController,
+              padding: EdgeInsets.symmetric(vertical: 12.h),
+              children: _buildNavigationItems(context),
+            ),
+          ),
+        ),
+        // 底部固定 trailing（非内嵌模式）
+        if (!inlineTrailing && trailing != null)
+          Padding(
+            padding: EdgeInsets.all(12.w),
+            child: trailing!,
+          ),
+      ],
+    );
+
+    if (width != null) {
+      return Container(
+        width: width,
+        color: theme.navigationRailTheme.backgroundColor ?? colorScheme.surface,
+        child: content,
+      );
+    }
+
+    // width 为 null 时填满父容器（用于 Compact 抽屉内部）
+    return ColoredBox(
+      color: theme.navigationRailTheme.backgroundColor ?? colorScheme.surface,
+      child: content,
     );
   }
 }

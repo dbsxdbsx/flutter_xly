@@ -144,76 +144,107 @@ void main() async {
           centerTitle: true,
           backgroundColor: Colors.grey.withValues(alpha: 0.3),
           elevation: 0,
+          // 断点指示器：实时显示当前层级和窗口宽度
+          actions: const [_BreakpointIndicator()],
         ),
         body: child!,
+        // ── 导航项（含 group 分组 + subtitle 副标题，Large+ 层级自动显示） ──
         drawer: const [
+          // ─ 展示测试 ─
           MyAdaptiveNavigationItem(
             icon: Icon(Icons.dashboard_outlined),
             selectedIcon: Icon(Icons.dashboard),
             label: '组件展示',
+            subtitle: '各类基础 Widget 测试',
+            group: '展示测试',
             route: MyRoutes.page1,
           ),
           MyAdaptiveNavigationItem(
             icon: Icon(Icons.style_outlined),
             selectedIcon: Icon(Icons.style),
             label: '样式测试',
+            subtitle: '主题与样式调试',
+            group: '展示测试',
             route: MyRoutes.page2,
           ),
           MyAdaptiveNavigationItem(
             icon: Icon(Icons.layers_outlined),
             selectedIcon: Icon(Icons.layers),
             label: '弹窗对话',
+            subtitle: 'Dialog 与 BottomSheet',
+            group: '展示测试',
             route: MyRoutes.page3,
           ),
           MyAdaptiveNavigationItem(
             icon: Icon(Icons.view_list_outlined),
             selectedIcon: Icon(Icons.view_list),
             label: '列表管理',
+            subtitle: '列表与数据展示',
+            group: '展示测试',
             route: MyRoutes.page4,
           ),
+          // ─ 功能测试 ─
           MyAdaptiveNavigationItem(
             icon: Icon(Icons.link),
             selectedIcon: Icon(Icons.link_outlined),
             label: 'URL启动器',
+            subtitle: '外部链接跳转',
+            group: '功能测试',
             route: MyRoutes.page5,
           ),
           MyAdaptiveNavigationItem(
             icon: Icon(Icons.edit),
             selectedIcon: Icon(Icons.edit_outlined),
             label: '文本编辑器',
+            subtitle: '富文本编辑组件',
+            group: '功能测试',
             route: MyRoutes.page6,
           ),
           MyAdaptiveNavigationItem(
             icon: Icon(Icons.tune),
             selectedIcon: Icon(Icons.tune_outlined),
             label: '自定义编辑框',
+            subtitle: '输入框定制化',
+            group: '功能测试',
             route: MyRoutes.page7,
           ),
+          // ─ 系统功能 ─
           MyAdaptiveNavigationItem(
             icon: Icon(Icons.notifications),
             selectedIcon: Icon(Icons.notifications_active),
             label: '通知功能测试',
+            subtitle: '本地通知推送',
+            group: '系统功能',
             route: MyRoutes.page8,
           ),
           MyAdaptiveNavigationItem(
             icon: Icon(Icons.system_update_alt),
             selectedIcon: Icon(Icons.system_update_alt_outlined),
             label: '托盘功能测试',
+            subtitle: '系统托盘交互',
+            group: '系统功能',
             route: MyRoutes.page9,
           ),
+          // ─ 动画样式 ─
           MyAdaptiveNavigationItem(
             icon: Icon(Icons.more_horiz),
             selectedIcon: Icon(Icons.more_horiz_outlined),
             label: 'LoadingDot演示',
+            subtitle: '加载动画效果',
+            group: '动画样式',
             route: MyRoutes.page10,
           ),
           MyAdaptiveNavigationItem(
             icon: Icon(Icons.palette),
             selectedIcon: Icon(Icons.palette_outlined),
             label: 'FloatPanel样式',
+            subtitle: '浮动面板定制',
+            group: '动画样式',
             route: MyRoutes.page11,
           ),
         ],
+        // 导航顶部 Header（Large+ 层级及 Compact 抽屉中显示）
+        navigationHeader: const _NavigationHeader(),
         trailing: const PlatformInfoWidget(),
       );
     },
@@ -267,4 +298,106 @@ class MyRoutes {
   static const String page9 = '/page9';
   static const String page10 = '/page10';
   static const String page11 = '/page11';
+}
+
+// ─────────────────────────────────────────────────────────
+// 示例辅助组件
+// ─────────────────────────────────────────────────────────
+
+/// 导航侧边栏顶部 Header（Large+ 层级及 Compact 抽屉中显示）
+class _NavigationHeader extends StatelessWidget {
+  const _NavigationHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 20.w,
+            backgroundColor: colorScheme.primaryContainer,
+            child: Icon(
+              Icons.science_outlined,
+              size: 22.w,
+              color: colorScheme.onPrimaryContainer,
+            ),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'XLY 示例',
+                  style: TextStyle(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+                Text(
+                  'Flutter Package Demo',
+                  style: TextStyle(
+                    fontSize: 11.sp,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 实时断点层级指示器（放在 AppBar actions 中）
+///
+/// 拖动窗口时可直观看到层级切换，方便理解 5 层级自适应行为
+class _BreakpointIndicator extends StatelessWidget {
+  const _BreakpointIndicator();
+
+  @override
+  Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    final (tierName, tierColor) = _getTierInfo(width);
+
+    return Padding(
+      padding: EdgeInsets.only(right: 12.w),
+      child: Center(
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+          decoration: BoxDecoration(
+            color: tierColor.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(12.r),
+            border: Border.all(
+              color: tierColor.withValues(alpha: 0.4),
+              width: 1,
+            ),
+          ),
+          child: Text(
+            '$tierName  ${width.toInt()}dp',
+            style: TextStyle(
+              fontSize: 11.sp,
+              fontWeight: FontWeight.w600,
+              color: tierColor,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 根据宽度返回层级名称和对应颜色
+  (String, Color) _getTierInfo(double width) {
+    // 使用 MyScaffold 默认断点值：600 / 840 / 1200 / 1600
+    if (width < 600) return ('Compact', Colors.deepOrange);
+    if (width < 840) return ('Medium', Colors.amber.shade800);
+    if (width < 1200) return ('Expanded', Colors.teal);
+    if (width < 1600) return ('Large', Colors.blue);
+    return ('XLarge', Colors.deepPurple);
+  }
 }
