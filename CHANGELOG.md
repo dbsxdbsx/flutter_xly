@@ -1,3 +1,51 @@
+## 待提交版本
+
+### ⚠️ Breaking Changes
+
+- **`MyDialogSheet.showBottom` API 变更**：参数重命名以支持动态响应式尺寸
+  - `height` → `designHeight`（设计稿高度值，默认 250，无需自行 `.h` 转换）
+  - `borderRadius` → `designBorderRadius`（设计稿圆角值，默认 20，无需自行 `.r` 转换）
+  - 迁移：`height: 300.h` → `designHeight: 300`
+
+### Fixed
+
+- **修复 BottomSheet 桌面端宽度不自适应问题**：解决窗口宽度超过 640px 后 BottomSheet 不再等比例缩放的问题
+  - **根因**：Flutter Material 3 的 `BottomSheet` widget 内部硬编码 `maxWidth: 640`，GetX 的 `Get.bottomSheet` 无法覆盖该默认值
+  - **方案**：改用 Flutter 原生 `showModalBottomSheet`，传入 `constraints: const BoxConstraints()` 禁用 640px 限制
+  - 使用 `FractionallySizedBox(widthFactor: maxWidthRatio)` 实现比例宽度，窗口变化时自动响应
+- **修复 BottomSheet 高度不跟随窗口缩放问题**：将高度和圆角参数改为"设计稿值"，在 `builder` 内部通过 ScreenUtil 动态转换，确保窗口缩放时等比例更新
+
+### Enhanced
+
+- **BottomSheet 内容溢出安全网**：内部 `Expanded` 包裹 `SingleChildScrollView`，当窗口缩小导致内容超出时自动变为可滚动，避免 overflow 错误
+- **BottomSheet 新增 `maxWidthRatio` 参数**：控制 Sheet 宽度占窗口宽度的比例（默认 0.85），替代 Material 3 的固定 640px maxWidth
+
+### Dependencies
+
+- **主要依赖升级**：
+  - `get`: `^4.6.6` → `^4.7.3`
+  - `flutter_local_notifications`: `^19.4.0` → `^20.0.0`
+  - `flutter_adaptive_scaffold`: `^0.1.7+1` → `^0.3.3+1`
+  - `permission_handler`: `^11.3.0` → `^12.0.1`
+  - `launch_at_startup`: `^0.3.0` → `^0.5.1`
+  - `package_info_plus`: `^8.0.0` → `^9.0.0`
+  - `flutter_lints`: `^5.0.0` → `^6.0.0`
+
+- **因 `flutter_local_notifications` 20.0.0 升级的 API 适配**（`my_notify.dart`）：
+  - `initialize(settings)` → `initialize(settings: settings)`
+  - `show(id, title, body, details)` → 改为命名参数形式
+  - `zonedSchedule(...)` → 改为命名参数形式（含 `scheduledDate` 重命名）
+  - `cancel(id)` → `cancel(id: id)`
+
+- **因 `flutter_adaptive_scaffold` 0.3.3 升级的 API 适配**（`scaffold.dart`）：
+  - `Breakpoints.medium` → `Breakpoints.mediumAndUp`（使用 andUp 变体避免新版包的高度约束影响）
+  - `Breakpoints.large` → `Breakpoints.mediumLargeAndUp`（宽度 ≥840 时优先匹配）
+
+### Documentation
+
+- **README 更新**：完善 BottomSheet 示例代码，体现新 API 和设计说明
+- **README 更新**：更新内置依赖包版本列表，反映所有依赖升级
+
 ## 0.31.0 - 2025-12-31
 
 ### ⚠️ Breaking Changes

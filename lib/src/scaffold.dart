@@ -298,8 +298,9 @@ class _MyScaffoldState extends State<MyScaffold> {
     final adaptiveLayout = AdaptiveLayout(
       primaryNavigation: SlotLayout(
         config: <Breakpoint, SlotLayoutConfig>{
-          // 中等屏幕：收缩的侧边栏（仅图标）
-          Breakpoints.medium: SlotLayout.from(
+          // 中等屏幕（600+）：收缩的侧边栏（仅图标）
+          // 使用 andUp 变体确保仅按宽度判断，不受新版包高度约束影响
+          Breakpoints.mediumAndUp: SlotLayout.from(
             key: const Key('primaryNavigation'),
             builder: (_) => _CustomCompactNavigationRail(
               selectedIndex: _selectedIndex,
@@ -307,8 +308,9 @@ class _MyScaffoldState extends State<MyScaffold> {
               destinations: destinations,
             ),
           ),
-          // 大屏幕：展开的侧边栏（图标+文字+额外内容）
-          Breakpoints.large: SlotLayout.from(
+          // 大屏幕（840+）：展开的侧边栏（图标+文字+额外内容）
+          // 排在 mediumAndUp 之后，宽度 ≥840 时优先匹配此项
+          Breakpoints.mediumLargeAndUp: SlotLayout.from(
             key: const Key('primaryNavigationLarge'),
             builder: (context) => _CustomExtendedNavigationRail(
               selectedIndex: _selectedIndex,

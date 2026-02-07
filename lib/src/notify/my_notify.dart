@@ -97,7 +97,7 @@ class MyNotify extends GetxService {
       // 初始化插件
       final bool? initialized =
           await _flutterLocalNotificationsPlugin.initialize(
-        initializationSettings,
+        settings: initializationSettings,
         onDidReceiveNotificationResponse: _onDidReceiveNotificationResponse,
       );
 
@@ -236,10 +236,10 @@ class MyNotify extends GetxService {
       );
 
       await _flutterLocalNotificationsPlugin.show(
-        id,
-        title,
-        body,
-        notificationDetails,
+        id: id,
+        title: title,
+        body: body,
+        notificationDetails: notificationDetails,
         payload: payload,
       );
 
@@ -288,11 +288,11 @@ class MyNotify extends GetxService {
       );
 
       await _flutterLocalNotificationsPlugin.zonedSchedule(
-        id,
-        title,
-        body,
-        tzScheduledDate,
-        notificationDetails,
+        id: id,
+        title: title,
+        body: body,
+        scheduledDate: tzScheduledDate,
+        notificationDetails: notificationDetails,
         payload: payload,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       );
@@ -389,7 +389,7 @@ class MyNotify extends GetxService {
     if (!_isInitialized.value) return;
 
     try {
-      await _flutterLocalNotificationsPlugin.cancel(id);
+      await _flutterLocalNotificationsPlugin.cancel(id: id);
       XlyLogger.info('MyNotify: 已取消通知 ID: $id');
     } catch (e) {
       XlyLogger.error('MyNotify: 取消通知失败', e);

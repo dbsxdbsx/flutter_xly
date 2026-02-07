@@ -8,27 +8,43 @@ import '../logger.dart';
 /// 统一的对话框管理类
 class MyDialogSheet {
   /// 显示底部弹出菜单
+  ///
+  /// [designHeight] 设计稿高度（默认 250），在 builder 内部通过 `.h` 动态转换，
+  /// 确保窗口缩放时高度等比例变化。调用方只需传设计值（如 300），无需自行 `.h`。
+  ///
+  /// [maxWidthRatio] 控制 Sheet 宽度占窗口宽度的比例（默认 0.85），
+  /// 避免 Material 3 默认的固定 640px maxWidth 导致缩放体验不一致。
+  ///
+  /// 实现说明：使用 Flutter 原生 `showModalBottomSheet` 而非 GetX 的
+  /// `Get.bottomSheet`，因为后者不支持 `constraints` 参数，无法覆盖
+  /// Material 3 的 `maxWidth: 640` 硬编码默认值。
   static Future<T?> showBottom<T>({
     required Widget child,
-    double? height,
+    double designHeight = 250,
     Color backgroundColor = Colors.white,
-    double? borderRadius,
+    double designBorderRadius = 20,
+    double maxWidthRatio = 0.85,
   }) {
-    final actualHeight = height ?? 250.h;
-    final actualBorderRadius = borderRadius ?? 20.r;
-
-    return Get.bottomSheet(
-      _BottomSheetContainer(
-        height: actualHeight,
-        backgroundColor: backgroundColor,
-        borderRadius: actualBorderRadius,
-        child: child,
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.vertical(top: Radius.circular(actualBorderRadius)),
-      ),
+    return showModalBottomSheet<T>(
+      context: Get.context!,
+      // 禁用 Material 3 默认的 maxWidth: 640 硬编码约束，
+      // 让 FractionallySizedBox 能基于真实屏幕宽度按比例计算
+      constraints: const BoxConstraints(),
       backgroundColor: Colors.transparent,
+      builder: (context) {
+        // 所有尺寸在 builder 内动态计算，确保窗口变化时等比例更新
+        final actualHeight = designHeight.h;
+        final actualBorderRadius = designBorderRadius.r;
+        return FractionallySizedBox(
+          widthFactor: maxWidthRatio,
+          child: _BottomSheetContainer(
+            height: actualHeight,
+            backgroundColor: backgroundColor,
+            borderRadius: actualBorderRadius,
+            child: child,
+          ),
+        );
+      },
     );
   }
 
@@ -103,7 +119,9 @@ class _BottomSheetContainer extends StatelessWidget {
             ),
           ),
           SizedBox(height: 20.h),
-          Expanded(child: child),
+          // SingleChildScrollView 作为安全网：
+          // 内容不超出时正常显示，超出时自动可滚动，避免 overflow
+          Expanded(child: SingleChildScrollView(child: child)),
         ],
       ),
     );

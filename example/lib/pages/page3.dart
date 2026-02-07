@@ -229,7 +229,7 @@ class Page3Controller extends GetxController {
 
   void showBottomSheet() {
     MyDialogSheet.showBottom(
-      height: 300.h,
+      designHeight: 300,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
