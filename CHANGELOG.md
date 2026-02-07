@@ -1,5 +1,17 @@
 ## 待提交版本
 
+### New Features
+
+- **新增分段选项卡组件**（`MyTabView` / `MySegmentedControl` / `MyTab` / `MyTabController`）：
+  - macOS 风格的 Segmented Control Tab 切换组件，纯 Widget 实现，零平台依赖
+  - 选中态滑块平滑滑动动画（`AnimatedPositioned`），默认 200ms，可自定义时长和曲线
+  - 两种布局模式（`MyTabBarFit`）：`compact`（默认，按内容收缩居中）/ `stretched`（等宽拉伸填满）
+  - 支持顶部/底部位置（`MyTabPosition`），Tab 栏"骑"在内容区边框中线上
+  - 全面参数化：颜色、padding、圆角、阴影、分隔线等均可自定义，支持 ScreenUtil 响应式
+  - 可选内容区切换动画（`transitionBuilder`），默认无动画（IndexedStack 保留状态）
+  - 亮/暗模式自适应，使用 Flutter 标准 `Theme.brightness`，不依赖 MacosTheme
+  - Controller 可选：不传时内部自动创建管理，基于 `ChangeNotifier` 与 GetX 兼容
+
 ### ⚠️ Breaking Changes
 
 - **`MyDialogSheet.showBottom` API 变更**：参数重命名以支持动态响应式尺寸

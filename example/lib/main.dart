@@ -7,6 +7,7 @@ import 'package:xly/xly.dart';
 import 'pages/page1.dart';
 import 'pages/page10.dart';
 import 'pages/page11.dart';
+import 'pages/page12.dart';
 import 'pages/page2.dart';
 import 'pages/page3.dart';
 import 'pages/page4.dart';
@@ -116,6 +117,11 @@ void main() async {
         path: MyRoutes.page11,
         page: const Page11View(),
         controller: () => Page11Controller(),
+      ),
+      MyRoute<Page12Controller>(
+        path: MyRoutes.page12,
+        page: const Page12View(),
+        controller: () => Page12Controller(),
       ),
     ],
     splash: const MySplash(
@@ -242,6 +248,15 @@ void main() async {
             group: '动画样式',
             route: MyRoutes.page11,
           ),
+          // ─ 面板组件 ─
+          MyAdaptiveNavigationItem(
+            icon: Icon(Icons.tab_outlined),
+            selectedIcon: Icon(Icons.tab),
+            label: 'TabView 面板',
+            subtitle: '分段选项卡组件',
+            group: '面板组件',
+            route: MyRoutes.page12,
+          ),
         ],
         // 导航顶部 Header（Large+ 层级及 Compact 抽屉中显示）
         navigationHeader: const _NavigationHeader(),
@@ -298,6 +313,7 @@ class MyRoutes {
   static const String page9 = '/page9';
   static const String page10 = '/page10';
   static const String page11 = '/page11';
+  static const String page12 = '/page12';
 }
 
 // ─────────────────────────────────────────────────────────

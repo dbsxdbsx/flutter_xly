@@ -57,6 +57,7 @@ export 'src/smart_dock/smart_dock.dart';
 export 'src/tray/tray.dart';
 export 'src/notify/lib.dart';
 export 'src/loading_dot.dart';
+export 'src/tab_view/lib.dart';
 
 // 3rd packages (re-export convenience)
 export 'package:flutter_screenutil/flutter_screenutil.dart';
