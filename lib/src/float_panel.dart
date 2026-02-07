@@ -318,10 +318,7 @@ class FloatBoxController extends GetxController {
         _oldYOffset = _pageHeight.value * _oldYOffsetRatio!;
       }
       _adjustPositionOnPanUpdate(xOffset.value, yOffset.value, isReScale: true);
-      if (panelState.value == PanelState.expanded) {
-        // 展开状态：重新对齐到正确的展开停靠位置
-        xOffset.value = _openDockLeft();
-      } else {
+      if (panelState.value != PanelState.expanded) {
         _calcOffsetWhenForceDock();
       }
       // 同步比例，确保后续缩放事件使用正确的位置

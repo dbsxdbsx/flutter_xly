@@ -13,7 +13,7 @@
   - **根因 1**：`onInnerButtonTap` 展开/收起面板后未同步 `_xOffsetRatio` / `_yOffsetRatio`，导致窗口缩放时使用收起状态的"贴边"比例还原位置，面板跳到窗口最边缘
   - **根因 2**：`updateScreenSize` 对展开状态无专门处理，`_calcOffsetWhenForceDock()` 只处理 closed 状态，展开时的 X 轴停靠位置不会被修正
   - **根因 3**：`_FloatBoxPanel.build()` 中先调用 `updateScreenSize` 再更新缩放尺寸，导致位置限位使用旧的 `effectivePanelHeight`
-  - **方案**：新增 `_syncOffsetRatios()` 在展开/收起/拖动/缩放后统一同步位置比例；展开状态下窗口缩放时重新对齐到 `_openDockLeft()`；调换 `build()` 中缩放值更新与屏幕尺寸更新的顺序
+  - **方案**：新增 `_syncOffsetRatios()` 在展开/收起/拖动/缩放后统一同步位置比例；展开状态下窗口缩放时仅按比例还原+限位（不强制吸边），收起状态才执行 `_calcOffsetWhenForceDock()`；调换 `build()` 中缩放值更新与屏幕尺寸更新的顺序
 - **修复 BottomSheet 桌面端宽度不自适应问题**：解决窗口宽度超过 640px 后 BottomSheet 不再等比例缩放的问题
   - **根因**：Flutter Material 3 的 `BottomSheet` widget 内部硬编码 `maxWidth: 640`，GetX 的 `Get.bottomSheet` 无法覆盖该默认值
   - **方案**：改用 Flutter 原生 `showModalBottomSheet`，传入 `constraints: const BoxConstraints()` 禁用 640px 限制
