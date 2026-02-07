@@ -311,13 +311,21 @@ class FloatBoxController extends GetxController {
       _initializePosition();
       _isFirstTimePositioning = false;
     } else if (screenSizeChanged) {
+      // 按比例恢复大致位置
       xOffset.value = _pageWidth.value * _xOffsetRatio;
       yOffset.value = _pageHeight.value * _yOffsetRatio;
       if (_oldYOffsetRatio != null) {
         _oldYOffset = _pageHeight.value * _oldYOffsetRatio!;
       }
       _adjustPositionOnPanUpdate(xOffset.value, yOffset.value, isReScale: true);
-      _calcOffsetWhenForceDock();
+      if (panelState.value == PanelState.expanded) {
+        // 展开状态：重新对齐到正确的展开停靠位置
+        xOffset.value = _openDockLeft();
+      } else {
+        _calcOffsetWhenForceDock();
+      }
+      // 同步比例，确保后续缩放事件使用正确的位置
+      _syncOffsetRatios();
     }
   }
 
@@ -342,6 +350,8 @@ class FloatBoxController extends GetxController {
       _calcOffsetWhenExpand();
       panelIcon.value = CupertinoIcons.minus_circle_fill;
     }
+    // 展开/收起后同步位置比例，确保窗口缩放时使用正确的位置还原
+    _syncOffsetRatios();
   }
 
   void onPanStartGesture(Offset globalPosition) {
@@ -386,6 +396,11 @@ class FloatBoxController extends GetxController {
 
   void onPanEndGesture() {
     _calcOffsetWhenForceDock();
+    _syncOffsetRatios();
+  }
+
+  /// 同步位置比例，确保窗口缩放时能正确还原面板位置
+  void _syncOffsetRatios() {
     if (_pageWidth.value > 0) {
       _xOffsetRatio = xOffset.value / _pageWidth.value;
     }
@@ -581,10 +596,9 @@ class _FloatBoxPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ctrl = Get.find<FloatBoxController>(tag: panelKey?.toString());
-    ctrl.updateScreenSize(
-        MediaQuery.of(context).size.width, MediaQuery.of(context).size.height);
 
-    // 在每次 build 时计算当前缩放值并更新控制器
+    // 先计算并更新缩放值，确保后续 updateScreenSize 中的位置限位
+    // 使用正确的 effectivePanelHeight（依赖 currentPanelWidth）
     final scaledPanelWidth = finalPanelWidth.w;
     final scaledBorderWidth = finalBorderWidth.w;
     final scaledIconSize = finalIconSize.sp;
@@ -597,7 +611,6 @@ class _FloatBoxPanel extends StatelessWidget {
     final scaledPanelOpenOffset = finalPanelOpenOffset.w;
     final scaledDockOffset = finalDockOffset.w;
 
-    // 更新控制器的当前缩放值
     ctrl.updateScaledDimensions(
       scaledPanelWidth: scaledPanelWidth,
       scaledBorderWidth: scaledBorderWidth,
@@ -606,6 +619,10 @@ class _FloatBoxPanel extends StatelessWidget {
       scaledPanelOpenOffset: scaledPanelOpenOffset,
       scaledDockOffset: scaledDockOffset,
     );
+
+    // 在缩放值更新后再更新屏幕尺寸，此时位置限位能正确使用新的面板高度
+    ctrl.updateScreenSize(
+        MediaQuery.of(context).size.width, MediaQuery.of(context).size.height);
 
     return Obx(() => AnimatedPositioned(
           duration: Duration(milliseconds: ctrl.movementSpeed.value),
