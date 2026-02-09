@@ -9,8 +9,10 @@ import '../logger.dart';
 class MyDialogSheet {
   /// 显示底部弹出菜单
   ///
-  /// [designHeight] 设计稿高度（默认 250），在 builder 内部通过 `.h` 动态转换，
-  /// 确保窗口缩放时高度等比例变化。调用方只需传设计值（如 300），无需自行 `.h`。
+  /// 高度指定方式（二选一，[heightRatio] 优先）：
+  /// - [heightRatio] 屏幕高度比例（0.0~1.0），如 `2/3` 表示占屏幕 2/3。
+  /// - [designHeight] 设计稿高度（默认 250），在 builder 内部通过 `.h` 动态转换，
+  ///   调用方只需传设计值（如 300），无需自行 `.h`。
   ///
   /// [maxWidthRatio] 控制 Sheet 宽度占窗口宽度的比例（默认 0.85），
   /// 避免 Material 3 默认的固定 640px maxWidth 导致缩放体验不一致。
@@ -18,22 +20,32 @@ class MyDialogSheet {
   /// 实现说明：使用 Flutter 原生 `showModalBottomSheet` 而非 GetX 的
   /// `Get.bottomSheet`，因为后者不支持 `constraints` 参数，无法覆盖
   /// Material 3 的 `maxWidth: 640` 硬编码默认值。
+  /// 始终启用 `isScrollControlled: true` 以突破 Flutter 默认的 9/16 高度上限。
   static Future<T?> showBottom<T>({
     required Widget child,
     double designHeight = 250,
+    double? heightRatio,
     Color backgroundColor = Colors.white,
     double designBorderRadius = 20,
     double maxWidthRatio = 0.85,
   }) {
     return showModalBottomSheet<T>(
       context: Get.context!,
+      // 启用滚动控制，突破默认 9/16 高度上限，让调用方自由控制面板高度
+      isScrollControlled: true,
       // 禁用 Material 3 默认的 maxWidth: 640 硬编码约束，
       // 让 FractionallySizedBox 能基于真实屏幕宽度按比例计算
       constraints: const BoxConstraints(),
       backgroundColor: Colors.transparent,
       builder: (context) {
         // 所有尺寸在 builder 内动态计算，确保窗口变化时等比例更新
-        final actualHeight = designHeight.h;
+        final double actualHeight;
+        if (heightRatio != null) {
+          actualHeight =
+              MediaQuery.of(context).size.height * heightRatio.clamp(0.0, 1.0);
+        } else {
+          actualHeight = designHeight.h;
+        }
         final actualBorderRadius = designBorderRadius.r;
         return FractionallySizedBox(
           widthFactor: maxWidthRatio,

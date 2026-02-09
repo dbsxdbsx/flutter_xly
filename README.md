@@ -1259,13 +1259,19 @@ Future<void> showDeleteConfirmDialog(String fileName) async {
 
 #### 底部弹出菜单 (MyDialogSheet.showBottom)
 
-> **设计说明**：`showBottom` 内部使用 Flutter 原生 `showModalBottomSheet` 而非 GetX 的 `Get.bottomSheet`，因为后者无法覆盖 Material 3 的 `maxWidth: 640` 硬编码默认值。所有尺寸参数均为"设计稿值"，在 builder 内部通过 ScreenUtil 动态转换，确保窗口缩放时等比例变化。内容区域内置 `SingleChildScrollView` 安全网，防止极端窗口尺寸下内容溢出。
+> **设计说明**：`showBottom` 内部使用 Flutter 原生 `showModalBottomSheet` 而非 GetX 的 `Get.bottomSheet`，因为后者无法覆盖 Material 3 的 `maxWidth: 640` 硬编码默认值。始终启用 `isScrollControlled: true` 以突破 Flutter 默认的 9/16 高度上限，让调用方自由控制面板高度。高度支持两种指定方式（二选一，`heightRatio` 优先）：`heightRatio` 按屏幕比例指定（0.0~1.0），`designHeight` 按设计稿值指定（在 builder 内部通过 ScreenUtil 动态转换）。内容区域内置 `SingleChildScrollView` 安全网，防止极端窗口尺寸下内容溢出。
 
 ```dart
 // 1. 简单底部菜单（designHeight 是设计稿值，无需自行 .h 转换）
 MyDialogSheet.showBottom(
   child: const Text('这是一个简单的底部菜单'),
   designHeight: 200,
+);
+
+// 1.5 按屏幕比例指定高度（heightRatio 优先于 designHeight）
+MyDialogSheet.showBottom(
+  child: const Text('占屏幕 2/3 高度的底部菜单'),
+  heightRatio: 2 / 3, // 屏幕高度的 2/3，自动 clamp 到 0.0~1.0
 );
 
 // 2. 自定义样式的底部菜单

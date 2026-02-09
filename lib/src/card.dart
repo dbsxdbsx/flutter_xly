@@ -28,6 +28,7 @@ class MyCard extends StatelessWidget {
 
   static EdgeInsets defaultPadding(BuildContext context) =>
       EdgeInsets.symmetric(horizontal: 4.w);
+
   /// 默认 margin，返回的值已经是转换后的 screenutil 值
   static EdgeInsets defaultMargin(BuildContext context) => EdgeInsets.symmetric(
         horizontal: 6.w,

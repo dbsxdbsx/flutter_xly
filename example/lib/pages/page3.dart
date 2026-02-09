@@ -107,17 +107,18 @@ class Page3View extends GetView<Page3Controller> {
                     MyButton(
                       text: '底部菜单',
                       onPressed: controller.showBottomSheet,
-                      width: 140.w,
+                    ),
+                    MyButton(
+                      text: '底部菜单(2/3屏)',
+                      onPressed: controller.showBottomSheetWithRatio,
                     ),
                     MyButton(
                       text: '设置面板',
                       onPressed: controller.showCenterDialog,
-                      width: 140.w,
                     ),
                     MyButton(
                       text: '用户信息',
                       onPressed: controller.showUserInfoDialog,
-                      width: 140.w,
                     ),
                   ],
                 ),
@@ -264,6 +265,43 @@ class Page3Controller extends GetxController {
             icon: Icons.add,
             width: double.infinity,
             padding: EdgeInsets.symmetric(horizontal: 20.w),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 使用 heightRatio 指定高度（占屏幕 2/3）
+  void showBottomSheetWithRatio() {
+    MyDialogSheet.showBottom(
+      heightRatio: 2 / 3,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            child: Text(
+              '高度比例模式（2/3 屏幕）',
+              style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
+            ),
+          ),
+          SizedBox(height: 12.h),
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            child: Text(
+              '使用 heightRatio: 2/3 指定面板高度为屏幕的 2/3，'
+              '无论屏幕尺寸如何变化都保持一致的比例。',
+              style: TextStyle(fontSize: 14.sp, color: Colors.grey[600]),
+            ),
+          ),
+          SizedBox(height: 20.h),
+          ...List.generate(
+            6,
+            (i) => ListTile(
+              leading: Icon(Icons.star, color: Colors.amber, size: 20.sp),
+              title: Text('列表项 ${i + 1}', style: TextStyle(fontSize: 15.sp)),
+              onTap: () => MyToast.show('点击了列表项 ${i + 1}'),
+            ),
           ),
         ],
       ),

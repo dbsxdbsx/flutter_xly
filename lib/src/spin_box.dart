@@ -220,98 +220,99 @@ class _MySpinBoxState extends State<MySpinBox> {
     return ConstrainedBox(
       constraints: BoxConstraints(minWidth: _calculateMinWidth()),
       child: KeyboardListener(
-      focusNode: FocusNode(),
-      onKeyEvent: (event) {
-        if (event is KeyDownEvent) {
-          if (event.logicalKey == LogicalKeyboardKey.escape) {
-            setState(() {
-              _currentValue = widget.initialValue;
-              _textController.text = _currentValue.toInt().toString();
-            });
-          }
-        }
-      },
-      child: ValueListenableBuilder<bool>(
-        valueListenable: _showCursor,
-        builder: (context, showCursor, child) => TextField(
-          focusNode: _focusNode,
-          readOnly: !widget.enableEdit,
-          keyboardType: TextInputType.number,
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-          ],
-          onChanged: (value) {
-            if (value.isEmpty) return;
-            final newValue = double.tryParse(value);
-            if (newValue != null) {
-              final clampedValue = newValue.clamp(widget.min, widget.max);
+        focusNode: FocusNode(),
+        onKeyEvent: (event) {
+          if (event is KeyDownEvent) {
+            if (event.logicalKey == LogicalKeyboardKey.escape) {
               setState(() {
-                _currentValue = clampedValue;
-                if (clampedValue != newValue) {
-                  _textController.text = clampedValue.toInt().toString();
-                }
+                _currentValue = widget.initialValue;
+                _textController.text = _currentValue.toInt().toString();
               });
-              widget.onChanged(clampedValue);
             }
-          },
-          decoration: InputDecoration(
-            labelText: widget.label,
-            labelStyle: TextStyle(
-              fontSize: widget.labelFontSize ?? MySpinBox.defaultTitleFontSize,
-              color: Colors.grey[700],
-            ),
-            floatingLabelAlignment: widget.floatingLabelAlignment,
-            isDense: true,
-            contentPadding: _getContentPadding(),
-            border: _buildBorder(Colors.grey[300]!),
-            enabledBorder: _buildBorder(Colors.grey[300]!),
-            focusedBorder: _buildBorder(Colors.blue[300]!),
-            prefixIcon: _buildSpinButton(
-              icon: Icons.remove,
-              isEnabled: _currentValue > widget.min,
-              onTap: () {
-                final newValue =
-                    (_currentValue - widget.step).clamp(widget.min, widget.max);
-                _handleSpinButtonTap(newValue);
-              },
-            ),
-            suffixIcon: Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                _buildSpinButton(
-                  icon: Icons.add,
-                  isEnabled: _currentValue < widget.max,
-                  onTap: () {
-                    final newValue = (_currentValue + widget.step)
-                        .clamp(widget.min, widget.max);
-                    _handleSpinButtonTap(newValue);
-                  },
-                ),
-                if (widget.suffix != null)
-                  Padding(
-                    padding: EdgeInsets.only(right: 8.w),
-                    child: Text(
-                      widget.suffix!,
-                      style: TextStyle(
-                        fontSize: widget.suffixFontSize ??
-                            MySpinBox.defaultSuffixFontSize,
-                        color: Colors.grey[700],
+          }
+        },
+        child: ValueListenableBuilder<bool>(
+          valueListenable: _showCursor,
+          builder: (context, showCursor, child) => TextField(
+            focusNode: _focusNode,
+            readOnly: !widget.enableEdit,
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+            ],
+            onChanged: (value) {
+              if (value.isEmpty) return;
+              final newValue = double.tryParse(value);
+              if (newValue != null) {
+                final clampedValue = newValue.clamp(widget.min, widget.max);
+                setState(() {
+                  _currentValue = clampedValue;
+                  if (clampedValue != newValue) {
+                    _textController.text = clampedValue.toInt().toString();
+                  }
+                });
+                widget.onChanged(clampedValue);
+              }
+            },
+            decoration: InputDecoration(
+              labelText: widget.label,
+              labelStyle: TextStyle(
+                fontSize:
+                    widget.labelFontSize ?? MySpinBox.defaultTitleFontSize,
+                color: Colors.grey[700],
+              ),
+              floatingLabelAlignment: widget.floatingLabelAlignment,
+              isDense: true,
+              contentPadding: _getContentPadding(),
+              border: _buildBorder(Colors.grey[300]!),
+              enabledBorder: _buildBorder(Colors.grey[300]!),
+              focusedBorder: _buildBorder(Colors.blue[300]!),
+              prefixIcon: _buildSpinButton(
+                icon: Icons.remove,
+                isEnabled: _currentValue > widget.min,
+                onTap: () {
+                  final newValue = (_currentValue - widget.step)
+                      .clamp(widget.min, widget.max);
+                  _handleSpinButtonTap(newValue);
+                },
+              ),
+              suffixIcon: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  _buildSpinButton(
+                    icon: Icons.add,
+                    isEnabled: _currentValue < widget.max,
+                    onTap: () {
+                      final newValue = (_currentValue + widget.step)
+                          .clamp(widget.min, widget.max);
+                      _handleSpinButtonTap(newValue);
+                    },
+                  ),
+                  if (widget.suffix != null)
+                    Padding(
+                      padding: EdgeInsets.only(right: 8.w),
+                      child: Text(
+                        widget.suffix!,
+                        style: TextStyle(
+                          fontSize: widget.suffixFontSize ??
+                              MySpinBox.defaultSuffixFontSize,
+                          color: Colors.grey[700],
+                        ),
                       ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
+            controller: _textController,
+            style: TextStyle(
+              fontSize:
+                  widget.centerTextFontSize ?? MySpinBox.defaultCenterFontSize,
+              color: Colors.grey[800],
+            ),
+            textAlign: TextAlign.center,
           ),
-          controller: _textController,
-          style: TextStyle(
-            fontSize:
-                widget.centerTextFontSize ?? MySpinBox.defaultCenterFontSize,
-            color: Colors.grey[800],
-          ),
-          textAlign: TextAlign.center,
         ),
-      ),
       ),
     );
   }

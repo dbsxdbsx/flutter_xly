@@ -241,7 +241,8 @@ class MyCardListState extends State<MyCardList> {
     final viewportAlignPoint = listViewHeight * alignment;
     final cardAlignPoint = cardTotalHeight * alignment;
 
-    double targetPosition = targetCardTop - (viewportAlignPoint - cardAlignPoint);
+    double targetPosition =
+        targetCardTop - (viewportAlignPoint - cardAlignPoint);
     targetPosition = targetPosition.clamp(0.0, maxScrollExtent);
 
     // 7. 执行滚动动画

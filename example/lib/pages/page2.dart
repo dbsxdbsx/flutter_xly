@@ -55,14 +55,14 @@ class Page2View extends GetView<Page2Controller> {
           onPressed: () => MyToast.show('上图标按钮被点击'),
           icon: Icons.arrow_upward,
           iconPosition: MyIconPosition.top,
-          size: 58,
+          size: 58.w,
         ).setFocus(focusKey: 'top_icon_button'),
         MyButton(
           text: '下图标',
           onPressed: () => MyToast.show('下图标按钮被点击'),
           icon: Icons.arrow_downward,
           iconPosition: MyIconPosition.bottom,
-          size: 58,
+          size: 58.w,
         ).setFocus(focusKey: 'bottom_icon_button'),
       ],
     );
@@ -89,7 +89,7 @@ class Page2View extends GetView<Page2Controller> {
           onPressed: () => MyToast.show('立方体按钮被点击'),
           icon: Icons.view_in_ar,
           shape: MyButtonShape.cube,
-          size: 70,
+          size: 70.w,
           backgroundColor: Colors.amber,
           foregroundColor: Colors.black87,
           gradient: LinearGradient(
@@ -103,7 +103,7 @@ class Page2View extends GetView<Page2Controller> {
           onPressed: () => MyToast.show('圆形按钮被点击'),
           icon: Icons.radio_button_checked,
           shape: MyButtonShape.round,
-          size: 70,
+          size: 70.w,
           backgroundColor: Colors.green,
           foregroundColor: Colors.white,
           elevation: 10,
@@ -165,7 +165,7 @@ class Page2View extends GetView<Page2Controller> {
           onPressed: () => MyToast.show('圆角立方按钮被点击'),
           icon: Icons.view_in_ar,
           shape: MyButtonShape.cube,
-          size: 70,
+          size: 70.w,
           cornerRadius: 1.0, // 最大圆角
           backgroundColor: Colors.orange,
           foregroundColor: Colors.white,
@@ -175,7 +175,7 @@ class Page2View extends GetView<Page2Controller> {
           onPressed: () => MyToast.show('锐角立方按钮被点'),
           icon: Icons.change_history,
           shape: MyButtonShape.cube,
-          size: 70,
+          size: 70.w,
           cornerRadius: 0.1, // 设置较小的圆角半径
           backgroundColor: Colors.indigo,
           foregroundColor: Colors.white,

@@ -12,13 +12,13 @@ class Page11View extends GetView<Page11Controller> {
   Widget build(BuildContext context) {
     if (!Get.isRegistered<Page11Controller>()) Get.put(Page11Controller());
     return Padding(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionTitle('FloatPanel 禁用样式演示', fontSize: 20),
+          SectionTitle('FloatPanel 禁用样式演示', fontSize: 20.sp),
           SizedBox(height: 12.h),
-          Wrap(spacing: 12, runSpacing: 12, children: [
+          Wrap(spacing: 12.w, runSpacing: 12.h, children: [
             MyButton(
               text: '恢复默认（黄色X）',
               onPressed: () {
@@ -45,9 +45,9 @@ class Page11View extends GetView<Page11Controller> {
             ),
           ]),
           SizedBox(height: 24.h),
-          const SectionTitle('浮动面板按钮禁用状态控制', fontSize: 20),
+          SectionTitle('浮动面板按钮禁用状态控制', fontSize: 20.sp),
           SizedBox(height: 8.h),
-          Wrap(spacing: 12, runSpacing: 12, children: [
+          Wrap(spacing: 12.w, runSpacing: 12.h, children: [
             MyButton(
               text: '禁用浮动面板按钮1',
               onPressed: () => FloatPanel.to.iconBtn('page1').setEnabled(false),
@@ -81,9 +81,9 @@ class Page11View extends GetView<Page11Controller> {
             ),
           ]),
           SizedBox(height: 24.h),
-          const SectionTitle('浮动面板按钮常亮控制', fontSize: 20),
+          SectionTitle('浮动面板按钮常亮控制', fontSize: 20.sp),
           SizedBox(height: 8.h),
-          Wrap(spacing: 12, runSpacing: 12, children: [
+          Wrap(spacing: 12.w, runSpacing: 12.h, children: [
             MyButton(
               text: '设置按钮1常亮',
               onPressed: () =>
