@@ -1,3 +1,28 @@
+## 0.32.1 - 2026-02-09
+
+### New Features
+
+- **`MyDialogSheet.showBottom` 新增 `heightRatio` 参数**：支持按屏幕比例指定面板高度（0.0~1.0），如 `heightRatio: 2/3` 表示占屏幕 2/3；与 `designHeight` 二选一，`heightRatio` 优先
+- **`MyDialogSheet.showBottom` 突破 9/16 高度上限**：始终启用 `isScrollControlled: true`，让调用方自由控制面板高度
+
+### Fixed
+
+- **修复 `MySplash` 在 `MyApp.initialize()` 中使用 `.sp/.w` 导致 ScreenUtil 未初始化异常**：
+  - **根因**：`MySplash` 构造参数在 `MyApp.initialize()` 调用前求值，此时 ScreenUtil 尚未初始化
+  - **方案**：将 `MySplash` 的尺寸参数（`fontSize`、`lottieWidth`、`spaceBetween`）语义定义为"设计尺寸原始值"，组件内部在 `build()` 中统一通过 ScreenUtil 转换，调用方无需手动添加 `.sp/.w` 后缀
+- **修复 Example page3 MyDialogSheet 按钮行溢出**：移除固定 `width: 140.w` 约束，改为 `Wrap` 内容自适应
+
+### Enhanced
+
+- **Example 项目全面补齐 ScreenUtil 适配**：
+  - `page2`：MyButton `size` 参数（58/70）补充 `.w`
+  - `page11`：`EdgeInsets`、`fontSize`、`Wrap.spacing/runSpacing` 全面添加 `.w/.h/.sp`
+- **代码格式化优化**：`MySpinBox`、`MyTextEditor`、`MyCard`、`MyCardList` 缩进与格式统一
+
+### Docs
+
+- **README 更新**：补充 `MyDialogSheet.showBottom` 的 `heightRatio` 用法示例和设计说明
+
 ## 0.32.0 - 2026-02-07
 
 ### New Features
