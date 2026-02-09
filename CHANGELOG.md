@@ -1,7 +1,8 @@
-## 0.32.1 - 2026-02-09
+## 0.33.0 - 2026-02-09
 
 ### New Features
 
+- **`SingleInstanceManager` 智能僵尸检测**：端口被占用时不再盲目假设已有实例在运行，而是通过健康检查（`GET /health`）验证旧实例是否存活；旧实例无响应时线性退避重试接管（最多 3 次），重试仍失败则以警告方式放行，避免开发调试时因僵尸进程/残留端口阻塞窗口显示
 - **`MyDialogSheet.showBottom` 新增 `heightRatio` 参数**：支持按屏幕比例指定面板高度（0.0~1.0），如 `heightRatio: 2/3` 表示占屏幕 2/3；与 `designHeight` 二选一，`heightRatio` 优先
 - **`MyDialogSheet.showBottom` 突破 9/16 高度上限**：始终启用 `isScrollControlled: true`，让调用方自由控制面板高度
 
@@ -21,7 +22,7 @@
 
 ### Docs
 
-- **README 更新**：补充 `MyDialogSheet.showBottom` 的 `heightRatio` 用法示例和设计说明
+- **README 更新**：补充 `MyDialogSheet.showBottom` 的 `heightRatio` 用法示例和设计说明；补充 `SingleInstanceManager` 智能僵尸检测机制文档
 
 ## 0.32.0 - 2026-02-07
 
