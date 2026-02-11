@@ -87,7 +87,9 @@ class SingleInstanceManager {
 
     for (int i = 0; i < _maxRetries; i++) {
       final delay = _retryBaseDelay * (i + 1);
-      XlyLogger.info('SingleInstance: 第 ${i + 1}/$_maxRetries 次重试，等待 ${delay.inMilliseconds}ms...');
+      XlyLogger.info(
+        'SingleInstance: 第 ${i + 1}/$_maxRetries 次重试，等待 ${delay.inMilliseconds}ms...',
+      );
       await Future.delayed(delay);
 
       if (await _tryBind()) {
@@ -132,8 +134,10 @@ class SingleInstanceManager {
           .timeout(_probeTimeout);
 
       final response = await request.close().timeout(_probeTimeout);
-      final body =
-          await response.transform(utf8.decoder).join().timeout(_probeTimeout);
+      final body = await response
+          .transform(utf8.decoder)
+          .join()
+          .timeout(_probeTimeout);
       client.close(force: true);
 
       // 只有收到正确的健康响应才认为实例存活

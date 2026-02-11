@@ -23,6 +23,9 @@ enum DockType { inside, outside }
 
 enum PanelState { expanded, closed }
 
+/// 面板停靠边缘方向（内部使用）
+enum _DockEdge { left, right, top, bottom }
+
 /// 禁用样式类型
 enum DisabledStyleType { defaultX, dimOnly, custom }
 
@@ -82,6 +85,12 @@ class FloatPanel extends GetxService {
 
   // 禁用样式（默认黄色X覆盖）
   final Rx<DisabledStyle> disabledStyle = const DisabledStyle.defaultX().obs;
+
+  // 是否启用位置持久化（通过 GetStorage 保存/恢复面板位置和展开收起状态）
+  bool enablePersistence = true;
+
+  // 是否允许四边停靠（默认 true：上下左右均可；false：仅左右停靠）
+  bool dockToAllEdges = true;
 
   // 新的配置入口
   void configure({
@@ -242,6 +251,9 @@ class FloatBoxController extends GetxController {
   final RxDouble _pageHeight = 0.0.obs;
 
   // --- Internal ---
+  static const String _kPersistPrefix = '_xly_float_panel';
+  final bool _enablePersistence;
+  final bool _dockToAllEdges;
   double _xOffsetRatio = 0.0;
   double _yOffsetRatio = 1 / 3;
   double _mouseOffsetX = 0.0;
@@ -249,6 +261,7 @@ class FloatBoxController extends GetxController {
   double? _oldYOffset;
   double? _oldYOffsetRatio;
   bool _isFirstTimePositioning = true;
+  _DockEdge _currentDockEdge = _DockEdge.right; // 默认停靠右侧
 
   FloatBoxController({
     required this.items,
@@ -271,7 +284,11 @@ class FloatBoxController extends GetxController {
     required this.dockAnimCurve,
     required this.innerButtonFocusColor,
     required this.customButtonFocusColor,
-  }) : panelIcon = initialPanelIcon.obs {
+    bool enablePersistence = true,
+    bool dockToAllEdges = true,
+  })  : _enablePersistence = enablePersistence,
+        _dockToAllEdges = dockToAllEdges,
+        panelIcon = initialPanelIcon.obs {
     for (var i = 0; i < (items.length + 1); i++) {
       isFocusColors.add(false);
     }
@@ -328,12 +345,16 @@ class FloatBoxController extends GetxController {
 
   void _initializePosition() {
     if (_pageWidth.value == 0 || _pageHeight.value == 0) return;
+
+    // 尝试从持久化存储恢复
+    if (_restoreFromPersistence()) return;
+
+    // 默认初始化：放到右侧、垂直方向 1/3 处
     xOffset.value = _pageWidth.value;
-    _getProperDockXOffset();
-    _xOffsetRatio = xOffset.value / _pageWidth.value;
     yOffset.value = _pageHeight.value * _yOffsetRatio;
     _adjustPositionOnPanUpdate(xOffset.value, yOffset.value, isReScale: true);
     _calcOffsetWhenForceDock();
+    _syncOffsetRatios();
   }
 
   void onInnerButtonTap() {
@@ -349,6 +370,8 @@ class FloatBoxController extends GetxController {
     }
     // 展开/收起后同步位置比例，确保窗口缩放时使用正确的位置还原
     _syncOffsetRatios();
+    _persistPosition();
+    _persistPanelState();
   }
 
   void onPanStartGesture(Offset globalPosition) {
@@ -394,6 +417,7 @@ class FloatBoxController extends GetxController {
   void onPanEndGesture() {
     _calcOffsetWhenForceDock();
     _syncOffsetRatios();
+    _persistPosition();
   }
 
   /// 同步位置比例，确保窗口缩放时能正确还原面板位置
@@ -404,6 +428,85 @@ class FloatBoxController extends GetxController {
     if (_pageHeight.value > 0) {
       _yOffsetRatio = yOffset.value / _pageHeight.value;
     }
+  }
+
+  // --- 持久化方法 ---
+
+  /// 持久化当前状态下的位置比例到 GetStorage
+  void _persistPosition() {
+    if (!_enablePersistence) return;
+    final storage = GetStorage();
+    if (panelState.value == PanelState.closed) {
+      storage.write('${_kPersistPrefix}_closed_x_ratio', _xOffsetRatio);
+      storage.write('${_kPersistPrefix}_closed_y_ratio', _yOffsetRatio);
+    } else {
+      storage.write('${_kPersistPrefix}_expanded_x_ratio', _xOffsetRatio);
+      storage.write('${_kPersistPrefix}_expanded_y_ratio', _yOffsetRatio);
+    }
+  }
+
+  /// 持久化面板展开/收起状态
+  void _persistPanelState() {
+    if (!_enablePersistence) return;
+    final storage = GetStorage();
+    storage.write('${_kPersistPrefix}_state', panelState.value.name);
+  }
+
+  /// 从持久化存储恢复位置和状态，返回是否成功恢复
+  bool _restoreFromPersistence() {
+    if (!_enablePersistence) return false;
+    final storage = GetStorage();
+
+    final savedClosedXRatio =
+        storage.read<double>('${_kPersistPrefix}_closed_x_ratio');
+    final savedClosedYRatio =
+        storage.read<double>('${_kPersistPrefix}_closed_y_ratio');
+    final savedStateName = storage.read<String>('${_kPersistPrefix}_state');
+
+    // 至少需要关闭状态的位置数据才能恢复
+    if (savedClosedXRatio == null || savedClosedYRatio == null) return false;
+
+    final isExpanded = savedStateName == PanelState.expanded.name;
+
+    if (isExpanded) {
+      // 恢复展开状态：先设置状态以确保 effectivePanelHeight 使用展开高度
+      panelState.value = PanelState.expanded;
+      panelIcon.value = CupertinoIcons.minus_circle_fill;
+
+      final savedExpandedXRatio =
+          storage.read<double>('${_kPersistPrefix}_expanded_x_ratio');
+      final savedExpandedYRatio =
+          storage.read<double>('${_kPersistPrefix}_expanded_y_ratio');
+
+      if (savedExpandedXRatio != null && savedExpandedYRatio != null) {
+        _xOffsetRatio = savedExpandedXRatio;
+        _yOffsetRatio = savedExpandedYRatio;
+      } else {
+        // 没有保存的展开位置，基于关闭位置计算
+        _xOffsetRatio = savedClosedXRatio;
+        _yOffsetRatio = savedClosedYRatio;
+      }
+
+      xOffset.value = _pageWidth.value * _xOffsetRatio;
+      yOffset.value = _pageHeight.value * _yOffsetRatio;
+      _adjustPositionOnPanUpdate(xOffset.value, yOffset.value, isReScale: true);
+
+      // 如果没有保存的展开位置，从当前位置计算合适的展开位置
+      if (savedExpandedXRatio == null || savedExpandedYRatio == null) {
+        _calcOffsetWhenExpand();
+      }
+    } else {
+      // 恢复关闭状态
+      _xOffsetRatio = savedClosedXRatio;
+      _yOffsetRatio = savedClosedYRatio;
+      xOffset.value = _pageWidth.value * _xOffsetRatio;
+      yOffset.value = _pageHeight.value * _yOffsetRatio;
+      _adjustPositionOnPanUpdate(xOffset.value, yOffset.value, isReScale: true);
+      _calcOffsetWhenForceDock();
+    }
+
+    _syncOffsetRatios();
+    return true;
   }
 
   void setButtonFocus(int index, bool focused) {
@@ -473,25 +576,82 @@ class FloatBoxController extends GetxController {
   void _calcOffsetWhenForceDock() {
     if (panelState.value == PanelState.closed) {
       movementSpeed.value = dockAnimDuration;
-      _getProperDockXOffset();
-      if (_oldYOffset != null && yOffset.value != _oldYOffset!) {
-        yOffset.value = _oldYOffset!;
+      _getProperDockOffset();
+      // 左右停靠时恢复展开前保存的 Y 位置
+      if (_currentDockEdge == _DockEdge.left ||
+          _currentDockEdge == _DockEdge.right) {
+        if (_oldYOffset != null && yOffset.value != _oldYOffset!) {
+          yOffset.value = _oldYOffset!;
+        }
       }
     }
   }
 
-  void _getProperDockXOffset() {
-    if (_pageWidth.value == 0) return;
-    double center = xOffset.value + (currentPanelWidth.value / 2);
-    final dockEdgeOffset = (center < _pageWidth.value / 2)
-        ? -currentPanelWidth.value
-        : (_pageWidth.value - currentPanelWidth.value);
-    xOffset.value = dockEdgeOffset - _dockBoundary();
+  /// 根据面板中心到各边的距离，就近选择停靠边并应用偏移
+  void _getProperDockOffset() {
+    if (_pageWidth.value == 0 || _pageHeight.value == 0) return;
+
+    final centerX = xOffset.value + (currentPanelWidth.value / 2);
+    final distLeft = centerX;
+    final distRight = _pageWidth.value - centerX;
+
+    if (_dockToAllEdges) {
+      // 四边停靠：比较到上下左右四条边的距离
+      final centerY = yOffset.value + (effectivePanelHeight / 2);
+      final distTop = centerY;
+      final distBottom = _pageHeight.value - centerY;
+
+      if (distLeft <= distRight &&
+          distLeft <= distTop &&
+          distLeft <= distBottom) {
+        _currentDockEdge = _DockEdge.left;
+        xOffset.value = -currentPanelWidth.value - _dockBoundary();
+      } else if (distRight <= distLeft &&
+          distRight <= distTop &&
+          distRight <= distBottom) {
+        _currentDockEdge = _DockEdge.right;
+        xOffset.value =
+            (_pageWidth.value - currentPanelWidth.value) - _dockBoundary();
+      } else if (distTop <= distLeft &&
+          distTop <= distRight &&
+          distTop <= distBottom) {
+        _currentDockEdge = _DockEdge.top;
+        yOffset.value = -effectivePanelHeight - _dockBoundary();
+      } else {
+        _currentDockEdge = _DockEdge.bottom;
+        yOffset.value =
+            (_pageHeight.value - effectivePanelHeight) - _dockBoundary();
+      }
+    } else {
+      // 仅左右停靠
+      if (distLeft <= distRight) {
+        _currentDockEdge = _DockEdge.left;
+        xOffset.value = -currentPanelWidth.value - _dockBoundary();
+      } else {
+        _currentDockEdge = _DockEdge.right;
+        xOffset.value =
+            (_pageWidth.value - currentPanelWidth.value) - _dockBoundary();
+      }
+    }
   }
 
   void _calcOffsetWhenExpand() {
-    xOffset.value = _openDockLeft();
-    _calcPanelYOffsetWhenOpening();
+    if (_currentDockEdge == _DockEdge.left ||
+        _currentDockEdge == _DockEdge.right) {
+      // 左右停靠：X 移到屏幕内展开位置，Y 由 _calcPanelYOffsetWhenOpening 处理
+      xOffset.value = _openDockLeft();
+      _calcPanelYOffsetWhenOpening();
+    } else if (_currentDockEdge == _DockEdge.top) {
+      // 顶部停靠：贴近顶部边缘展开
+      _updateOldYOffset();
+      yOffset.value = currentPanelOpenOffset.value;
+    } else {
+      // 底部停靠：贴近底部边缘展开
+      _updateOldYOffset();
+      yOffset.value = _pageHeight.value -
+          effectivePanelHeight -
+          currentPanelOpenOffset.value;
+    }
   }
 }
 
@@ -517,6 +677,8 @@ class _FloatBoxPanel extends StatelessWidget {
   final List<FloatPanelIconBtn> items;
   final Color innerButtonFocusColor;
   final Color customButtonFocusColor;
+  final bool enablePersistence;
+  final bool dockToAllEdges;
 
   // defaults (avoid dependency on user_code/global.dart)
   static const double _kDefaultPanelWidth = 50.0;
@@ -552,6 +714,8 @@ class _FloatBoxPanel extends StatelessWidget {
     this.innerButtonFocusColor = Colors.blue,
     this.customButtonFocusColor = Colors.red,
     this.dockActivate = false,
+    this.enablePersistence = true,
+    this.dockToAllEdges = true,
   })  : finalPanelWidth = panelWidthInput,
         finalBorderWidth =
             borderWidthInput * (panelWidthInput / _kDefaultPanelWidth),
@@ -585,6 +749,8 @@ class _FloatBoxPanel extends StatelessWidget {
         dockAnimCurve: dockAnimCurve,
         innerButtonFocusColor: innerButtonFocusColor,
         customButtonFocusColor: customButtonFocusColor,
+        enablePersistence: enablePersistence,
+        dockToAllEdges: dockToAllEdges,
       ),
       tag: panelKey?.toString(),
     );

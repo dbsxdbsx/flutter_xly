@@ -601,6 +601,8 @@ class MyApp extends StatelessWidget {
                     panelAnimCurve: fp.panelAnimCurve.value,
                     dockAnimDuration: fp.dockAnimDuration.value,
                     dockAnimCurve: fp.dockAnimCurve.value,
+                    enablePersistence: fp.enablePersistence,
+                    dockToAllEdges: fp.dockToAllEdges,
                   );
                 }),
 
