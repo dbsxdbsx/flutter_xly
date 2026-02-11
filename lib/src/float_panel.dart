@@ -23,6 +23,18 @@ enum DockType { inside, outside }
 
 enum PanelState { expanded, closed }
 
+/// 上下停靠时的展开方向
+enum HorizontalExpandMode {
+  /// 不横向展开，保持竖向展开
+  none,
+
+  /// 从左到右展开（handle 在左端，默认）
+  leftToRight,
+
+  /// 从右到左展开（handle 在右端）
+  rightToLeft,
+}
+
 /// 面板停靠边缘方向（内部使用）
 enum _DockEdge { left, right, top, bottom }
 
@@ -86,17 +98,40 @@ class FloatPanel extends GetxService {
   // 禁用样式（默认黄色X覆盖）
   final Rx<DisabledStyle> disabledStyle = const DisabledStyle.defaultX().obs;
 
-  // 是否启用位置持久化（通过 GetStorage 保存/恢复面板位置和展开收起状态）
-  bool enablePersistence = true;
+  // 位置持久化（通过 GetStorage 保存/恢复面板位置和展开收起状态）
+  final RxBool enablePersistence = true.obs;
 
-  // 是否允许四边停靠（默认 true：上下左右均可；false：仅左右停靠）
-  bool dockToAllEdges = true;
+  // 是否允许四边停靠（true：上下左右均可；false：仅左右停靠）
+  final RxBool dockToAllEdges = true.obs;
 
-  // 新的配置入口
+  // 上下停靠时的展开方向
+  final Rx<HorizontalExpandMode> horizontalExpandMode =
+      HorizontalExpandMode.leftToRight.obs;
+
+  // --- 默认配置快照（第一次 configure 后自动保存） ---
+  bool _hasDefaultSnapshot = false;
+  List<FloatPanelIconBtn> _defaultItems = [];
+  bool _defaultVisible = true;
+  bool _defaultEnablePersistence = true;
+  bool _defaultDockToAllEdges = true;
+  HorizontalExpandMode _defaultHorizontalExpandMode =
+      HorizontalExpandMode.leftToRight;
+  Color _defaultBorderColor = const Color(0xFF333333);
+  IconData _defaultInitialPanelIcon = Icons.add;
+  int _defaultPanelAnimDuration = 600;
+  Curve _defaultPanelAnimCurve = Curves.fastLinearToSlowEaseIn;
+  int _defaultDockAnimDuration = 300;
+  Curve _defaultDockAnimCurve = Curves.fastLinearToSlowEaseIn;
+
+  // 统一配置入口
   void configure({
     List<FloatPanelIconBtn>? items,
     bool? visible,
-    // 新增可选配置（全部有默认值）
+    // 停靠与持久化
+    bool? enablePersistence,
+    bool? dockToAllEdges,
+    HorizontalExpandMode? horizontalExpandMode,
+    // 样式与动画
     Color? borderColor,
     IconData? initialPanelIcon,
     int? panelAnimDuration,
@@ -106,6 +141,13 @@ class FloatPanel extends GetxService {
   }) {
     if (items != null) this.items.value = items;
     if (visible != null) this.visible.value = visible;
+    if (enablePersistence != null) {
+      this.enablePersistence.value = enablePersistence;
+    }
+    if (dockToAllEdges != null) this.dockToAllEdges.value = dockToAllEdges;
+    if (horizontalExpandMode != null) {
+      this.horizontalExpandMode.value = horizontalExpandMode;
+    }
     if (borderColor != null) this.borderColor.value = borderColor;
     if (initialPanelIcon != null) {
       this.initialPanelIcon.value = initialPanelIcon;
@@ -118,6 +160,45 @@ class FloatPanel extends GetxService {
       this.dockAnimDuration.value = dockAnimDuration;
     }
     if (dockAnimCurve != null) this.dockAnimCurve.value = dockAnimCurve;
+
+    // 首次 configure 后自动保存默认快照
+    if (!_hasDefaultSnapshot) {
+      _snapshotDefaults();
+      _hasDefaultSnapshot = true;
+    }
+  }
+
+  /// 恢复到首次 configure() 时的默认配置
+  void resetToDefault() {
+    if (!_hasDefaultSnapshot) return;
+    items.value = List.of(_defaultItems);
+    visible.value = _defaultVisible;
+    enablePersistence.value = _defaultEnablePersistence;
+    dockToAllEdges.value = _defaultDockToAllEdges;
+    horizontalExpandMode.value = _defaultHorizontalExpandMode;
+    borderColor.value = _defaultBorderColor;
+    initialPanelIcon.value = _defaultInitialPanelIcon;
+    panelAnimDuration.value = _defaultPanelAnimDuration;
+    panelAnimCurve.value = _defaultPanelAnimCurve;
+    dockAnimDuration.value = _defaultDockAnimDuration;
+    dockAnimCurve.value = _defaultDockAnimCurve;
+    // 清除运行时状态
+    disabledIds.clear();
+    highlightedIds.clear();
+  }
+
+  void _snapshotDefaults() {
+    _defaultItems = List.of(items);
+    _defaultVisible = visible.value;
+    _defaultEnablePersistence = enablePersistence.value;
+    _defaultDockToAllEdges = dockToAllEdges.value;
+    _defaultHorizontalExpandMode = horizontalExpandMode.value;
+    _defaultBorderColor = borderColor.value;
+    _defaultInitialPanelIcon = initialPanelIcon.value;
+    _defaultPanelAnimDuration = panelAnimDuration.value;
+    _defaultPanelAnimCurve = panelAnimCurve.value;
+    _defaultDockAnimDuration = dockAnimDuration.value;
+    _defaultDockAnimCurve = dockAnimCurve.value;
   }
 
   // 访问器：监听当前“禁用联动”的 id 集合（RxSet<String>）
@@ -208,29 +289,28 @@ class FloatPanelIconBtnCtrl {
 }
 
 class FloatBoxController extends GetxController {
-  // --- Base Design Configuration (不缩放的设计值) ---
-  final List<FloatPanelIconBtn> items;
-  final double basePanelWidth;
-  final Color borderColor;
-  final double baseBorderWidth;
-  final double baseIconSize;
-  final IconData initialPanelIcon;
-  final BorderRadius baseBorderRadius;
-  final Color backgroundColor;
-  final Color panelButtonColor;
-  final Color customButtonColor;
-  final PanelShape panelShape;
-  final double basePanelOpenOffset;
-  final int panelAnimDuration;
-  final Curve panelAnimCurve;
-  final DockType dockType;
-  final double baseDockOffset;
-  final int dockAnimDuration;
-  final Curve dockAnimCurve;
-  final Color innerButtonFocusColor;
-  final Color customButtonFocusColor;
+  // --- 从 FloatPanel.to 实时读取的配置（支持运行时修改） ---
+  FloatPanel get _fp => FloatPanel.to;
+  List<FloatPanelIconBtn> get items => _fp.items;
+  bool get _enablePersistence => _fp.enablePersistence.value;
+  bool get _dockToAllEdges => _fp.dockToAllEdges.value;
+  HorizontalExpandMode get _horizontalExpandMode =>
+      _fp.horizontalExpandMode.value;
+  Color get borderColor => _fp.borderColor.value;
+  Color get backgroundColor => _fp.backgroundColor.value;
+  Color get panelButtonColor => _fp.panelButtonColor.value;
+  Color get customButtonColor => _fp.customButtonColor.value;
+  PanelShape get panelShape => _fp.panelShape.value;
+  int get panelAnimDuration => _fp.panelAnimDuration.value;
+  Curve get panelAnimCurve => _fp.panelAnimCurve.value;
+  DockType get dockType => _fp.dockType.value;
+  int get dockAnimDuration => _fp.dockAnimDuration.value;
+  Curve get dockAnimCurve => _fp.dockAnimCurve.value;
+  Color get innerButtonFocusColor => _fp.handleFocusColor.value;
+  Color get customButtonFocusColor => _fp.focusColor.value;
+  IconData get initialPanelIcon => _fp.initialPanelIcon.value;
 
-  // --- Current Scaled Values (运行时更新的缩放值) ---
+  // --- Current Scaled Values (运行时更新的缩放值，由 UI 层推送) ---
   final RxDouble currentPanelWidth = 0.0.obs;
   final RxDouble currentBorderWidth = 0.0.obs;
   final RxDouble currentIconSize = 0.0.obs;
@@ -252,8 +332,6 @@ class FloatBoxController extends GetxController {
 
   // --- Internal ---
   static const String _kPersistPrefix = '_xly_float_panel';
-  final bool _enablePersistence;
-  final bool _dockToAllEdges;
   double _xOffsetRatio = 0.0;
   double _yOffsetRatio = 1 / 3;
   double _mouseOffsetX = 0.0;
@@ -263,42 +341,9 @@ class FloatBoxController extends GetxController {
   bool _isFirstTimePositioning = true;
   _DockEdge _currentDockEdge = _DockEdge.right; // 默认停靠右侧
 
-  FloatBoxController({
-    required this.items,
-    required this.basePanelWidth,
-    required this.borderColor,
-    required this.baseBorderWidth,
-    required this.baseIconSize,
-    required this.initialPanelIcon,
-    required this.baseBorderRadius,
-    required this.backgroundColor,
-    required this.panelButtonColor,
-    required this.customButtonColor,
-    required this.panelShape,
-    required this.basePanelOpenOffset,
-    required this.panelAnimDuration,
-    required this.panelAnimCurve,
-    required this.dockType,
-    required this.baseDockOffset,
-    required this.dockAnimDuration,
-    required this.dockAnimCurve,
-    required this.innerButtonFocusColor,
-    required this.customButtonFocusColor,
-    bool enablePersistence = true,
-    bool dockToAllEdges = true,
-  })  : _enablePersistence = enablePersistence,
-        _dockToAllEdges = dockToAllEdges,
-        panelIcon = initialPanelIcon.obs {
-    for (var i = 0; i < (items.length + 1); i++) {
-      isFocusColors.add(false);
-    }
-    // 初始化当前缩放值（将在 updateScaledDimensions 中更新）
-    currentPanelWidth.value = basePanelWidth;
-    currentBorderWidth.value = baseBorderWidth;
-    currentIconSize.value = baseIconSize;
-    currentBorderRadius.value = baseBorderRadius;
-    currentPanelOpenOffset.value = basePanelOpenOffset;
-    currentDockOffset.value = baseDockOffset;
+  FloatBoxController()
+      : panelIcon = FloatPanel.to.initialPanelIcon.value.obs {
+    _syncFocusColorsList();
   }
 
   /// 更新缩放后的尺寸值（由 UI 层调用）
@@ -401,8 +446,8 @@ class FloatBoxController extends GetxController {
 
     double newX = isReScale ? globalDx : globalDx - _mouseOffsetX;
     if (newX < 0 + _dockBoundary()) newX = 0 + _dockBoundary();
-    if (newX > (_pageWidth.value - currentPanelWidth.value) - _dockBoundary()) {
-      newX = (_pageWidth.value - currentPanelWidth.value) - _dockBoundary();
+    if (newX > (_pageWidth.value - effectivePanelWidth) - _dockBoundary()) {
+      newX = (_pageWidth.value - effectivePanelWidth) - _dockBoundary();
     }
     xOffset.value = newX;
 
@@ -509,7 +554,19 @@ class FloatBoxController extends GetxController {
     return true;
   }
 
+  /// 同步 isFocusColors 列表长度与当前 items 数量
+  void _syncFocusColorsList() {
+    final needed = items.length + 1;
+    while (isFocusColors.length < needed) {
+      isFocusColors.add(false);
+    }
+    while (isFocusColors.length > needed) {
+      isFocusColors.removeLast();
+    }
+  }
+
   void setButtonFocus(int index, bool focused) {
+    _syncFocusColorsList();
     if (index >= 0 && index < isFocusColors.length) {
       isFocusColors[index] = focused;
     }
@@ -523,9 +580,28 @@ class FloatBoxController extends GetxController {
       ? currentBorderRadius.value
       : BorderRadius.circular(currentPanelWidth.value);
 
-  double get effectivePanelHeight => panelState.value == PanelState.expanded
+  /// 当前是否处于横向展开模式（上下停靠 + 非 none 模式）
+  bool get _isHorizontalExpand =>
+      _horizontalExpandMode != HorizontalExpandMode.none &&
+      panelState.value == PanelState.expanded &&
+      (_currentDockEdge == _DockEdge.top ||
+          _currentDockEdge == _DockEdge.bottom);
+
+  /// 当前横向展开是否为从右到左
+  bool get _isRtlExpand =>
+      _isHorizontalExpand &&
+      _horizontalExpandMode == HorizontalExpandMode.rightToLeft;
+
+  double get effectivePanelWidth => _isHorizontalExpand
       ? currentPanelWidth.value * (items.length + 1) + currentBorderWidth.value
       : currentPanelWidth.value + (currentBorderWidth.value * 2);
+
+  double get effectivePanelHeight => _isHorizontalExpand
+      ? currentPanelWidth.value + (currentBorderWidth.value * 2)
+      : (panelState.value == PanelState.expanded
+          ? currentPanelWidth.value * (items.length + 1) +
+              currentBorderWidth.value
+          : currentPanelWidth.value + (currentBorderWidth.value * 2));
 
   void _calcPanelYOffsetWhenOpening() {
     if (yOffset.value < 0) {
@@ -641,44 +717,46 @@ class FloatBoxController extends GetxController {
       // 左右停靠：X 移到屏幕内展开位置，Y 由 _calcPanelYOffsetWhenOpening 处理
       xOffset.value = _openDockLeft();
       _calcPanelYOffsetWhenOpening();
-    } else if (_currentDockEdge == _DockEdge.top) {
-      // 顶部停靠：贴近顶部边缘展开
-      _updateOldYOffset();
-      yOffset.value = currentPanelOpenOffset.value;
     } else {
-      // 底部停靠：贴近底部边缘展开
+      // 上下停靠：Y 贴近停靠边，X 调整确保横向展开不溢出
       _updateOldYOffset();
-      yOffset.value = _pageHeight.value -
-          effectivePanelHeight -
-          currentPanelOpenOffset.value;
+      if (_currentDockEdge == _DockEdge.top) {
+        yOffset.value = currentPanelOpenOffset.value;
+      } else {
+        yOffset.value = _pageHeight.value -
+            effectivePanelHeight -
+            currentPanelOpenOffset.value;
+      }
+      _calcPanelXOffsetWhenOpeningHorizontal();
+    }
+  }
+
+  /// 横向展开时调整 X 位置，确保面板不溢出屏幕
+  void _calcPanelXOffsetWhenOpeningHorizontal() {
+    if (_pageWidth.value == 0) return;
+    // 展开后的总宽度
+    final expandedWidth = effectivePanelWidth;
+    // 如果当前 X + 展开宽度超出右边缘，向左推
+    if (xOffset.value + expandedWidth >
+        _pageWidth.value + _dockBoundary()) {
+      xOffset.value =
+          _pageWidth.value - expandedWidth + _dockBoundary();
+    }
+    // 如果推过左边缘，贴左
+    if (xOffset.value < currentPanelOpenOffset.value) {
+      xOffset.value = currentPanelOpenOffset.value;
     }
   }
 }
 
 class _FloatBoxPanel extends StatelessWidget {
   final Key? panelKey;
-  final Color borderColor;
-  final double borderWidthInput;
+  // 缩放基础值（用于 ScreenUtil 计算）
   final double panelWidthInput;
+  final double borderWidthInput;
   final double iconSizeInput;
-  final IconData initialPanelIcon;
   final BorderRadius? borderRadiusInput;
-  final Color backgroundColor;
-  final Color panelButtonColor;
-  final Color customButtonColor;
-  final PanelShape panelShape;
   final double panelOpenOffsetInput;
-  final int panelAnimDuration;
-  final Curve panelAnimCurve;
-  final DockType dockType;
-  final bool dockActivate;
-  final int dockAnimDuration;
-  final Curve dockAnimCurve;
-  final List<FloatPanelIconBtn> items;
-  final Color innerButtonFocusColor;
-  final Color customButtonFocusColor;
-  final bool enablePersistence;
-  final bool dockToAllEdges;
 
   // defaults (avoid dependency on user_code/global.dart)
   static const double _kDefaultPanelWidth = 50.0;
@@ -694,28 +772,11 @@ class _FloatBoxPanel extends StatelessWidget {
 
   _FloatBoxPanel({
     this.panelKey,
-    this.items = const [],
-    this.borderColor = const Color(0xFF333333),
-    this.borderWidthInput = 0,
     this.panelWidthInput = _kDefaultPanelWidth,
+    this.borderWidthInput = 0,
     this.iconSizeInput = 24,
-    this.initialPanelIcon = Icons.add,
     this.borderRadiusInput,
-    this.backgroundColor = const Color(0xFF333333),
-    this.panelButtonColor = Colors.white,
-    this.customButtonColor = Colors.white,
-    this.panelShape = PanelShape.rounded,
     this.panelOpenOffsetInput = 5.0,
-    this.panelAnimDuration = 600,
-    this.panelAnimCurve = Curves.fastLinearToSlowEaseIn,
-    this.dockType = DockType.outside,
-    this.dockAnimDuration = 300,
-    this.dockAnimCurve = Curves.fastLinearToSlowEaseIn,
-    this.innerButtonFocusColor = Colors.blue,
-    this.customButtonFocusColor = Colors.red,
-    this.dockActivate = false,
-    this.enablePersistence = true,
-    this.dockToAllEdges = true,
   })  : finalPanelWidth = panelWidthInput,
         finalBorderWidth =
             borderWidthInput * (panelWidthInput / _kDefaultPanelWidth),
@@ -728,30 +789,7 @@ class _FloatBoxPanel extends StatelessWidget {
         finalDockOffset = panelWidthInput / 2,
         super(key: panelKey) {
     Get.put(
-      FloatBoxController(
-        items: items,
-        basePanelWidth: finalPanelWidth,
-        borderColor: borderColor,
-        baseBorderWidth: finalBorderWidth,
-        baseIconSize: finalIconSize,
-        initialPanelIcon: initialPanelIcon,
-        baseBorderRadius: finalBorderRadius,
-        backgroundColor: backgroundColor,
-        panelButtonColor: panelButtonColor,
-        customButtonColor: customButtonColor,
-        panelShape: panelShape,
-        basePanelOpenOffset: finalPanelOpenOffset,
-        panelAnimDuration: panelAnimDuration,
-        panelAnimCurve: panelAnimCurve,
-        dockType: dockType,
-        baseDockOffset: finalDockOffset,
-        dockAnimDuration: dockAnimDuration,
-        dockAnimCurve: dockAnimCurve,
-        innerButtonFocusColor: innerButtonFocusColor,
-        customButtonFocusColor: customButtonFocusColor,
-        enablePersistence: enablePersistence,
-        dockToAllEdges: dockToAllEdges,
-      ),
+      FloatBoxController(),
       tag: panelKey?.toString(),
     );
   }
@@ -794,7 +832,7 @@ class _FloatBoxPanel extends StatelessWidget {
           curve: ctrl.dockAnimCurve,
           child: AnimatedContainer(
             duration: Duration(milliseconds: ctrl.panelAnimDuration),
-            width: ctrl.currentPanelWidth.value,
+            width: ctrl.effectivePanelWidth,
             height: ctrl.effectivePanelHeight,
             decoration: BoxDecoration(
               color: ctrl.backgroundColor,
@@ -802,92 +840,106 @@ class _FloatBoxPanel extends StatelessWidget {
               border: ctrl.effectivePanelBorder,
             ),
             curve: ctrl.panelAnimCurve,
-            child: Wrap(
-              direction: Axis.horizontal,
-              children: [
-                GestureDetector(
-                  onPanEnd: (_) => ctrl.onPanEndGesture(),
-                  onPanStart: (d) => ctrl.onPanStartGesture(d.globalPosition),
-                  onPanUpdate: (d) => ctrl.onPanUpdateGesture(d.globalPosition),
-                  onTap: () => ctrl.onInnerButtonTap(),
-                  child: MouseRegion(
-                    onEnter: (_) => ctrl.setButtonFocus(0, true),
-                    onExit: (_) => ctrl.setButtonFocus(0, false),
-                    cursor: SystemMouseCursors.click,
-                    child: Obx(() => _FloatButton(
-                          focusColor: ctrl.innerButtonFocusColor,
-                          size: ctrl.currentPanelWidth.value,
-                          icon: ctrl.panelIcon.value,
-                          color: ctrl.panelButtonColor,
-                          hightLight: ctrl.isFocusColors.isNotEmpty
-                              ? ctrl.isFocusColors[0]
-                              : false,
-                          iconSize: ctrl.currentIconSize.value,
-                        )),
-                  ),
-                ),
-                Obx(() => Visibility(
-                      visible: ctrl.panelState.value == PanelState.expanded,
-                      child: Column(
-                        children: List.generate(items.length, (index) {
-                          final item = items[index];
-                          final disabledSet = FloatPanel.to.disabledIds;
-                          final highlightedSet = FloatPanel.to.highlightedIds;
-                          final bool iconBtnDisabledMatch =
-                              item.id != null && disabledSet.contains(item.id);
-                          final bool explicitDisabled = item.disabled == true;
-                          final bool isEnabled =
-                              !(iconBtnDisabledMatch || explicitDisabled);
-                          final bool isDisabledLinked = iconBtnDisabledMatch;
-                          final bool forcedHighlighted = item.id != null &&
-                              highlightedSet.contains(item.id);
-                          return GestureDetector(
-                            onPanStart: (d) =>
-                                ctrl.onPanStartGesture(d.globalPosition),
-                            onPanUpdate: (d) =>
-                                ctrl.onPanUpdateGesture(d.globalPosition),
-                            onTap: () async {
-                              if (!isEnabled) return;
-                              if (item.onTap != null) {
-                                try {
-                                  await item.onTap!();
-                                } catch (e, s) {
-                                  XlyLogger.error(
-                                      'FloatPanelIconBtn.onTap error', e, s);
-                                }
-                              }
-                            },
-                            child: MouseRegion(
-                              onEnter: (_) =>
-                                  ctrl.setButtonFocus(index + 1, true),
-                              onExit: (_) =>
-                                  ctrl.setButtonFocus(index + 1, false),
-                              cursor: SystemMouseCursors.click,
-                              child: _FloatButton(
-                                key: ValueKey(
-                                    'float_button_${index}_$isEnabled'),
-                                focusColor: ctrl.customButtonFocusColor,
-                                size: ctrl.currentPanelWidth.value,
-                                icon: item.icon,
-                                color: ctrl.customButtonColor,
-                                hightLight:
-                                    ctrl.isFocusColors.length > index + 1
-                                        ? ctrl.isFocusColors[index + 1]
-                                        : false,
-                                iconSize: ctrl.currentIconSize.value,
-                                enabled: isEnabled,
-                                isHighlighted:
-                                    forcedHighlighted || isDisabledLinked,
-                              ),
-                            ),
-                          );
-                        }),
-                      ),
-                    )),
-              ],
-            ),
+            child: _buildPanelLayout(ctrl),
           ),
         ));
+  }
+
+  /// 构建面板内部布局（handle + items），根据展开方向和 RTL 排列
+  Widget _buildPanelLayout(FloatBoxController ctrl) {
+    final handleButton = GestureDetector(
+      onPanEnd: (_) => ctrl.onPanEndGesture(),
+      onPanStart: (d) => ctrl.onPanStartGesture(d.globalPosition),
+      onPanUpdate: (d) => ctrl.onPanUpdateGesture(d.globalPosition),
+      onTap: () => ctrl.onInnerButtonTap(),
+      child: MouseRegion(
+        onEnter: (_) => ctrl.setButtonFocus(0, true),
+        onExit: (_) => ctrl.setButtonFocus(0, false),
+        cursor: SystemMouseCursors.click,
+        child: Obx(() => _FloatButton(
+              focusColor: ctrl.innerButtonFocusColor,
+              size: ctrl.currentPanelWidth.value,
+              icon: ctrl.panelIcon.value,
+              color: ctrl.panelButtonColor,
+              hightLight: ctrl.isFocusColors.isNotEmpty
+                  ? ctrl.isFocusColors[0]
+                  : false,
+              iconSize: ctrl.currentIconSize.value,
+            )),
+      ),
+    );
+
+    final itemsWidget = Obx(() {
+      final currentItems = FloatPanel.to.items;
+      final buttonList = List.generate(currentItems.length, (index) {
+        final item = currentItems[index];
+        final disabledSet = FloatPanel.to.disabledIds;
+        final highlightedSet = FloatPanel.to.highlightedIds;
+        final bool iconBtnDisabledMatch =
+            item.id != null && disabledSet.contains(item.id);
+        final bool explicitDisabled = item.disabled == true;
+        final bool isEnabled = !(iconBtnDisabledMatch || explicitDisabled);
+        final bool isDisabledLinked = iconBtnDisabledMatch;
+        final bool forcedHighlighted =
+            item.id != null && highlightedSet.contains(item.id);
+        return GestureDetector(
+          onPanStart: (d) => ctrl.onPanStartGesture(d.globalPosition),
+          onPanUpdate: (d) => ctrl.onPanUpdateGesture(d.globalPosition),
+          onTap: () async {
+            if (!isEnabled) return;
+            if (item.onTap != null) {
+              try {
+                await item.onTap!();
+              } catch (e, s) {
+                XlyLogger.error('FloatPanelIconBtn.onTap error', e, s);
+              }
+            }
+          },
+          child: MouseRegion(
+            onEnter: (_) => ctrl.setButtonFocus(index + 1, true),
+            onExit: (_) => ctrl.setButtonFocus(index + 1, false),
+            cursor: SystemMouseCursors.click,
+            child: _FloatButton(
+              key: ValueKey('float_button_${index}_$isEnabled'),
+              focusColor: ctrl.customButtonFocusColor,
+              size: ctrl.currentPanelWidth.value,
+              icon: item.icon,
+              color: ctrl.customButtonColor,
+              hightLight: ctrl.isFocusColors.length > index + 1
+                  ? ctrl.isFocusColors[index + 1]
+                  : false,
+              iconSize: ctrl.currentIconSize.value,
+              enabled: isEnabled,
+              isHighlighted: forcedHighlighted || isDisabledLinked,
+            ),
+          ),
+        );
+      });
+
+      // RTL 模式下反转按钮视觉顺序，使 btn1 紧挨 handle
+      final orderedList =
+          ctrl._isRtlExpand ? buttonList.reversed.toList() : buttonList;
+
+      return Visibility(
+        visible: ctrl.panelState.value == PanelState.expanded,
+        child: Flex(
+          direction:
+              ctrl._isHorizontalExpand ? Axis.horizontal : Axis.vertical,
+          mainAxisSize: MainAxisSize.min,
+          children: orderedList,
+        ),
+      );
+    });
+
+    // RTL 模式下 handle 在右端：调换 handle 和 items 的顺序
+    final children = ctrl._isRtlExpand
+        ? [itemsWidget, handleButton]
+        : [handleButton, itemsWidget];
+
+    return Wrap(
+      direction: ctrl._isHorizontalExpand ? Axis.vertical : Axis.horizontal,
+      children: children,
+    );
   }
 }
 

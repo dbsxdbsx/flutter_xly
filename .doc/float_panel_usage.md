@@ -103,11 +103,15 @@ FloatPanel.to // 获取全局实例
 
 #### 主要方法
 ```dart
-// 配置面板内容
+// 统一配置入口
 void configure({
   List<FloatPanelIconBtn>? items,
   bool? visible,
-  // 新增可选配置（全部有默认值）
+  // 停靠与持久化
+  bool? enablePersistence,      // 位置持久化，默认 true
+  bool? dockToAllEdges,         // 四边停靠，默认 true（false 为仅左右）
+  HorizontalExpandMode? horizontalExpandMode,  // 上下停靠展开方向，默认 leftToRight
+  // 样式与动画（全部有默认值）
   Color? borderColor,           // 边框颜色，默认 Color(0xFF333333)
   IconData? initialPanelIcon,   // 初始手柄图标，默认 Icons.add
   int? panelAnimDuration,       // 展开收起动画时长(ms)，默认 600

@@ -1,9 +1,18 @@
-## 0.33.1 - 2026-02-11
+## 0.34.0 - 2026-02-11
 
 ### New Features
 
-- **FloatPanel 位置持久化**：浮动面板现在默认记忆位置和展开/收起状态，下次启动时自动恢复到上次的位置；通过 `enablePersistence` 属性控制（默认 `true`），基于比例存储，窗口大小变化后仍能优雅恢复
-- **FloatPanel 四边停靠**：浮动面板现在支持上下左右四个方向的停靠（原先仅左右），松手后自动吸附到最近的屏幕边缘；展开/收起行为根据停靠方向智能适配；通过 `dockToAllEdges` 属性控制（默认 `true`），设为 `false` 可退回仅左右停靠模式
+- **FloatPanel 位置持久化**：默认记忆位置和展开/收起状态，下次启动自动恢复；通过 `enablePersistence` 控制（默认 `true`），基于比例存储，窗口大小变化后优雅恢复
+- **FloatPanel 四边停靠**：支持上下左右四个方向停靠（原仅左右），松手后就近吸附最近屏幕边缘；通过 `dockToAllEdges` 控制（默认 `true`），设为 `false` 退回仅左右模式
+- **FloatPanel 横向展开**：上下停靠时默认横向展开，通过 `horizontalExpandMode` 控制方向（`leftToRight`/`rightToLeft`/`none`）；RTL 模式下按钮顺序自动镜像
+- **FloatPanel 运行时动态配置**：所有配置（items、停靠模式、展开方向等）支持运行时修改并即时生效，无需重启应用；Controller 从 `FloatPanel.to` 实时读取配置，移除冗余 final 副本
+- **FloatPanel `resetToDefault()`**：一键恢复到首次 `configure()` 时的默认配置（含 items、样式、停靠模式等），同时清除禁用/高亮等运行时状态
+
+### Enhanced
+
+- **FloatPanel `configure()` 统一入口**：`enablePersistence`、`dockToAllEdges`、`horizontalExpandMode` 等参数全部整合进 `configure()` 方法，消除 `..property =` 混合写法
+- **FloatPanel 配置即时响应**：`enablePersistence`、`dockToAllEdges`、`horizontalExpandMode` 改为 `Rx` 响应式字段，展开状态下切换配置立即生效
+- **FloatPanel 架构简化**：`FloatBoxController` 构造函数从 20+ 参数简化为零参数，`app.dart` → `_FloatBoxPanel` 传参从 20+ 缩减到 2 个
 
 ## 0.33.0 - 2026-02-09
 

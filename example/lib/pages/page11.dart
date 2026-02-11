@@ -104,6 +104,62 @@ class Page11View extends GetView<Page11Controller> {
               onPressed: () => FloatPanel.to.highlightedIds.clear(),
             ),
           ]),
+          SizedBox(height: 24.h),
+          SectionTitle('运行时动态配置', fontSize: 20.sp),
+          SizedBox(height: 8.h),
+          Wrap(spacing: 12.w, runSpacing: 12.h, children: [
+            MyButton(
+              text: '添加按钮4',
+              onPressed: () {
+                final items = FloatPanel.to.items;
+                if (items.any((e) => e.id == 'page4')) return;
+                items.add(FloatPanelIconBtn(
+                  icon: Icons.filter_4,
+                  id: 'page4',
+                  onTap: () => MyToast.showInfo('按钮4被点击'),
+                ));
+              },
+            ),
+            MyButton(
+              text: '移除最后一个按钮',
+              onPressed: () {
+                final items = FloatPanel.to.items;
+                if (items.isNotEmpty) items.removeLast();
+              },
+            ),
+            MyButton(
+              text: '横向展开: 左到右',
+              onPressed: () => FloatPanel.to.configure(
+                horizontalExpandMode: HorizontalExpandMode.leftToRight,
+              ),
+            ),
+            MyButton(
+              text: '横向展开: 右到左',
+              onPressed: () => FloatPanel.to.configure(
+                horizontalExpandMode: HorizontalExpandMode.rightToLeft,
+              ),
+            ),
+            MyButton(
+              text: '横向展开: 关闭',
+              onPressed: () => FloatPanel.to.configure(
+                horizontalExpandMode: HorizontalExpandMode.none,
+              ),
+            ),
+            MyButton(
+              text: '仅左右停靠',
+              onPressed: () =>
+                  FloatPanel.to.configure(dockToAllEdges: false),
+            ),
+            MyButton(
+              text: '四边停靠',
+              onPressed: () =>
+                  FloatPanel.to.configure(dockToAllEdges: true),
+            ),
+            MyButton(
+              text: '恢复全部默认',
+              onPressed: () => FloatPanel.to.resetToDefault(),
+            ),
+          ]),
         ],
       ),
     );

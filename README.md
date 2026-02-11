@@ -2238,8 +2238,6 @@ void main() async {
     // ... 其他配置
     // 全局浮动面板通过 floatPanel 参数自动挂载（默认自动记忆位置）
     floatPanel: FloatPanel()
-      // ..enablePersistence = false  // 可选：关闭位置持久化（默认开启）
-      // ..dockToAllEdges = false     // 可选：仅左右停靠（默认四边停靠）
       ..configure(
         items: [
           FloatPanelIconBtn(
@@ -2263,6 +2261,10 @@ void main() async {
             },
           ),
         ],
+        // 可选：停靠与持久化配置（全部有默认值）
+        // enablePersistence: false,  // 关闭位置持久化（默认开启）
+        // dockToAllEdges: false,     // 仅左右停靠（默认四边停靠）
+        // horizontalExpandMode: HorizontalExpandMode.none,  // 上下停靠时不横向展开
         // 可选：自定义样式和动画（全部有默认值）
         borderColor: Colors.grey,
         initialPanelIcon: Icons.menu,
@@ -2318,6 +2320,27 @@ dart run xly:rename all "好人 平安"
 # 为不同平台设置不同名称
 dart run xly:rename android "Android版本" ios "iOS版本" windows "Windows版本"
 ```
+
+### FloatPanel 停靠与展开配置
+
+通过 `configure()` 统一配置面板的停靠行为和展开方向：
+
+```dart
+FloatPanel()..configure(
+  items: [...],
+  enablePersistence: true,           // 位置持久化（默认 true）
+  dockToAllEdges: true,              // 四边停靠（默认 true，false 为仅左右）
+  horizontalExpandMode: HorizontalExpandMode.leftToRight,  // 上下停靠时展开方向
+);
+```
+
+`HorizontalExpandMode` 枚举值：
+
+| 值 | 说明 |
+|---|---|
+| `leftToRight` | 默认，handle 在左端，按钮向右展开 |
+| `rightToLeft` | handle 在右端，按钮向左展开 |
+| `none` | 上下停靠时仍竖向展开（不横向） |
 
 ### FloatPanel 多选禁用与常亮控制
 

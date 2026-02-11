@@ -266,29 +266,8 @@ void main() async {
     // 全局浮动面板通过 floatPanel 参数自动挂载（新：items 方式）
     floatPanel: FloatPanel()
       ..configure(
-        items: [
-          FloatPanelIconBtn(
-            icon: Icons.filter_1,
-            id: 'page1',
-            onTap: () {
-              Get.toNamed(MyRoutes.page1);
-            },
-          ),
-          FloatPanelIconBtn(
-            icon: Icons.filter_2,
-            id: 'page2',
-            onTap: () {
-              Get.toNamed(MyRoutes.page2);
-            },
-          ),
-          FloatPanelIconBtn(
-            icon: Icons.filter_3,
-            id: 'page3',
-            onTap: () {
-              Get.toNamed(MyRoutes.page3);
-            },
-          ),
-        ],
+        items: defaultFloatPanelItems(),
+        horizontalExpandMode: HorizontalExpandMode.rightToLeft,
         // NOTE:示例：自定义样式和动画（可选，全部有默认值）
         // borderColor: Colors.blueGrey.withValues(alpha: 0.3),
         // initialPanelIcon: Icons.apps,
@@ -299,6 +278,25 @@ void main() async {
       ),
   );
 }
+
+/// FloatPanel 默认按钮配置（供初始化和"恢复默认"使用）
+List<FloatPanelIconBtn> defaultFloatPanelItems() => [
+      FloatPanelIconBtn(
+        icon: Icons.filter_1,
+        id: 'page1',
+        onTap: () => Get.toNamed(MyRoutes.page1),
+      ),
+      FloatPanelIconBtn(
+        icon: Icons.filter_2,
+        id: 'page2',
+        onTap: () => Get.toNamed(MyRoutes.page2),
+      ),
+      FloatPanelIconBtn(
+        icon: Icons.filter_3,
+        id: 'page3',
+        onTap: () => Get.toNamed(MyRoutes.page3),
+      ),
+    ];
 
 /// 应用路由定义
 class MyRoutes {

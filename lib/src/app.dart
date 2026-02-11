@@ -581,28 +581,10 @@ class MyApp extends StatelessWidget {
                 Obx(() {
                   final fp = FloatPanel.to;
                   if (!fp.visible.value) return const SizedBox.shrink();
+                  // 只传缩放基础值，其他配置由 controller 从 FloatPanel.to 实时读取
                   return _FloatBoxPanel(
-                    items: fp.items,
-                    // 传入设计值，缩放在 _FloatBoxPanel 内部处理
                     panelWidthInput: fp.panelWidth.value,
-                    backgroundColor: fp.backgroundColor.value,
-                    panelShape: fp.panelShape.value,
                     borderRadiusInput: fp.borderRadius.value,
-                    dockType: fp.dockType.value,
-                    panelButtonColor: fp.panelButtonColor.value,
-                    customButtonColor: fp.customButtonColor.value,
-                    dockActivate: fp.dockActivate.value,
-                    innerButtonFocusColor: fp.handleFocusColor.value,
-                    customButtonFocusColor: fp.focusColor.value,
-                    // 新增从 FloatPanel 读取的配置
-                    borderColor: fp.borderColor.value,
-                    initialPanelIcon: fp.initialPanelIcon.value,
-                    panelAnimDuration: fp.panelAnimDuration.value,
-                    panelAnimCurve: fp.panelAnimCurve.value,
-                    dockAnimDuration: fp.dockAnimDuration.value,
-                    dockAnimCurve: fp.dockAnimCurve.value,
-                    enablePersistence: fp.enablePersistence,
-                    dockToAllEdges: fp.dockToAllEdges,
                   );
                 }),
 
