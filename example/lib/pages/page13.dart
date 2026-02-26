@@ -291,8 +291,8 @@ class Page13Controller extends GetxController {
           ),
         ),
       ),
-      onChanged: (item) => MyToast.show(
-          item == null ? '已清除模型选择' : '已选择: ${item.title}'),
+      onChanged: (item) =>
+          MyToast.show(item == null ? '已清除模型选择' : '已选择: ${item.title}'),
     );
 
     tagCtrl = MySelectorController<String>(

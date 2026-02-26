@@ -192,7 +192,7 @@ class _SelectorOverlayState<T> extends State<_SelectorOverlay<T>>
       _btnHRatio = sz.height / screen.height;
 
       final panelW = widget.style.panelWidth ??
-          sz.width.clamp(220.0, screen.width - 16.w);
+          sz.width.clamp(220.w, screen.width - 16.w);
       _panelWRatio = panelW / screen.width;
       _maxHRatio = widget.style.maxHeight / screen.height;
     }
@@ -228,8 +228,8 @@ class _SelectorOverlayState<T> extends State<_SelectorOverlay<T>>
     double panelW,
     double gap,
   }) _computeLayout() {
-    const double gap = 6.0;
-    const double safeMargin = 8.0;
+    final double gap = 6.w;
+    final double safeMargin = 8.w;
 
     final screenSize = _currentScreenSize();
 
@@ -255,7 +255,7 @@ class _SelectorOverlayState<T> extends State<_SelectorOverlay<T>>
     final double availableH = showAbove
         ? (spaceAbove - gap - safeMargin)
         : (spaceBelow - gap - safeMargin);
-    final double maxH = availableH.clamp(80.0, effectiveMaxH);
+    final double maxH = availableH.clamp(80.h, effectiveMaxH);
 
     return (
       buttonPos: buttonPos,
@@ -286,14 +286,14 @@ class _SelectorOverlayState<T> extends State<_SelectorOverlay<T>>
         if (layout.showAbove)
           Positioned(
             left: layout.buttonPos.dx
-                .clamp(8.0, layout.screenSize.width - layout.panelW - 8.0),
+                .clamp(8.w, layout.screenSize.width - layout.panelW - 8.w),
             bottom: layout.screenSize.height - layout.buttonPos.dy + layout.gap,
             child: _panel(layout.panelW, layout.maxH, layout.showAbove),
           )
         else
           Positioned(
             left: layout.buttonPos.dx
-                .clamp(8.0, layout.screenSize.width - layout.panelW - 8.0),
+                .clamp(8.w, layout.screenSize.width - layout.panelW - 8.w),
             top: layout.buttonPos.dy + layout.buttonSize.height + layout.gap,
             child: _panel(layout.panelW, layout.maxH, layout.showAbove),
           ),
@@ -566,18 +566,18 @@ class _SelectorPanelState<T> extends State<_SelectorPanel<T>>
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.94),
               borderRadius: BorderRadius.circular(widget.style.borderRadius),
-              border: Border.all(color: Colors.grey.shade200, width: 0.8),
+              border: Border.all(color: Colors.grey.shade200, width: 0.8.w),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black
                       .withValues(alpha: widget.style.shadowOpacity),
-                  blurRadius: 24,
-                  offset: const Offset(0, 6),
+                  blurRadius: 24.r,
+                  offset: Offset(0, 6.h),
                 ),
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 6,
-                  offset: const Offset(0, 1),
+                  blurRadius: 6.r,
+                  offset: Offset(0, 1.h),
                 ),
               ],
             ),
