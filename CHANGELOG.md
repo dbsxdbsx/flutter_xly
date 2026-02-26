@@ -1,3 +1,13 @@
+## 0.35.0 - 2026-02-26
+
+### New Features
+
+- **`MyDragProtectedArea` 组件**：新增桌面端拖拽保护区域组件，解决子组件拖拽手势与窗口拖拽之间的竞争冲突。当内容区域设置为可拖拽窗口（`draggable: true`）且子组件使用 `ReorderableDelayedDragStartListener`、`Draggable` 等延迟拖拽机制时，`CustomDragArea` 的 pan 手势会先于子组件被识别，导致触发 `windowManager.startDragging()` 而使子组件拖拽失效。`MyDragProtectedArea` 通过在 pointer 事件层（早于所有手势识别阶段）临时禁用窗口拖拽来解决此问题，pointer 抬起后自动恢复。移动端直接透传 child，零开销
+
+### Fixed
+
+- **`CustomDragArea` 竞态窗口兜底**：在 `onPanStart` 回调内增加运行时校验（`if (!MyApp._globalEnableDraggable.value) return`），防止 Obx 重建延迟导致的窗口拖拽误触发，与 `MyDragProtectedArea` 形成双重防护
+
 ## 0.34.0 - 2026-02-11
 
 ### New Features

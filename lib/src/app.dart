@@ -100,6 +100,8 @@ class CustomDragArea extends StatelessWidget {
     return GestureDetector(
       onPanStart: draggable
           ? (details) async {
+              // 运行时再次检查，兜底 Obx 重建前的竞态窗口
+              if (!MyApp._globalEnableDraggable.value) return;
               await windowManager.startDragging();
             }
           : null,
@@ -121,6 +123,67 @@ class CustomDragArea extends StatelessWidget {
           : null,
       behavior: HitTestBehavior.translucent,
       child: child,
+    );
+  }
+}
+
+/// 拖拽保护区域，用于解决子组件拖拽手势与窗口拖拽之间的竞争冲突。
+///
+/// 桌面端 [CustomDragArea] 的 `onPanStart` 会拦截所有 pan 手势来触发
+/// `windowManager.startDragging()`，导致 [ReorderableListView]、[Draggable]
+/// 等需要拖拽手势的组件无法正常工作。
+///
+/// 本组件通过在 pointer 事件层（早于手势识别阶段）临时禁用窗口拖拽来解决此问题：
+/// - `onPointerDown`: 保存当前拖拽状态并禁用窗口拖拽
+/// - `onPointerUp` / `onPointerCancel`: 恢复先前的拖拽状态
+///
+/// 移动端不存在此问题，组件会直接返回 [child]，零开销。
+///
+/// 示例：
+/// ```dart
+/// MyDragProtectedArea(
+///   child: ReorderableListView(
+///     children: items,
+///     onReorder: (oldIndex, newIndex) { /* ... */ },
+///   ),
+/// )
+/// ```
+class MyDragProtectedArea extends StatefulWidget {
+  final Widget child;
+
+  const MyDragProtectedArea({
+    super.key,
+    required this.child,
+  });
+
+  @override
+  State<MyDragProtectedArea> createState() => _MyDragProtectedAreaState();
+}
+
+class _MyDragProtectedAreaState extends State<MyDragProtectedArea> {
+  bool _savedDraggable = true;
+
+  void _onPointerDown(PointerDownEvent _) {
+    _savedDraggable = MyApp._globalEnableDraggable.value;
+    MyApp._globalEnableDraggable.value = false;
+  }
+
+  void _onPointerUp(PointerUpEvent _) {
+    MyApp._globalEnableDraggable.value = _savedDraggable;
+  }
+
+  void _onPointerCancel(PointerCancelEvent _) {
+    MyApp._globalEnableDraggable.value = _savedDraggable;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!MyPlatform.isDesktop) return widget.child;
+    return Listener(
+      onPointerDown: _onPointerDown,
+      onPointerUp: _onPointerUp,
+      onPointerCancel: _onPointerCancel,
+      child: widget.child,
     );
   }
 }
