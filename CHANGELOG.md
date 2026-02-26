@@ -1,3 +1,20 @@
+## 0.36.0 - 2026-02-26
+
+### New Features
+
+- **浮层选择器 `MySelector` / `MySelectorController`**：新增通用浮层下拉选择组件
+
+  - **`MySelector.show<T>()`**：命令式底层 API，`async/await` 风格，适合一次性弹出场景；返回 `MySelectorResult` sealed 类（`MySelectorDismissed` / `MySelectorValueChanged`），通过 `.changed` 扩展 getter 可快速判断并取得结果，无需冗长 `switch`
+  - **`MySelectorController<T>`**：Controller 模式封装，适合同页面多选择器或需要从外部操控状态的场景；持有 `Rxn<MySelectorItem<T>>` 响应式状态，暴露 `show(context)`、`setValue(v)`、`setItem(item)`、`clear()` 及 `selectedItem` / `selectedValue` / `selectedTitle` 只读属性；`onChanged` 回调可选监听
+  - **`MySelectorItem<T>`**：列表项模型，支持 `title`、`subtitle`、`leading`（左侧图标/色块）、`badges`（标题右侧徽章列表）、`enabled` 禁用控制
+  - **`MySelectorClearOption`**：顶部"清除选择"入口配置，支持自定义 `label`、`leading`、`subtitle`
+  - **`MySelectorStyle`**：面板样式配置（尺寸、圆角、毛玻璃、选中色、投影、悬停色，所有尺寸值自动经 ScreenUtil 转换）
+  - 支持搜索框（`showSearch`）、弹出方向自动判断（`showPanelAbove`）、键盘导航（↑↓ 高亮 + Enter 确认 + Escape 关闭）、窗口 resize 后自动重算浮层坐标、`allowReselect` 复选取消、完全自定义 `itemBuilder` / `footerBuilder`
+
+### Docs
+
+- 新增 [MySelector 选择器使用指南](.doc/my_selector_usage.md)
+
 ## 0.35.0 - 2026-02-26
 
 ### New Features

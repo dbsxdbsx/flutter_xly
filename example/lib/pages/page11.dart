@@ -147,13 +147,11 @@ class Page11View extends GetView<Page11Controller> {
             ),
             MyButton(
               text: '仅左右停靠',
-              onPressed: () =>
-                  FloatPanel.to.configure(dockToAllEdges: false),
+              onPressed: () => FloatPanel.to.configure(dockToAllEdges: false),
             ),
             MyButton(
               text: '四边停靠',
-              onPressed: () =>
-                  FloatPanel.to.configure(dockToAllEdges: true),
+              onPressed: () => FloatPanel.to.configure(dockToAllEdges: true),
             ),
             MyButton(
               text: '恢复全部默认',

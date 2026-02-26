@@ -774,6 +774,9 @@ class MyTextEditor extends GetView<MyTextEditorController> {
       },
       child: InkWell(
         onTap: () => onSelected(option),
+        focusColor: Colors.transparent,
+        hoverColor: Colors.transparent,
+        highlightColor: Colors.transparent,
         child: Container(
           height: defaultDropdownItemHeight,
           color: isHighlighted

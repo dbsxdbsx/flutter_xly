@@ -134,10 +134,8 @@ class SingleInstanceManager {
           .timeout(_probeTimeout);
 
       final response = await request.close().timeout(_probeTimeout);
-      final body = await response
-          .transform(utf8.decoder)
-          .join()
-          .timeout(_probeTimeout);
+      final body =
+          await response.transform(utf8.decoder).join().timeout(_probeTimeout);
       client.close(force: true);
 
       // 只有收到正确的健康响应才认为实例存活

@@ -341,8 +341,7 @@ class FloatBoxController extends GetxController {
   bool _isFirstTimePositioning = true;
   _DockEdge _currentDockEdge = _DockEdge.right; // 默认停靠右侧
 
-  FloatBoxController()
-      : panelIcon = FloatPanel.to.initialPanelIcon.value.obs {
+  FloatBoxController() : panelIcon = FloatPanel.to.initialPanelIcon.value.obs {
     _syncFocusColorsList();
   }
 
@@ -737,10 +736,8 @@ class FloatBoxController extends GetxController {
     // 展开后的总宽度
     final expandedWidth = effectivePanelWidth;
     // 如果当前 X + 展开宽度超出右边缘，向左推
-    if (xOffset.value + expandedWidth >
-        _pageWidth.value + _dockBoundary()) {
-      xOffset.value =
-          _pageWidth.value - expandedWidth + _dockBoundary();
+    if (xOffset.value + expandedWidth > _pageWidth.value + _dockBoundary()) {
+      xOffset.value = _pageWidth.value - expandedWidth + _dockBoundary();
     }
     // 如果推过左边缘，贴左
     if (xOffset.value < currentPanelOpenOffset.value) {
@@ -861,9 +858,8 @@ class _FloatBoxPanel extends StatelessWidget {
               size: ctrl.currentPanelWidth.value,
               icon: ctrl.panelIcon.value,
               color: ctrl.panelButtonColor,
-              hightLight: ctrl.isFocusColors.isNotEmpty
-                  ? ctrl.isFocusColors[0]
-                  : false,
+              hightLight:
+                  ctrl.isFocusColors.isNotEmpty ? ctrl.isFocusColors[0] : false,
               iconSize: ctrl.currentIconSize.value,
             )),
       ),
@@ -923,8 +919,7 @@ class _FloatBoxPanel extends StatelessWidget {
       return Visibility(
         visible: ctrl.panelState.value == PanelState.expanded,
         child: Flex(
-          direction:
-              ctrl._isHorizontalExpand ? Axis.horizontal : Axis.vertical,
+          direction: ctrl._isHorizontalExpand ? Axis.horizontal : Axis.vertical,
           mainAxisSize: MainAxisSize.min,
           children: orderedList,
         ),

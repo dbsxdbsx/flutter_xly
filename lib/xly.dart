@@ -58,6 +58,7 @@ export 'src/tray/tray.dart';
 export 'src/notify/lib.dart';
 export 'src/loading_dot.dart';
 export 'src/tab_view/lib.dart';
+export 'src/selector/lib.dart';
 
 // 3rd packages (re-export convenience)
 export 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -90,6 +91,7 @@ export 'src/smart_dock/smart_dock.dart';
 export 'src/tray/tray.dart';
 export 'src/notify/lib.dart';
 export 'src/loading_dot.dart';
+export 'src/selector/lib.dart';
 
 // Declare parts that are internal to this library (must come last)
 part 'src/app.dart';
