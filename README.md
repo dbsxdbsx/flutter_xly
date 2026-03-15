@@ -438,6 +438,7 @@ import 'pages/page3.dart';
 void main() async {
   await MyApp.initialize(
     designSize: const Size(800, 600),
+    enableZoneGuard: true,  // 默认开启：统一兜底未捕获异步异常并避免 Zone mismatch
 
     // 服务配置 - 确保在ScreenUtil初始化后注册，避免.sp等扩展方法返回无限值
     services: [
@@ -492,6 +493,28 @@ class Routes {
   static const String page2 = '/page2';
   static const String page3 = '/page3';
 }
+```
+
+#### Zone Guard（默认开启）
+
+`MyApp.initialize()` 提供 `enableZoneGuard` 参数，默认值为 `true`。
+
+- `true`（默认）：内部使用 `runZonedGuarded` 包裹初始化流程，统一兜底启动期/异步未捕获异常，并减少 `ensureInitialized` 与 `runApp` 的 Zone 不一致风险。
+- `false`：不创建额外 Zone，沿用调用方当前 Zone（适合宿主 App 已有全局异常体系的场景）。
+
+```dart
+await MyApp.initialize(
+  designSize: const Size(800, 600),
+  routes: routes,
+  enableZoneGuard: true, // 推荐保持默认
+);
+
+// 已由宿主应用在 main() 统一接管 runZonedGuarded 时，可按需关闭：
+await MyApp.initialize(
+  designSize: const Size(800, 600),
+  routes: routes,
+  enableZoneGuard: false,
+);
 ```
 
 ### 服务管理系统

@@ -295,113 +295,99 @@ class MyApp extends StatelessWidget {
     bool initializeWidgetsBinding = true,
     bool initializeWindowManager = true,
     bool initializeGetStorage = true,
+    // Zone 守护（默认开启）：统一捕获初始化阶段的未捕获异步异常
+    bool enableZoneGuard = true,
   }) async {
     // 首先初始化日志系统，以便后续初始化步骤可以使用日志
     XlyLogger.init(enabled: enableDebugLogging);
     XlyLogger.info('MyApp 初始化开始');
 
-    if (ensureScreenSize) {
-      await ScreenUtil.ensureScreenSize();
-    }
-    if (initializeWidgetsBinding) {
-      WidgetsFlutterBinding.ensureInitialized();
-    }
-    if (initializeGetStorage) {
-      await GetStorage.init();
-    }
+    Future<void> initializeInCurrentZone() async {
+      if (ensureScreenSize) {
+        await ScreenUtil.ensureScreenSize();
+      }
+      if (initializeWidgetsBinding) {
+        WidgetsFlutterBinding.ensureInitialized();
+      }
+      if (initializeGetStorage) {
+        await GetStorage.init();
+      }
 
-    // 单实例检查 - 在其他初始化之前进行，以免创建多余的窗口
-    if (singleInstance) {
-      final instanceKey = singleInstanceKey ?? appName ?? 'XlyFlutterApp';
-      final isFirstInstance = await SingleInstanceManager.instance.initialize(
-        instanceKey: instanceKey,
-        activateExisting: singleInstanceActivateOnSecond,
-        onActivate: MyPlatform.isDesktop
-            ? () async {
-                // 当收到激活请求时，显示并聚焦窗口
-                try {
-                  await windowManager.show();
-                  await windowManager.focus();
-                  await windowManager.setAlwaysOnTop(true);
-                  // 短暂置顶后取消，避免影响用户体验
-                  Future.delayed(const Duration(milliseconds: 100), () async {
-                    try {
-                      await windowManager.setAlwaysOnTop(false);
-                    } catch (e) {
-                      XlyLogger.error('取消窗口置顶失败', e);
-                    }
-                  });
-                } catch (e) {
-                  XlyLogger.error('激活窗口失败', e);
+      // 单实例检查 - 在其他初始化之前进行，以免创建多余的窗口
+      if (singleInstance) {
+        final instanceKey = singleInstanceKey ?? appName ?? 'XlyFlutterApp';
+        final isFirstInstance = await SingleInstanceManager.instance.initialize(
+          instanceKey: instanceKey,
+          activateExisting: singleInstanceActivateOnSecond,
+          onActivate: MyPlatform.isDesktop
+              ? () async {
+                  // 当收到激活请求时，显示并聚焦窗口
+                  try {
+                    await windowManager.show();
+                    await windowManager.focus();
+                    await windowManager.setAlwaysOnTop(true);
+                    // 短暂置顶后取消，避免影响用户体验
+                    Future.delayed(const Duration(milliseconds: 100), () async {
+                      try {
+                        await windowManager.setAlwaysOnTop(false);
+                      } catch (e) {
+                        XlyLogger.error('取消窗口置顶失败', e);
+                      }
+                    });
+                  } catch (e) {
+                    XlyLogger.error('激活窗口失败', e);
+                  }
                 }
-              }
-            : null,
-      );
-
-      if (!isFirstInstance) {
-        // 不是首个实例，退出当前实例
-        XlyLogger.info('检测到应用已在运行，当前实例即将退出');
-        await exitApp();
-        return;
-      }
-    }
-
-    if (MyPlatform.isDesktop) {
-      if (initializeWindowManager) {
-        await _initializeWindowManager(
-          designSize,
-          appName,
-          setTitleBarHidden: setTitleBarHidden,
-          setWindowButtonVisibility: setWindowButtonVisibility,
-          setSkipTaskbar: setSkipTaskbar,
-          setResizable: resizable,
-          setMaximizable: setMaximizable,
-          centerWindow: centerWindowOnInit,
-          focusWindow: focusWindowOnInit,
-          showWindow: showWindowOnInit,
-          setAspectRatio: setAspectRatio && setAspectRatioEnabled,
-          minimumSize: minimumSize,
+              : null,
         );
-      }
-    }
 
-    // 1. 应用直接参数作为基础配置
-    _globalEnableResizable.value = resizable;
-    _globalEnableDoubleClickMaximize.value = doubleClickToFullScreen;
-    _globalEnableDraggable.value = draggable;
-    _globalEnableAspectRatio.value = setAspectRatioEnabled;
-    _globalEnableAspectRatio.value = setAspectRatioEnabled;
-
-    // 2. 处理tray参数，自动转换为MyService
-    List<MyService> finalServices = services != null ? List.from(services) : [];
-
-    if (tray != null) {
-      // 检查services中是否已有MyTray服务
-      bool hasTrayService = finalServices.any((service) {
-        try {
-          // 检查同步服务
-          if (service.service != null) {
-            return service.service!() is MyTray;
-          }
-          // 检查异步服务类型
-          if (service.asyncService != null) {
-            return service.asyncService.runtimeType
-                .toString()
-                .contains('MyTray');
-          }
-          return false;
-        } catch (e) {
-          return false;
+        if (!isFirstInstance) {
+          // 不是首个实例，退出当前实例
+          XlyLogger.info('检测到应用已在运行，当前实例即将退出');
+          await exitApp();
+          return;
         }
-      });
+      }
 
-      if (hasTrayService) {
-        // 如果services中已有MyTray，移除它并使用tray参数提供的配置
-        finalServices.removeWhere((service) {
+      if (MyPlatform.isDesktop) {
+        if (initializeWindowManager) {
+          await _initializeWindowManager(
+            designSize,
+            appName,
+            setTitleBarHidden: setTitleBarHidden,
+            setWindowButtonVisibility: setWindowButtonVisibility,
+            setSkipTaskbar: setSkipTaskbar,
+            setResizable: resizable,
+            setMaximizable: setMaximizable,
+            centerWindow: centerWindowOnInit,
+            focusWindow: focusWindowOnInit,
+            showWindow: showWindowOnInit,
+            setAspectRatio: setAspectRatio && setAspectRatioEnabled,
+            minimumSize: minimumSize,
+          );
+        }
+      }
+
+      // 1. 应用直接参数作为基础配置
+      _globalEnableResizable.value = resizable;
+      _globalEnableDoubleClickMaximize.value = doubleClickToFullScreen;
+      _globalEnableDraggable.value = draggable;
+      _globalEnableAspectRatio.value = setAspectRatioEnabled;
+      _globalEnableAspectRatio.value = setAspectRatioEnabled;
+
+      // 2. 处理tray参数，自动转换为MyService
+      List<MyService> finalServices =
+          services != null ? List.from(services) : [];
+
+      if (tray != null) {
+        // 检查services中是否已有MyTray服务
+        bool hasTrayService = finalServices.any((service) {
           try {
+            // 检查同步服务
             if (service.service != null) {
               return service.service!() is MyTray;
             }
+            // 检查异步服务类型
             if (service.asyncService != null) {
               return service.asyncService.runtimeType
                   .toString()
@@ -413,58 +399,92 @@ class MyApp extends StatelessWidget {
           }
         });
 
-        XlyLogger.warning('MyApp: 检测到services中已有MyTray配置，将使用tray参数提供的配置覆盖');
+        if (hasTrayService) {
+          // 如果services中已有MyTray，移除它并使用tray参数提供的配置
+          finalServices.removeWhere((service) {
+            try {
+              if (service.service != null) {
+                return service.service!() is MyTray;
+              }
+              if (service.asyncService != null) {
+                return service.asyncService.runtimeType
+                    .toString()
+                    .contains('MyTray');
+              }
+              return false;
+            } catch (e) {
+              return false;
+            }
+          });
+
+          XlyLogger.warning('MyApp: 检测到services中已有MyTray配置，将使用tray参数提供的配置覆盖');
+        }
+
+        // 添加tray参数提供的MyTray服务
+        finalServices.add(
+          MyService<MyTray>(
+            service: () => tray,
+            permanent: true,
+          ),
+        );
       }
 
-      // 添加tray参数提供的MyTray服务
-      finalServices.add(
-        MyService<MyTray>(
-          service: () => tray,
+      // 3. 若提供 floatPanel，则作为全局服务注册（类似 tray）
+      if (floatPanel != null) {
+        finalServices.add(MyService<FloatPanel>(
+          service: () => floatPanel,
           permanent: true,
-        ),
-      );
-    }
+        ));
+      }
 
-    // 3. 若提供 floatPanel，则作为全局服务注册（类似 tray）
-    if (floatPanel != null) {
-      finalServices.add(MyService<FloatPanel>(
-        service: () => floatPanel,
-        permanent: true,
+      // 4. 在runApp之前注册所有服务（支持异步服务）
+      // 注意：此时ScreenUtil已通过ensureScreenSize()初始化，服务可以安全使用
+      // 按照用户输入的顺序依次注册，保证服务依赖关系
+      // 如果服务注册失败，异常会自然向上传播，终止应用初始化
+      for (final service in finalServices) {
+        await service.registerService();
+      }
+
+      // 5. 在所有配置应用完毕后，设置路由并运行应用
+      if (appName != null) {
+        _globalWindowTitle.value = appName;
+      }
+      runApp(MyApp._(
+        designSize: designSize,
+        theme: theme,
+        routes: routes,
+        services: null, // 服务已注册，不再需要传递
+        appBuilder: appBuilder,
+        appName: appName,
+        useToast: useOKToast,
+        dragToMoveArea: dragToMoveArea,
+        showDebugTag: showDebugTag,
+        splash: splash,
+        keyToRollBack: keyToRollBack,
+        exitGapTime: exitGapTime,
+        exitInfoText: exitInfoText,
+        backInfoText: backInfoText,
+        pageTransitionStyle: pageTransitionStyle,
+        pageTransitionDuration: pageTransitionDuration,
+        enableDoubleClickFullScreen: doubleClickToFullScreen,
+        draggable: draggable,
       ));
     }
 
-    // 4. 在runApp之前注册所有服务（支持异步服务）
-    // 注意：此时ScreenUtil已通过ensureScreenSize()初始化，服务可以安全使用
-    // 按照用户输入的顺序依次注册，保证服务依赖关系
-    // 如果服务注册失败，异常会自然向上传播，终止应用初始化
-    for (final service in finalServices) {
-      await service.registerService();
+    if (enableZoneGuard) {
+      await runZonedGuarded(
+        () async {
+          await initializeInCurrentZone();
+        },
+        (error, stackTrace) {
+          XlyLogger.error('MyApp 初始化发生未捕获异常', error, stackTrace);
+          Error.throwWithStackTrace(error, stackTrace);
+        },
+      );
+      return;
     }
 
-    // 5. 在所有配置应用完毕后，设置路由并运行应用
-    if (appName != null) {
-      _globalWindowTitle.value = appName;
-    }
-    runApp(MyApp._(
-      designSize: designSize,
-      theme: theme,
-      routes: routes,
-      services: null, // 服务已注册，不再需要传递
-      appBuilder: appBuilder,
-      appName: appName,
-      useToast: useOKToast,
-      dragToMoveArea: dragToMoveArea,
-      showDebugTag: showDebugTag,
-      splash: splash,
-      keyToRollBack: keyToRollBack,
-      exitGapTime: exitGapTime,
-      exitInfoText: exitInfoText,
-      backInfoText: backInfoText,
-      pageTransitionStyle: pageTransitionStyle,
-      pageTransitionDuration: pageTransitionDuration,
-      enableDoubleClickFullScreen: doubleClickToFullScreen,
-      draggable: draggable,
-    ));
+    await initializeInCurrentZone();
   }
 
   static Future<void> _initializeWindowManager(

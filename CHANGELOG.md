@@ -1,3 +1,13 @@
+## 0.36.2 - 2026-03-16
+
+### Enhanced
+
+- **`MyApp.initialize` 新增 `enableZoneGuard` 参数（默认 `true`）**：初始化流程默认使用 `runZonedGuarded` 进行 Zone 保护，统一兜底未捕获异步异常；可通过 `enableZoneGuard: false` 显式关闭，以适配宿主应用自有的全局异常管线
+
+### Docs
+
+- **README 补充 Zone Guard 说明**：新增 `enableZoneGuard` 参数语义、默认行为、推荐场景及关闭场景说明
+
 ## 0.36.1 - 2026-02-26
 
 ### Fixed
