@@ -1,4 +1,8 @@
-## 0.36.2 - 2026-03-16
+## 0.37.0 - 2026-03-16
+
+### ⚠️ Behavior Change
+
+- **`MyApp.initialize` 默认启用 Zone Guard**：`enableZoneGuard` 默认值为 `true`。这会改变初始化阶段的异常兜底路径与 Zone 边界行为；若宿主应用已在入口自行统一 `runZonedGuarded`，建议显式设置 `enableZoneGuard: false`
 
 ### Enhanced
 
