@@ -1,3 +1,12 @@
+## 0.37.1 - 2026-04-26
+
+### Fixed
+
+- **`MySelector` 整页 trigger 弹出报 `ArgumentError`**：当 `triggerContext` 是整个页面级 RenderBox（如 `Get.context` / `Navigator.of(context)`）时，`renderBox.size.width` ≈ `screen.width`，原默认逻辑 `sz.width.clamp(220.w, screen.width - 16.w)` 让 `panelW` 顶到 `screen.width - 16.w`，再叠加浮点误差，让 build 阶段 `Positioned.left` 的 `clamp(8.w, screen - panelW - 8.w)` 触发 `max < min` 抛 `ArgumentError`（典型报错值 `7.925106382978723`，对应窗口宽 ≈ `698.55`、设计稿 `705`）
+- **修复方案**：默认面板宽度封顶 `280.w`（标准下拉宽度），不再让 trigger 撑满整屏；同时给 `Positioned.left` 的 clamp 加 `math.max` 兜底，极端窄屏（`screen.width - 16.w < 220.w`）下也只是把面板压窄，不会抛异常
+- 行为微调：trigger 比 `280.w` 还宽时（如整页 context），面板宽度从原来的"几乎贴边"变为"封顶 280.w"，更贴近常规下拉视觉；trigger 在 `[220.w, 280.w]` 区间内的场景视觉与之前一致
+- 新增回归测试 `test/selector_layout_test.dart` 覆盖三种边界（浮点窄屏、极窄屏、显式 `panelWidth` 超界）
+
 ## 0.37.0 - 2026-03-16
 
 ### ⚠️ Behavior Change

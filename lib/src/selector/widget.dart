@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -6,6 +7,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'models.dart';
+
+// 默认面板宽度的设计稿基准（在 ScreenUtil 下经 `.w` 缩放为当前 px）。
+// - 280.w 是常见下拉宽度，能容纳"图标 + 标题 + 副标题"三段；
+// - 220.w 作为下界，避免 trigger 太窄时面板挤成一条；
+// - 16.w 是面板距屏幕左右的安全边距（左右各 8.w）。
+const double _kPanelDefaultMaxW = 280.0;
+const double _kPanelMinW = 220.0;
+const double _kPanelHorizontalSafe = 16.0;
 
 // ============================================================================
 // 公开 API
@@ -191,11 +200,29 @@ class _SelectorOverlayState<T> extends State<_SelectorOverlay<T>>
       _btnWRatio = sz.width / screen.width;
       _btnHRatio = sz.height / screen.height;
 
-      final panelW = widget.style.panelWidth ??
-          sz.width.clamp(220.w, screen.width - 16.w);
-      _panelWRatio = panelW / screen.width;
+      _panelWRatio = _resolvePanelW(sz.width, screen.width) / screen.width;
       _maxHRatio = widget.style.maxHeight / screen.height;
     }
+  }
+
+  /// 计算面板宽度。
+  ///
+  /// 没传 [MySelectorStyle.panelWidth] 时，默认贴合 trigger 但封顶
+  /// `_kPanelDefaultMaxW.w`（≈ 280.w），下界 `_kPanelMinW.w`（≈ 220.w）。
+  /// 这样可以避免 trigger 是整页 RenderBox（如 `Get.context`）时面板
+  /// 被"撑满整屏"——撑满后 build 阶段的 left clamp 区间会退化为
+  /// `[8.w, 8.w]`，再被浮点误差顶成 `max < min` 触发 `ArgumentError`。
+  ///
+  /// 极端窄屏（`screen.width - 16.w < 220.w`）下，优先让出 `16.w` 安全边距，
+  /// 哪怕面板挤到不足 220.w，也不直接抛异常。
+  double _resolvePanelW(double triggerW, double screenW) {
+    final double maxByScreen = math.max(0.0, screenW - _kPanelHorizontalSafe.w);
+    if (widget.style.panelWidth != null) {
+      return math.min(widget.style.panelWidth!, maxByScreen);
+    }
+    final double target = math.min(triggerW, _kPanelDefaultMaxW.w);
+    final double minSafe = math.min(_kPanelMinW.w, maxByScreen);
+    return math.min(maxByScreen, math.max(minSafe, target));
   }
 
   Size _currentScreenSize() {
@@ -226,6 +253,7 @@ class _SelectorOverlayState<T> extends State<_SelectorOverlay<T>>
     bool showAbove,
     double maxH,
     double panelW,
+    double panelLeft,
     double gap,
   }) _computeLayout() {
     final double gap = 6.w;
@@ -257,6 +285,15 @@ class _SelectorOverlayState<T> extends State<_SelectorOverlay<T>>
         : (spaceBelow - gap - safeMargin);
     final double maxH = availableH.clamp(80.h, effectiveMaxH);
 
+    // 面板水平定位：贴合 trigger 的左侧，但夹在 [8.w, screenW - panelW - 8.w]。
+    // 极窄屏 / panel 占满屏（含浮点误差）时 maxLeft < minLeft 会让 num.clamp
+    // 直接抛 ArgumentError，所以用 math.max 兜一道——退化为左对齐到 8.w。
+    final double minLeft = safeMargin;
+    final double maxLeft =
+        math.max(minLeft, screenSize.width - panelW - safeMargin);
+    final double panelLeft =
+        buttonPos.dx.clamp(minLeft, maxLeft).toDouble();
+
     return (
       buttonPos: buttonPos,
       buttonSize: buttonSize,
@@ -264,6 +301,7 @@ class _SelectorOverlayState<T> extends State<_SelectorOverlay<T>>
       showAbove: showAbove,
       maxH: maxH,
       panelW: panelW,
+      panelLeft: panelLeft,
       gap: gap,
     );
   }
@@ -285,15 +323,13 @@ class _SelectorOverlayState<T> extends State<_SelectorOverlay<T>>
         ),
         if (layout.showAbove)
           Positioned(
-            left: layout.buttonPos.dx
-                .clamp(8.w, layout.screenSize.width - layout.panelW - 8.w),
+            left: layout.panelLeft,
             bottom: layout.screenSize.height - layout.buttonPos.dy + layout.gap,
             child: _panel(layout.panelW, layout.maxH, layout.showAbove),
           )
         else
           Positioned(
-            left: layout.buttonPos.dx
-                .clamp(8.w, layout.screenSize.width - layout.panelW - 8.w),
+            left: layout.panelLeft,
             top: layout.buttonPos.dy + layout.buttonSize.height + layout.gap,
             child: _panel(layout.panelW, layout.maxH, layout.showAbove),
           ),
