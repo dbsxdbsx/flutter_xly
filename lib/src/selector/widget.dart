@@ -251,6 +251,7 @@ class _SelectorOverlayState<T> extends State<_SelectorOverlay<T>>
     Size buttonSize,
     Size screenSize,
     bool showAbove,
+    bool centered,
     double maxH,
     double panelW,
     double panelLeft,
@@ -273,32 +274,57 @@ class _SelectorOverlayState<T> extends State<_SelectorOverlay<T>>
     final double effectiveMaxH = screenSize.height * _maxHRatio;
     final double panelW = screenSize.width * _panelWRatio;
 
-    final double spaceAbove = buttonPos.dy;
-    final double spaceBelow =
-        screenSize.height - buttonPos.dy - buttonSize.height;
-    // null = 自动判断：上方空间 ≥ 面板高度 60% 或上方比下方大，则弹到上面
-    final bool showAbove = widget.showPanelAbove ??
-        (spaceAbove >= effectiveMaxH * 0.6 || spaceAbove > spaceBelow);
+    // trigger 几乎占满整屏（如调用方误把 `Get.context` / Navigator 顶层 context
+    // 当 triggerContext 传进来）时，没有"按钮上下方"可贴——上下空间都是 0，
+    // 走 showAbove=false 分支会让 `top = buttonPos.dy + buttonSize.height + gap`
+    // 直接顶到 screen.height 之外，面板被定位到屏幕底部以下，看起来像"点了
+    // 没反应"。这种 trigger 本来就不携带"位置"语义，自动降级为屏幕居中。
+    final bool isFullscreenTrigger =
+        buttonSize.width >= screenSize.width * 0.9 &&
+            buttonSize.height >= screenSize.height * 0.9;
 
-    final double availableH = showAbove
-        ? (spaceAbove - gap - safeMargin)
-        : (spaceBelow - gap - safeMargin);
-    final double maxH = availableH.clamp(80.h, effectiveMaxH);
+    final bool showAbove;
+    final double maxH;
+    final double panelLeft;
+    if (isFullscreenTrigger) {
+      // 居中模式：showAbove 不再有"上方/下方"语义，build 端会走 centered 分支；
+      // 这里仍给一个稳定值以保持 record 字段语义完整。
+      showAbove = false;
+      // maxH 不再受 spaceAbove/spaceBelow 约束，按 style.maxHeight 给上限，
+      // 同时不超过屏幕高度减安全边距。
+      maxH = math.max(
+        80.h,
+        math.min(effectiveMaxH, screenSize.height - safeMargin * 2),
+      );
+      panelLeft = (screenSize.width - panelW) / 2;
+    } else {
+      final double spaceAbove = buttonPos.dy;
+      final double spaceBelow =
+          screenSize.height - buttonPos.dy - buttonSize.height;
+      // null = 自动判断：上方空间 ≥ 面板高度 60% 或上方比下方大，则弹到上面
+      showAbove = widget.showPanelAbove ??
+          (spaceAbove >= effectiveMaxH * 0.6 || spaceAbove > spaceBelow);
 
-    // 面板水平定位：贴合 trigger 的左侧，但夹在 [8.w, screenW - panelW - 8.w]。
-    // 极窄屏 / panel 占满屏（含浮点误差）时 maxLeft < minLeft 会让 num.clamp
-    // 直接抛 ArgumentError，所以用 math.max 兜一道——退化为左对齐到 8.w。
-    final double minLeft = safeMargin;
-    final double maxLeft =
-        math.max(minLeft, screenSize.width - panelW - safeMargin);
-    final double panelLeft =
-        buttonPos.dx.clamp(minLeft, maxLeft).toDouble();
+      final double availableH = showAbove
+          ? (spaceAbove - gap - safeMargin)
+          : (spaceBelow - gap - safeMargin);
+      maxH = availableH.clamp(80.h, effectiveMaxH).toDouble();
+
+      // 面板水平定位：贴合 trigger 的左侧，但夹在 [8.w, screenW - panelW - 8.w]。
+      // 极窄屏 / panel 占满屏（含浮点误差）时 maxLeft < minLeft 会让 num.clamp
+      // 直接抛 ArgumentError，所以用 math.max 兜一道——退化为左对齐到 8.w。
+      final double minLeft = safeMargin;
+      final double maxLeft =
+          math.max(minLeft, screenSize.width - panelW - safeMargin);
+      panelLeft = buttonPos.dx.clamp(minLeft, maxLeft).toDouble();
+    }
 
     return (
       buttonPos: buttonPos,
       buttonSize: buttonSize,
       screenSize: screenSize,
       showAbove: showAbove,
+      centered: isFullscreenTrigger,
       maxH: maxH,
       panelW: panelW,
       panelLeft: panelLeft,
@@ -321,7 +347,16 @@ class _SelectorOverlayState<T> extends State<_SelectorOverlay<T>>
             child: const SizedBox.expand(),
           ),
         ),
-        if (layout.showAbove)
+        if (layout.centered)
+          // 整屏 trigger 降级：居中显示，让面板范围之外的点击仍能穿透到下方
+          // dismiss handler（Align 默认 deferToChild，非 child 区域不参与 hit-test）
+          Positioned.fill(
+            child: Align(
+              alignment: Alignment.center,
+              child: _panel(layout.panelW, layout.maxH, false),
+            ),
+          )
+        else if (layout.showAbove)
           Positioned(
             left: layout.panelLeft,
             bottom: layout.screenSize.height - layout.buttonPos.dy + layout.gap,

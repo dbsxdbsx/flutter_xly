@@ -1,3 +1,12 @@
+## 0.37.2 - 2026-04-26
+
+### Fixed
+
+- **`MySelector` 整页 trigger 弹出后面板"看不见、点不到"**：续 0.37.1。当 `triggerContext` 是整页 RenderBox（如 `Get.context`）时，`buttonSize ≈ screenSize`，原"按钮上下方"垂直定位逻辑退化为 `top = 0 + screen.height + gap`——面板被 `Positioned` 到屏幕底部之外，调用方 `await MySelector.show()` 永远不 complete，业务侧表现为"点了按钮一点反应都没有，连日志都不打"
+- **修复方案**：`_SelectorOverlay` 检测到 `buttonSize >= 0.9 * screenSize` 两个维度同时成立（即 trigger 几乎占满屏）时，自动降级为"屏幕居中"模式——面板水平、垂直均居中，不再依赖按钮位置。普通"贴按钮 trigger" 调用路径完全不受影响（`buttonSize` 远小于 `screenSize`）
+- 实现细节：build 阶段在 dismiss handler 之上加 `Positioned.fill(Align(child: _panel))` 分支；`Align` 默认 `deferToChild` 让面板范围之外的点击仍能穿透到 dismiss handler，外部点击关闭仍正常工作
+- `test/selector_layout_test.dart` 增加 1 项几何回归测试：用 `tester.getCenter(find.text(...))` 断言面板文字落在屏幕可视范围内
+
 ## 0.37.1 - 2026-04-26
 
 ### Fixed

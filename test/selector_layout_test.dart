@@ -127,6 +127,53 @@ void main() {
         expect(tester.takeException(), isNull);
       },
     );
+
+    testWidgets(
+      '整屏 trigger 应自动居中显示，面板必须在屏幕可视范围内（regression: 0.37.1 上还会被推到屏幕底外）',
+      (tester) async {
+        const Size screen = Size(800, 600);
+        tester.view
+          ..physicalSize = screen
+          ..devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+        addTearDown(tester.view.resetDevicePixelRatio);
+
+        BuildContext? captured;
+        await tester.pumpWidget(_FullScreenTriggerHost(
+          onReady: (ctx) => captured = ctx,
+        ));
+        await tester.pumpAndSettle();
+
+        unawaited(MySelector.show<String>(
+          triggerContext: captured!,
+          items: const [
+            MySelectorItem(value: 'a', title: '选项 A'),
+            MySelectorItem(value: 'b', title: '选项 B'),
+          ],
+        ));
+
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 16));
+        expect(tester.takeException(), isNull);
+
+        // 0.37.1 行为：showAbove=false → top = 0 + screen.height + gap
+        //              → 面板被 Positioned 到 dy ≈ 600+gap，'选项 A' 不可见 / 不可点
+        // 0.37.2 行为：centered=true → 面板水平 + 垂直居中，落在 [0, screen] 内
+        final Finder textFinder = find.text('选项 A');
+        expect(textFinder, findsOneWidget);
+        final Offset center = tester.getCenter(textFinder);
+        expect(
+          center.dx >= 0 && center.dx <= screen.width,
+          isTrue,
+          reason: '面板水平应在屏幕内，实际 dx=${center.dx}',
+        );
+        expect(
+          center.dy >= 0 && center.dy <= screen.height,
+          isTrue,
+          reason: '面板垂直应在屏幕内，实际 dy=${center.dy}（屏幕高 ${screen.height}）',
+        );
+      },
+    );
   });
 }
 
