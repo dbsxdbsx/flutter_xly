@@ -2,6 +2,7 @@ library xly;
 
 // Library imports for parts (usable by part files)
 import 'dart:async';
+import 'dart:ui' show PlatformDispatcher;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';

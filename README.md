@@ -438,7 +438,6 @@ import 'pages/page3.dart';
 void main() async {
   await MyApp.initialize(
     designSize: const Size(800, 600),
-    enableZoneGuard: true,  // 默认开启：统一兜底未捕获异步异常并避免 Zone mismatch
 
     // 服务配置 - 确保在ScreenUtil初始化后注册，避免.sp等扩展方法返回无限值
     services: [
@@ -495,27 +494,78 @@ class Routes {
 }
 ```
 
-#### Zone Guard（默认开启）
+#### 异常处理（开箱即用）
 
-`MyApp.initialize()` 提供 `enableZoneGuard` 参数，默认值为 `true`。
+> 详细决策记录、踩坑场景与高级用法见：[本地](.doc/error_handling.md) | [GitHub](https://github.com/dbsxdbsx/flutter_xly/blob/main/.doc/error_handling.md)
 
-- `true`（默认）：内部使用 `runZonedGuarded` 包裹初始化流程，统一兜底启动期/异步未捕获异常，并减少 `ensureInitialized` 与 `runApp` 的 Zone 不一致风险。
-- `false`：不创建额外 Zone，沿用调用方当前 Zone（适合宿主 App 已有全局异常体系的场景）。
+`MyApp.initialize()` 默认会装好 Flutter 的两个 root-level 异常 hook：
+
+- `FlutterError.onError`：覆盖 widget 树构建/布局/绘制及 framework 异步异常
+- `PlatformDispatcher.instance.onError`（Flutter 3.3+）：覆盖所有未捕获异步异常
+
+无需用户手动包 `runZonedGuarded`，也无需手写两段 hook 模板代码。
+
+**普通用户：什么都不写，走 `XlyLogger.error` 默认日志**
 
 ```dart
-await MyApp.initialize(
+void main() => MyApp.initialize(
   designSize: const Size(800, 600),
   routes: routes,
-  enableZoneGuard: true, // 推荐保持默认
-);
-
-// 已由宿主应用在 main() 统一接管 runZonedGuarded 时，可按需关闭：
-await MyApp.initialize(
-  designSize: const Size(800, 600),
-  routes: routes,
-  enableZoneGuard: false,
 );
 ```
+
+**接 Sentry / Crashlytics / 自定义日志：传 `onError`，一行搞定**
+
+```dart
+void main() => MyApp.initialize(
+  designSize: const Size(800, 600),
+  routes: routes,
+  onError: (error, stack) =>
+      Sentry.captureException(error, stackTrace: stack),
+);
+```
+
+**完全自己接管：传 `installErrorHandlers: false`，xly 不动任何全局 hook**
+
+```dart
+void main() async {
+  FlutterError.onError = (details) => MyAppLogger.flutter(details);
+  PlatformDispatcher.instance.onError = (e, st) {
+    MyAppLogger.async(e, st);
+    return true;
+  };
+
+  await MyApp.initialize(
+    designSize: const Size(800, 600),
+    routes: routes,
+    installErrorHandlers: false,
+  );
+}
+```
+
+> xly 即使在 `installErrorHandlers: true`（默认）下检测到 `FlutterError.onError` / `PlatformDispatcher.onError` 已被外部设置，也会跳过自动安装并打 warning，不抢用户既有逻辑。开 `enableDebugLogging: true` 可看到 warning。
+
+##### `enableZoneGuard` 参数
+
+⚠️ **0.38.2 起默认值由 `true` 改为 `false`**。
+
+`runZonedGuarded` 是"应用边界"的决策（影响整个进程后续异步行为），不应该是库默认行为。0.37 ~ 0.38.1 的默认开过会导致：
+
+- 用户 main 里手动 `WidgetsFlutterBinding.ensureInitialized()` → `Zone mismatch`
+- 用户在外层包自己的 `runZonedGuarded`（Sentry / Crashlytics 标准接入）→ `Zone mismatch`
+
+0.38.2 之后默认关，并且即使显式开 `enableZoneGuard: true`，binding 也已经被前置到 Zone 之外初始化，不再有 mismatch。仅当你需要拦截 `print` / `Timer` / `Microtask` 等 Zone 内行为时才显式开。
+
+```dart
+// 极少数场景：必须用 Zone 拦截 print/Timer/Microtask
+await MyApp.initialize(
+  designSize: const Size(800, 600),
+  routes: routes,
+  enableZoneGuard: true,
+);
+```
+
+详细决策记录、版本演进与踩坑案例见 [`.doc/error_handling.md`](.doc/error_handling.md)。
 
 ### 服务管理系统
 
@@ -2615,6 +2665,7 @@ class MyHomePage extends StatelessWidget {
 如果您想为 XLY 包贡献代码，请务必阅读：
 
 - [日志系统规范](.doc/contributor_logging_guide.md) - 了解如何正确使用 `XlyLogger` 进行日志输出
+- [异常处理与 Zone 决策](.doc/error_handling.md) - 库与应用边界、为什么不再默认开 Zone Guard、`installErrorHandlers` / `onError` 设计、踩坑场景
 
 ## 许可证
 

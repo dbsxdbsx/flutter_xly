@@ -55,7 +55,7 @@ Only `app.dart` and `float_panel.dart` use `part of '../xly.dart'`. All other `l
 ### Core Modules
 
 **`src/app.dart`** (part file, ~1000+ lines) — The primary entry point for consumers. Contains:
-- `MyApp.initialize(...)` — async static method that boots the entire app: ScreenUtil, GetStorage, window_manager, single-instance detection, tray/FloatPanel registration, zone guard
+- `MyApp.initialize(...)` — async static method that boots the entire app: ScreenUtil, GetStorage, window_manager, single-instance detection, tray/FloatPanel registration, and installable error handlers (`FlutterError.onError` + `PlatformDispatcher.instance.onError`). Optional `enableZoneGuard` (default `false` since 0.38.2) wraps init in `runZonedGuarded` for the rare case of needing to intercept `print` / `Timer` / `Microtask`. See `.doc/error_handling.md` for design rationale.
 - `MyRoute<T>` — pairs a route path, page widget, and GetX controller factory
 - `MyService<T>` — wraps GetX service registration; supports both sync (`service`) and async (`asyncService`) factories
 - `WindowSettings`, `CustomDragArea`, `MyDragProtectedArea` — window drag/interaction helpers
@@ -98,6 +98,7 @@ Only `app.dart` and `float_panel.dart` use `part of '../xly.dart'`. All other `l
 ## Notes
 
 - The `navigatorKey` parameter was removed from `MyApp.initialize`. Use `Get.key`, `Get.context`, or `Get.dialog` instead.
+- **Exception handling & Zone strategy** (since 0.38.2): `MyApp.initialize` defaults to `installErrorHandlers: true` + `enableZoneGuard: false`. Detailed decision record (library vs application boundary, why Zone Guard is no longer default, `Zone mismatch` pitfalls, recommended patterns for Sentry / Crashlytics) lives in `.doc/error_handling.md`.
 - For non-ASCII paths or app names in CLI tools, use the `dart run xly:<command>` syntax directly (not the interactive menu) to avoid terminal encoding issues on Windows.
 - The `user_code/` directory is excluded from analysis and is intended for scratch/test consumer code.
 - UI reference patterns: `D:\DATA\BaiduSyncdisk\project\personal\test_repo\macos_ui` (per cursor rule).

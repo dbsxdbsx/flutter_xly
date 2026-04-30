@@ -295,19 +295,48 @@ class MyApp extends StatelessWidget {
     bool initializeWidgetsBinding = true,
     bool initializeWindowManager = true,
     bool initializeGetStorage = true,
-    // Zone 守护（默认开启）：统一捕获初始化阶段的未捕获异步异常
-    bool enableZoneGuard = true,
+
+    // ── 异常处理（开箱即用） ──────────────────────────
+    // 默认装好 FlutterError.onError + PlatformDispatcher.instance.onError 两个 root-level
+    // 异常 hook，无需用户自己包 runZonedGuarded 即可覆盖 widget 树异常和未捕获异步异常。
+    // 检测到外部已设置过这两个 hook 时会跳过自动安装并打 warning，不抢用户既有逻辑。
+    bool installErrorHandlers = true,
+    // 自定义异常 sink；不传则统一走 XlyLogger.error 打日志。
+    // 接 Sentry / Crashlytics 时把上报回调传进来即可，例如：
+    //   onError: (e, st) => Sentry.captureException(e, stackTrace: st)
+    void Function(Object error, StackTrace stack)? onError,
+
+    // ── Zone 守护（默认关闭，向后兼容保留参数） ─────────
+    // ⚠️ 0.38.2 起默认值由 true 改为 false。
+    // 默认关的原因：Zone Guard 是"应用边界"决策，不是库的责任。开了之后，xly 的内部 Zone
+    // 会跟用户在 main 里自己写的 runZonedGuarded / WidgetsFlutterBinding.ensureInitialized()
+    // 冲突，启动时抛 `Zone mismatch`（典型踩坑：Sentry / Crashlytics 标准接入流程）。
+    // 默认走 `installErrorHandlers` 路线已经能覆盖 99% 的应用异常需求，无需 Zone。
+    // 仍想用 Zone Guard（拦截自定义 print/Timer/Microtask 等）时显式传 true 即可，
+    // binding 已经被前置到 Zone 之外初始化，不会再有 mismatch。
+    bool enableZoneGuard = false,
   }) async {
     // 首先初始化日志系统，以便后续初始化步骤可以使用日志
     XlyLogger.init(enabled: enableDebugLogging);
     XlyLogger.info('MyApp 初始化开始');
 
+    // ⚠️ binding 必须在调用方当前 Zone 中初始化，并且必须先于任何可能新建 Zone 的逻辑
+    // （包括下面的 enableZoneGuard 分支）。Flutter 铁律：binding 与 runApp 必须同 Zone，
+    // 否则 framework 启动时直接抛 `Zone mismatch`。`ensureInitialized()` 本身幂等，
+    // 用户在 main 里已经手动调过也不会冲突。
+    if (initializeWidgetsBinding) {
+      WidgetsFlutterBinding.ensureInitialized();
+    }
+
+    // 安装全局异常 hook（FlutterError.onError + PlatformDispatcher.onError）
+    // 见 _installErrorHandlers 注释：检测到外部已设置就跳过，不抢用户逻辑。
+    if (installErrorHandlers) {
+      _installErrorHandlers(onError);
+    }
+
     Future<void> initializeInCurrentZone() async {
       if (ensureScreenSize) {
         await ScreenUtil.ensureScreenSize();
-      }
-      if (initializeWidgetsBinding) {
-        WidgetsFlutterBinding.ensureInitialized();
       }
       if (initializeGetStorage) {
         await GetStorage.init();
@@ -472,19 +501,72 @@ class MyApp extends StatelessWidget {
     }
 
     if (enableZoneGuard) {
+      // 老用户显式开 Zone Guard 时仍然支持。
+      // binding 已在 Zone 外初始化（见函数顶部），不会触发 Zone mismatch。
       await runZonedGuarded(
         () async {
           await initializeInCurrentZone();
         },
         (error, stackTrace) {
-          XlyLogger.error('MyApp 初始化发生未捕获异常', error, stackTrace);
+          XlyLogger.error('MyApp 初始化阶段未捕获异常 (Zone Guard)', error, stackTrace);
+          onError?.call(error, stackTrace);
           Error.throwWithStackTrace(error, stackTrace);
         },
       );
       return;
     }
 
-    await initializeInCurrentZone();
+    // 默认路径：try/catch 兜底初始化阶段异常。
+    // 运行时异步异常由 _installErrorHandlers 装的 root-level hook 兜底，无需 Zone。
+    try {
+      await initializeInCurrentZone();
+    } catch (error, stackTrace) {
+      XlyLogger.error('MyApp 初始化失败', error, stackTrace);
+      // 初始化失败是致命的：直接 rethrow 让 main 看到，避免被 onError 沉默吞掉
+      rethrow;
+    }
+  }
+
+  /// 安装 root-level 异常 hook，作为 `runZonedGuarded` 的轻量替代。
+  ///
+  /// 同时装两个 hook 覆盖 Flutter 几乎所有异常源：
+  /// - `FlutterError.onError`：Widget 构建/布局/绘制阶段、framework 异步错误
+  /// - `PlatformDispatcher.instance.onError`：所有 Zone 抛到 root 的未捕获异步异常
+  ///   （Flutter 3.3+ 引入的 root-level hook，不依赖任何 Zone）
+  ///
+  /// 检测策略——只在 hook 仍是默认值时安装，避免覆盖用户自定义逻辑：
+  /// - `FlutterError.onError` 默认是 `FlutterError.presentError`，不等于它就跳过
+  /// - `PlatformDispatcher.instance.onError` 默认是 `null`，不为 `null` 就跳过
+  ///
+  /// 高级用户接 Sentry / Crashlytics 时可走两条路：
+  /// 1. 传入 `onError` 参数：xly 自己装 hook，把异常 sink 给用户的 callback
+  /// 2. 自己手动设 `FlutterError.onError` / `PlatformDispatcher.onError` 后再调 initialize：
+  ///    xly 检测到已设置就跳过，完全交回用户掌控
+  static void _installErrorHandlers(
+      void Function(Object error, StackTrace stack)? sink) {
+    final defaultSink = sink ??
+        (Object e, StackTrace st) =>
+            XlyLogger.error('未捕获异常 (PlatformDispatcher/FlutterError)', e, st);
+
+    if (FlutterError.onError == FlutterError.presentError) {
+      FlutterError.onError = (FlutterErrorDetails details) {
+        FlutterError.presentError(details);
+        defaultSink(details.exception, details.stack ?? StackTrace.empty);
+      };
+    } else {
+      XlyLogger.warning('FlutterError.onError 已被外部设置，xly 跳过自动安装；'
+          '若想接管 widget 树异常，请把异常 sink 通过 MyApp.initialize(onError: ...) 注入。');
+    }
+
+    if (PlatformDispatcher.instance.onError == null) {
+      PlatformDispatcher.instance.onError = (Object error, StackTrace stack) {
+        defaultSink(error, stack);
+        return true; // 标记已处理，避免再 propagate 到 root error handler
+      };
+    } else {
+      XlyLogger.warning('PlatformDispatcher.instance.onError 已被外部设置，xly 跳过自动安装；'
+          '若想接管异步异常，请把异常 sink 通过 MyApp.initialize(onError: ...) 注入。');
+    }
   }
 
   static Future<void> _initializeWindowManager(

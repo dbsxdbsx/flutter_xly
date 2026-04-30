@@ -1,3 +1,25 @@
+## 0.38.2 - 2026-04-30
+
+### ⚠️ Behavior Change
+
+- **`MyApp.initialize` 默认关闭 Zone Guard**：`enableZoneGuard` 默认值由 `true`（0.37.0 引入）改回 `false`。理由：Zone Guard 是"应用边界"决策，库默认开会让用户在 main 中手写 `WidgetsFlutterBinding.ensureInitialized()` 或自包 `runZonedGuarded`（Sentry / Crashlytics 标准接入流程）时直接抛 `Zone mismatch`。详细决策记录见 [`.doc/error_handling.md`](.doc/error_handling.md)
+- **`WidgetsFlutterBinding.ensureInitialized()` 前置到 Zone 之外**：保证 binding 与 `runApp` 永远同 Zone。即使老用户显式 `enableZoneGuard: true`，binding 也已经在调用方 Zone 完成，不会再有 mismatch
+- **迁移路径**：
+  - 大多数用户：升级到 0.38.2 后什么都不用改，xly 默认装好 `FlutterError.onError` + `PlatformDispatcher.onError` 兜底
+  - 0.37 默认行为下显式依赖 Zone Guard 的用户：保持 `enableZoneGuard: true` 即可（参数仍然保留）
+  - 接 Sentry / Crashlytics 等场景：推荐改用新的 `onError` 参数，一行替代旧的 `runZonedGuarded` 模板
+
+### Enhanced
+
+- **`MyApp.initialize` 新增 `installErrorHandlers` 参数（默认 `true`）**：开箱即用地装好两个 root-level 异常 hook——`FlutterError.onError`（覆盖 widget 树、framework 异步异常）+ `PlatformDispatcher.instance.onError`（覆盖所有未捕获异步异常，Flutter 3.3+ 推荐方案，无需 Zone）。默认 sink 走 `XlyLogger.error`
+- **`MyApp.initialize` 新增 `onError` 参数**：自定义异常 sink，传入即可一行接入 Sentry / Crashlytics / 自有日志体系——`onError: (e, st) => Sentry.captureException(e, stackTrace: st)`，无需手写 `FlutterError.onError = ...` + `PlatformDispatcher.onError = ...` 两段模板
+- **`_installErrorHandlers` 检测策略不抢用户既有 hook**：`FlutterError.onError != FlutterError.presentError` 或 `PlatformDispatcher.instance.onError != null` 时，xly 跳过自动安装并打 warning，把控制权完全交给用户
+
+### Docs
+
+- **新增 [`.doc/error_handling.md`](.doc/error_handling.md)**：完整记录异常处理与 Zone 决策——Flutter 异常体系、`runZonedGuarded` vs `PlatformDispatcher.onError` 对比、xly 的设计决策、四种推荐姿势（普通用户 / 接 Sentry / 自有体系 / 必须用 Zone）、`Zone mismatch` 踩坑场景与解析、版本演进记录、API 速查与行为矩阵
+- **README**：把 "Zone Guard（默认开启）" 小节整段重写为 "异常处理（开箱即用）"，加入 `onError` / `installErrorHandlers` 用法示例与新版 `enableZoneGuard` 默认行为说明；贡献者文档段补 `.doc/error_handling.md` 链接
+
 ## 0.38.1 - 2026-04-30
 
 ### Fixed
