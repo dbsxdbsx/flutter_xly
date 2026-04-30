@@ -1,6 +1,6 @@
 name: xly
 description: "A Test Flutter Package， DO NOT USE IT at present"
-version: 0.37.2
+version: 0.38.0
 homepage: https://github.com/dbsxdbsx/flutter_xly
 repository: https://github.com/dbsxdbsx/flutter_xly
 
@@ -57,3 +57,23 @@ executables:
   rename: rename
   generate: generate
   win_setup: win_setup
+
+# XLY 的 Windows 原生插件声明。
+# 其他平台保持 dart-only，仅 Windows 端提供原生实现（原生输入框覆盖，以解决语音/UIA/TSF 捕获问题）。
+#
+# === [TEMP-DISABLED for path override consumers] ===
+# 当前 working tree 缺少 windows/ 目录里的 native 实现（在 stash@{0} 里），
+# 而以 path override 方式接入本包的下游项目（如 meng_ru_ling_shi）会让 Flutter
+# 把 xly 当成 native windows plugin，CMake 的 add_subdirectory(.../xly/windows)
+# 找不到目录就会编译失败。临时把整段 plugin 声明注释掉，与 pub.dev 上已发布的
+# dart-only 包行为一致（path override 兼容路径）。
+# 恢复方式：从 stash@{0} 把 windows/ 目录 checkout 出来后，撤销本注释即可：
+#   git checkout "stash@{0}" -- windows/
+#   git checkout -- pubspec.yaml   # 撤销本临时注释
+# flutter:
+#   plugin:
+#     platforms:
+#       windows:
+#         # 使用 XlyPluginCApi 命名，令自动生成的 generated_plugin_registrant.cc
+#         # 直接命中已实现的 xly_plugin_c_api.{h,cpp}。
+#         pluginClass: XlyPluginCApi

@@ -746,7 +746,7 @@ class FloatBoxController extends GetxController {
   }
 }
 
-class _FloatBoxPanel extends StatelessWidget {
+class _FloatBoxPanel extends StatefulWidget {
   final Key? panelKey;
   // 缩放基础值（用于 ScreenUtil 计算）
   final double panelWidthInput;
@@ -792,22 +792,29 @@ class _FloatBoxPanel extends StatelessWidget {
   }
 
   @override
+  State<_FloatBoxPanel> createState() => _FloatBoxPanelState();
+}
+
+class _FloatBoxPanelState extends State<_FloatBoxPanel> {
+  final GlobalKey _panelRenderKey = GlobalKey();
+
+  @override
   Widget build(BuildContext context) {
-    final ctrl = Get.find<FloatBoxController>(tag: panelKey?.toString());
+    final ctrl = Get.find<FloatBoxController>(tag: widget.panelKey?.toString());
 
     // 先计算并更新缩放值，确保后续 updateScreenSize 中的位置限位
     // 使用正确的 effectivePanelHeight（依赖 currentPanelWidth）
-    final scaledPanelWidth = finalPanelWidth.w;
-    final scaledBorderWidth = finalBorderWidth.w;
-    final scaledIconSize = finalIconSize.sp;
+    final scaledPanelWidth = widget.finalPanelWidth.w;
+    final scaledBorderWidth = widget.finalBorderWidth.w;
+    final scaledIconSize = widget.finalIconSize.sp;
     final scaledBorderRadius = BorderRadius.only(
-      topLeft: Radius.circular(finalBorderRadius.topLeft.x.r),
-      topRight: Radius.circular(finalBorderRadius.topRight.x.r),
-      bottomLeft: Radius.circular(finalBorderRadius.bottomLeft.x.r),
-      bottomRight: Radius.circular(finalBorderRadius.bottomRight.x.r),
+      topLeft: Radius.circular(widget.finalBorderRadius.topLeft.x.r),
+      topRight: Radius.circular(widget.finalBorderRadius.topRight.x.r),
+      bottomLeft: Radius.circular(widget.finalBorderRadius.bottomLeft.x.r),
+      bottomRight: Radius.circular(widget.finalBorderRadius.bottomRight.x.r),
     );
-    final scaledPanelOpenOffset = finalPanelOpenOffset.w;
-    final scaledDockOffset = finalDockOffset.w;
+    final scaledPanelOpenOffset = widget.finalPanelOpenOffset.w;
+    final scaledDockOffset = widget.finalDockOffset.w;
 
     ctrl.updateScaledDimensions(
       scaledPanelWidth: scaledPanelWidth,
@@ -828,6 +835,7 @@ class _FloatBoxPanel extends StatelessWidget {
           left: ctrl.xOffset.value,
           curve: ctrl.dockAnimCurve,
           child: AnimatedContainer(
+            key: _panelRenderKey,
             duration: Duration(milliseconds: ctrl.panelAnimDuration),
             width: ctrl.effectivePanelWidth,
             height: ctrl.effectivePanelHeight,
@@ -845,6 +853,7 @@ class _FloatBoxPanel extends StatelessWidget {
   /// 构建面板内部布局（handle + items），根据展开方向和 RTL 排列
   Widget _buildPanelLayout(FloatBoxController ctrl) {
     final handleButton = GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onPanEnd: (_) => ctrl.onPanEndGesture(),
       onPanStart: (d) => ctrl.onPanStartGesture(d.globalPosition),
       onPanUpdate: (d) => ctrl.onPanUpdateGesture(d.globalPosition),
@@ -878,7 +887,9 @@ class _FloatBoxPanel extends StatelessWidget {
         final bool isDisabledLinked = iconBtnDisabledMatch;
         final bool forcedHighlighted =
             item.id != null && highlightedSet.contains(item.id);
-        return GestureDetector(
+        final Widget gestureWidget = GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onPanEnd: (_) => ctrl.onPanEndGesture(),
           onPanStart: (d) => ctrl.onPanStartGesture(d.globalPosition),
           onPanUpdate: (d) => ctrl.onPanUpdateGesture(d.globalPosition),
           onTap: () async {
@@ -910,6 +921,17 @@ class _FloatBoxPanel extends StatelessWidget {
             ),
           ),
         );
+        // 仅在 tooltip 非空时套 Tooltip，避免无意义的 widget 开销。
+        // 0.38.0 起 FloatPanelIconBtn.tooltip 完整渲染与智能避让（此前字段未使用）。
+        final tip = item.tooltip;
+        return (tip != null && tip.isNotEmpty)
+            ? _FloatPanelTooltip(
+                message: tip,
+                controller: ctrl,
+                panelKey: _panelRenderKey,
+                child: gestureWidget,
+              )
+            : gestureWidget;
       });
 
       // RTL 模式下反转按钮视觉顺序，使 btn1 紧挨 handle
@@ -935,6 +957,556 @@ class _FloatBoxPanel extends StatelessWidget {
       direction: ctrl._isHorizontalExpand ? Axis.vertical : Axis.horizontal,
       children: children,
     );
+  }
+}
+
+class _FloatPanelTooltip extends StatefulWidget {
+  final String message;
+  final Widget child;
+  final FloatBoxController controller;
+  final GlobalKey panelKey;
+
+  const _FloatPanelTooltip({
+    required this.message,
+    required this.child,
+    required this.controller,
+    required this.panelKey,
+  });
+
+  @override
+  State<_FloatPanelTooltip> createState() => _FloatPanelTooltipState();
+}
+
+class _FloatPanelTooltipState extends State<_FloatPanelTooltip> {
+  static const Duration _waitDuration = Duration(milliseconds: 400);
+  static const Duration _fadeInDuration = Duration(milliseconds: 120);
+  static const Duration _fadeOutDuration = Duration(milliseconds: 120);
+
+  // 用 ValueNotifier 通知 overlay 触发 AnimatedOpacity 淡入/淡出。
+  final ValueNotifier<bool> _visibility = ValueNotifier<bool>(false);
+
+  Timer? _showTimer;
+  Timer? _removeTimer;
+  OverlayEntry? _overlayEntry;
+  Worker? _xWorker;
+  Worker? _yWorker;
+
+  @override
+  void didUpdateWidget(covariant _FloatPanelTooltip oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.message != widget.message) {
+      _hideImmediately();
+    }
+  }
+
+  @override
+  void dispose() {
+    _hideImmediately();
+    _visibility.dispose();
+    super.dispose();
+  }
+
+  void _scheduleTooltip() {
+    _showTimer?.cancel();
+    _showTimer = Timer(_waitDuration, _showTooltip);
+  }
+
+  void _showTooltip() {
+    if (!mounted || _overlayEntry != null) return;
+
+    final overlay = Overlay.maybeOf(context);
+    if (overlay == null) return;
+
+    final overlayObject = overlay.context.findRenderObject();
+    final targetObject = context.findRenderObject();
+    final panelObject = widget.panelKey.currentContext?.findRenderObject();
+    if (overlayObject is! RenderBox ||
+        targetObject is! RenderBox ||
+        panelObject is! RenderBox ||
+        !overlayObject.hasSize ||
+        !targetObject.hasSize ||
+        !panelObject.hasSize) {
+      return;
+    }
+
+    final targetRect = _rectInOverlay(targetObject, overlayObject);
+    final panelRect = _rectInOverlay(panelObject, overlayObject);
+    final preferVerticalPlacement = widget.controller._isHorizontalExpand;
+
+    _removeTimer?.cancel();
+    _removeTimer = null;
+    _visibility.value = false;
+    _overlayEntry = OverlayEntry(
+      builder: (context) => _FloatPanelTooltipOverlay(
+        message: widget.message,
+        targetRect: targetRect,
+        panelRect: panelRect,
+        preferVerticalPlacement: preferVerticalPlacement,
+        visibility: _visibility,
+        fadeInDuration: _fadeInDuration,
+        fadeOutDuration: _fadeOutDuration,
+      ),
+    );
+    overlay.insert(_overlayEntry!);
+    // 第一帧 opacity=0，post-frame 再切到 true 触发淡入动画。
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _overlayEntry != null) _visibility.value = true;
+    });
+
+    // 浮动条任意位置变化都视为"用户开始操作"，立刻淡出 tooltip，
+    // 避免气泡和按钮位置错位。停靠/展开收起也会改 xOffset/yOffset。
+    _xWorker = ever<double>(
+      widget.controller.xOffset,
+      (_) => _startHide(),
+    );
+    _yWorker = ever<double>(
+      widget.controller.yOffset,
+      (_) => _startHide(),
+    );
+  }
+
+  Rect _rectInOverlay(RenderBox box, RenderBox overlayBox) {
+    final topLeft = box.localToGlobal(Offset.zero, ancestor: overlayBox);
+    return topLeft & box.size;
+  }
+
+  /// 触发淡出动画，等动画结束再真正 remove overlay。
+  void _startHide() {
+    _showTimer?.cancel();
+    _showTimer = null;
+    _disposeMovementWatchers();
+    if (_overlayEntry == null) return;
+    _visibility.value = false;
+    _removeTimer?.cancel();
+    _removeTimer = Timer(_fadeOutDuration, _removeOverlay);
+  }
+
+  /// 不走动画直接销毁（用于 dispose / message 变化场景）。
+  void _hideImmediately() {
+    _showTimer?.cancel();
+    _showTimer = null;
+    _removeTimer?.cancel();
+    _removeTimer = null;
+    _disposeMovementWatchers();
+    _visibility.value = false;
+    _removeOverlay();
+  }
+
+  void _disposeMovementWatchers() {
+    _xWorker?.dispose();
+    _yWorker?.dispose();
+    _xWorker = null;
+    _yWorker = null;
+  }
+
+  void _removeOverlay() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      tooltip: widget.message,
+      child: MouseRegion(
+        onEnter: (_) => _scheduleTooltip(),
+        onExit: (_) => _startHide(),
+        child: widget.child,
+      ),
+    );
+  }
+}
+
+/// 气泡相对浮动条的位置（"哪一侧的尾巴指向按钮"）。
+enum _FloatPanelTooltipSide { left, right, top, bottom }
+
+/// Tooltip overlay：先离屏测量气泡尺寸，再按计算好的位置和尾巴绘制。
+class _FloatPanelTooltipOverlay extends StatefulWidget {
+  final String message;
+  final Rect targetRect;
+  final Rect panelRect;
+  final bool preferVerticalPlacement;
+  final ValueListenable<bool> visibility;
+  final Duration fadeInDuration;
+  final Duration fadeOutDuration;
+
+  const _FloatPanelTooltipOverlay({
+    required this.message,
+    required this.targetRect,
+    required this.panelRect,
+    required this.preferVerticalPlacement,
+    required this.visibility,
+    required this.fadeInDuration,
+    required this.fadeOutDuration,
+  });
+
+  @override
+  State<_FloatPanelTooltipOverlay> createState() =>
+      _FloatPanelTooltipOverlayState();
+}
+
+class _FloatPanelTooltipOverlayState extends State<_FloatPanelTooltipOverlay> {
+  static const double _gap = 6.0;
+  static const double _screenMargin = 8.0;
+  static const double _maxBubbleWidth = 240.0;
+  static const double _minBubbleWidth = 60.0;
+  static const double _tailLength = 6.0;
+  static const double _tailHalfWidth = 5.0;
+  // 与 Material 默认 Tooltip 一致：圆角 4，颜色 0xE6616161（亮色主题）/ 0xE6FFFFFF（暗色主题）
+  static const double _bubbleCornerRadius = 4.0;
+  static const Color _bubbleColorLight = Color(0xE6616161);
+  static const Color _bubbleColorDark = Color(0xE6FFFFFF);
+
+  final GlobalKey _bubbleKey = GlobalKey();
+  Size? _bubbleSize;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _measureBubble());
+  }
+
+  void _measureBubble() {
+    if (!mounted) return;
+    final renderObject = _bubbleKey.currentContext?.findRenderObject();
+    if (renderObject is! RenderBox || !renderObject.hasSize) return;
+    final size = renderObject.size;
+    if (_bubbleSize == size) return;
+    setState(() => _bubbleSize = size);
+  }
+
+  /// 根据浮动条所在一侧 + 当前 hover 按钮的位置，决定气泡可用最大宽度。
+  /// 不能跨过浮动条本身，否则气泡会盖在浮动条上。
+  double _resolveMaxWidth(Size overlaySize) {
+    if (widget.preferVerticalPlacement) {
+      final available = overlaySize.width - (_screenMargin * 2);
+      return _clampWidth(available);
+    }
+
+    final leftSpace =
+        widget.panelRect.left - _screenMargin - _gap - _tailLength;
+    final rightSpace = overlaySize.width -
+        widget.panelRect.right -
+        _screenMargin -
+        _gap -
+        _tailLength;
+    final preferRight = widget.panelRect.center.dx < overlaySize.width / 2;
+    final preferred = preferRight ? rightSpace : leftSpace;
+    final fallback = rightSpace > leftSpace ? rightSpace : leftSpace;
+    final available = preferred >= _minBubbleWidth ? preferred : fallback;
+    return _clampWidth(available);
+  }
+
+  double _clampWidth(double value) {
+    if (value < _minBubbleWidth) return _minBubbleWidth;
+    if (value > _maxBubbleWidth) return _maxBubbleWidth;
+    return value;
+  }
+
+  /// 选定气泡放在哪一侧。preferVerticalPlacement = true 时只考虑上下，否则只考虑左右。
+  /// 优先放在浮动条远离屏幕中心的反方向，避免和浮动条重叠。
+  _FloatPanelTooltipSide _resolveSide(Size overlaySize, Size bubbleSize) {
+    if (widget.preferVerticalPlacement) {
+      final spaceBelow = overlaySize.height -
+          widget.panelRect.bottom -
+          _gap -
+          _tailLength -
+          _screenMargin;
+      final spaceAbove =
+          widget.panelRect.top - _gap - _tailLength - _screenMargin;
+      final preferBelow = widget.panelRect.center.dy < overlaySize.height / 2;
+
+      if (preferBelow && spaceBelow >= bubbleSize.height) {
+        return _FloatPanelTooltipSide.bottom;
+      }
+      if (!preferBelow && spaceAbove >= bubbleSize.height) {
+        return _FloatPanelTooltipSide.top;
+      }
+      if (spaceBelow >= bubbleSize.height) return _FloatPanelTooltipSide.bottom;
+      if (spaceAbove >= bubbleSize.height) return _FloatPanelTooltipSide.top;
+      return spaceBelow >= spaceAbove
+          ? _FloatPanelTooltipSide.bottom
+          : _FloatPanelTooltipSide.top;
+    }
+
+    final spaceRight = overlaySize.width -
+        widget.panelRect.right -
+        _gap -
+        _tailLength -
+        _screenMargin;
+    final spaceLeft =
+        widget.panelRect.left - _gap - _tailLength - _screenMargin;
+    final preferRight = widget.panelRect.center.dx < overlaySize.width / 2;
+
+    if (preferRight && spaceRight >= bubbleSize.width) {
+      return _FloatPanelTooltipSide.right;
+    }
+    if (!preferRight && spaceLeft >= bubbleSize.width) {
+      return _FloatPanelTooltipSide.left;
+    }
+    if (spaceRight >= bubbleSize.width) return _FloatPanelTooltipSide.right;
+    if (spaceLeft >= bubbleSize.width) return _FloatPanelTooltipSide.left;
+    return spaceRight >= spaceLeft
+        ? _FloatPanelTooltipSide.right
+        : _FloatPanelTooltipSide.left;
+  }
+
+  /// 计算气泡左上角在 overlay 内的位置。垂直方向上按按钮中心对齐，
+  /// 水平方向上按按钮中心对齐；越界时夹回到屏幕安全区。
+  Offset _calculateBubbleOrigin(
+      Size overlaySize, Size bubbleSize, _FloatPanelTooltipSide side) {
+    double left;
+    double top;
+    switch (side) {
+      case _FloatPanelTooltipSide.right:
+        left = widget.panelRect.right + _gap + _tailLength;
+        top = widget.targetRect.center.dy - bubbleSize.height / 2;
+        break;
+      case _FloatPanelTooltipSide.left:
+        left = widget.panelRect.left - _gap - _tailLength - bubbleSize.width;
+        top = widget.targetRect.center.dy - bubbleSize.height / 2;
+        break;
+      case _FloatPanelTooltipSide.bottom:
+        left = widget.targetRect.center.dx - bubbleSize.width / 2;
+        top = widget.panelRect.bottom + _gap + _tailLength;
+        break;
+      case _FloatPanelTooltipSide.top:
+        left = widget.targetRect.center.dx - bubbleSize.width / 2;
+        top = widget.panelRect.top - _gap - _tailLength - bubbleSize.height;
+        break;
+    }
+
+    final maxLeft = overlaySize.width - _screenMargin - bubbleSize.width;
+    final maxTop = overlaySize.height - _screenMargin - bubbleSize.height;
+    final clampedLeft =
+        maxLeft >= _screenMargin ? left.clamp(_screenMargin, maxLeft) : left;
+    final clampedTop =
+        maxTop >= _screenMargin ? top.clamp(_screenMargin, maxTop) : top;
+    return Offset(clampedLeft.toDouble(), clampedTop.toDouble());
+  }
+
+  /// 尾巴尖端在 overlay 内的全局坐标，应正对按钮中心一侧的浮动条边缘。
+  Offset _tailTipGlobal(_FloatPanelTooltipSide side) {
+    switch (side) {
+      case _FloatPanelTooltipSide.right:
+        return Offset(widget.panelRect.right, widget.targetRect.center.dy);
+      case _FloatPanelTooltipSide.left:
+        return Offset(widget.panelRect.left, widget.targetRect.center.dy);
+      case _FloatPanelTooltipSide.bottom:
+        return Offset(widget.targetRect.center.dx, widget.panelRect.bottom);
+      case _FloatPanelTooltipSide.top:
+        return Offset(widget.targetRect.center.dx, widget.panelRect.top);
+    }
+  }
+
+  Widget _buildBubbleContent(BuildContext context, double maxWidth) {
+    final tooltipTheme = TooltipTheme.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final defaultTextColor = isDark ? Colors.black : Colors.white;
+    final defaultTextStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: defaultTextColor,
+              fontSize: 14,
+            ) ??
+        TextStyle(color: defaultTextColor, fontSize: 14);
+    final textStyle = tooltipTheme.textStyle ?? defaultTextStyle;
+    final padding = tooltipTheme.padding ??
+        const EdgeInsets.symmetric(horizontal: 16, vertical: 4);
+
+    return Container(
+      key: _bubbleKey,
+      constraints: BoxConstraints(
+        maxWidth: maxWidth,
+        minWidth: _minBubbleWidth,
+      ),
+      padding: padding,
+      child: Text(
+        widget.message,
+        style: textStyle,
+        softWrap: true,
+      ),
+    );
+  }
+
+  /// 解析气泡背景色：优先取 TooltipTheme.decoration 上的颜色，否则按主题给默认值。
+  Color _resolveBubbleColor(BuildContext context) {
+    final tooltipTheme = TooltipTheme.of(context);
+    final decoration = tooltipTheme.decoration;
+    if (decoration is BoxDecoration && decoration.color != null) {
+      return decoration.color!;
+    }
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return isDark ? _bubbleColorDark : _bubbleColorLight;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned.fill(
+      child: IgnorePointer(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final overlaySize = Size(
+              constraints.maxWidth,
+              constraints.maxHeight,
+            );
+            final maxWidth = _resolveMaxWidth(overlaySize);
+            final bubbleContent = _buildBubbleContent(context, maxWidth);
+            final bubbleColor = _resolveBubbleColor(context);
+
+            // 第一帧：用 Offstage 让气泡走 layout 但不绘制，从而拿到真实尺寸。
+            if (_bubbleSize == null) {
+              return Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Positioned(
+                    left: 0,
+                    top: 0,
+                    child: Offstage(
+                      offstage: true,
+                      child: bubbleContent,
+                    ),
+                  ),
+                ],
+              );
+            }
+
+            // 第二帧：按测量结果定位 + 画带尾巴的气泡。
+            final bubbleSize = _bubbleSize!;
+            final side = _resolveSide(overlaySize, bubbleSize);
+            final origin =
+                _calculateBubbleOrigin(overlaySize, bubbleSize, side);
+            final tailTipGlobal = _tailTipGlobal(side);
+            final tailTipLocal = tailTipGlobal - origin;
+
+            return Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Positioned(
+                  left: origin.dx,
+                  top: origin.dy,
+                  child: ValueListenableBuilder<bool>(
+                    valueListenable: widget.visibility,
+                    builder: (context, visible, child) => AnimatedOpacity(
+                      opacity: visible ? 1.0 : 0.0,
+                      duration: visible
+                          ? widget.fadeInDuration
+                          : widget.fadeOutDuration,
+                      curve: Curves.easeOut,
+                      child: child,
+                    ),
+                    child: CustomPaint(
+                      painter: _FloatPanelTooltipBubblePainter(
+                        side: side,
+                        tailTipLocal: tailTipLocal,
+                        tailHalfWidth: _tailHalfWidth,
+                        cornerRadius: _bubbleCornerRadius,
+                        color: bubbleColor,
+                      ),
+                      child: bubbleContent,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+/// 把圆角矩形和小尾巴合并成一个 Path 一次性绘制，避免接缝。
+class _FloatPanelTooltipBubblePainter extends CustomPainter {
+  final _FloatPanelTooltipSide side;
+  final Offset tailTipLocal;
+  final double tailHalfWidth;
+  final double cornerRadius;
+  final Color color;
+
+  const _FloatPanelTooltipBubblePainter({
+    required this.side,
+    required this.tailTipLocal,
+    required this.tailHalfWidth,
+    required this.cornerRadius,
+    required this.color,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill
+      ..isAntiAlias = true;
+
+    final bubblePath = Path()
+      ..addRRect(
+        RRect.fromRectAndRadius(
+          Offset.zero & size,
+          Radius.circular(cornerRadius),
+        ),
+      );
+
+    final tailPath = _buildTailPath(size);
+    final combined = Path.combine(PathOperation.union, bubblePath, tailPath);
+    canvas.drawPath(combined, paint);
+  }
+
+  Path _buildTailPath(Size size) {
+    final path = Path();
+    final minBaseAxis = cornerRadius + 2.0;
+
+    switch (side) {
+      case _FloatPanelTooltipSide.right:
+        // 气泡在浮动条右侧；尾巴从气泡左边缘指向浮动条边缘。
+        final maxBase = size.height - cornerRadius - 2.0;
+        final baseY = maxBase >= minBaseAxis
+            ? tailTipLocal.dy.clamp(minBaseAxis, maxBase)
+            : size.height / 2;
+        path.moveTo(0, baseY - tailHalfWidth);
+        path.lineTo(tailTipLocal.dx, tailTipLocal.dy);
+        path.lineTo(0, baseY + tailHalfWidth);
+        path.close();
+        break;
+      case _FloatPanelTooltipSide.left:
+        final maxBase = size.height - cornerRadius - 2.0;
+        final baseY = maxBase >= minBaseAxis
+            ? tailTipLocal.dy.clamp(minBaseAxis, maxBase)
+            : size.height / 2;
+        path.moveTo(size.width, baseY - tailHalfWidth);
+        path.lineTo(tailTipLocal.dx, tailTipLocal.dy);
+        path.lineTo(size.width, baseY + tailHalfWidth);
+        path.close();
+        break;
+      case _FloatPanelTooltipSide.bottom:
+        final maxBase = size.width - cornerRadius - 2.0;
+        final baseX = maxBase >= minBaseAxis
+            ? tailTipLocal.dx.clamp(minBaseAxis, maxBase)
+            : size.width / 2;
+        path.moveTo(baseX - tailHalfWidth, 0);
+        path.lineTo(tailTipLocal.dx, tailTipLocal.dy);
+        path.lineTo(baseX + tailHalfWidth, 0);
+        path.close();
+        break;
+      case _FloatPanelTooltipSide.top:
+        final maxBase = size.width - cornerRadius - 2.0;
+        final baseX = maxBase >= minBaseAxis
+            ? tailTipLocal.dx.clamp(minBaseAxis, maxBase)
+            : size.width / 2;
+        path.moveTo(baseX - tailHalfWidth, size.height);
+        path.lineTo(tailTipLocal.dx, tailTipLocal.dy);
+        path.lineTo(baseX + tailHalfWidth, size.height);
+        path.close();
+        break;
+    }
+    return path;
+  }
+
+  @override
+  bool shouldRepaint(covariant _FloatPanelTooltipBubblePainter oldDelegate) {
+    return side != oldDelegate.side ||
+        tailTipLocal != oldDelegate.tailTipLocal ||
+        tailHalfWidth != oldDelegate.tailHalfWidth ||
+        cornerRadius != oldDelegate.cornerRadius ||
+        color != oldDelegate.color;
   }
 }
 

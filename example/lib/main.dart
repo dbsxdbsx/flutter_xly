@@ -298,16 +298,19 @@ List<FloatPanelIconBtn> defaultFloatPanelItems() => [
       FloatPanelIconBtn(
         icon: Icons.filter_1,
         id: 'page1',
+        tooltip: '打开组件展示页面。把浮动条拖到屏幕左侧时，这条提示应显示在浮动条右侧。',
         onTap: () => Get.toNamed(MyRoutes.page1),
       ),
       FloatPanelIconBtn(
         icon: Icons.filter_2,
         id: 'page2',
+        tooltip: '打开样式测试页面。把浮动条拖到屏幕右侧时，这条提示应显示在浮动条左侧。',
         onTap: () => Get.toNamed(MyRoutes.page2),
       ),
       FloatPanelIconBtn(
         icon: Icons.filter_3,
         id: 'page3',
+        tooltip: '打开弹窗对话页面。启用四边停靠并拖到顶部或底部后，可验证横向浮动条的上下避让。',
         onTap: () => Get.toNamed(MyRoutes.page3),
       ),
     ];

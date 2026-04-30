@@ -1,3 +1,24 @@
+## 0.38.0 - 2026-04-30
+
+### New Features
+
+- **`FloatPanelIconBtn.tooltip` 完整体验**：此前数据模型已暴露 `tooltip` 字段，但渲染层未读取，悬停无反馈；本版起非空即显示提示，并采用自绘气泡（带小尾巴），视觉与默认 Material `Tooltip` 对齐（背景色、圆角、字号、内边距可继承 `TooltipTheme`）。
+- **智能避让**：竖向浮动条时按整条面板与屏幕边缘在左或右侧展示气泡，避免盖住浮动条；上下停靠且横向展开时改为在面板上方或下方展示。
+- **交互细节**：悬停约 400ms 后出现；浮动条 `xOffset` / `yOffset` 变化（拖动、贴边动画、展开收起）时自动淡出并移除，避免气泡与按钮错位；短淡入淡出动画；`_FloatBoxPanel` 改为 `StatefulWidget` 稳定测量；手柄与图标按钮使用 `HitTestBehavior.opaque`，收起态更易点中。
+
+### Example
+
+- `defaultFloatPanelItems` 为三个入口按钮补充可验收的 tooltip 文案。
+- Page11：横向展开方向 / 开关 / 停靠模式改为 `Obx` 单一按钮切换；页面改为 `SingleChildScrollView`，避免控件区增高后底部溢出。
+
+### Chore
+
+- **`pubspec.yaml`**：保留 Windows 原生插件整段声明的临时注释说明（path override 消费方缺少 `windows/` 子树时的兼容策略），与 pub.dev dart-only 发布形态一致。
+
+### Docs
+
+- **`.doc/float_panel_usage.md`**：补充 `FloatPanelIconBtn.tooltip` 行为说明（悬停延迟、智能避让、消失时机、`TooltipTheme` 继承）。
+
 ## 0.37.2 - 2026-04-26
 
 ### Fixed
