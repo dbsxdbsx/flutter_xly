@@ -57,8 +57,9 @@ extension MySelectorResultX<T> on MySelectorResult<T> {
   ///   selectedItem = changed.item; // 直接获取完整 item，无需 firstWhere
   /// }
   /// ```
-  MySelectorValueChanged<T>? get changed =>
-      this is MySelectorValueChanged<T> ? this as MySelectorValueChanged<T> : null;
+  MySelectorValueChanged<T>? get changed => this is MySelectorValueChanged<T>
+      ? this as MySelectorValueChanged<T>
+      : null;
 }
 
 // ============================================================================

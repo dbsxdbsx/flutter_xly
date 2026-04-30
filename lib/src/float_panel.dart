@@ -1076,7 +1076,7 @@ class _FloatPanelTooltipState extends State<_FloatPanelTooltip> {
     _showTimer = null;
     _disposeMovementWatchers();
     if (_overlayEntry == null) return;
-    _visibility.value = false;
+    _setVisibility(false);
     _removeTimer?.cancel();
     _removeTimer = Timer(_fadeOutDuration, _removeOverlay);
   }
@@ -1088,8 +1088,26 @@ class _FloatPanelTooltipState extends State<_FloatPanelTooltip> {
     _removeTimer?.cancel();
     _removeTimer = null;
     _disposeMovementWatchers();
-    _visibility.value = false;
+    _setVisibility(false);
     _removeOverlay();
+  }
+
+  void _setVisibility(bool visible) {
+    if (_visibility.value == visible) return;
+
+    void apply() {
+      if (!mounted || _visibility.value == visible) return;
+      _visibility.value = visible;
+    }
+
+    // 窗口缩放会在 FloatBoxPanel.build 期间同步更新位置；位置监听此时隐藏
+    // tooltip 会要求 overlay 重建，必须延后到本帧结束后再通知。
+    if (SchedulerBinding.instance.schedulerPhase ==
+        SchedulerPhase.persistentCallbacks) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => apply());
+      return;
+    }
+    apply();
   }
 
   void _disposeMovementWatchers() {
@@ -1146,16 +1164,37 @@ class _FloatPanelTooltipOverlay extends StatefulWidget {
 }
 
 class _FloatPanelTooltipOverlayState extends State<_FloatPanelTooltipOverlay> {
-  static const double _gap = 6.0;
-  static const double _screenMargin = 8.0;
-  static const double _maxBubbleWidth = 240.0;
-  static const double _minBubbleWidth = 60.0;
-  static const double _tailLength = 6.0;
-  static const double _tailHalfWidth = 5.0;
-  // 与 Material 默认 Tooltip 一致：圆角 4，颜色 0xE6616161（亮色主题）/ 0xE6FFFFFF（暗色主题）
-  static const double _bubbleCornerRadius = 4.0;
+  // --- 设计稿基础值（与 Material 默认 Tooltip 风格一致）---
+  // 通过 ScreenUtil 在运行时缩放，避免在窗口缩放后 tooltip 游离于 FloatPanel
+  // 主体的尺寸体系外。横向 layout 用 .w，对称几何与圆角用 .r，字号用 .sp。
+  static const double _kBaseGap = 6.0;
+  static const double _kBaseScreenMargin = 8.0;
+  // 默认"理智上限"：足够装下大多数 tooltip 一行，太长才换行。
+  // 调用方可通过 TooltipTheme.constraints.maxWidth 覆盖此默认值。
+  static const double _kBaseMaxBubbleWidth = 320.0;
+  // _kBaseMinBubbleWidth 仅用于"哪一侧空间够"的判断阈值，不再作用到气泡的
+  // BoxConstraints.minWidth，避免短文本被强行撑宽。
+  static const double _kBaseMinBubbleWidth = 60.0;
+  static const double _kBaseTailLength = 6.0;
+  static const double _kBaseTailHalfWidth = 5.0;
+  static const double _kBaseBubbleCornerRadius = 4.0;
+  static const double _kBaseTailSafeMargin = 2.0;
+  static const double _kBaseDefaultFontSize = 14.0;
+  static const double _kBaseDefaultPaddingH = 16.0;
+  static const double _kBaseDefaultPaddingV = 4.0;
+  // 与 Material 默认 Tooltip 一致的颜色（亮色主题 / 暗色主题）
   static const Color _bubbleColorLight = Color(0xE6616161);
   static const Color _bubbleColorDark = Color(0xE6FFFFFF);
+
+  // --- 运行时缩放后的尺寸（每次 build 重取，跟随 ScreenUtil 当前比例）---
+  double get _gap => _kBaseGap.w;
+  double get _screenMargin => _kBaseScreenMargin.w;
+  double get _maxBubbleWidth => _kBaseMaxBubbleWidth.w;
+  double get _minBubbleWidth => _kBaseMinBubbleWidth.w;
+  double get _tailLength => _kBaseTailLength.r;
+  double get _tailHalfWidth => _kBaseTailHalfWidth.r;
+  double get _bubbleCornerRadius => _kBaseBubbleCornerRadius.r;
+  double get _tailSafeMargin => _kBaseTailSafeMargin.r;
 
   final GlobalKey _bubbleKey = GlobalKey();
   Size? _bubbleSize;
@@ -1177,10 +1216,14 @@ class _FloatPanelTooltipOverlayState extends State<_FloatPanelTooltipOverlay> {
 
   /// 根据浮动条所在一侧 + 当前 hover 按钮的位置，决定气泡可用最大宽度。
   /// 不能跨过浮动条本身，否则气泡会盖在浮动条上。
-  double _resolveMaxWidth(Size overlaySize) {
+  ///
+  /// [effectiveMax] 是"理智上限"，由 [TooltipTheme.constraints.maxWidth]
+  /// 覆盖（若设置）或回落到 [_maxBubbleWidth]。最终 maxWidth = min(可用空间, effectiveMax)，
+  /// 兜底不小于 [_minBubbleWidth]，避免极窄屏幕下算出 0/负值。
+  double _resolveMaxWidth(Size overlaySize, double effectiveMax) {
     if (widget.preferVerticalPlacement) {
       final available = overlaySize.width - (_screenMargin * 2);
-      return _clampWidth(available);
+      return _clampMaxWidth(available, effectiveMax);
     }
 
     final leftSpace =
@@ -1194,13 +1237,15 @@ class _FloatPanelTooltipOverlayState extends State<_FloatPanelTooltipOverlay> {
     final preferred = preferRight ? rightSpace : leftSpace;
     final fallback = rightSpace > leftSpace ? rightSpace : leftSpace;
     final available = preferred >= _minBubbleWidth ? preferred : fallback;
-    return _clampWidth(available);
+    return _clampMaxWidth(available, effectiveMax);
   }
 
-  double _clampWidth(double value) {
-    if (value < _minBubbleWidth) return _minBubbleWidth;
-    if (value > _maxBubbleWidth) return _maxBubbleWidth;
-    return value;
+  /// 取 min(available, effectiveMax)，并兜底不小于 [_minBubbleWidth]。
+  /// 不再像旧实现那样把过短的可用空间硬撑回 [_minBubbleWidth] 之上当 max 用——
+  /// 那会让气泡比可用空间更宽并撞到浮动条。这里只在算出 0/负值时兜底。
+  double _clampMaxWidth(double available, double effectiveMax) {
+    final upper = available < effectiveMax ? available : effectiveMax;
+    return upper < _minBubbleWidth ? _minBubbleWidth : upper;
   }
 
   /// 选定气泡放在哪一侧。preferVerticalPlacement = true 时只考虑上下，否则只考虑左右。
@@ -1303,21 +1348,26 @@ class _FloatPanelTooltipOverlayState extends State<_FloatPanelTooltipOverlay> {
     final tooltipTheme = TooltipTheme.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final defaultTextColor = isDark ? Colors.black : Colors.white;
+    // 调用方未通过 TooltipTheme 接管时，用 ScreenUtil 缩放过的默认字号 / padding；
+    // 一旦 TooltipTheme.textStyle / padding 显式给值，认为外部要自己控制，不二次缩放。
+    final defaultFontSize = _kBaseDefaultFontSize.sp;
     final defaultTextStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: defaultTextColor,
-              fontSize: 14,
+              fontSize: defaultFontSize,
             ) ??
-        TextStyle(color: defaultTextColor, fontSize: 14);
+        TextStyle(color: defaultTextColor, fontSize: defaultFontSize);
     final textStyle = tooltipTheme.textStyle ?? defaultTextStyle;
     final padding = tooltipTheme.padding ??
-        const EdgeInsets.symmetric(horizontal: 16, vertical: 4);
+        EdgeInsets.symmetric(
+          horizontal: _kBaseDefaultPaddingH.w,
+          vertical: _kBaseDefaultPaddingV.h,
+        );
 
+    // 对齐 Material Tooltip：仅约束 maxWidth，让气泡按文本 intrinsic 宽度展示。
+    // 短文本紧贴文字，长文本自动换行。
     return Container(
       key: _bubbleKey,
-      constraints: BoxConstraints(
-        maxWidth: maxWidth,
-        minWidth: _minBubbleWidth,
-      ),
+      constraints: BoxConstraints(maxWidth: maxWidth),
       padding: padding,
       child: Text(
         widget.message,
@@ -1338,6 +1388,16 @@ class _FloatPanelTooltipOverlayState extends State<_FloatPanelTooltipOverlay> {
     return isDark ? _bubbleColorDark : _bubbleColorLight;
   }
 
+  /// 解析"理智上限"：优先取 [TooltipTheme.constraints.maxWidth]（若设置且有限），
+  /// 否则用 [_kBaseMaxBubbleWidth] 经 ScreenUtil 缩放后的值。
+  /// 这样下游 App 调 `TooltipTheme(data: TooltipThemeData(constraints: ...))`
+  /// 控制官方 Tooltip 时，FloatPanel 上的气泡也跟着变。
+  double _resolveEffectiveMaxWidth(BuildContext context) {
+    final themeMax = TooltipTheme.of(context).constraints?.maxWidth;
+    if (themeMax != null && themeMax.isFinite) return themeMax;
+    return _maxBubbleWidth;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Positioned.fill(
@@ -1348,7 +1408,8 @@ class _FloatPanelTooltipOverlayState extends State<_FloatPanelTooltipOverlay> {
               constraints.maxWidth,
               constraints.maxHeight,
             );
-            final maxWidth = _resolveMaxWidth(overlaySize);
+            final effectiveMax = _resolveEffectiveMaxWidth(context);
+            final maxWidth = _resolveMaxWidth(overlaySize, effectiveMax);
             final bubbleContent = _buildBubbleContent(context, maxWidth);
             final bubbleColor = _resolveBubbleColor(context);
 
@@ -1399,6 +1460,7 @@ class _FloatPanelTooltipOverlayState extends State<_FloatPanelTooltipOverlay> {
                         tailTipLocal: tailTipLocal,
                         tailHalfWidth: _tailHalfWidth,
                         cornerRadius: _bubbleCornerRadius,
+                        tailSafeMargin: _tailSafeMargin,
                         color: bubbleColor,
                       ),
                       child: bubbleContent,
@@ -1420,6 +1482,8 @@ class _FloatPanelTooltipBubblePainter extends CustomPainter {
   final Offset tailTipLocal;
   final double tailHalfWidth;
   final double cornerRadius;
+  // 尾巴基线避开圆角的安全裕度；和圆角一起缩放，避免小窗下尾巴撞圆角。
+  final double tailSafeMargin;
   final Color color;
 
   const _FloatPanelTooltipBubblePainter({
@@ -1427,6 +1491,7 @@ class _FloatPanelTooltipBubblePainter extends CustomPainter {
     required this.tailTipLocal,
     required this.tailHalfWidth,
     required this.cornerRadius,
+    required this.tailSafeMargin,
     required this.color,
   });
 
@@ -1452,12 +1517,12 @@ class _FloatPanelTooltipBubblePainter extends CustomPainter {
 
   Path _buildTailPath(Size size) {
     final path = Path();
-    final minBaseAxis = cornerRadius + 2.0;
+    final minBaseAxis = cornerRadius + tailSafeMargin;
 
     switch (side) {
       case _FloatPanelTooltipSide.right:
         // 气泡在浮动条右侧；尾巴从气泡左边缘指向浮动条边缘。
-        final maxBase = size.height - cornerRadius - 2.0;
+        final maxBase = size.height - cornerRadius - tailSafeMargin;
         final baseY = maxBase >= minBaseAxis
             ? tailTipLocal.dy.clamp(minBaseAxis, maxBase)
             : size.height / 2;
@@ -1467,7 +1532,7 @@ class _FloatPanelTooltipBubblePainter extends CustomPainter {
         path.close();
         break;
       case _FloatPanelTooltipSide.left:
-        final maxBase = size.height - cornerRadius - 2.0;
+        final maxBase = size.height - cornerRadius - tailSafeMargin;
         final baseY = maxBase >= minBaseAxis
             ? tailTipLocal.dy.clamp(minBaseAxis, maxBase)
             : size.height / 2;
@@ -1477,7 +1542,7 @@ class _FloatPanelTooltipBubblePainter extends CustomPainter {
         path.close();
         break;
       case _FloatPanelTooltipSide.bottom:
-        final maxBase = size.width - cornerRadius - 2.0;
+        final maxBase = size.width - cornerRadius - tailSafeMargin;
         final baseX = maxBase >= minBaseAxis
             ? tailTipLocal.dx.clamp(minBaseAxis, maxBase)
             : size.width / 2;
@@ -1487,7 +1552,7 @@ class _FloatPanelTooltipBubblePainter extends CustomPainter {
         path.close();
         break;
       case _FloatPanelTooltipSide.top:
-        final maxBase = size.width - cornerRadius - 2.0;
+        final maxBase = size.width - cornerRadius - tailSafeMargin;
         final baseX = maxBase >= minBaseAxis
             ? tailTipLocal.dx.clamp(minBaseAxis, maxBase)
             : size.width / 2;
@@ -1506,6 +1571,7 @@ class _FloatPanelTooltipBubblePainter extends CustomPainter {
         tailTipLocal != oldDelegate.tailTipLocal ||
         tailHalfWidth != oldDelegate.tailHalfWidth ||
         cornerRadius != oldDelegate.cornerRadius ||
+        tailSafeMargin != oldDelegate.tailSafeMargin ||
         color != oldDelegate.color;
   }
 }

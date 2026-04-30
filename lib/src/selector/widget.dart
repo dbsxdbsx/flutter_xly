@@ -104,7 +104,8 @@ class MySelector {
         itemBuilder: itemBuilder,
         footerBuilder: footerBuilder,
         style: effectiveStyle,
-        onSelected: (item) => dismiss(MySelectorValueChanged(item.value, item: item)),
+        onSelected: (item) =>
+            dismiss(MySelectorValueChanged(item.value, item: item)),
         onCleared: () => dismiss(MySelectorValueChanged(null)),
         onDismiss: () => dismiss(MySelectorDismissed()),
       ),

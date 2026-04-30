@@ -230,8 +230,14 @@ class FloatPanelIconBtn {
 - 仅在 `tooltip` 非空字符串时参与渲染；空或 `null` 无额外开销。
 - 悬停约 **400ms** 后出现，避免鼠标划过即刷屏。
 - 气泡为自绘圆角矩形 + **小尾巴**指向当前按钮；配色与 **Material 默认 Tooltip** 一致（亮色主题约 `Color(0xE6616161)`、暗色约 `Color(0xE6FFFFFF)`），也可通过宿主 `TooltipTheme` 覆盖 `decoration` / `textStyle` / `padding`。
+- **跟随窗口缩放**：气泡几何（`gap` / `screenMargin` / `maxWidth` / 默认水平 padding 走 `.w`，圆角与尾巴尺寸走 `.r`）、默认字号（`14.sp`）、默认垂直 padding（`4.h`）均通过 ScreenUtil 缩放，与 FloatPanel 主体的尺寸体系协调，避免小窗下游离感。
+- **宽度策略（对齐 Material `Tooltip` 默认行为）**：
+  - 气泡按文本 **intrinsic 宽度**展示——短文本紧贴文字（不再被强行撑到 `minWidth`），长文本自动换行。
+  - 默认最大宽度 **320 logical px**（基础值，经 ScreenUtil 缩放）；最终 `maxWidth = min(可用空间, 默认上限)`。
+  - 调用方可通过 `TooltipTheme(data: TooltipThemeData(constraints: BoxConstraints(maxWidth: ...)))` 覆盖默认上限——这同时控制 FloatPanel 气泡和 Flutter 官方 `Tooltip`，无需引入 xly 私有 API。
 - **位置**：竖向浮动条时优先在整条面板**远离屏幕中心的一侧**展示（例如条贴右屏则气泡在左），并与面板保留间隙，避免盖住浮动条；上下停靠且为横向展开模式时，气泡改在面板**上或下**侧择优放置。
 - **消失时机**：鼠标离开按钮、或浮动条发生**位移**（拖动、贴边动画、展开收起导致 `xOffset`/`yOffset` 变化）时淡出后移除，避免拖动后气泡仍悬在旧坐标。
+- **缩放健壮性**：窗口在缩放过程中位置同步更新会触发 tooltip 隐藏，内部用 `SchedulerPhase` 检测把 `ValueNotifier` 切换延后到 post-frame，避免 build 阶段触发 overlay 重建导致的崩溃。
 
 ### 3.3 联动规则
 

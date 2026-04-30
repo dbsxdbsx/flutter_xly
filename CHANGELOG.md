@@ -1,3 +1,21 @@
+## 0.38.1 - 2026-04-30
+
+### Fixed
+
+- **`FloatPanel` tooltip 在窗口缩放过程中崩溃**：缩放时 `_FloatBoxPanel.build` 同步更新 `xOffset/yOffset` → tooltip 监听位置变化触发 `_startHide` → 直接改 `_visibility` `ValueNotifier` 触发 overlay 重建，违反 build 阶段 widget tree 不可变约束。修复：新增 `_setVisibility()` 在 `SchedulerPhase.persistentCallbacks` 阶段把切换延后到 post-frame 执行
+
+### Enhanced
+
+- **tooltip 全面接入 ScreenUtil 缩放体系**：原本几何 / 字号 / 圆角 / 尾巴尺寸是 `static const` 裸数值，缩放后游离于 FloatPanel 主体的 `.w / .sp / .r` 体系外。改造为「`_kBase` 设计基础值 + 运行时 getter」：横向 layout（`_gap` / `_screenMargin` / `_maxBubbleWidth` / `_minBubbleWidth` / `_tailLength` 与默认水平 padding）走 `.w`；对称几何与圆角（`_tailHalfWidth` / `_bubbleCornerRadius` / `_tailSafeMargin`）走 `.r`；默认字号走 `.sp`；默认垂直 padding 走 `.h`。窗口缩小时 tooltip 跟着缩，与浮动条主体协调
+- **tooltip 默认最大宽度 240 → 320**：原默认值在中等长度文本（如 14 个汉字）下就触发折行；调宽到 320 后大多数 tooltip 一行装下，超长才换行
+- **tooltip `maxWidth` 对齐 `TooltipTheme.constraints`**：优先读 `TooltipTheme.of(context).constraints?.maxWidth`，下游 App 用 `TooltipTheme(data: TooltipThemeData(constraints: ...))` 控制官方 `Tooltip` 时，FloatPanel 气泡同步生效，零新 API
+- **去掉气泡 `minWidth` 硬约束**：对齐 Material `Tooltip` 默认行为——气泡按文本 intrinsic 宽度展示，短文本紧贴文字、长文本自动换行；`_minBubbleWidth` 退化为「哪一侧空间够」判断阈值与极窄屏幕兜底，不再作用到 `BoxConstraints.minWidth`
+- **`_FloatPanelTooltipBubblePainter` 加 `tailSafeMargin` 参数**：原本硬编码 `2.0` 的「尾巴避开圆角安全裕度」现在跟随 `.r` 缩放，避免小窗下尾巴撞圆角
+
+### Docs
+
+- **`.doc/float_panel_usage.md`**：tooltip 章节补充 ScreenUtil 缩放策略、默认 maxWidth 320、`TooltipTheme.constraints.maxWidth` 接管能力、短文本贴文字宽度等行为说明
+
 ## 0.38.0 - 2026-04-30
 
 ### New Features
