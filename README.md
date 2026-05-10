@@ -2438,9 +2438,20 @@ void main() async {
 ```dart
 // 检查是否支持自启动功能
 if (MyAutoStart.isSupported()) {
+  // 查询当前应用是否已经启用开机自启动
+  final enabled = await MyAutoStart.isEnabled(
+    // 可选：指定桌面平台的自启动条目名
+    appName: 'MyApp',
+    // 可选：指定桌面平台的包名
+    packageName: 'com.myapp.example',
+  );
+  print('当前自启动状态: $enabled');
+
   // 启用开机自启动
   final success = await MyAutoStart.setAutoStart(
     true,
+    // 可选：指定桌面平台的自启动条目名
+    appName: 'MyApp',
     // 可选：指定桌面平台的包名
     packageName: 'com.myapp.example',
   );
@@ -2460,7 +2471,9 @@ await MyAutoStart.setAutoStart(false);
 
 - Web 平台不支持此功能
 - Android 平台会打开系统设置页面
-- 桌面平台需要提供正确的包名（可选）
+- 桌面平台的 `isEnabled()` 会校验系统自启动项是否指向当前运行的可执行文件
+- 桌面平台可通过 `appName` 区分不同构建或不同实例的自启动条目，例如 Debug / Release 分开管理
+- `packageName` 仅桌面平台需要时传入，未传会使用默认格式
 
 ## App 重命名功能
 

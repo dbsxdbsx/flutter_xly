@@ -1,3 +1,14 @@
+## 0.39.0 - 2026-05-10
+
+### Enhanced
+
+- **`MyAutoStart.isEnabled` 新增真实状态查询**：桌面平台会复用 `launch_at_startup.isEnabled()` 校验系统自启动项是否指向当前运行的可执行文件，避免 Debug / Release 共用应用名时只读业务侧缓存导致误判。
+- **`MyAutoStart.setAutoStart` 新增 `appName` 参数**：桌面平台可显式指定自启动条目名称，调用方可用不同条目隔离调试版、发布版或多实例构建；未传时仍默认使用平台应用名，保持原有调用兼容。
+
+### Docs
+
+- **README**：补充 `MyAutoStart.isEnabled()` 查询示例，以及 `appName` / `packageName` 在桌面平台上的使用说明。
+
 ## 0.38.2 - 2026-04-30
 
 ### ⚠️ Behavior Change

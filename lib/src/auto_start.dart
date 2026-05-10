@@ -14,9 +14,39 @@ import 'logger.dart';
 class MyAutoStart {
   const MyAutoStart._();
 
+  /// 查询当前应用是否已启用开机自启动
+  ///
+  /// [appName] 自启动条目名称，仅桌面平台需要，默认使用平台应用名
+  /// [packageName] 包名，仅桌面平台需要，默认为 null
+  ///
+  /// 桌面平台会校验系统自启动项是否指向当前运行的可执行文件，
+  /// 因此 Debug 和 Release 版本不会因为共享同一个应用名而误判。
+  static Future<bool> isEnabled({String? appName, String? packageName}) async {
+    if (kIsWeb) {
+      XlyLogger.info('Web平台不支持查询开机自启动状态');
+      return false;
+    }
+
+    try {
+      if (MyPlatform.isDesktop) {
+        return _isDesktopAutoStartEnabled(
+          appName: appName,
+          packageName: packageName,
+        );
+      }
+
+      XlyLogger.info('当前平台不支持查询开机自启动状态');
+      return false;
+    } catch (e) {
+      XlyLogger.error('查询开机自启动状态时出错', e);
+      return false;
+    }
+  }
+
   /// 设置开机自启动
   ///
   /// [enable] 是否启用开机自启动
+  /// [appName] 自启动条目名称，仅桌面平台需要，默认使用平台应用名
   /// [packageName] 包名，仅桌面平台需要，默认为 null
   ///
   /// 返回是否设置成功
@@ -25,7 +55,11 @@ class MyAutoStart {
   /// - Web平台不支持此功能，将返回 false
   /// - 移动平台会打开系统设置页面（可能会失败）
   /// - 桌面平台需要提供正确的包名
-  static Future<bool> setAutoStart(bool enable, {String? packageName}) async {
+  static Future<bool> setAutoStart(
+    bool enable, {
+    String? appName,
+    String? packageName,
+  }) async {
     if (kIsWeb) {
       XlyLogger.info('Web平台不支持开机自启动');
       return false;
@@ -33,7 +67,11 @@ class MyAutoStart {
 
     try {
       if (MyPlatform.isDesktop) {
-        return _setDesktopAutoStart(enable, packageName);
+        return _setDesktopAutoStart(
+          enable,
+          appName: appName,
+          packageName: packageName,
+        );
       } else if (Platform.isAndroid) {
         return _setAndroidAutoStart();
       }
@@ -46,18 +84,14 @@ class MyAutoStart {
 
   /// 设置桌面平台的开机自启动
   static Future<bool> _setDesktopAutoStart(
-      bool enable, String? packageName) async {
+    bool enable, {
+    String? appName,
+    String? packageName,
+  }) async {
     try {
-      WidgetsFlutterBinding.ensureInitialized();
-      final packageInfo = await PackageInfo.fromPlatform();
-
-      // 配置自启动
-      launchAtStartup.setup(
-        appName: packageInfo.appName,
-        appPath: Platform.resolvedExecutable,
-        // 如果未提供包名，则使用默认格式：com.{appName}.app
-        packageName:
-            packageName ?? 'com.${packageInfo.appName.toLowerCase()}.app',
+      await _setupDesktopAutoStart(
+        appName: appName,
+        packageName: packageName,
       );
 
       // 根据 enable 参数启用或禁用自启动
@@ -74,6 +108,41 @@ class MyAutoStart {
       XlyLogger.error('设置桌面平台开机自启动时出错', e);
       return false;
     }
+  }
+
+  /// 查询桌面平台的开机自启动状态
+  static Future<bool> _isDesktopAutoStartEnabled({
+    String? appName,
+    String? packageName,
+  }) async {
+    try {
+      await _setupDesktopAutoStart(
+        appName: appName,
+        packageName: packageName,
+      );
+      return launchAtStartup.isEnabled();
+    } catch (e) {
+      XlyLogger.error('查询桌面平台开机自启动状态时出错', e);
+      return false;
+    }
+  }
+
+  /// 配置桌面平台自启动上下文
+  static Future<void> _setupDesktopAutoStart({
+    String? appName,
+    String? packageName,
+  }) async {
+    WidgetsFlutterBinding.ensureInitialized();
+    final packageInfo = await PackageInfo.fromPlatform();
+    final effectiveAppName = appName ?? packageInfo.appName;
+
+    launchAtStartup.setup(
+      appName: effectiveAppName,
+      appPath: Platform.resolvedExecutable,
+      // 如果未提供包名，则使用默认格式：com.{appName}.app
+      packageName:
+          packageName ?? 'com.${packageInfo.appName.toLowerCase()}.app',
+    );
   }
 
   /// 设置 Android 平台的开机自启动
