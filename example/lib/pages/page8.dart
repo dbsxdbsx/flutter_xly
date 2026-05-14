@@ -64,11 +64,29 @@ class Page8Controller extends GetxController {
   /// 请求通知权限
   void requestNotificationPermission() async {
     final myNotify = MyNotify.to;
-    final granted = await myNotify.requestPermissions();
-    if (granted) {
-      MyToast.showOk("通知权限已获得");
+    final status = await myNotify.ensurePermissions(openSettingsIfNeeded: true);
+    if (status.canShowNotifications) {
+      MyToast.showOk("通知相关开关已开启");
     } else {
-      MyToast.showError("通知权限被拒绝");
+      MyToast.showError(
+        status.openedSystemSettings ? "通知仍未完全开启，已打开系统设置页" : status.summary,
+      );
+    }
+  }
+
+  /// 打开 Windows 通知设置页
+  void openWindowsNotificationSettings() async {
+    final opened = await MyNotify.to.openWindowsNotificationSettings();
+    if (!opened) {
+      MyToast.showError("打开 Windows 通知设置失败");
+    }
+  }
+
+  /// 打开 Windows 专注助手设置页
+  void openWindowsFocusAssistSettings() async {
+    final opened = await MyNotify.to.openWindowsFocusAssistSettings();
+    if (!opened) {
+      MyToast.showError("打开 Windows 专注助手设置失败");
     }
   }
 
@@ -82,11 +100,33 @@ class Page8Controller extends GetxController {
   /// 显示通知状态
   void showNotificationStatus() {
     final myNotify = MyNotify.to;
-    final isInitialized = myNotify.isInitialized;
-    final hasPermission = myNotify.permissionGranted;
+    myNotify.checkPermissionStatus().then((status) {
+      final isInitialized = myNotify.isInitialized;
+      final focusAssistText =
+          _windowsFocusAssistText(status.windowsFocusAssistMode);
+      MyToast.showInfo(
+        "通知状态 - 初始化: ${isInitialized ? '是' : '否'}, "
+        "可显示: ${status.canShowNotifications ? '是' : '否'}, "
+        "专注助手: $focusAssistText"
+        "${status.issues.isEmpty ? '' : '\n${status.summary}'}",
+      );
+    });
+  }
 
-    MyToast.showInfo(
-        "通知状态 - 初始化: ${isInitialized ? '是' : '否'}, 权限: ${hasPermission ? '已授权' : '未授权'}");
+  String _windowsFocusAssistText(MyNotifyWindowsFocusAssistMode? mode) {
+    switch (mode) {
+      case MyNotifyWindowsFocusAssistMode.off:
+        return '关闭';
+      case MyNotifyWindowsFocusAssistMode.priorityOnly:
+        return '仅优先通知';
+      case MyNotifyWindowsFocusAssistMode.alarmsOnly:
+        return '仅限闹钟';
+      case MyNotifyWindowsFocusAssistMode.unavailable:
+        return '不可用';
+      case MyNotifyWindowsFocusAssistMode.unknown:
+      case null:
+        return '未知';
+    }
   }
 }
 
@@ -237,6 +277,28 @@ class Page8View extends GetView<Page8Controller> {
                         onPressed: controller.showNotificationStatus,
                         icon: Icons.info_outline,
                         backgroundColor: Colors.teal,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 12.h),
+                Row(
+                  children: [
+                    Expanded(
+                      child: MyButton(
+                        text: '通知设置',
+                        onPressed: controller.openWindowsNotificationSettings,
+                        icon: Icons.notifications_active,
+                        backgroundColor: Colors.blueGrey,
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: MyButton(
+                        text: '专注助手',
+                        onPressed: controller.openWindowsFocusAssistSettings,
+                        icon: Icons.do_not_disturb_on,
+                        backgroundColor: Colors.deepOrange,
                       ),
                     ),
                   ],

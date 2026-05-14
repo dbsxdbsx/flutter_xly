@@ -59,6 +59,16 @@ class XlyLogger {
     }
   }
 
+  /// 诊断日志（调试构建默认可见，Release 下仍受日志开关控制）
+  ///
+  /// 用于会影响下游集成体验的关键环境诊断，例如 Windows 系统通知被拦截、
+  /// 自动注册降级等。普通内部流水日志不要使用该级别。
+  static void diagnostic(String message) {
+    if (_enabled || kDebugMode) {
+      debugPrint('$_prefix [DIAGNOSTIC] $message');
+    }
+  }
+
   /// 错误级别日志（始终输出，用于严重错误）
   ///
   /// 注意: 错误日志不受 _enabled 控制，始终输出

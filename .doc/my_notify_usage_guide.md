@@ -71,14 +71,30 @@ await myNotify.schedule(
 bool hasPermission = myNotify.permissionGranted;
 bool isInitialized = myNotify.isInitialized;
 
-// 请求通知权限
+// 请求通知权限（移动端等；Windows 会走 ensurePermissions 语义）
 bool granted = await myNotify.requestPermissions();
-if (granted) {
-  print("通知权限已获得");
-} else {
-  print("通知权限被拒绝");
-}
+
+// Windows：展示条件诊断（每应用开关、横幅、专注助手等）
+final status = await myNotify.checkPermissionStatus();
+// status.canShowNotifications / status.windowsFocusAssistMode / status.summary
+
+// Windows：尽力打开注册表可控项；需要用户手动时可选打开设置页
+final ensured = await myNotify.ensurePermissions(openSettingsIfNeeded: true);
 ```
+
+### Windows 桌面（非 MSIX）
+
+未打包为 MSIX 时，系统 Toast 依赖 **AppUserModelID** 与开始菜单快捷方式等身份链。本包会在初始化阶段自动准备常见前置条件，并输出 `XlyLogger.diagnostic` 便于排查。
+
+**常见「API 成功但不弹右下角横幅」原因**：系统 **专注助手** 处于「仅优先通知」或「仅限闹钟」——此时通知可能只进操作中心或被静默。可调用：
+
+- `await myNotify.checkWindowsFocusAssistMode()` → `MyNotifyWindowsFocusAssistMode`（`off` / `priorityOnly` / `alarmsOnly` / `unknown` / `unavailable`）
+- `await myNotify.openWindowsFocusAssistSettings()` 引导用户关闭专注助手或调整规则
+- `await myNotify.openWindowsNotificationSettings()` 打开「通知和操作」总开关页
+
+专注助手三态读取依赖系统内部机制，**失败时为 `unknown`**，请勿当作与微软长期契约的稳定 API。
+
+**应用内兜底**：Windows 默认在 `show` 成功或失败后仍可走 `MyToast` 提示（`MyNotifyFallbackPolicy`，可在构造 `MyNotify` 时调整）。
 
 ### 通知管理
 
@@ -111,7 +127,7 @@ List<ActiveNotification> active = await myNotify.getActiveNotifications();
 
 - **Android**：支持重要性级别、优先级、振动等
 - **iOS/macOS**：支持横幅、声音、角标等
-- **Windows**：支持 Toast 通知
+- **Windows**：Toast；非 MSIX 下见上文「Windows 桌面」与专注助手诊断
 - **Linux**：支持桌面通知规范
 
 ## 与 MyTray 的集成
@@ -146,6 +162,12 @@ await myNotify.show("已隐藏到托盘", "点击托盘图标可恢复窗口");
 2. 确认服务是否正确初始化
 3. 查看控制台错误信息
 4. 检查平台特定的通知设置
+
+### Windows 不弹横幅但日志显示成功
+
+1. 在系统设置中查看 **专注助手** 是否为「仅限闹钟」或「仅优先通知」
+2. 调用 `checkPermissionStatus()` 或 `checkWindowsFocusAssistMode()` 对照诊断字段
+3. 使用 `openWindowsNotificationSettings()` / `openWindowsFocusAssistSettings()` 打开对应设置页
 
 ### Android 特殊情况
 

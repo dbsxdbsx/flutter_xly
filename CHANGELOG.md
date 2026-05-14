@@ -1,3 +1,23 @@
+## 0.40.0 - 2026-05-14
+
+### Added
+
+- **Windows `MyNotify` 桌面 Toast 身份**：未 MSIX 场景下自动绑定 AUMID、写入开始菜单快捷方式属性、配合 `flutter_local_notifications` Windows 插件注册所需项，降低「调用成功但不弹横幅」的配置成本。
+- **通知展示条件诊断**：`checkPermissionStatus()` / `ensurePermissions()` 返回 `MyNotifyPermissionStatus`（含每应用通知开关、横幅等）；`ensurePermissions(openSettingsIfNeeded: true)` 在专注助手拦截时优先打开专注助手设置页。
+- **专注助手三态探测**：`MyNotifyWindowsFocusAssistMode` 与 `checkWindowsFocusAssistMode()`（基于系统内部状态读取，失败时回落为 `unknown`，不作为强契约 API）。
+- **系统设置快捷入口**：`openWindowsNotificationSettings()`、`openWindowsFocusAssistSettings()`。
+- **`XlyLogger.diagnostic`**：调试构建默认可见的诊断日志级别。
+- **Windows 应用内兜底**：`MyNotifyFallbackPolicy` 与 `show(..., showInAppFallback: ...)`，系统 Toast 不可见时可用 `MyToast` 提示。
+
+### Changed
+
+- **`MyNotify` 构造与懒注册**：支持注入 `appName` / Windows `windowsAppUserModelId` 等；`MyNotify.to` 在未 `Get.put` 时可自动注册默认实例；初始化与 `show` 等路径串接 `await` 避免竞态。
+- **Windows 下 `canShowNotifications` 语义**：在专注助手为「仅优先通知」或「仅限闹钟」时视为不满足横幅展示条件（与系统实际体验对齐）。
+
+### Example
+
+- **Page8**：增加打开 Windows「通知」与「专注助手」设置按钮；「通知状态」展示专注助手诊断文案。
+
 ## 0.39.0 - 2026-05-10
 
 ### Enhanced

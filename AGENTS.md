@@ -78,7 +78,7 @@ Only `app.dart` and `float_panel.dart` use `part of '../xly.dart'`. All other `l
 
 **`src/tab_view/`** — `MyTabView` / `MySegmentedControl`: macOS-style segmented tab switcher with animated selection slider.
 
-**`src/notify/`** — `MyNotify`: local notifications (via `flutter_local_notifications`), supports scheduled notifications.
+**`src/notify/`** — `MyNotify`: local notifications (via `flutter_local_notifications`), supports scheduled notifications. On Windows, the package can auto-prepare Toast identity (AUMID + Start Menu shortcut) and expose diagnostics for per-app notification toggles and Focus Assist (best-effort); see `.doc/my_notify_usage_guide.md`.
 
 ### CLI Tools (`bin/`)
 - `bin/xly.dart` — unified interactive CLI entry; delegates to sub-commands
