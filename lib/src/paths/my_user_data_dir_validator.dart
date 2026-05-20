@@ -5,8 +5,8 @@ import '../platform.dart';
 import 'my_paths.dart';
 
 /// 用户数据目录校验结果（用于启用/禁用「确定」与提示文案）。
-class MyUserDataDirectoryValidation {
-  const MyUserDataDirectoryValidation({
+class MyUserDataDirValidation {
+  const MyUserDataDirValidation({
     required this.canConfirm,
     this.hint,
   });
@@ -16,8 +16,8 @@ class MyUserDataDirectoryValidation {
 }
 
 /// 用户数据目录校验与风险提示。
-class MyUserDataDirectoryValidator {
-  MyUserDataDirectoryValidator._();
+class MyUserDataDirValidator {
+  MyUserDataDirValidator._();
 
   static const _writeProbeFileName = '.xly_write_probe';
 
@@ -26,10 +26,10 @@ class MyUserDataDirectoryValidator {
   }
 
   /// 评估路径是否可确认：须非空、目录已存在且可写（不自动创建）。
-  static Future<MyUserDataDirectoryValidation> evaluate(String raw) async {
+  static Future<MyUserDataDirValidation> evaluate(String raw) async {
     final trimmed = raw.trim();
     if (trimmed.isEmpty) {
-      return const MyUserDataDirectoryValidation(
+      return const MyUserDataDirValidation(
         canConfirm: false,
         hint: '请选择或输入数据存储目录',
       );
@@ -38,7 +38,7 @@ class MyUserDataDirectoryValidator {
     final normalized = normalizePath(trimmed);
     final dir = Directory(normalized);
     if (!await dir.exists()) {
-      return const MyUserDataDirectoryValidation(
+      return const MyUserDataDirValidation(
         canConfirm: false,
         hint: '目录不存在，请先在资源管理器中创建，或重新选择',
       );
@@ -47,13 +47,13 @@ class MyUserDataDirectoryValidator {
     try {
       await _probeWritable(normalized);
     } on StateError catch (e) {
-      return MyUserDataDirectoryValidation(
+      return MyUserDataDirValidation(
         canConfirm: false,
         hint: e.message,
       );
     }
 
-    return const MyUserDataDirectoryValidation(canConfirm: true);
+    return const MyUserDataDirValidation(canConfirm: true);
   }
 
   /// 返回需要向用户展示的风险提示（空列表表示无警告）。
@@ -61,7 +61,7 @@ class MyUserDataDirectoryValidator {
     final normalized = normalizePath(path);
     final warnings = <String>[];
 
-    if (_isSameAsInstallDirectory(normalized)) {
+    if (_isSameAsInstallDir(normalized)) {
       warnings.add(
         '所选目录与程序安装目录相同。清理构建产物或重装时，用户数据可能被一并删除。',
       );
@@ -97,7 +97,7 @@ class MyUserDataDirectoryValidator {
     }
   }
 
-  static bool _isSameAsInstallDirectory(String normalizedDataDir) {
+  static bool _isSameAsInstallDir(String normalizedDataDir) {
     if (MyPlatform.isWeb) return false;
     try {
       final installDir = MyPaths.installDir;

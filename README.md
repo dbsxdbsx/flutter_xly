@@ -4,12 +4,13 @@
 
 XLY 是一个 Flutter 懒人工具包，提供了一些常用的功能和组件。虽然目前仍在开发中，但已经可以在项目中使用许多实用功能。
 
-### 包入口（0.45+）
+### 包入口（0.47+）
 
 | import | 适用场景 |
 |--------|----------|
-| `package:xly/xly.dart` | 常用全家桶（**不含** text_editor / scaffold / selector / smart_dock，见下行） |
-| `package:xly/paths.dart` | 仅需 `MyPaths` / 用户数据目录 API |
+| `package:xly/xly.dart` | 常用全家桶（**不含** text_editor / scaffold / selector / smart_dock / picker，见下行） |
+| `package:xly/paths.dart` | `MyPaths`、`MyUserDataDirStore` / `Validator` / `Session` |
+| `package:xly/picker.dart` | 系统选目录/文件 `MyPicker.dir` / `file` / `files` |
 | `package:xly/app.dart` | 仅需 `MyApp`、路由、窗口 API |
 | `package:xly/float_panel.dart` | 仅需 `MyFloatPanel` |
 | `package:xly/notify.dart` | 仅需 `MyNotify` |
@@ -2092,10 +2093,23 @@ if (MyPlatform.isWindows) {
 String platform = MyPlatform.platformName;
 print('当前平台：$platform'); // 输出：当前平台：Windows
 
-// 路径（install 轨 + userData 轨）— 详见 .doc/user_data_paths.md
-final trayIco = await MyPaths.installFile('tray.ico');
-MyPaths.setUserDataDir(userDataDirectory);
-final config = await MyPaths.userDataFile('config.json');
+// 路径（install 轨 + userData 轨）
+// 详文（含流程图）：.doc/user_data_paths.md · 选目录/启动编排：.doc/user_data_picker.md
+
+// 推荐：启动编排（读 bootstrap 指针 → 校验 → setUserDataDir；移动无 Store 时自动 Documents）
+final boot = await MyUserDataDirSession.prepare(
+  store: MyUserDataDirStore.defaultInstance,
+);
+if (boot.needsDesktopSetup) {
+  // 应用自研设置 UI，或 picker：await MyPicker.dir() 后 Session.apply(...)
+}
+final trayIco = await MyPaths.installFile('tray.ico'); // install 轨：exe 旁资源
+final config = await MyPaths.userDataFile('config.json'); // userData 轨：须已 set 根
+
+// 进阶（手动四步，等同拆开 prepare 的内部逻辑）：
+// final path = await MyUserDataDirStore.defaultInstance.load(); // Future<String?>，bootstrap 里记的数据目录；无记录为 null
+// MyPaths.setUserDataDir(path ?? r'D:\MyAppData');
+// final config2 = await MyPaths.userDataFile('config.json');
 ```
 
 ### 使用窗口停靠功能

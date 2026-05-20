@@ -6,10 +6,10 @@ import 'package:path_provider/path_provider.dart';
 
 /// 将用户选择的数据目录路径保存在系统应用支持目录（bootstrap 指针），
 /// 以便下次启动时定位真实数据位置。
-class MyUserDataDirectoryStore {
-  const MyUserDataDirectoryStore({
-    this.bootstrapFileName = 'user_data_directory.json',
-    this.jsonPathKey = 'userDataDirectory',
+class MyUserDataDirStore {
+  const MyUserDataDirStore({
+    this.bootstrapFileName = 'user_data_dir.json',
+    this.jsonPathKey = 'userDataDir',
   });
 
   /// Bootstrap 文件名，位于 [getApplicationSupportDirectory] 下。
@@ -18,8 +18,8 @@ class MyUserDataDirectoryStore {
   /// JSON 中保存路径的字段名。
   final String jsonPathKey;
 
-  /// 默认实例（`user_data_directory.json` + `userDataDirectory` 字段）。
-  static const defaultInstance = MyUserDataDirectoryStore();
+  /// 默认实例（`user_data_dir.json` + `userDataDir` 字段）。
+  static const defaultInstance = MyUserDataDirStore();
 
   Future<File> _bootstrapFile() async {
     final supportDir = await getApplicationSupportDirectory();
@@ -51,15 +51,15 @@ class MyUserDataDirectoryStore {
   }
 
   /// 构造将要写入 bootstrap 文件的 JSON 对象。
-  Map<String, dynamic> buildJsonPayload(String userDataDirectory) {
+  Map<String, dynamic> buildJsonPayload(String userDataDir) {
     return {
-      jsonPathKey: p.normalize(userDataDirectory.trim()),
+      jsonPathKey: p.normalize(userDataDir.trim()),
       'version': 1,
     };
   }
 
-  Future<void> save(String userDataDirectory) async {
-    final normalized = p.normalize(userDataDirectory.trim());
+  Future<void> save(String userDataDir) async {
+    final normalized = p.normalize(userDataDir.trim());
     final file = await _bootstrapFile();
     final dir = file.parent;
     if (!await dir.exists()) {

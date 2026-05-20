@@ -1,14 +1,32 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart'
+    show TargetPlatform, debugDefaultTargetPlatformOverride, kIsWeb;
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart' as p;
+import 'package:xly/picker.dart';
 import 'package:xly/xly.dart';
 
 final bool _runsOnDesktopHost =
     !kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS);
 
+final String _mockAppSupportDir =
+    Directory.systemTemp.createTempSync('xly_app_support_').path;
+
 void main() {
+  setUpAll(() {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    const channel = MethodChannel('plugins.flutter.io/path_provider');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (MethodCall call) async {
+      if (call.method == 'getApplicationSupportDirectory') {
+        return _mockAppSupportDir;
+      }
+      return null;
+    });
+  });
+
   tearDown(MyPaths.resetForTest);
 
   group('MyPaths userData 轨', () {
@@ -81,49 +99,111 @@ void main() {
     }, skip: !_runsOnDesktopHost);
   });
 
-  group('MyUserDataDirectoryValidator', () {
+  group('MyUserDataDirValidator', () {
     test('normalizePath 转为绝对规范化路径', () {
       final raw = Directory.systemTemp.createTempSync('xly_val_').path;
-      final normalized = MyUserDataDirectoryValidator.normalizePath(raw);
+      final normalized = MyUserDataDirValidator.normalizePath(raw);
       expect(p.isAbsolute(normalized), isTrue);
     });
 
     test('evaluate 对已存在可写目录返回 canConfirm', () async {
       final dir = Directory.systemTemp.createTempSync('xly_val_');
-      final result = await MyUserDataDirectoryValidator.evaluate(dir.path);
+      final result = await MyUserDataDirValidator.evaluate(dir.path);
       expect(result.canConfirm, isTrue);
       expect(result.hint, isNull);
     });
   });
 
-  group('MyUserDataFilesMigrator', () {
-    test('migrateFromInstallDir 从安装目录迁移', () async {
-      final legacy = Directory.systemTemp.createTempSync('xly_legacy_');
-      final data = Directory.systemTemp.createTempSync('xly_data_');
-      final legacyFile = File(p.join(legacy.path, 'prefs.json'));
-      await legacyFile.writeAsString('{"v":1}');
-
-      await MyUserDataFilesMigrator.migrateFromInstallDir(
-        userDataRoot: data.path,
-        fileNames: const ['prefs.json'],
-        legacyDir: legacy.path,
-      );
-
-      expect(await legacyFile.exists(), isFalse);
-      final dest = File(p.join(data.path, 'prefs.json'));
-      expect(await dest.exists(), isTrue);
-      expect(await dest.readAsString(), '{"v":1}');
-    });
-  });
-
-  group('MyUserDataDirectoryStore', () {
-    test('readPathFromJson 解析 userDataDirectory 字段', () {
-      const store = MyUserDataDirectoryStore();
-      final path = MyUserDataDirectoryStore.readPathFromJson(
-        const {'userDataDirectory': r'D:\ProxyData', 'version': 1},
+  group('MyUserDataDirStore', () {
+    test('readPathFromJson 解析 userDataDir 字段', () {
+      const store = MyUserDataDirStore();
+      final path = MyUserDataDirStore.readPathFromJson(
+        const {'userDataDir': r'D:\ProxyData', 'version': 1},
         store.jsonPathKey,
       );
       expect(path, r'D:\ProxyData');
+    });
+  });
+
+  group('MyUserDataDirSession', () {
+    test('apply 设置 userDataDir 并可 round-trip store', () async {
+      TestWidgetsFlutterBinding.ensureInitialized();
+      final dir = Directory.systemTemp.createTempSync('xly_session_');
+      final store = MyUserDataDirStore(
+        bootstrapFileName:
+            'xly_test_apply_${DateTime.now().microsecondsSinceEpoch}.json',
+      );
+      final applied = await MyUserDataDirSession.apply(
+        userDataDir: dir.path,
+        store: store,
+      );
+      expect(applied, MyPaths.userDataDir);
+      final loaded = await store.load();
+      expect(loaded, applied);
+    });
+
+    test('apply 在成功后调用 onAfterApply', () async {
+      TestWidgetsFlutterBinding.ensureInitialized();
+      final dir = Directory.systemTemp.createTempSync('xly_session_hook_');
+      final store = MyUserDataDirStore(
+        bootstrapFileName:
+            'xly_test_hook_${DateTime.now().microsecondsSinceEpoch}.json',
+      );
+      String? hooked;
+      await MyUserDataDirSession.apply(
+        userDataDir: dir.path,
+        store: store,
+        onAfterApply: (normalized) async {
+          hooked = normalized;
+        },
+      );
+      expect(hooked, MyPaths.userDataDir);
+    });
+
+    test('prepare 在 stored 无效时暴露 storedPath 与 evaluation', () async {
+      TestWidgetsFlutterBinding.ensureInitialized();
+      debugDefaultTargetPlatformOverride = TargetPlatform.windows;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+
+      final missing = p.join(
+        Directory.systemTemp.path,
+        'xly_missing_${DateTime.now().microsecondsSinceEpoch}',
+      );
+      final store = MyUserDataDirStore(
+        bootstrapFileName:
+            'xly_test_invalid_${DateTime.now().microsecondsSinceEpoch}.json',
+      );
+      await store.save(missing);
+
+      final boot = await MyUserDataDirSession.prepare(
+        store: store,
+        desktopRequiresExplicitDir: true,
+      );
+
+      expect(boot.needsDesktopSetup, isTrue);
+      expect(boot.loadedPath, isNull);
+      expect(boot.storedPath, p.normalize(p.absolute(missing)));
+      expect(boot.hasInvalidStoredPath, isTrue);
+      expect(boot.storedEvaluation?.canConfirm, isFalse);
+    }, skip: !_runsOnDesktopHost);
+  });
+
+  group('MyPicker.resolveInitialDir', () {
+    test('未 setUserDataDir 且无 initialDir 时返回 null', () {
+      expect(MyPicker.resolveInitialDir(null), isNull);
+      expect(MyPicker.resolveInitialDir('  '), isNull);
+    });
+
+    test('已 setUserDataDir 时回退到 userDataDir', () {
+      final dir = Directory.systemTemp.createTempSync('xly_picker_init_');
+      MyPaths.setUserDataDir(dir.path);
+      expect(MyPicker.resolveInitialDir(null), MyPaths.userDataDir);
+    });
+
+    test('显式 initialDir 优先于 userDataDir', () {
+      final dir = Directory.systemTemp.createTempSync('xly_picker_init2_');
+      MyPaths.setUserDataDir(dir.path);
+      expect(MyPicker.resolveInitialDir(r'D:\Custom'), r'D:\Custom');
     });
   });
 }

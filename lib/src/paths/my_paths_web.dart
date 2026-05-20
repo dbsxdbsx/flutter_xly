@@ -1,7 +1,7 @@
 /// Web 平台的 [MyPaths] 桩实现：所有文件 API 抛出 [UnsupportedError]。
 ///
 /// 通过 `package:xly/paths.dart` 在 `dart.library.html` 下自动选用。
-/// Bootstrap（[MyUserDataDirectoryStore] 等）依赖 `dart:io`，Web 目标请勿 import 全家桶路径辅助类。
+/// Bootstrap（[MyUserDataDirStore] 等）依赖 `dart:io`，Web 目标请勿 import 全家桶路径辅助类。
 class MyPaths {
   MyPaths._();
 
@@ -22,8 +22,7 @@ class MyPaths {
 
   static String get userDataDir => _unsupported();
 
-  static Future<Never> userDataFile(String relativePath) =>
-      _unsupportedAsync();
+  static Future<Never> userDataFile(String relativePath) => _unsupportedAsync();
 
   static Future<Never> userDataLogsDir() => _unsupportedAsync();
 
@@ -47,6 +46,5 @@ class MyPaths {
     throw UnsupportedError(_message);
   }
 
-  static const String _message =
-      'Web 平台不支持 MyPaths 文件 API；请使用浏览器存储或后端。';
+  static const String _message = 'Web 平台不支持 MyPaths 文件 API；请使用浏览器存储或后端。';
 }

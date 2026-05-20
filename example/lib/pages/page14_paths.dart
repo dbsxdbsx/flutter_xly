@@ -20,11 +20,16 @@ class Page14Paths extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'MyPaths 演示',
+                    'MyPaths / DirStore / Session',
                     style: TextStyle(
                       fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
                     ),
+                  ),
+                  SizedBox(height: 4.h),
+                  Text(
+                    '系统选夹见 package:xly/picker.dart（MyPicker.dir）',
+                    style: TextStyle(fontSize: 11.sp, color: Colors.grey),
                   ),
                   SizedBox(height: 8.h),
                   Text(
