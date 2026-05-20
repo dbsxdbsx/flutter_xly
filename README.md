@@ -4,6 +4,15 @@
 
 XLY 是一个 Flutter 懒人工具包，提供了一些常用的功能和组件。虽然目前仍在开发中，但已经可以在项目中使用许多实用功能。
 
+### 包入口（0.43+）
+
+| import | 适用场景 |
+|--------|----------|
+| `package:xly/xly.dart` | 默认全家桶（与旧版一致） |
+| `package:xly/paths.dart` | 仅需 `MyPaths` / 用户数据目录 API |
+| `package:xly/app.dart` | 仅需 `MyApp`、路由、窗口 API |
+| `package:xly/float_panel.dart` | 仅需 `FloatPanel` |
+
 ## 功能（Features）
 
 当前，这个包提供了以下功能：

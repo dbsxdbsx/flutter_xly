@@ -10,7 +10,7 @@
 - **主语言 / 框架**：Dart 3.5+、Flutter 3.7+；GetX、window_manager、flutter_screenutil 等（部分在 `lib/xly.dart` 再导出）。
 - **阶段**：Beta（持续发版，`CHANGELOG.md` 跟踪）。
 - **仓库**：<https://github.com/dbsxdbsx/flutter_xly>
-- **当前版本**：`pubspec.yaml` → `0.42.0`（`MyPaths` 路径门面）。
+- **当前版本**：`pubspec.yaml` → `0.43.0`（阶段 B 结构卫生：独立 library + barrel）。
 
 ## 2. Project Map
 
@@ -38,7 +38,7 @@ xly/
 
 关键入口：
 
-- 对外 API：`lib/xly.dart`
+- 对外 API：`lib/xly.dart`（全家桶）；可选 `lib/app.dart`、`lib/float_panel.dart`、`lib/paths.dart`
 - 路径：`lib/src/paths/my_paths.dart`、`.doc/user_data_paths.md`
 - 平台：`lib/src/platform.dart`
 - 示例：`example/lib/main.dart`（`MyRoutes.page14Paths`）
@@ -95,9 +95,9 @@ xly/
 
 ## 5. Active Context
 
-- **最近完成**：0.42.0 — `MyPaths` 破坏性路径收敛；文档与 example `Page14Paths`。
-- **最近完成**：0.43 B — `app` / `float_panel` 独立 library + `paths.dart` 子入口；`xly.dart` 为 barrel。
-- **后续**：见 [`.issue/xly-package-hygiene-backlog.md`](.issue/xly-package-hygiene-backlog.md)（阶段 C：通知边界、export 粒度等）。
+- **最近完成**：0.43.0 — 阶段 B（`app` / `float_panel` 拆分、独立 library、`paths.dart` 子入口、`xly.dart` barrel）。
+- **上一版**：0.42.0 — `MyPaths` 破坏性路径收敛；example `Page14Paths`。
+- **后续**：见 [`.issue/xly-package-hygiene-backlog.md`](.issue/xly-package-hygiene-backlog.md)（阶段 C：通知边界、更多 export 粒度等）。
 
 > **公开仓库纪律**：`AGENTS.md` / `README` / `CHANGELOG` / `.doc/` 中**禁止**写入未开源消费者项目名、内部路径或私有仓库线索。
 

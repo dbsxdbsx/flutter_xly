@@ -1,3 +1,18 @@
+## 0.43.0 - 2026-05-20
+
+### Added
+
+- **可选子入口**：`package:xly/app.dart`（`MyApp` / 路由 / 窗口）、`package:xly/float_panel.dart`（`FloatPanel`）、`package:xly/paths.dart`（`MyPaths` 等路径 API）。
+
+### Changed
+
+- **包结构（阶段 B）**：`lib/src/float_panel.dart`、`lib/src/app.dart` 拆为目录 + 多文件 `part`；`lib/float_panel.dart`、`lib/app.dart` 为独立 library；`lib/xly.dart` 改为 barrel 再导出（默认 `import 'package:xly/xly.dart'` 行为不变）。
+- **`FloatPanel.buildOverlay()`**：供 `MyApp` 挂载全局浮动条，替代跨模块引用私有 widget。
+
+### Docs
+
+- `AGENTS.md` / [`.issue/xly-package-hygiene-backlog.md`](.issue/xly-package-hygiene-backlog.md)：阶段 B 条目已闭环。
+
 ## 0.42.0 - 2026-05-20
 
 ### BREAKING
