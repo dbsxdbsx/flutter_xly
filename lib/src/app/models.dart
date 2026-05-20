@@ -108,7 +108,7 @@ class CustomDragArea extends StatelessWidget {
       onDoubleTap: enableDoubleClickMaximize
           ? () async {
               // 检查是否处于智能停靠状态
-              if (SmartDockManager.isSmartDockingEnabled()) {
+              if (MySmartDock.isSmartDockingEnabled()) {
                 XlyLogger.debug('智能停靠状态下已禁用双击最大化功能');
                 return;
               }

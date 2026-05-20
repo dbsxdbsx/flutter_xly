@@ -1,3 +1,2 @@
-export 'controller.dart';
-export 'models.dart';
-export 'widget.dart';
+// 兼容旧路径：src/selector/lib.dart → package:xly/selector.dart
+export '../../selector.dart';

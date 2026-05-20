@@ -535,7 +535,7 @@ class MyTray extends GetxService with TrayListener {
   bool _isInSmartDockMode() {
     try {
       // 需要导入相关模块
-      return SmartDockManager.isSmartDockingEnabled() &&
+      return MySmartDock.isSmartDockingEnabled() &&
           MouseTracker.state != MouseTrackingState.disabled;
     } catch (e) {
       XlyLogger.error('MyTray: 检查智能停靠状态失败', e);

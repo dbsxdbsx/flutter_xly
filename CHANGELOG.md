@@ -1,3 +1,16 @@
+## 0.45.0 - 2026-05-20
+
+### BREAKING
+
+- **命名硬切**：`FloatPanel` → `MyFloatPanel`，`FloatPanelIconBtn` → `MyFloatPanelIconBtn`，`FloatBoxController` → `MyFloatBoxController`，`SmartDockManager` → `MySmartDock`；**不保留**旧名 typedef。
+- **`MyApp.initialize`**：`floatPanel` 参数类型改为 **`MyFloatPanel?`**（参数名保持 `floatPanel`，与 `tray` 一致，不加 `my` 前缀）。
+- **`package:xly/xly.dart` 减 export**：不再导出 `text_editor` / `scaffold` / `selector` / `smart_dock`；请 `import 'package:xly/<module>.dart'`。
+
+### Changed
+
+- **MySelector**：`widget.dart` 拆为 `library` + `part`（`my_selector` / `overlay` / `panel` / `item_widgets`）。
+- **文档 / 示例**：统一 `MyFloatPanel` 主名与子入口 import 示例。
+
 ## 0.44.0 - 2026-05-20
 
 ### Added

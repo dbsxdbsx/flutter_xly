@@ -12,21 +12,21 @@
 /// 使用示例：
 /// ```dart
 /// // 启用智能停靠
-/// await SmartDockManager.setSmartEdgeDocking(
+/// await MySmartDock.setSmartEdgeDocking(
 ///   enabled: true,
 ///   visibleWidth: 5.0,
 /// );
 ///
 /// // 禁用智能停靠
-/// await SmartDockManager.setSmartEdgeDocking(enabled: false);
+/// await MySmartDock.setSmartEdgeDocking(enabled: false);
 ///
 /// // 停止所有功能
-/// await SmartDockManager.stopAll();
+/// await MySmartDock.stopAll();
 /// ```
 library;
 
 // 公开接口
-export 'smart_dock_manager.dart' show SmartDockManager;
+export 'smart_dock_manager.dart' show MySmartDock;
 
 // 内部组件（通常不需要直接使用）
 // export 'window_animator.dart' show WindowAnimator, WindowAnimationPresets;

@@ -40,7 +40,7 @@ class _FloatBoxPanel extends StatefulWidget {
         finalDockOffset = panelWidthInput / 2,
         super(key: panelKey) {
     Get.put(
-      FloatBoxController(),
+      MyFloatBoxController(),
       tag: panelKey?.toString(),
     );
   }
@@ -54,7 +54,7 @@ class _FloatBoxPanelState extends State<_FloatBoxPanel> {
 
   @override
   Widget build(BuildContext context) {
-    final ctrl = Get.find<FloatBoxController>(tag: widget.panelKey?.toString());
+    final ctrl = Get.find<MyFloatBoxController>(tag: widget.panelKey?.toString());
 
     // 先计算并更新缩放值，确保后续 updateScreenSize 中的位置限位
     // 使用正确的 effectivePanelHeight（依赖 currentPanelWidth）
@@ -105,7 +105,7 @@ class _FloatBoxPanelState extends State<_FloatBoxPanel> {
   }
 
   /// 构建面板内部布局（handle + items），根据展开方向和 RTL 排列
-  Widget _buildPanelLayout(FloatBoxController ctrl) {
+  Widget _buildPanelLayout(MyFloatBoxController ctrl) {
     final handleButton = GestureDetector(
       behavior: HitTestBehavior.opaque,
       onPanEnd: (_) => ctrl.onPanEndGesture(),
@@ -129,11 +129,11 @@ class _FloatBoxPanelState extends State<_FloatBoxPanel> {
     );
 
     final itemsWidget = Obx(() {
-      final currentItems = FloatPanel.to.items;
+      final currentItems = MyFloatPanel.to.items;
       final buttonList = List.generate(currentItems.length, (index) {
         final item = currentItems[index];
-        final disabledSet = FloatPanel.to.disabledIds;
-        final highlightedSet = FloatPanel.to.highlightedIds;
+        final disabledSet = MyFloatPanel.to.disabledIds;
+        final highlightedSet = MyFloatPanel.to.highlightedIds;
         final bool iconBtnDisabledMatch =
             item.id != null && disabledSet.contains(item.id);
         final bool explicitDisabled = item.disabled == true;
@@ -152,7 +152,7 @@ class _FloatBoxPanelState extends State<_FloatBoxPanel> {
               try {
                 await item.onTap!();
               } catch (e, s) {
-                XlyLogger.error('FloatPanelIconBtn.onTap error', e, s);
+                XlyLogger.error('MyFloatPanelIconBtn.onTap error', e, s);
               }
             }
           },
@@ -176,10 +176,10 @@ class _FloatBoxPanelState extends State<_FloatBoxPanel> {
           ),
         );
         // 仅在 tooltip 非空时套 Tooltip，避免无意义的 widget 开销。
-        // 0.38.0 起 FloatPanelIconBtn.tooltip 完整渲染与智能避让（此前字段未使用）。
+        // 0.38.0 起 MyFloatPanelIconBtn.tooltip 完整渲染与智能避让（此前字段未使用）。
         final tip = item.tooltip;
         return (tip != null && tip.isNotEmpty)
-            ? _FloatPanelTooltip(
+            ? _MyFloatPanelTooltip(
                 message: tip,
                 controller: ctrl,
                 panelKey: _panelRenderKey,
@@ -214,13 +214,13 @@ class _FloatBoxPanelState extends State<_FloatBoxPanel> {
   }
 }
 
-class _FloatPanelTooltip extends StatefulWidget {
+class _MyFloatPanelTooltip extends StatefulWidget {
   final String message;
   final Widget child;
-  final FloatBoxController controller;
+  final MyFloatBoxController controller;
   final GlobalKey panelKey;
 
-  const _FloatPanelTooltip({
+  const _MyFloatPanelTooltip({
     required this.message,
     required this.child,
     required this.controller,
@@ -228,10 +228,10 @@ class _FloatPanelTooltip extends StatefulWidget {
   });
 
   @override
-  State<_FloatPanelTooltip> createState() => _FloatPanelTooltipState();
+  State<_MyFloatPanelTooltip> createState() => _MyFloatPanelTooltipState();
 }
 
-class _FloatPanelTooltipState extends State<_FloatPanelTooltip> {
+class _MyFloatPanelTooltipState extends State<_MyFloatPanelTooltip> {
   static const Duration _waitDuration = Duration(milliseconds: 400);
   static const Duration _fadeInDuration = Duration(milliseconds: 120);
   static const Duration _fadeOutDuration = Duration(milliseconds: 120);
@@ -246,7 +246,7 @@ class _FloatPanelTooltipState extends State<_FloatPanelTooltip> {
   Worker? _yWorker;
 
   @override
-  void didUpdateWidget(covariant _FloatPanelTooltip oldWidget) {
+  void didUpdateWidget(covariant _MyFloatPanelTooltip oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.message != widget.message) {
       _hideImmediately();
@@ -291,7 +291,7 @@ class _FloatPanelTooltipState extends State<_FloatPanelTooltip> {
     _removeTimer = null;
     _visibility.value = false;
     _overlayEntry = OverlayEntry(
-      builder: (context) => _FloatPanelTooltipOverlay(
+      builder: (context) => _MyFloatPanelTooltipOverlay(
         message: widget.message,
         targetRect: targetRect,
         panelRect: panelRect,
@@ -390,10 +390,10 @@ class _FloatPanelTooltipState extends State<_FloatPanelTooltip> {
 }
 
 /// 气泡相对浮动条的位置（"哪一侧的尾巴指向按钮"）。
-enum _FloatPanelTooltipSide { left, right, top, bottom }
+enum _MyFloatPanelTooltipSide { left, right, top, bottom }
 
 /// Tooltip overlay：先离屏测量气泡尺寸，再按计算好的位置和尾巴绘制。
-class _FloatPanelTooltipOverlay extends StatefulWidget {
+class _MyFloatPanelTooltipOverlay extends StatefulWidget {
   final String message;
   final Rect targetRect;
   final Rect panelRect;
@@ -402,7 +402,7 @@ class _FloatPanelTooltipOverlay extends StatefulWidget {
   final Duration fadeInDuration;
   final Duration fadeOutDuration;
 
-  const _FloatPanelTooltipOverlay({
+  const _MyFloatPanelTooltipOverlay({
     required this.message,
     required this.targetRect,
     required this.panelRect,
@@ -413,13 +413,13 @@ class _FloatPanelTooltipOverlay extends StatefulWidget {
   });
 
   @override
-  State<_FloatPanelTooltipOverlay> createState() =>
-      _FloatPanelTooltipOverlayState();
+  State<_MyFloatPanelTooltipOverlay> createState() =>
+      _MyFloatPanelTooltipOverlayState();
 }
 
-class _FloatPanelTooltipOverlayState extends State<_FloatPanelTooltipOverlay> {
+class _MyFloatPanelTooltipOverlayState extends State<_MyFloatPanelTooltipOverlay> {
   // --- 设计稿基础值（与 Material 默认 Tooltip 风格一致）---
-  // 通过 ScreenUtil 在运行时缩放，避免在窗口缩放后 tooltip 游离于 FloatPanel
+  // 通过 ScreenUtil 在运行时缩放，避免在窗口缩放后 tooltip 游离于 MyFloatPanel
   // 主体的尺寸体系外。横向 layout 用 .w，对称几何与圆角用 .r，字号用 .sp。
   static const double _kBaseGap = 6.0;
   static const double _kBaseScreenMargin = 8.0;
@@ -504,7 +504,7 @@ class _FloatPanelTooltipOverlayState extends State<_FloatPanelTooltipOverlay> {
 
   /// 选定气泡放在哪一侧。preferVerticalPlacement = true 时只考虑上下，否则只考虑左右。
   /// 优先放在浮动条远离屏幕中心的反方向，避免和浮动条重叠。
-  _FloatPanelTooltipSide _resolveSide(Size overlaySize, Size bubbleSize) {
+  _MyFloatPanelTooltipSide _resolveSide(Size overlaySize, Size bubbleSize) {
     if (widget.preferVerticalPlacement) {
       final spaceBelow = overlaySize.height -
           widget.panelRect.bottom -
@@ -516,16 +516,16 @@ class _FloatPanelTooltipOverlayState extends State<_FloatPanelTooltipOverlay> {
       final preferBelow = widget.panelRect.center.dy < overlaySize.height / 2;
 
       if (preferBelow && spaceBelow >= bubbleSize.height) {
-        return _FloatPanelTooltipSide.bottom;
+        return _MyFloatPanelTooltipSide.bottom;
       }
       if (!preferBelow && spaceAbove >= bubbleSize.height) {
-        return _FloatPanelTooltipSide.top;
+        return _MyFloatPanelTooltipSide.top;
       }
-      if (spaceBelow >= bubbleSize.height) return _FloatPanelTooltipSide.bottom;
-      if (spaceAbove >= bubbleSize.height) return _FloatPanelTooltipSide.top;
+      if (spaceBelow >= bubbleSize.height) return _MyFloatPanelTooltipSide.bottom;
+      if (spaceAbove >= bubbleSize.height) return _MyFloatPanelTooltipSide.top;
       return spaceBelow >= spaceAbove
-          ? _FloatPanelTooltipSide.bottom
-          : _FloatPanelTooltipSide.top;
+          ? _MyFloatPanelTooltipSide.bottom
+          : _MyFloatPanelTooltipSide.top;
     }
 
     final spaceRight = overlaySize.width -
@@ -538,38 +538,38 @@ class _FloatPanelTooltipOverlayState extends State<_FloatPanelTooltipOverlay> {
     final preferRight = widget.panelRect.center.dx < overlaySize.width / 2;
 
     if (preferRight && spaceRight >= bubbleSize.width) {
-      return _FloatPanelTooltipSide.right;
+      return _MyFloatPanelTooltipSide.right;
     }
     if (!preferRight && spaceLeft >= bubbleSize.width) {
-      return _FloatPanelTooltipSide.left;
+      return _MyFloatPanelTooltipSide.left;
     }
-    if (spaceRight >= bubbleSize.width) return _FloatPanelTooltipSide.right;
-    if (spaceLeft >= bubbleSize.width) return _FloatPanelTooltipSide.left;
+    if (spaceRight >= bubbleSize.width) return _MyFloatPanelTooltipSide.right;
+    if (spaceLeft >= bubbleSize.width) return _MyFloatPanelTooltipSide.left;
     return spaceRight >= spaceLeft
-        ? _FloatPanelTooltipSide.right
-        : _FloatPanelTooltipSide.left;
+        ? _MyFloatPanelTooltipSide.right
+        : _MyFloatPanelTooltipSide.left;
   }
 
   /// 计算气泡左上角在 overlay 内的位置。垂直方向上按按钮中心对齐，
   /// 水平方向上按按钮中心对齐；越界时夹回到屏幕安全区。
   Offset _calculateBubbleOrigin(
-      Size overlaySize, Size bubbleSize, _FloatPanelTooltipSide side) {
+      Size overlaySize, Size bubbleSize, _MyFloatPanelTooltipSide side) {
     double left;
     double top;
     switch (side) {
-      case _FloatPanelTooltipSide.right:
+      case _MyFloatPanelTooltipSide.right:
         left = widget.panelRect.right + _gap + _tailLength;
         top = widget.targetRect.center.dy - bubbleSize.height / 2;
         break;
-      case _FloatPanelTooltipSide.left:
+      case _MyFloatPanelTooltipSide.left:
         left = widget.panelRect.left - _gap - _tailLength - bubbleSize.width;
         top = widget.targetRect.center.dy - bubbleSize.height / 2;
         break;
-      case _FloatPanelTooltipSide.bottom:
+      case _MyFloatPanelTooltipSide.bottom:
         left = widget.targetRect.center.dx - bubbleSize.width / 2;
         top = widget.panelRect.bottom + _gap + _tailLength;
         break;
-      case _FloatPanelTooltipSide.top:
+      case _MyFloatPanelTooltipSide.top:
         left = widget.targetRect.center.dx - bubbleSize.width / 2;
         top = widget.panelRect.top - _gap - _tailLength - bubbleSize.height;
         break;
@@ -585,15 +585,15 @@ class _FloatPanelTooltipOverlayState extends State<_FloatPanelTooltipOverlay> {
   }
 
   /// 尾巴尖端在 overlay 内的全局坐标，应正对按钮中心一侧的浮动条边缘。
-  Offset _tailTipGlobal(_FloatPanelTooltipSide side) {
+  Offset _tailTipGlobal(_MyFloatPanelTooltipSide side) {
     switch (side) {
-      case _FloatPanelTooltipSide.right:
+      case _MyFloatPanelTooltipSide.right:
         return Offset(widget.panelRect.right, widget.targetRect.center.dy);
-      case _FloatPanelTooltipSide.left:
+      case _MyFloatPanelTooltipSide.left:
         return Offset(widget.panelRect.left, widget.targetRect.center.dy);
-      case _FloatPanelTooltipSide.bottom:
+      case _MyFloatPanelTooltipSide.bottom:
         return Offset(widget.targetRect.center.dx, widget.panelRect.bottom);
-      case _FloatPanelTooltipSide.top:
+      case _MyFloatPanelTooltipSide.top:
         return Offset(widget.targetRect.center.dx, widget.panelRect.top);
     }
   }
@@ -645,7 +645,7 @@ class _FloatPanelTooltipOverlayState extends State<_FloatPanelTooltipOverlay> {
   /// 解析"理智上限"：优先取 [TooltipTheme.constraints.maxWidth]（若设置且有限），
   /// 否则用 [_kBaseMaxBubbleWidth] 经 ScreenUtil 缩放后的值。
   /// 这样下游 App 调 `TooltipTheme(data: TooltipThemeData(constraints: ...))`
-  /// 控制官方 Tooltip 时，FloatPanel 上的气泡也跟着变。
+  /// 控制官方 Tooltip 时，MyFloatPanel 上的气泡也跟着变。
   double _resolveEffectiveMaxWidth(BuildContext context) {
     final themeMax = TooltipTheme.of(context).constraints?.maxWidth;
     if (themeMax != null && themeMax.isFinite) return themeMax;
@@ -709,7 +709,7 @@ class _FloatPanelTooltipOverlayState extends State<_FloatPanelTooltipOverlay> {
                       child: child,
                     ),
                     child: CustomPaint(
-                      painter: _FloatPanelTooltipBubblePainter(
+                      painter: _MyFloatPanelTooltipBubblePainter(
                         side: side,
                         tailTipLocal: tailTipLocal,
                         tailHalfWidth: _tailHalfWidth,
@@ -731,8 +731,8 @@ class _FloatPanelTooltipOverlayState extends State<_FloatPanelTooltipOverlay> {
 }
 
 /// 把圆角矩形和小尾巴合并成一个 Path 一次性绘制，避免接缝。
-class _FloatPanelTooltipBubblePainter extends CustomPainter {
-  final _FloatPanelTooltipSide side;
+class _MyFloatPanelTooltipBubblePainter extends CustomPainter {
+  final _MyFloatPanelTooltipSide side;
   final Offset tailTipLocal;
   final double tailHalfWidth;
   final double cornerRadius;
@@ -740,7 +740,7 @@ class _FloatPanelTooltipBubblePainter extends CustomPainter {
   final double tailSafeMargin;
   final Color color;
 
-  const _FloatPanelTooltipBubblePainter({
+  const _MyFloatPanelTooltipBubblePainter({
     required this.side,
     required this.tailTipLocal,
     required this.tailHalfWidth,
@@ -774,7 +774,7 @@ class _FloatPanelTooltipBubblePainter extends CustomPainter {
     final minBaseAxis = cornerRadius + tailSafeMargin;
 
     switch (side) {
-      case _FloatPanelTooltipSide.right:
+      case _MyFloatPanelTooltipSide.right:
         // 气泡在浮动条右侧；尾巴从气泡左边缘指向浮动条边缘。
         final maxBase = size.height - cornerRadius - tailSafeMargin;
         final baseY = maxBase >= minBaseAxis
@@ -785,7 +785,7 @@ class _FloatPanelTooltipBubblePainter extends CustomPainter {
         path.lineTo(0, baseY + tailHalfWidth);
         path.close();
         break;
-      case _FloatPanelTooltipSide.left:
+      case _MyFloatPanelTooltipSide.left:
         final maxBase = size.height - cornerRadius - tailSafeMargin;
         final baseY = maxBase >= minBaseAxis
             ? tailTipLocal.dy.clamp(minBaseAxis, maxBase)
@@ -795,7 +795,7 @@ class _FloatPanelTooltipBubblePainter extends CustomPainter {
         path.lineTo(size.width, baseY + tailHalfWidth);
         path.close();
         break;
-      case _FloatPanelTooltipSide.bottom:
+      case _MyFloatPanelTooltipSide.bottom:
         final maxBase = size.width - cornerRadius - tailSafeMargin;
         final baseX = maxBase >= minBaseAxis
             ? tailTipLocal.dx.clamp(minBaseAxis, maxBase)
@@ -805,7 +805,7 @@ class _FloatPanelTooltipBubblePainter extends CustomPainter {
         path.lineTo(baseX + tailHalfWidth, 0);
         path.close();
         break;
-      case _FloatPanelTooltipSide.top:
+      case _MyFloatPanelTooltipSide.top:
         final maxBase = size.width - cornerRadius - tailSafeMargin;
         final baseX = maxBase >= minBaseAxis
             ? tailTipLocal.dx.clamp(minBaseAxis, maxBase)
@@ -820,7 +820,7 @@ class _FloatPanelTooltipBubblePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _FloatPanelTooltipBubblePainter oldDelegate) {
+  bool shouldRepaint(covariant _MyFloatPanelTooltipBubblePainter oldDelegate) {
     return side != oldDelegate.side ||
         tailTipLocal != oldDelegate.tailTipLocal ||
         tailHalfWidth != oldDelegate.tailHalfWidth ||
@@ -864,7 +864,7 @@ class _FloatButton extends StatelessWidget {
     if (!enabled) {
       // 仅在禁用态时订阅样式变化，避免GetX空订阅错误
       return Obx(() {
-        final style = FloatPanel.to.disabledStyle.value;
+        final style = MyFloatPanel.to.disabledStyle.value;
         if (style.type == DisabledStyleType.dimOnly) {
           return SizedBox(
             width: size,

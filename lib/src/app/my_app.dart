@@ -54,8 +54,8 @@ class MyApp extends StatelessWidget {
     // 托盘配置 - 简化配置方式
     MyTray? tray,
 
-    // 浮动面板 - 类似托盘的全局管理器
-    FloatPanel? floatPanel,
+    // 浮动面板 - 类似托盘的全局管理器（参数名不加 my，类型为 MyFloatPanel）
+    MyFloatPanel? floatPanel,
 
     // 路由和页面配置
     MySplash? splash,
@@ -272,7 +272,7 @@ class MyApp extends StatelessWidget {
 
       // 3. 若提供 floatPanel，则作为全局服务注册（类似 tray）
       if (floatPanel != null) {
-        finalServices.add(MyService<FloatPanel>(
+        finalServices.add(MyService<MyFloatPanel>(
           service: () => floatPanel,
           permanent: true,
         ));
@@ -501,8 +501,8 @@ class MyApp extends StatelessWidget {
         routingCallback: (routing) {
           final current = routing?.current;
           if (current == null) return;
-          if (!Get.isRegistered<FloatPanel>()) return;
-          final fp = FloatPanel.to;
+          if (!Get.isRegistered<MyFloatPanel>()) return;
+          final fp = MyFloatPanel.to;
           for (final item in fp.items) {
             final id = item.id;
             if (id == null) continue;
@@ -554,11 +554,11 @@ class MyApp extends StatelessWidget {
               processedChild,
 
               // 全局浮动面板（页面之上，splash 之下）
-              if (Get.isRegistered<FloatPanel>())
+              if (Get.isRegistered<MyFloatPanel>())
                 Obx(() {
-                  final fp = FloatPanel.to;
+                  final fp = MyFloatPanel.to;
                   if (!fp.visible.value) return const SizedBox.shrink();
-                  // 只传缩放基础值，其他配置由 controller 从 FloatPanel.to 实时读取
+                  // 只传缩放基础值，其他配置由 controller 从 MyFloatPanel.to 实时读取
                   return fp.buildOverlay();
                 }),
 
@@ -662,7 +662,7 @@ class MyApp extends StatelessWidget {
   /// 在智能停靠状态下自动禁用双击最大化功能
   static bool isDoubleClickMaximizeEnabled() {
     // 检查是否处于智能停靠状态
-    if (SmartDockManager.isSmartDockingEnabled()) {
+    if (MySmartDock.isSmartDockingEnabled()) {
       return false; // 智能停靠状态下禁用双击最大化
     }
     return _globalEnableDoubleClickMaximize.value;
@@ -733,7 +733,7 @@ class MyApp extends StatelessWidget {
   /// 在智能停靠状态下自动禁用全屏功能
   static bool isFullScreenEnabled() {
     // 检查是否处于智能停靠状态
-    if (SmartDockManager.isSmartDockingEnabled()) {
+    if (MySmartDock.isSmartDockingEnabled()) {
       return false; // 智能停靠状态下禁用全屏功能
     }
     return _globalEnableFullScreen.value;
@@ -970,7 +970,7 @@ class MyApp extends StatelessWidget {
     _isEdgeDockingEnabled = false;
 
     // 停止智能停靠管理器
-    SmartDockManager.stopAll();
+    MySmartDock.stopAll();
   }
 
   // 私有变量用于鼠标监听
@@ -1364,7 +1364,7 @@ class MyApp extends StatelessWidget {
     required bool enabled,
     double visibleWidth = 5.0,
   }) async {
-    await SmartDockManager.setSmartEdgeDocking(
+    await MySmartDock.setSmartEdgeDocking(
       enabled: enabled,
       visibleWidth: visibleWidth,
     );
@@ -1372,7 +1372,7 @@ class MyApp extends StatelessWidget {
 
   /// 获取智能边缘停靠的启用状态
   static bool isSmartDockingEnabled() {
-    return SmartDockManager.isSmartDockingEnabled();
+    return MySmartDock.isSmartDockingEnabled();
   }
 
   /// 开始监听角落停靠的鼠标位置

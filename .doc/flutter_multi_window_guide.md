@@ -242,7 +242,7 @@ XLY 包目前基于 `window_manager` 提供了丰富的单窗口管理能力：
 | 角落停靠 | `MyApp.dockToCorner()` | 窗口对齐到角落 |
 | 智能停靠 | `MyApp.setSmartEdgeDocking()` | 类似 QQ 的智能停靠 |
 | 系统托盘 | `MyTray` | 托盘图标和菜单 |
-| 浮动面板 | `FloatPanel` | 应用内浮动面板 |
+| 浮动面板 | `MyFloatPanel` | 应用内浮动面板 |
 
 ### 建议新增的窗口模式 API
 

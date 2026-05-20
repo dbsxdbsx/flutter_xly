@@ -1,8 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-
-import 'models.dart';
-import 'widget.dart';
+part of '../../selector.dart';
 
 // ============================================================================
 // MySelectorController

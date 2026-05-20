@@ -1,6 +1,7 @@
 import 'package:flag/flag.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:xly/text_editor.dart';
 import 'package:xly/xly.dart';
 
 import '../main.dart';

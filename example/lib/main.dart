@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:xly/scaffold.dart';
 import 'package:xly/xly.dart';
 
 import 'pages/page1.dart';
@@ -255,7 +256,7 @@ void main() async {
           MyAdaptiveNavigationItem(
             icon: Icon(Icons.palette),
             selectedIcon: Icon(Icons.palette_outlined),
-            label: 'FloatPanel样式',
+            label: 'MyFloatPanel样式',
             subtitle: '浮动面板定制',
             group: '动画样式',
             route: MyRoutes.page11,
@@ -292,9 +293,9 @@ void main() async {
       );
     },
     // 全局浮动面板通过 floatPanel 参数自动挂载（新：items 方式）
-    floatPanel: FloatPanel()
+    floatPanel: MyFloatPanel()
       ..configure(
-        items: defaultFloatPanelItems(),
+        items: defaultMyFloatPanelItems(),
         horizontalExpandMode: HorizontalExpandMode.rightToLeft,
         // NOTE:示例：自定义样式和动画（可选，全部有默认值）
         // borderColor: Colors.blueGrey.withValues(alpha: 0.3),
@@ -307,21 +308,21 @@ void main() async {
   );
 }
 
-/// FloatPanel 默认按钮配置（供初始化和"恢复默认"使用）
-List<FloatPanelIconBtn> defaultFloatPanelItems() => [
-      FloatPanelIconBtn(
+/// MyFloatPanel 默认按钮配置（供初始化和"恢复默认"使用）
+List<MyFloatPanelIconBtn> defaultMyFloatPanelItems() => [
+      MyFloatPanelIconBtn(
         icon: Icons.filter_1,
         id: 'page1',
         tooltip: '打开组件展示页面。把浮动条拖到屏幕左侧时，这条提示应显示在浮动条右侧。',
         onTap: () => Get.toNamed(MyRoutes.page1),
       ),
-      FloatPanelIconBtn(
+      MyFloatPanelIconBtn(
         icon: Icons.filter_2,
         id: 'page2',
         tooltip: '打开样式测试页面。把浮动条拖到屏幕右侧时，这条提示应显示在浮动条左侧。',
         onTap: () => Get.toNamed(MyRoutes.page2),
       ),
-      FloatPanelIconBtn(
+      MyFloatPanelIconBtn(
         icon: Icons.filter_3,
         id: 'page3',
         tooltip: '打开弹窗对话页面。启用四边停靠并拖到顶部或底部后，可验证横向浮动条的上下避让。',

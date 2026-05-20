@@ -1,14 +1,14 @@
 part of '../../float_panel.dart';
 
 // 新的数据模型：浮动面板的按钮定义
-class FloatPanelIconBtn {
+class MyFloatPanelIconBtn {
   final IconData icon;
   final String? id; // 参与联动时填写；不需要联动可为空
   final FutureOr<void> Function()? onTap;
   final String? tooltip;
   final bool? disabled; // 显式禁用优先于联动
 
-  const FloatPanelIconBtn({
+  const MyFloatPanelIconBtn({
     required this.icon,
     this.id,
     this.onTap,

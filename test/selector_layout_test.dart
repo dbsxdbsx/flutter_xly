@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xly/xly.dart';
+import 'package:xly/selector.dart';
 
 /// 模拟"trigger 是整页 RenderBox"场景的最小宿主：
 /// - 全屏 [Builder] 把自己的 BuildContext 暴露给外层；

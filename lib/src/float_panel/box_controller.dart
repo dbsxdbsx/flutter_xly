@@ -1,9 +1,9 @@
 part of '../../float_panel.dart';
 
-class FloatBoxController extends GetxController {
-  // --- 从 FloatPanel.to 实时读取的配置（支持运行时修改） ---
-  FloatPanel get _fp => FloatPanel.to;
-  List<FloatPanelIconBtn> get items => _fp.items;
+class MyFloatBoxController extends GetxController {
+  // --- 从 MyFloatPanel.to 实时读取的配置（支持运行时修改） ---
+  MyFloatPanel get _fp => MyFloatPanel.to;
+  List<MyFloatPanelIconBtn> get items => _fp.items;
   bool get _enablePersistence => _fp.enablePersistence.value;
   bool get _dockToAllEdges => _fp.dockToAllEdges.value;
   HorizontalExpandMode get _horizontalExpandMode =>
@@ -53,7 +53,7 @@ class FloatBoxController extends GetxController {
   bool _isFirstTimePositioning = true;
   _DockEdge _currentDockEdge = _DockEdge.right; // 默认停靠右侧
 
-  FloatBoxController() : panelIcon = FloatPanel.to.initialPanelIcon.value.obs {
+  MyFloatBoxController() : panelIcon = MyFloatPanel.to.initialPanelIcon.value.obs {
     _syncFocusColorsList();
   }
 

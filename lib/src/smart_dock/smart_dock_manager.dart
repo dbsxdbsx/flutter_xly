@@ -18,7 +18,7 @@ import 'window_focus_manager.dart';
 /// - 使用 WindowAnimator 处理动画
 /// - 使用 MouseTracker 处理鼠标跟踪
 /// - 使用 WindowFocusManager 处理焦点管理
-class SmartDockManager {
+class MySmartDock {
   // 配置参数
   static bool _isSmartDockingEnabled = false;
   static double _smartDockVisibleWidth = 5.0;

@@ -1,5 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xly/xly.dart';
+import 'package:get/get.dart';
+import 'package:xly/app.dart';
+import 'package:xly/smart_dock.dart';
+import 'package:xly/tray.dart';
 
 void main() {
   group('SmartDock without Tray 集成测试', () {
@@ -19,17 +22,17 @@ void main() {
     });
 
     test('SmartDock相关功能在没有MyTray时应该可以正常调用', () {
-      // 这个测试验证SmartDockManager可以在没有MyTray的情况下使用
+      // 这个测试验证MySmartDock可以在没有MyTray的情况下使用
       expect(Get.isRegistered<MyTray>(), false);
 
       // 验证isSmartDockingEnabled方法可以正常调用
       expect(
-        () => SmartDockManager.isSmartDockingEnabled(),
+        () => MySmartDock.isSmartDockingEnabled(),
         returnsNormally,
       );
 
       // 默认状态应该是未启用
-      expect(SmartDockManager.isSmartDockingEnabled(), false);
+      expect(MySmartDock.isSmartDockingEnabled(), false);
     });
 
     test('MyTray注册后，Get.isRegistered应返回true', () async {
@@ -83,19 +86,19 @@ void main() {
 
       // SmartDock应该可以独立查询状态
       expect(
-        () => SmartDockManager.isSmartDockingEnabled(),
+        () => MySmartDock.isSmartDockingEnabled(),
         returnsNormally,
       );
 
       // 无论MyTray是否存在，SmartDock都应该返回一致的状态
-      final statusBeforeTray = SmartDockManager.isSmartDockingEnabled();
+      final statusBeforeTray = MySmartDock.isSmartDockingEnabled();
       expect(statusBeforeTray, false);
 
       // 即使我们检查MyTray的存在性，也不应该改变SmartDock的状态
       final hasTray = Get.isRegistered<MyTray>();
       expect(hasTray, false);
 
-      final statusAfterCheck = SmartDockManager.isSmartDockingEnabled();
+      final statusAfterCheck = MySmartDock.isSmartDockingEnabled();
       expect(statusAfterCheck, statusBeforeTray, reason: 'SmartDock状态应该保持一致');
     });
   });
@@ -163,8 +166,8 @@ void main() {
       expect(Get.isRegistered<MyTray>(), false);
 
       // SmartDock应该可以独立工作
-      expect(() => SmartDockManager.isSmartDockingEnabled(), returnsNormally);
-      expect(SmartDockManager.isSmartDockingEnabled(), false);
+      expect(() => MySmartDock.isSmartDockingEnabled(), returnsNormally);
+      expect(MySmartDock.isSmartDockingEnabled(), false);
 
       // 验证没有错误日志或异常
     });
@@ -172,7 +175,7 @@ void main() {
     test('场景2: 只使用Tray（没有SmartDock）', () {
       // 用户只想要托盘功能，不需要智能停靠
       // 这种情况下，SmartDock保持未启用状态
-      expect(SmartDockManager.isSmartDockingEnabled(), false);
+      expect(MySmartDock.isSmartDockingEnabled(), false);
 
       // Tray功能应该可以独立工作（在实际环境中）
       // 测试环境下我们只验证逻辑

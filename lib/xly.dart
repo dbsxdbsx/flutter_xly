@@ -1,13 +1,13 @@
 /// xly 包默认入口：再导出各子模块与第三方便捷 API。
 ///
 /// 按需引用示例：
-/// - `package:xly/xly.dart` — 全家桶（默认）
+/// - `package:xly/xly.dart` — 常用全家桶（不含大型可选 UI 模块，见下）
 /// - `package:xly/app.dart` — MyApp / 路由 / 窗口
-/// - `package:xly/float_panel.dart` — FloatPanel
+/// - `package:xly/float_panel.dart` — MyFloatPanel
 /// - `package:xly/paths.dart` — MyPaths（见 [paths.dart]）
 /// - `package:xly/notify.dart` / `tray.dart` — 通知与托盘
-/// - `package:xly/text_editor.dart` / `scaffold.dart` / `selector.dart` — 大型 UI 模块
-/// - `package:xly/smart_dock.dart` — 智能停靠
+/// - `package:xly/text_editor.dart` / `scaffold.dart` / `selector.dart` — 大型 UI（0.45+ 需单独 import）
+/// - `package:xly/smart_dock.dart` — MySmartDock（0.45+ 需单独 import）
 library;
 
 export 'app.dart';
@@ -33,15 +33,11 @@ export 'src/group_box.dart';
 export 'src/card.dart';
 export 'src/list.dart';
 export 'src/url_launcher.dart';
-export 'text_editor.dart';
 export 'src/spin_box.dart';
 export 'src/auto_start.dart';
 export 'src/platform.dart' show MyPlatform;
 export 'src/paths/lib.dart';
-export 'scaffold.dart';
-export 'src/smart_dock/smart_dock.dart';
 export 'src/tray/tray.dart';
 export 'src/notify/lib.dart';
 export 'src/loading_dot.dart';
 export 'src/tab_view/lib.dart';
-export 'src/selector/lib.dart';

@@ -30,7 +30,7 @@ graph TD
 /// 检查是否处于智能停靠模式
 bool _isInSmartDockMode() {
   try {
-    return SmartDockManager.isSmartDockingEnabled() &&
+    return MySmartDock.isSmartDockingEnabled() &&
            MouseTracker.state != MouseTrackingState.disabled;
   } catch (e) {
     if (kDebugMode) {
@@ -42,7 +42,7 @@ bool _isInSmartDockMode() {
 ```
 
 **检测逻辑**：
-- `SmartDockManager.isSmartDockingEnabled()`：智能停靠功能是否启用
+- `MySmartDock.isSmartDockingEnabled()`：智能停靠功能是否启用
 - `MouseTracker.state != MouseTrackingState.disabled`：是否有活跃的鼠标跟踪
 
 ### 2. 智能托盘隐藏逻辑
@@ -152,7 +152,7 @@ await MyApp.initialize(
 
 ```dart
 // 在应用启动后启用智能停靠
-await SmartDockManager.setSmartEdgeDocking(
+await MySmartDock.setSmartEdgeDocking(
   enabled: true,
   visibleWidth: 5.0,
 );
@@ -170,7 +170,7 @@ class MyController extends GetxController {
 
     // 可选：显示状态通知
     final isSmartMode = tray.isTrayMode.value &&
-                       SmartDockManager.isSmartDockingEnabled();
+                       MySmartDock.isSmartDockingEnabled();
 
     if (isSmartMode) {
       MyNotify.to.show("智能托盘模式", "鼠标移动到边缘可激活窗口");
@@ -194,7 +194,7 @@ class MyTray extends GetxService {
   final isVisible = true.obs;
 }
 
-class SmartDockManager {
+class MySmartDock {
   // 智能停靠启用状态
   static bool _isSmartDockingEnabled = false;
 }
@@ -213,7 +213,7 @@ class MouseTracker {
 ### 状态同步机制
 
 1. **托盘模式状态**：`MyTray.isTrayMode`
-2. **智能停靠状态**：`SmartDockManager.isSmartDockingEnabled()`
+2. **智能停靠状态**：`MySmartDock.isSmartDockingEnabled()`
 3. **鼠标跟踪状态**：`MouseTracker.state`
 4. **窗口可见性**：`MyTray.isVisible`
 
@@ -235,7 +235,7 @@ if (kDebugMode) {
 1. **智能模式未触发**
    ```dart
    // 检查智能停靠状态
-   debugPrint('SmartDock enabled: ${SmartDockManager.isSmartDockingEnabled()}');
+   debugPrint('SmartDock enabled: ${MySmartDock.isSmartDockingEnabled()}');
    debugPrint('Mouse tracking: ${MouseTracker.state}');
    ```
 
@@ -291,7 +291,7 @@ static Future<bool> setNoActivateTaskbar(bool enable) async {
 ## 🔗 相关组件
 
 - **MyTray**：托盘管理器
-- **SmartDockManager**：智能停靠管理器
+- **MySmartDock**：智能停靠管理器
 - **MouseTracker**：鼠标跟踪器
 - **WindowFocusManager**：窗口焦点管理器
 - **NativeWindowHelper**：原生窗口API封装

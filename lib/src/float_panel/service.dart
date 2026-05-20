@@ -1,11 +1,11 @@
 part of '../../float_panel.dart';
 
 /// 全局浮动面板管理器（类似 MyTray.to）
-class FloatPanel extends GetxService {
-  static FloatPanel get to => Get.find<FloatPanel>();
+class MyFloatPanel extends GetxService {
+  static MyFloatPanel get to => Get.find<MyFloatPanel>();
 
   // 内容（仅保留新方式）
-  final RxList<FloatPanelIconBtn> items = <FloatPanelIconBtn>[].obs;
+  final RxList<MyFloatPanelIconBtn> items = <MyFloatPanelIconBtn>[].obs;
 
   // 当前“禁用联动”的 id 集合，支持多个
   final RxSet<String> disabledIds = <String>{}.obs;
@@ -58,7 +58,7 @@ class FloatPanel extends GetxService {
 
   // --- 默认配置快照（第一次 configure 后自动保存） ---
   bool _hasDefaultSnapshot = false;
-  List<FloatPanelIconBtn> _defaultItems = [];
+  List<MyFloatPanelIconBtn> _defaultItems = [];
   bool _defaultVisible = true;
   bool _defaultEnablePersistence = true;
   bool _defaultDockToAllEdges = true;
@@ -73,7 +73,7 @@ class FloatPanel extends GetxService {
 
   // 统一配置入口
   void configure({
-    List<FloatPanelIconBtn>? items,
+    List<MyFloatPanelIconBtn>? items,
     bool? visible,
     // 停靠与持久化
     bool? enablePersistence,
@@ -156,12 +156,12 @@ class FloatPanel extends GetxService {
   bool isDisabled(String id) => disabledIds.contains(id);
 
   // 针对单个图标按钮的链式控制句柄
-  FloatPanelIconBtnCtrl iconBtn(String id) => FloatPanelIconBtnCtrl._(id);
+  MyFloatPanelIconBtnCtrl iconBtn(String id) => MyFloatPanelIconBtnCtrl._(id);
 
   // 所有图标按钮的集合句柄
-  FloatPanelIconBtnsCtrl get iconBtns => const FloatPanelIconBtnsCtrl._();
+  MyFloatPanelIconBtnsCtrl get iconBtns => const MyFloatPanelIconBtnsCtrl._();
 
-  /// 由 [MyApp] 挂载的全局浮动条 overlay（样式从 [FloatPanel.to] 实时读取）。
+  /// 由 [MyApp] 挂载的全局浮动条 overlay（样式从 [MyFloatPanel.to] 实时读取）。
   Widget buildOverlay() {
     return _FloatBoxPanel(
       panelWidthInput: panelWidth.value,
@@ -171,31 +171,31 @@ class FloatPanel extends GetxService {
 }
 
 // 所有图标按钮的集合控制器（基于启用语义）
-class FloatPanelIconBtnsCtrl {
-  const FloatPanelIconBtnsCtrl._();
+class MyFloatPanelIconBtnsCtrl {
+  const MyFloatPanelIconBtnsCtrl._();
 
   // 启用全部（清空禁用集合）
-  void enableAll() => FloatPanel.to.disabledIds.clear();
+  void enableAll() => MyFloatPanel.to.disabledIds.clear();
 
   // 为指定 id 设置启用状态（语法糖，等价于 iconBtn(id).setEnabled(value)）
   void setEnabled(String id, bool value) {
-    FloatPanel.to.iconBtn(id).setEnabled(value);
+    MyFloatPanel.to.iconBtn(id).setEnabled(value);
   }
 
   // 切换指定 id 的启用状态（语法糖，等价于 iconBtn(id).toggleEnabled()）
   void toggleEnabled(String id) {
-    FloatPanel.to.iconBtn(id).toggleEnabled();
+    MyFloatPanel.to.iconBtn(id).toggleEnabled();
   }
 }
 
 // 针对单个图标按钮的链式控制器（语法糖）
-class FloatPanelIconBtnCtrl {
+class MyFloatPanelIconBtnCtrl {
   final String id;
-  FloatPanelIconBtnCtrl._(this.id);
+  MyFloatPanelIconBtnCtrl._(this.id);
 
   // 设置启用状态；true=启用（从禁用集合移除），false=禁用（加入禁用集合）
-  FloatPanelIconBtnCtrl setEnabled(bool value) {
-    final fp = FloatPanel.to;
+  MyFloatPanelIconBtnCtrl setEnabled(bool value) {
+    final fp = MyFloatPanel.to;
     if (value) {
       fp.disabledIds.remove(id);
     } else {
@@ -205,8 +205,8 @@ class FloatPanelIconBtnCtrl {
   }
 
   // 便捷切换启用状态（仅联动维度，不含显式 disabled: true）
-  FloatPanelIconBtnCtrl toggleEnabled() {
-    final fp = FloatPanel.to;
+  MyFloatPanelIconBtnCtrl toggleEnabled() {
+    final fp = MyFloatPanel.to;
     if (fp.disabledIds.contains(id)) {
       fp.disabledIds.remove(id);
     } else {
@@ -216,8 +216,8 @@ class FloatPanelIconBtnCtrl {
   }
 
   /// 设置该 id 的“常亮（高亮显示）”状态；不影响启用/禁用
-  FloatPanelIconBtnCtrl setHighlighted(bool value) {
-    final set = FloatPanel.to.highlightedIds;
+  MyFloatPanelIconBtnCtrl setHighlighted(bool value) {
+    final set = MyFloatPanel.to.highlightedIds;
     if (value) {
       set.add(id);
     } else {
@@ -227,8 +227,8 @@ class FloatPanelIconBtnCtrl {
   }
 
   /// toggle highlighted state
-  FloatPanelIconBtnCtrl toggleHighlighted() {
-    final set = FloatPanel.to.highlightedIds;
+  MyFloatPanelIconBtnCtrl toggleHighlighted() {
+    final set = MyFloatPanel.to.highlightedIds;
     if (set.contains(id)) {
       set.remove(id);
     } else {
@@ -238,8 +238,8 @@ class FloatPanelIconBtnCtrl {
   }
 
   /// whether current id is highlighted
-  bool get isHighlighted => FloatPanel.to.highlightedIds.contains(id);
+  bool get isHighlighted => MyFloatPanel.to.highlightedIds.contains(id);
 
   // 查询当前是否处于启用（仅联动维度，不含显式 disabled: true）
-  bool get isEnabled => !FloatPanel.to.isDisabled(id);
+  bool get isEnabled => !MyFloatPanel.to.isDisabled(id);
 }
