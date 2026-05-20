@@ -1,5 +1,7 @@
 # XLY 包
 
+> AI / Agent 协作请先读 [AGENTS.md](AGENTS.md)（命名约定、命令索引、`.doc/` 知识库入口）。
+
 XLY 是一个 Flutter 懒人工具包，提供了一些常用的功能和组件。虽然目前仍在开发中，但已经可以在项目中使用许多实用功能。
 
 ## 功能（Features）
@@ -2073,10 +2075,12 @@ if (MyPlatform.isWindows) {
 String platform = MyPlatform.platformName;
 print('当前平台：$platform'); // 输出：当前平台：Windows
 
-// 文件操作
+// 文件操作（桌面：getAppDirectory / getFile 相对「安装目录」= exe 同级）
+final installDir = MyPlatform.installDirectory; // 同步，推荐新代码使用
 final appDir = await MyPlatform.getAppDirectory();
 final file = await MyPlatform.getFile('example.txt');
 final assetFile = await MyPlatform.getFilePastedFromAssets('config.json');
+// 用户配置、日志等请用 MyUserDataPaths + getUserDataFile，见 AGENTS.md 与 .doc/user_data_paths.md
 
 // 延迟显示组件
 Widget buildPingDisplay() {

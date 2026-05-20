@@ -9,6 +9,8 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'logger.dart';
+import 'paths/my_file_root.dart';
+import 'paths/my_user_data_paths.dart';
 
 /// 平台工具类，提供跨平台的文件操作、权限管理和窗口控制等功能
 class MyPlatform {
@@ -106,11 +108,24 @@ class MyPlatform {
     }
   }
 
+  /// 安装目录（同步）：桌面为 exe 所在目录；Web 不支持。
+  ///
+  /// 用于二进制、托盘图标等与安装位置绑定的资源。
+  /// **不是**用户配置/日志目录；后者请用 [MyUserDataPaths]。
+  static String get installDirectory {
+    if (kIsWeb) {
+      throw UnsupportedError('Web平台不支持获取安装目录');
+    }
+    return path.normalize(path.dirname(Platform.resolvedExecutable));
+  }
+
   /// 获取应用程序目录
   ///
-  /// Web平台会抛出 [UnsupportedError]
-  /// 移动平台返回应用文档目录
-  /// 桌面平台返回可执行文件所在目录
+  /// Web 平台会抛出 [UnsupportedError]。
+  /// 桌面端返回 [installDirectory]（exe 所在目录，**不是**用户数据目录）。
+  /// 移动端返回应用文档目录。
+  ///
+  /// 读写用户配置、日志等请使用 [MyUserDataPaths] 或 [resolveFile]（[MyFileRoot.userData]）。
   static Future<String> getAppDirectory() async {
     if (kIsWeb) {
       throw UnsupportedError('Web平台不支持获取应用程序目录');
@@ -118,7 +133,7 @@ class MyPlatform {
 
     try {
       if (isDesktop) {
-        return path.dirname(Platform.resolvedExecutable);
+        return installDirectory;
       } else {
         final appDocDir = await getApplicationDocumentsDirectory();
         return appDocDir.path;
@@ -129,18 +144,67 @@ class MyPlatform {
     }
   }
 
-  /// 获取指定文件对象
+  /// 按根目录解析可写文件的绝对路径。
   ///
-  /// [fileName] 文件名
-  /// [externalPath] 是否使用外部存储路径（仅Android平台有效）
-  ///
-  /// Web平台会抛出 [UnsupportedError]
-  static Future<File> getFile(String fileName,
-      [bool externalPath = true]) async {
+  /// [root] 为 [MyFileRoot.install] 时行为等同旧版 [getFilePath]；
+  /// 为 [MyFileRoot.userData] 时基于 [MyUserDataPaths.requireRoot]。
+  static Future<String> resolveFilePath(
+    String fileName, {
+    MyFileRoot root = MyFileRoot.install,
+    bool externalPath = false,
+  }) async {
     if (kIsWeb) {
       throw UnsupportedError('Web平台不支持文件操作');
     }
-    return File(await getFilePath(fileName, externalPath));
+
+    switch (root) {
+      case MyFileRoot.userData:
+        return MyUserDataPaths.filePath(fileName);
+      case MyFileRoot.install:
+        String installDir;
+        if (externalPath && Platform.isAndroid) {
+          installDir =
+              await getExternalStoragePath() ?? await getAppDirectory();
+        } else {
+          installDir = await getAppDirectory();
+        }
+        return path.join(installDir, fileName);
+    }
+  }
+
+  /// 按根目录解析可写文件（绝对路径）。
+  static Future<File> resolveFile(
+    String fileName, {
+    MyFileRoot root = MyFileRoot.install,
+    bool externalPath = false,
+  }) async {
+    return File(await resolveFilePath(
+      fileName,
+      root: root,
+      externalPath: externalPath,
+    ));
+  }
+
+  /// 用户数据目录下的文件（须已 [MyUserDataPaths.setRoot]）。
+  static Future<File> getUserDataFile(String fileName) {
+    return resolveFile(fileName, root: MyFileRoot.userData);
+  }
+
+  /// 用户数据目录下文件的路径字符串。
+  static Future<String> getUserDataFilePath(String fileName) {
+    return resolveFilePath(fileName, root: MyFileRoot.userData);
+  }
+
+  /// 获取安装目录下的文件（桌面为 exe 同级；移动为文档目录）。
+  ///
+  /// 等价于 [resolveFile](fileName, root: [MyFileRoot.install], externalPath: externalPath)。
+  static Future<File> getFile(String fileName,
+      [bool externalPath = true]) async {
+    return resolveFile(
+      fileName,
+      root: MyFileRoot.install,
+      externalPath: externalPath,
+    );
   }
 
   /// 获取外部存储路径（仅Android平台）
@@ -162,46 +226,37 @@ class MyPlatform {
     return null;
   }
 
-  /// 获取文件完整路径
+  /// 获取安装目录下文件的完整路径。
   ///
-  /// [fileName] 文件名
-  /// [externalPath] 是否使用外部存储路径（仅Android平台有效）
-  ///
-  /// Web平台会抛出 [UnsupportedError]
+  /// 等价于 [resolveFilePath](fileName, root: [MyFileRoot.install], externalPath: externalPath)。
   static Future<String> getFilePath(String fileName,
       [bool externalPath = false]) async {
-    if (kIsWeb) {
-      throw UnsupportedError('Web平台不支持文件操作');
-    }
-
-    try {
-      String appDir;
-      if (externalPath && Platform.isAndroid) {
-        appDir = await getExternalStoragePath() ?? await getAppDirectory();
-      } else {
-        appDir = await getAppDirectory();
-      }
-      return path.join(appDir, fileName);
-    } catch (e) {
-      XlyLogger.error('获取文件路径时出错', e);
-      rethrow;
-    }
+    return resolveFilePath(
+      fileName,
+      root: MyFileRoot.install,
+      externalPath: externalPath,
+    );
   }
 
-  /// 从assets复制文件到应用目录
+  /// 从 assets 复制文件到指定根目录（目标不存在时写入）。
   ///
-  /// [fileName] 文件名，必须与assets中的文件名一致
-  /// [externalPath] 是否使用外部存储路径（仅Android平台有效）
-  ///
-  /// Web平台会抛出 [UnsupportedError]
-  static Future<File> getFilePastedFromAssets(String fileName,
-      [bool externalPath = false]) async {
+  /// [externalPath] 仅对 [MyFileRoot.install] + Android 有效（与旧 API 兼容）。
+  /// [root] 为 [MyFileRoot.userData] 时写入 [MyUserDataPaths] 根下。
+  static Future<File> getFilePastedFromAssets(
+    String fileName, [
+    bool externalPath = false,
+    MyFileRoot root = MyFileRoot.install,
+  ]) async {
     if (kIsWeb) {
       throw UnsupportedError('Web平台不支持文件操作');
     }
 
     try {
-      final targetFile = await getFile(fileName, externalPath);
+      final targetFile = await resolveFile(
+        fileName,
+        root: root,
+        externalPath: externalPath,
+      );
 
       if (!await targetFile.exists()) {
         final assetsPath = 'assets/$fileName';

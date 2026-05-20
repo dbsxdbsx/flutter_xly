@@ -1,3 +1,21 @@
+## 0.41.0 - 2026-05-20
+
+### Added
+
+- **路径分层**：`MyPlatform.installDirectory`（安装目录，桌面为 exe 同级）；`MyUserDataPaths`（`setRoot` / `requireRoot` / `resetCache`、`file`、`logsDirectory`、`atomicWriteString`）。
+- **按根解析文件**：`MyFileRoot`、`MyPlatform.resolveFile` / `resolveFilePath`；`getUserDataFile` / `getUserDataFilePath`。
+- **Bootstrap 指针**：`MyUserDataDirectoryStore`（默认 `user_data_directory.json` + `userDataDirectory` 字段，可自定义）。
+- **目录校验与迁移**：`MyUserDataDirectoryValidator`、`MyUserDataFilesMigrator.migrateFromInstallDirectory`。
+
+### Changed
+
+- **`MyPlatform.getAppDirectory`**：文档明确桌面端为安装目录，**不是**用户数据目录；实现改为复用 `installDirectory`。
+- **`MyPlatform.getFile` / `getFilePath`**：行为不变（仍相对安装目录），内部走 `resolveFile`；`getFilePastedFromAssets` 增加可选第三参数 `MyFileRoot root`（默认 `install`，旧的两参数调用仍兼容）。
+
+### Docs
+
+- 安装目录 vs 用户数据目录的区分见 `lib/src/paths/` 模块注释；下游桌面应用请将配置/日志迁至 `MyUserDataPaths`。
+
 ## 0.40.0 - 2026-05-14
 
 ### Added
