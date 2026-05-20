@@ -17,9 +17,12 @@
 ```text
 xly/
 ├── lib/
-│   ├── xly.dart              # 唯一 library 入口：export + part(app, float_panel)
+│   ├── xly.dart              # barrel：再导出 app / float_panel / 各 UI 模块
+│   ├── app.dart              # MyApp.initialize、路由、窗口（可选子入口）
+│   ├── float_panel.dart      # FloatPanel（可选子入口）
+│   ├── paths.dart            # MyPaths（可选子入口）
 │   └── src/
-│       ├── app/              # part：MyApp.initialize、路由、窗口（models + mixins）
+│       ├── app/              # app.dart 的 part：models + my_app
 │       ├── platform.dart     # MyPlatform：平台检测、权限、窗口
 │       ├── paths/            # MyPaths、Store、Validator、Migrator
 │       ├── tray/             # MyTray
@@ -44,7 +47,7 @@ xly/
 语义索引：
 
 - 改 **路径 API** → `lib/src/paths/`、[`.doc/user_data_paths.md`](.doc/user_data_paths.md)
-- 改 **MyApp 启动 / Zone / 异常** → `lib/src/app.dart`（part）、`.doc/error_handling.md`
+- 改 **MyApp 启动 / Zone / 异常** → `lib/app.dart`、`lib/src/app/`、`.doc/error_handling.md`
 - 改 **Windows 通知** → `lib/src/notify/`、`.doc/my_notify_usage_guide.md`
 - 改 **CLI** → `bin/`、`tool/`
 
@@ -86,14 +89,15 @@ xly/
 
 ### 4.3 其它约定
 
-- 仅 `lib/src/app.dart`、`lib/src/float_panel.dart` 为 `part of '../xly.dart'`。
+- `app` / `float_panel` 为独立 library（`lib/app.dart`、`lib/float_panel.dart`），非 `xly.dart` 的 part。
 - `MyPlatform` **不含**路径方法。
 - `MyApp.initialize` 默认 `enableZoneGuard: false`（见 `.doc/error_handling.md`）。
 
 ## 5. Active Context
 
 - **最近完成**：0.42.0 — `MyPaths` 破坏性路径收敛；文档与 example `Page14Paths`。
-- **后续**：见 [`.issue/xly-package-hygiene-backlog.md`](.issue/xly-package-hygiene-backlog.md)（app/float_panel 拆分、通知边界等）。
+- **最近完成**：0.43 B — `app` / `float_panel` 独立 library + `paths.dart` 子入口；`xly.dart` 为 barrel。
+- **后续**：见 [`.issue/xly-package-hygiene-backlog.md`](.issue/xly-package-hygiene-backlog.md)（阶段 C：通知边界、export 粒度等）。
 
 > **公开仓库纪律**：`AGENTS.md` / `README` / `CHANGELOG` / `.doc/` 中**禁止**写入未开源消费者项目名、内部路径或私有仓库线索。
 

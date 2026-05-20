@@ -1,4 +1,4 @@
-part of '../../xly.dart';
+part of '../../float_panel.dart';
 
 /// 全局浮动面板管理器（类似 MyTray.to）
 class FloatPanel extends GetxService {
@@ -160,6 +160,14 @@ class FloatPanel extends GetxService {
 
   // 所有图标按钮的集合句柄
   FloatPanelIconBtnsCtrl get iconBtns => const FloatPanelIconBtnsCtrl._();
+
+  /// 由 [MyApp] 挂载的全局浮动条 overlay（样式从 [FloatPanel.to] 实时读取）。
+  Widget buildOverlay() {
+    return _FloatBoxPanel(
+      panelWidthInput: panelWidth.value,
+      borderRadiusInput: borderRadius.value,
+    );
+  }
 }
 
 // 所有图标按钮的集合控制器（基于启用语义）

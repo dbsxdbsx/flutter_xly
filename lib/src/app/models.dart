@@ -1,4 +1,4 @@
-part of '../../xly.dart';
+part of '../../app.dart';
 
 class VoidCallbackIntent extends Intent {
   final VoidCallback callback;

@@ -1,4 +1,4 @@
-part of '../../xly.dart';
+part of '../../float_panel.dart';
 
 class FloatBoxController extends GetxController {
   // --- 从 FloatPanel.to 实时读取的配置（支持运行时修改） ---

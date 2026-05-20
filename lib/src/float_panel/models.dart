@@ -1,4 +1,4 @@
-part of '../../xly.dart';
+part of '../../float_panel.dart';
 
 // 新的数据模型：浮动面板的按钮定义
 class FloatPanelIconBtn {

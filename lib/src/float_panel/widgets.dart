@@ -1,4 +1,4 @@
-part of '../../xly.dart';
+part of '../../float_panel.dart';
 
 class _FloatBoxPanel extends StatefulWidget {
   final Key? panelKey;
