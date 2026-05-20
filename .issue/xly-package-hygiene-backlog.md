@@ -4,7 +4,7 @@
 
 ## B — 结构卫生（建议 0.43）
 
-- [ ] 拆分 `lib/src/app.dart` part（~1700 行）：启动 / Zone、路由、窗口初始化
+- [x] 拆分 `lib/src/app/` part（`models` / `my_app` + `MyAppWindowApi` / `MyAppDocking` mixin，2026-05-20）
 - [x] 拆分 `lib/src/float_panel/` part（`models` / `service` / `box_controller` / `widgets`，2026-05-20）
 - [ ] 评估 `part of` → 独立 library + 选择性 export
 

@@ -19,7 +19,7 @@ xly/
 ├── lib/
 │   ├── xly.dart              # 唯一 library 入口：export + part(app, float_panel)
 │   └── src/
-│       ├── app.dart          # part：MyApp.initialize、路由、窗口
+│       ├── app/              # part：MyApp.initialize、路由、窗口（models + mixins）
 │       ├── platform.dart     # MyPlatform：平台检测、权限、窗口
 │       ├── paths/            # MyPaths、Store、Validator、Migrator
 │       ├── tray/             # MyTray
