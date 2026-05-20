@@ -7,9 +7,9 @@ class MyPaths {
 
   static void resetForTest() {}
 
-  static String get installDir => _unsupported();
+  static String get appDir => _unsupported();
 
-  static Future<Never> installFile(
+  static Future<Never> appDirFile(
     String relativePath, {
     bool androidPreferExternal = false,
   }) =>
@@ -22,11 +22,12 @@ class MyPaths {
 
   static String get userDataDir => _unsupported();
 
-  static Future<Never> userDataFile(String relativePath) => _unsupportedAsync();
+  static Future<Never> userDataDirFile(String relativePath) =>
+      _unsupportedAsync();
 
   static Future<Never> userDataLogsDir() => _unsupportedAsync();
 
-  static Future<Never> copyAssetToInstallDir(
+  static Future<Never> copyAssetToAppDir(
     String assetRelativePath, {
     bool androidPreferExternal = false,
   }) =>

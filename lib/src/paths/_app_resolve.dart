@@ -10,52 +10,52 @@ import '_path_safety.dart';
 bool get _isDesktopHost =>
     !kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS);
 
-/// install 轨目录与文件解析（供 [MyPaths] 使用）。
-class InstallPathResolve {
-  InstallPathResolve._();
+/// app 轨目录与文件解析（供 [MyPaths] 使用）。
+class AppPathResolve {
+  AppPathResolve._();
 
-  static String? _mobileInstallDirCache;
+  static String? _mobileAppDirCache;
 
   static void resetForTest() {
-    _mobileInstallDirCache = null;
+    _mobileAppDirCache = null;
   }
 
   /// 桌面：exe 目录（同步）。移动：若已缓存则返回 Documents 等，否则抛 [StateError]。
-  static String syncInstallDirOrThrow() {
+  static String syncAppDirOrThrow() {
     if (kIsWeb) {
       throw UnsupportedError('Web 平台不支持路径文件 API');
     }
     if (_isDesktopHost) {
       return p.normalize(p.dirname(Platform.resolvedExecutable));
     }
-    final cached = _mobileInstallDirCache;
+    final cached = _mobileAppDirCache;
     if (cached != null) return cached;
     throw StateError(
-      '移动端 installDir 尚未就绪，请先调用 MyPaths.installFile 等异步方法',
+      '移动端 appDir 尚未就绪，请先调用 MyPaths.appDirFile 等异步方法',
     );
   }
 
-  static Future<String> resolveInstallDir({
+  static Future<String> resolveAppDir({
     bool androidPreferExternal = false,
   }) async {
     if (kIsWeb) {
       throw UnsupportedError('Web 平台不支持路径文件 API');
     }
     if (_isDesktopHost) {
-      return syncInstallDirOrThrow();
+      return syncAppDirOrThrow();
     }
     if (androidPreferExternal && Platform.isAndroid) {
       final external = await _externalStoragePath();
       if (external != null) {
-        _mobileInstallDirCache = external;
+        _mobileAppDirCache = external;
         return external;
       }
     }
-    if (_mobileInstallDirCache != null) {
-      return _mobileInstallDirCache!;
+    if (_mobileAppDirCache != null) {
+      return _mobileAppDirCache!;
     }
     final doc = await getApplicationDocumentsDirectory();
-    _mobileInstallDirCache = doc.path;
+    _mobileAppDirCache = doc.path;
     return doc.path;
   }
 
@@ -64,7 +64,7 @@ class InstallPathResolve {
     bool androidPreferExternal = false,
   }) async {
     assertSafeRelativePath(relativePath);
-    final base = await resolveInstallDir(
+    final base = await resolveAppDir(
       androidPreferExternal: androidPreferExternal,
     );
     return p.join(base, relativePath);

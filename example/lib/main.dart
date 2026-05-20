@@ -282,7 +282,7 @@ void main() async {
             icon: Icon(Icons.folder_outlined),
             selectedIcon: Icon(Icons.folder),
             label: 'MyPaths 路径',
-            subtitle: 'install / userData 双轨',
+            subtitle: 'app / userData 双轨',
             group: '面板组件',
             route: MyRoutes.page14Paths,
           ),

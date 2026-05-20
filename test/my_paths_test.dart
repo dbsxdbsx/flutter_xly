@@ -48,19 +48,19 @@ void main() {
       );
     });
 
-    test('userDataFile 返回绝对路径', () async {
+    test('userDataDirFile 返回绝对路径', () async {
       final dir = Directory.systemTemp.createTempSync('xly_user_data_');
       MyPaths.setUserDataDir(dir.path);
-      final file = await MyPaths.userDataFile('config.json');
+      final file = await MyPaths.userDataDirFile('config.json');
       expect(file.path, p.join(MyPaths.userDataDir, 'config.json'));
       expect(p.isAbsolute(file.path), isTrue);
     });
 
-    test('userDataFile 拒绝 .. 路径', () async {
+    test('userDataDirFile 拒绝 .. 路径', () async {
       final dir = Directory.systemTemp.createTempSync('xly_user_data_');
       MyPaths.setUserDataDir(dir.path);
       expect(
-        () => MyPaths.userDataFile('../escape.json'),
+        () => MyPaths.userDataDirFile('../escape.json'),
         throwsA(isA<ArgumentError>()),
       );
     });
@@ -68,7 +68,7 @@ void main() {
     test('atomicWriteString 写入并可读回', () async {
       final dir = Directory.systemTemp.createTempSync('xly_user_data_');
       MyPaths.setUserDataDir(dir.path);
-      final file = await MyPaths.userDataFile('atomic_test.txt');
+      final file = await MyPaths.userDataDirFile('atomic_test.txt');
       await MyPaths.atomicWriteString(file, 'hello');
       expect(await file.readAsString(), 'hello');
     });
@@ -82,20 +82,20 @@ void main() {
     });
   });
 
-  group('MyPaths install 轨', () {
-    test('installDir 返回非空绝对路径', () {
+  group('MyPaths app 轨', () {
+    test('appDir 返回非空绝对路径', () {
       TestWidgetsFlutterBinding.ensureInitialized();
-      final install = MyPaths.installDir;
-      expect(install, isNotEmpty);
-      expect(p.isAbsolute(install), isTrue);
+      final app = MyPaths.appDir;
+      expect(app, isNotEmpty);
+      expect(p.isAbsolute(app), isTrue);
     }, skip: !_runsOnDesktopHost);
 
-    test('installFile 解析到 installDir 下', () async {
+    test('appDirFile 解析到 appDir 下', () async {
       TestWidgetsFlutterBinding.ensureInitialized();
-      final file = await MyPaths.installFile(
-        'xly_install_probe_${DateTime.now().microsecondsSinceEpoch}.tmp',
+      final file = await MyPaths.appDirFile(
+        'xly_app_probe_${DateTime.now().microsecondsSinceEpoch}.tmp',
       );
-      expect(p.dirname(file.path), MyPaths.installDir);
+      expect(p.dirname(file.path), MyPaths.appDir);
     }, skip: !_runsOnDesktopHost);
   });
 

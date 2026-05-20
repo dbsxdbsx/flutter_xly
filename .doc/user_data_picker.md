@@ -9,7 +9,7 @@
 | **`MyUserDataDirSession.prepare`** | 启动时：**能否自动恢复**上次的数据目录？若不能，是否要用户再选？ |
 | **`MyPicker.dir` / `userDataDirAndApply`** | 需要 **OS 系统对话框** 选文件夹时，谁去调 `file_selector`？ |
 | **`Session.apply`** | 路径**已经确定**（选完或手输），如何 **校验 + 写入 bootstrap + setUserDataDir**？ |
-| **`MyPaths.userDataFile`** | 根**已定**之后，如何读写 `config.json` 等（与选目录无关） |
+| **`MyPaths.userDataDirFile`** | 根**已定**之后，如何读写 `config.json` 等（与选目录无关） |
 
 记忆：**prepare = 启动编排；Picker = 弹出选夹的那一下；apply = 把选定路径落盘。**
 
@@ -27,7 +27,7 @@ flowchart TD
     A --> R
   end
   subgraph runtime [运行中]
-    R --> RW[MyPaths.userDataFile 等]
+    R --> RW[MyPaths.userDataDirFile 等]
   end
   subgraph menu [菜单改目录]
     RW --> U[MyPicker.userDataDirAndApply]
@@ -58,9 +58,9 @@ flowchart LR
 | 系统选文件 / 多文件 | `MyPicker.file` / `files` | 不是 `MySelector`（应用内列表） |
 | 选目录并保存为 userData 根 | `MyPicker.userDataDirAndApply` | 菜单改目录首选 |
 | 手输路径后保存 | `Session.apply` | 不必先 `Picker` |
-| 读写业务文件 | `MyPaths.userDataFile` | 须先 `setUserDataDir`（通常由 prepare/apply 完成） |
+| 读写业务文件 | `MyPaths.userDataDirFile` | 须先 `setUserDataDir`（通常由 prepare/apply 完成） |
 
-**何时可以不要 Picker / Session？** 便携应用（只用 install 轨）、或你自己完全接管路径逻辑时。见 [paths 文档 · 何时需要哪套能力](user_data_paths.md#何时需要哪套能力)。
+**何时可以不要 Picker / Session？** 便携应用（只用 app 轨）、或你自己完全接管路径逻辑时。见 [paths 文档 · 何时需要哪套能力](user_data_paths.md#何时需要哪套能力)。
 
 ## 三者对照
 
@@ -68,7 +68,7 @@ flowchart LR
 |---|------------|--------------|-----------|
 | 入口 | `package:xly/picker.dart` | `package:xly/selector.dart` | `package:xly/paths.dart` 或 `xly.dart` |
 | 作用 | OS 文件/夹对话框 | 应用内浮层列表 | 已知根的路径 IO |
-| 典型调用 | `await MyPicker.dir()` | `await MySelector.show(...)` | `MyPaths.userDataFile('a.json')` |
+| 典型调用 | `await MyPicker.dir()` | `await MySelector.show(...)` | `MyPaths.userDataDirFile('a.json')` |
 
 **注意**：`MyPicker.dir()` 是**弹出系统选夹**。未传 `initialDir` 且已 `setUserDataDir` 时，对话框会默认打开当前 `MyPaths.userDataDir`（见 `MyPicker.resolveInitialDir`）。
 

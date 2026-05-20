@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:xly/xly.dart';
 
-/// MyPaths（install / userData 双轨）演示页。
+/// MyPaths（app / userData 双轨）演示页。
 class Page14Paths extends StatelessWidget {
   const Page14Paths({super.key});
 
@@ -33,7 +33,7 @@ class Page14Paths extends StatelessWidget {
                   ),
                   SizedBox(height: 8.h),
                   Text(
-                    'installDir: ${c.installDirText}',
+                    'appDir: ${c.appDirText}',
                     style: TextStyle(fontSize: 12.sp),
                   ),
                   if (c.userDataSummary != null) ...[
@@ -64,16 +64,16 @@ class Page14Paths extends StatelessWidget {
 }
 
 class Page14PathsController extends GetxController {
-  String installDirText = '';
+  String appDirText = '';
   String? userDataSummary;
 
   @override
   void onInit() {
     super.onInit();
     try {
-      installDirText = MyPaths.installDir;
+      appDirText = MyPaths.appDir;
     } catch (e) {
-      installDirText = e.toString();
+      appDirText = e.toString();
     }
     final dir = Directory.systemTemp.createTempSync('xly_example_ud_');
     MyPaths.setUserDataDir(dir.path);
@@ -81,7 +81,7 @@ class Page14PathsController extends GetxController {
   }
 
   Future<void> writeUserDataProbe() async {
-    final file = await MyPaths.userDataFile('paths_demo.json');
+    final file = await MyPaths.userDataDirFile('paths_demo.json');
     await MyPaths.atomicWriteString(file, '{"ok":true}');
     userDataSummary = '已写入 ${file.path}\n内容: ${await file.readAsString()}';
     update();

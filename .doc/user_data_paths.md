@@ -1,6 +1,7 @@
-# 安装目录与用户数据目录（MyPaths）
+# 程序分发根与用户数据目录（MyPaths）
 
-> 命名约定摘要见 [`AGENTS.md` §4.2](../AGENTS.md#42-路径mypaths--install--userdata)。本文是路径 API 的**完整说明**。  
+> 命名约定摘要见 [`AGENTS.md` §4.2](../AGENTS.md#42-路径mypaths--app--userdata)。本文是路径 API 的**完整说明**。  
+> `app*` 表示程序侧资源根（desktop：exe 同级），**与安装向导 / `installErrorHandlers` 无关**。  
 > **启动编排 + 系统选目录**（流程图、何时用哪套 API）见 [`.doc/user_data_picker.md`](user_data_picker.md)。
 
 ## 解决什么问题？
@@ -9,8 +10,8 @@
 
 | 类型 | 典型内容 | xly 轨 |
 |------|----------|--------|
-| 随程序安装 | `tray.ico`、内置 exe | **install**（`installDir` / `installFile`） |
-| 用户业务数据 | 配置、日志、数据库 | **userData**（`userDataDir` / `userDataFile`） |
+| 随程序分发 | `tray.ico`、内置 exe | **app**（`appDir` / `appDirFile`） |
+| 用户业务数据 | 配置、日志、数据库 | **userData**（`userDataDir` / `userDataDirFile`） |
 
 用户可能把数据放在 `D:\AppData`，程序在 `C:\Program Files\...`。库要帮你解决：
 
@@ -36,17 +37,17 @@ flowchart LR
 ```
 
 - **Bootstrap JSON**：小文件，只存「用户数据根在哪」；默认在 `getApplicationSupportDirectory()` 下。
-- **真实数据目录**：用户选的（或移动端 Documents）；`userDataFile('config.json')` 都相对这里。
+- **真实数据目录**：用户选的（或移动端 Documents）；`userDataDirFile('config.json')` 都相对这里。
 
-## 命名：Dir 与 File
+## 命名：Dir 与 DirFile
 
 | 后缀 | 返回 | 含义 |
 |------|------|------|
-| `Dir` | `String`（目录路径） | 文件夹根或子目录（如 `userDataLogsDir`） |
-| `File` | `Future<File>` | `dart:io` 文件；参数为**相对路径** |
-| `…To…Dir` | `Future<File>` | 如 `copyAssetToInstallDir`：`Dir` 表示落到哪条轨，返回值仍是文件 |
+| `Dir` | `String`（目录路径） | 轨根或固定子目录（如 `appDir`、`userDataLogsDir`） |
+| `DirFile` | `Future<File>` | 对应 `*Dir` 根下的相对路径文件（如 `appDirFile`、`userDataDirFile`） |
+| `…To…Dir` | `Future<File>` | 如 `copyAssetToAppDir`：复制到某轨根，返回值仍是文件 |
 
-需要文件路径字符串：`(await MyPaths.userDataFile('a.json')).path`。
+需要文件路径字符串：`(await MyPaths.userDataDirFile('a.json')).path`。
 
 **不提供** `*FilePath()` 公开方法。Web 目标请 `import 'package:xly/paths.dart'`：自动选用 `MyPaths` 桩实现（全部 API 抛 `UnsupportedError`）；`MyUserDataDirStore` 等仍依赖 `dart:io`，Web 勿 import。
 
@@ -54,13 +55,13 @@ flowchart LR
 
 | 轨 | API 前缀 | 用途 |
 |----|----------|------|
-| **install** | `installDir` / `installFile` / `copyAssetToInstallDir` | exe 旁资源、托盘图标、从 assets 落到安装侧 |
-| **userData** | `setUserDataDir` / `userDataDir` / `userDataFile` / … | 配置、日志、业务 JSON |
+| **app** | `appDir` / `appDirFile` / `copyAssetToAppDir` | exe 旁资源、托盘图标、从 assets 落到程序侧 |
+| **userData** | `setUserDataDir` / `userDataDir` / `userDataDirFile` / … | 配置、日志、业务 JSON |
 
-- **便携应用**：只用 `install*`。
+- **便携应用**：只用 `app*`。
 - **桌面、数据与 exe 分离**：`setUserDataDir` + `userData*`；可选 `MyUserDataDirStore` 记住目录（Bootstrap 指针，在 AppSupport 下 JSON）。
 
-### `installDir` 跨平台
+### `appDir` 跨平台
 
 - **桌面**：exe 所在目录（同步）。
 - **移动**：Documents 作可写资源 fallback（无 exe 旁「安装目录」语义，行为等同旧 `getAppDirectory` 移动侧）。
@@ -70,14 +71,14 @@ flowchart LR
 
 | API | 返回 | 说明 |
 |-----|------|------|
-| `installDir` | `String` | install 轨根目录 |
-| `installFile(relativePath, {androidPreferExternal})` | `Future<File>` | install 轨下文件 |
+| `appDir` | `String` | app 轨根目录 |
+| `appDirFile(relativePath, {androidPreferExternal})` | `Future<File>` | app 轨下文件 |
 | `setUserDataDir(path, {clearCache})` | `void` | 设置 userData 根 |
 | `userDataDir` | `String` | 已设置的根；未设置抛 `StateError` |
 | `isUserDataDirSet` | `bool` | 是否已设置 |
-| `userDataFile(relativePath)` | `Future<File>` | userData 轨下文件 |
+| `userDataDirFile(relativePath)` | `Future<File>` | userData 轨下文件 |
 | `userDataLogsDir()` | `Future<String>` | `logs/` 子目录 |
-| `copyAssetToInstallDir` / `copyAssetToUserDataDir` | `Future<File>` | 从 `assets/` 复制（目标不存在时写入） |
+| `copyAssetToAppDir` / `copyAssetToUserDataDir` | `Future<File>` | 从 `assets/` 复制（目标不存在时写入） |
 | `atomicWriteString(file, content)` | `Future<void>` | 原子写 |
 
 `relativePath`：可为 `'config.json'` 或 `'logs/app.log'`；禁止 `..` 与绝对路径。
@@ -99,7 +100,7 @@ flowchart TD
   start([应用启动]) --> load[Store.load 读 bootstrap 指针]
   load --> valid{路径存在且可写?}
   valid -->|是| set[setUserDataDir]
-  set --> ok([loadedPath 有值\n可直接 userDataFile])
+  set --> ok([loadedPath 有值\n可直接 userDataDirFile])
   valid -->|否 / 无记录| desktop{桌面且需自选目录?}
   desktop -->|是| setup([needsDesktopSetup = true\n需 UI 或 MyPicker])
   desktop -->|否 如移动无 Store| doc[Documents + apply]
@@ -112,7 +113,7 @@ flowchart TD
 
 | 你的应用 | 需要 Store / Session / Picker？ |
 |----------|--------------------------------|
-| 便携版，数据跟 exe 走 | **否**，只用 `install*` |
+| 便携版，数据跟 exe 走 | **否**，只用 `app*` |
 | 桌面，数据与 exe 分离，要记住用户选择 | **是**，推荐 `prepare` + 必要时 `MyPicker` |
 | 移动，固定 Documents 即可 | 可用 `prepare`（无 Store 时自动 `apply` Documents），或自行 `setUserDataDir` |
 | Web | 路径 API 不可用（`UnsupportedError`） |
@@ -123,7 +124,7 @@ flowchart TD
 | **首次 / Store 失效** | `prepare` 之后 → `MyPicker.dir` 或自研 Dialog → `apply` | 用户选定目录并写入 bootstrap |
 | **菜单「更改数据目录」** | `MyPicker.userDataDirAndApply` | 系统选夹 + 校验 + 写 Store（见 picker 文档） |
 | **设置页手输路径** | `Session.apply` | 已有字符串，不弹 OS 对话框 |
-| **根已设，日常读写** | `MyPaths.userDataFile` 等 | 与 Store/Session 无关 |
+| **根已设，日常读写** | `MyPaths.userDataDirFile` 等 | 与 Store/Session 无关 |
 
 ## 日常用法
 
@@ -136,20 +137,20 @@ final boot = await MyUserDataDirSession.prepare(store: store);
 if (boot.needsDesktopSetup) {
   // MyPicker.dir() 或自研设置对话框 → Session.apply(...)
 } else {
-  final ico = await MyPaths.installFile('tray.ico');
-  final config = await MyPaths.userDataFile('config.json');
+  final ico = await MyPaths.appDirFile('tray.ico');
+  final config = await MyPaths.userDataDirFile('config.json');
 }
 ```
 
 **进阶 · 手动三步**（完全自己控制顺序时再用；`Store.load()` 返回 `String?`，即 bootstrap JSON 里保存的用户数据目录路径，无记录为 `null`）：
 
 ```dart
-final ico = await MyPaths.installFile('tray.ico');
+final ico = await MyPaths.appDirFile('tray.ico');
 
 final saved = await store.load();
 MyPaths.setUserDataDir(saved ?? userPickedDir);
 
-final config = await MyPaths.userDataFile('config.json');
+final config = await MyPaths.userDataDirFile('config.json');
 ```
 
 ## 自定义 Bootstrap 文件名

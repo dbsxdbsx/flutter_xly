@@ -2,7 +2,7 @@
 
 > 项目级 AI agent onboarding 入口（[Agentic AI Foundation 开放标准](https://github.com/agentic-ai-foundation/agentsmd)）。
 > 本文件只记录仓库内可共享的事实、约定与索引；个人 Cursor Rules / Skills 不写入此处。
-> 最近更新：2026-05-20（0.47 Dir + MyPicker）。
+> 最近更新：2026-05-20（0.49 DirFile 命名）。
 
 ## 1. Project Identity
 
@@ -10,7 +10,7 @@
 - **主语言 / 框架**：Dart 3.5+、Flutter 3.7+；GetX、window_manager、flutter_screenutil 等（部分在 `lib/xly.dart` 再导出）。
 - **阶段**：Beta（持续发版，`CHANGELOG.md` 跟踪）。
 - **仓库**：<https://github.com/dbsxdbsx/flutter_xly>
-- **当前版本**：`pubspec.yaml` → `0.47.0`（**0.46** 路径 Dir 化；**0.47** `MyPicker` / `Session`，见 `CHANGELOG`）。
+- **当前版本**：`pubspec.yaml` → `0.49.0`（**0.49** `*DirFile`；**0.48** `app*` 轨；见 `CHANGELOG`）。
 
 ## 2. Project Map
 
@@ -82,18 +82,18 @@ xly/
 - **`MyApp.initialize` 命名参数**：语义短名、**不加** `my` 前缀；类型承载 `My*`（如 `MyTray? tray`、`MyFloatPanel? floatPanel`）。局部变量可用 `tray` / `notify` 等，与 `MyTray.to` 并用时不必写成 `myTray`。
 - **持久化 / 存储键**：用 **`_xly_<feature>`** 命名空间（如 `_xly_float_panel`），**不用** `my_` 前缀，避免与业务自建 GetStorage 键冲突；与 Dart 类名 `My*` 无关。
 
-### 4.2 路径（`MyPaths` · install / userData）
+### 4.2 路径（`MyPaths` · app / userData）
 
 | 轨 | 典型 API | 含义 |
 |----|----------|------|
-| **install** | `installDir`、`installFile`、`copyAssetToInstallDir` | exe 旁 / 移动 Documents fallback |
-| **userData** | `setUserDataDir`、`userDataDir`、`userDataFile` | 配置、日志、业务数据 |
+| **app** | `appDir`、`appDirFile`、`copyAssetToAppDir` | 程序侧资源根：exe 旁 / 移动 Documents fallback（非安装向导） |
+| **userData** | `setUserDataDir`、`userDataDir`、`userDataDirFile` | 配置、日志、业务数据 |
 | **Bootstrap** | `MyUserDataDirStore` | 桌面可选：AppSupport 下 `user_data_dir.json` 指针 |
 | **系统选择** | `MyPicker.dir` / `file` / `files` | `picker.dart`；非 `MySelector`、非 `MyPaths` |
 
-**后缀**：自有 API 用 `Dir`（不用 `Directory`）；`Dir` → 目录 `String`；`File` → `Future<File>`。`MyPicker.dir()` ≠ `MyPaths.userDataDir`。
+**后缀**：自有 API 用 `Dir`（不用 `Directory`）；`Dir` → 目录 `String`；`DirFile` → 该目录下的 `Future<File>`（如 `appDirFile`、`userDataDirFile`）。`MyPicker.dir()` ≠ `MyPaths.userDataDir`。
 
-**日常**：优先 `MyUserDataDirSession.prepare`；进阶再用手动三步 `installFile` → `Store.load` + `setUserDataDir` → `userDataFile`。
+**日常**：优先 `MyUserDataDirSession.prepare`；进阶再用手动三步 `appDirFile` → `Store.load` + `setUserDataDir` → `userDataDirFile`。
 
 详文：[`.doc/user_data_paths.md`](.doc/user_data_paths.md)。
 
@@ -105,7 +105,7 @@ xly/
 
 ## 5. Active Context
 
-- **最近完成**：0.46 Dir 化 + 0.47 `MyPicker` / `MyUserDataDirSession`（`onAfterApply`、无 `Migrator`）；Setup 对话框库外。见 `CHANGELOG` 分版说明。
+- **最近完成**：0.49 `appDirFile` / `userDataDirFile`；0.48 `install*` → `app*`；0.47 Picker/Session。见 `CHANGELOG`。
 - **上一版**：0.45.0 — 阶段 D；0.42.0 — `MyPaths` 双轨。
 - **后续**：见 [`.issue/xly-package-hygiene-backlog.md`](.issue/xly-package-hygiene-backlog.md)（可选：可配置持久化键前缀）。
 

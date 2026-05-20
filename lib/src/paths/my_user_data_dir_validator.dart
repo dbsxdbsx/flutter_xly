@@ -61,7 +61,7 @@ class MyUserDataDirValidator {
     final normalized = normalizePath(path);
     final warnings = <String>[];
 
-    if (_isSameAsInstallDir(normalized)) {
+    if (_isSameAsAppDir(normalized)) {
       warnings.add(
         '所选目录与程序安装目录相同。清理构建产物或重装时，用户数据可能被一并删除。',
       );
@@ -97,11 +97,11 @@ class MyUserDataDirValidator {
     }
   }
 
-  static bool _isSameAsInstallDir(String normalizedDataDir) {
+  static bool _isSameAsAppDir(String normalizedDataDir) {
     if (MyPlatform.isWeb) return false;
     try {
-      final installDir = MyPaths.installDir;
-      return _pathsEqual(normalizedDataDir, installDir);
+      final appDir = MyPaths.appDir;
+      return _pathsEqual(normalizedDataDir, appDir);
     } catch (_) {
       return false;
     }

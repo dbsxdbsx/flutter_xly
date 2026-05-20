@@ -1,3 +1,23 @@
+## 0.49.0 - 2026-05-20
+
+### BREAKING
+
+- **路径文件 API 显式化**：`appFile` → `appDirFile`，`userDataFile` → `userDataDirFile`（表示「某 `*Dir` 根下的相对路径文件」，避免与泛指的 app/user 文件混淆）。`userDataLogsDir`、`copyAssetToAppDir` 等不变。
+
+### Docs
+
+- `AGENTS.md` §4.2：`Dir` / `DirFile` 后缀约定；`.doc/user_data_paths.md` 同步。
+
+## 0.48.0 - 2026-05-20
+
+### BREAKING
+
+- **程序侧资源轨重命名**：`MyPaths.installDir` → `appDir`，`installFile` → `appFile`，`copyAssetToInstallDir` → `copyAssetToAppDir`。文档中的「install 轨」改称 **app 轨**（与 `MyApp.initialize` 的 `installErrorHandlers` 等「安装」语义无关；**0.49** 再将 `appFile` / `userDataFile` 改为 `appDirFile` / `userDataDirFile`）。
+
+### Docs
+
+- [`.doc/user_data_paths.md`](.doc/user_data_paths.md)、`AGENTS.md` §4.2、README 示例同步。
+
 ## 0.47.0 - 2026-05-20
 
 > 在 **0.46** 路径 Dir 化之后：补齐系统选目录与启动编排；MVPG 下移除 install→userData 文件迁移。依赖方请按 0.46 → 0.47 顺序迁移。
