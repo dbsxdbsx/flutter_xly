@@ -1,10 +1,11 @@
 /// xly 包默认入口：再导出各子模块与第三方便捷 API。
 ///
 /// 按需引用示例：
-/// - `package:xly/xly.dart` — 常用全家桶（不含大型可选 UI 模块，见下）
+/// - `package:xly/xly.dart` — 常用全家桶（含 MyPaths / MyUserDataDir*；不含 picker 与大型可选 UI，见下）
 /// - `package:xly/app.dart` — MyApp / 路由 / 窗口
 /// - `package:xly/float_panel.dart` — MyFloatPanel
-/// - `package:xly/paths.dart` — MyPaths（见 [paths.dart]）
+/// - `package:xly/paths.dart` — 仅路径（Web 目标用此入口选用桩实现）
+/// - `package:xly/picker.dart` — MyPicker 系统选文件/夹（须单独 import）
 /// - `package:xly/notify.dart` / `tray.dart` — 通知与托盘
 /// - `package:xly/text_editor.dart` / `scaffold.dart` / `selector.dart` — 大型 UI（0.45+ 需单独 import）
 /// - `package:xly/smart_dock.dart` — MySmartDock（0.45+ 需单独 import）

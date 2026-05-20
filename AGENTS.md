@@ -10,14 +10,14 @@
 - **主语言 / 框架**：Dart 3.5+、Flutter 3.7+；GetX、window_manager、flutter_screenutil 等（部分在 `lib/xly.dart` 再导出）。
 - **阶段**：Beta（持续发版，`CHANGELOG.md` 跟踪）。
 - **仓库**：<https://github.com/dbsxdbsx/flutter_xly>
-- **当前版本**：`pubspec.yaml` → `0.47.0`（Dir 大统一 + `MyPicker` / `MyUserDataDirSession`）。
+- **当前版本**：`pubspec.yaml` → `0.47.0`（**0.46** 路径 Dir 化；**0.47** `MyPicker` / `Session`，见 `CHANGELOG`）。
 
 ## 2. Project Map
 
 ```text
 xly/
 ├── lib/
-│   ├── xly.dart              # barrel：常用 API（不含大型可选 UI，见子入口）
+│   ├── xly.dart              # barrel：含 MyPaths / MyUserDataDir*；不含 picker 与大型可选 UI
 │   ├── app.dart              # MyApp.initialize、路由、窗口（可选子入口）
 │   ├── float_panel.dart      # MyFloatPanel（可选子入口）
 │   ├── paths.dart            # MyPaths、DirStore/Validator/Session（可选；Web 为桩）
@@ -41,7 +41,7 @@ xly/
 
 关键入口：
 
-- 对外 API：`lib/xly.dart`（常用全家桶）；大型 UI / 智能停靠需子入口：`text_editor` / `scaffold` / `selector` / `smart_dock`（见 `README.md` 包入口表）
+- 对外 API：`lib/xly.dart`（常用全家桶，**含**路径 API）；`picker` 与大型 UI / 智能停靠需子入口（见 `README.md` 包入口表）
 - 路径：`lib/src/paths/my_paths.dart`、`.doc/user_data_paths.md`
 - 平台：`lib/src/platform.dart`
 - 示例：`example/lib/main.dart`（`MyRoutes.page14Paths`）
@@ -105,7 +105,7 @@ xly/
 
 ## 5. Active Context
 
-- **最近完成**：0.47.0 — `MyUserDataDir*`、`MyPicker` + `MyUserDataDirSession`（`onAfterApply`、无 `Migrator`）；Setup 对话框库外。
+- **最近完成**：0.46 Dir 化 + 0.47 `MyPicker` / `MyUserDataDirSession`（`onAfterApply`、无 `Migrator`）；Setup 对话框库外。见 `CHANGELOG` 分版说明。
 - **上一版**：0.45.0 — 阶段 D；0.42.0 — `MyPaths` 双轨。
 - **后续**：见 [`.issue/xly-package-hygiene-backlog.md`](.issue/xly-package-hygiene-backlog.md)（可选：可配置持久化键前缀）。
 

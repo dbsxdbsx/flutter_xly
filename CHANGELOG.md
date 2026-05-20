@@ -1,28 +1,41 @@
 ## 0.47.0 - 2026-05-20
 
+> 在 **0.46** 路径 Dir 化之后：补齐系统选目录与启动编排；MVPG 下移除 install→userData 文件迁移。依赖方请按 0.46 → 0.47 顺序迁移。
+
 ### BREAKING
 
-- **路径辅助类 Dir 化**：`MyUserDataDirectoryStore` → `MyUserDataDirStore`，`MyUserDataDirectoryValidator` → `MyUserDataDirValidator`，`MyUserDataDirectoryValidation` → `MyUserDataDirValidation`。
-- **Bootstrap 默认**：`user_data_dir.json` + JSON 字段 `userDataDir`（不再使用 `user_data_directory.json` / `userDataDirectory`）。
-- **移除 install → userData 文件迁移**：删除 `MyUserDataFilesMigrator`；`prepare` / `apply` / `userDataDirAndApply` 不再接受 `migrateFileNamesFromInstall`（MVPG，不做旧版 exe 旁数据搬迁）。
+- **移除 install → userData 文件迁移**：删除 `MyUserDataFilesMigrator`；`prepare` / `apply` / `userDataDirAndApply` 不再接受 `migrateFileNamesFromInstall`（不做 exe 旁旧文件自动搬迁）。
 
 ### Added
 
-- **子入口** `package:xly/picker.dart`：**`MyPicker`**（`dir` / `file` / `files`；类名含 pick，方法省略 pick 前缀），薄封装 `file_selector`。
+- **子入口** `package:xly/picker.dart`：**`MyPicker`**（`dir` / `file` / `files`），薄封装 `file_selector`。
 - **`MyUserDataDirSession`**：`prepare` / `apply` 桌面 userData 启动编排（`paths.dart` 导出）。
-- **`MyPicker.userDataDirAndApply`**：选目录 + 校验 + 可选 warnings 回调 + `Session.apply`。
-- **`MyUserDataDirBootstrapResult`**：`storedPath`、`storedEvaluation`、`hasInvalidStoredPath`（区分无 Store / Store 无效）。
-- **`Session.apply` / `userDataDirAndApply`**：可选 **`onAfterApply`**，供应用同步后端数据根与路径缓存。
-- **`MyPicker.resolveInitialDir`**：未传 `initialDir` 时回退已设置的 `MyPaths.userDataDir`。
-- **文档**：[`.doc/user_data_picker.md`](.doc/user_data_picker.md)、[`.doc/user_data_paths.md`](.doc/user_data_paths.md)（Mermaid 流程图：两层目录、`prepare` 分支、端到端与 API 速查）。
+- **`MyPicker.userDataDirAndApply`**：系统选目录 + 校验 + 可选 warnings → `Session.apply`。
+- **`MyUserDataDirBootstrapResult`**：`storedPath`、`storedEvaluation`、`hasInvalidStoredPath`。
+- **`Session.apply` / `userDataDirAndApply`**：可选 **`onAfterApply`**（应用侧同步后端数据根、路径缓存等）。
+- **`MyPicker.resolveInitialDir`**：未传 `initialDir` 时回退 `MyPaths.userDataDir`。
+- **文档**：[`.doc/user_data_picker.md`](.doc/user_data_picker.md)；[`.doc/user_data_paths.md`](.doc/user_data_paths.md) 增补 Mermaid（两层目录、`prepare`、API 速查）。
 
 ### Changed
 
-- **设置对话框**：不在库内 export；由应用或 `example` 参考实现组合 `MyPicker` + `Validator` + `Session`。
+- **设置对话框**：不在库内 export；由应用组合 `MyPicker` + `Validator` + `Session`。
 
 ### Docs
 
-- [`.doc/user_data_paths.md`](.doc/user_data_paths.md)、`AGENTS.md` 同步 Dir 命名与 picker 索引。
+- `AGENTS.md` 索引 picker / Session；README 路径示例优先 `prepare`。
+
+## 0.46.0 - 2026-05-20
+
+> **路径模块 Dir 大统一**（breaking）。与 0.47 同日合入主干；CHANGELOG 分版记录便于对照迁移，当前 `pubspec` 版本为 **0.47.0**。
+
+### BREAKING
+
+- **路径辅助类 Dir 化**：`MyUserDataDirectoryStore` → `MyUserDataDirStore`，`MyUserDataDirectoryValidator` → `MyUserDataDirValidator`，`MyUserDataDirectoryValidation` → `MyUserDataDirValidation`（文件重命名同步）。
+- **Bootstrap 默认**：`user_data_dir.json` + JSON 字段 `userDataDir`（不再使用 `user_data_directory.json` / `userDataDirectory`）。
+
+### Docs
+
+- [`.doc/user_data_paths.md`](.doc/user_data_paths.md) 同步 Dir 命名；`AGENTS.md` §4.2 路径约定更新。
 
 ## 0.45.0 - 2026-05-20
 
