@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import '../platform.dart';
+import 'my_paths.dart';
 
 /// 用户数据目录校验结果（用于启用/禁用「确定」与提示文案）。
 class MyUserDataDirectoryValidation {
@@ -99,7 +100,7 @@ class MyUserDataDirectoryValidator {
   static bool _isSameAsInstallDirectory(String normalizedDataDir) {
     if (MyPlatform.isWeb) return false;
     try {
-      final installDir = MyPlatform.installDirectory;
+      final installDir = MyPaths.installDir;
       return _pathsEqual(normalizedDataDir, installDir);
     } catch (_) {
       return false;

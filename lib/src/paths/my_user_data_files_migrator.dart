@@ -2,24 +2,24 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import '../logger.dart';
-import '../platform.dart';
+import 'my_paths.dart';
 
 /// 将旧版「安装目录 / exe 同级」中的用户数据文件迁移到 [userDataRoot]。
 class MyUserDataFilesMigrator {
   MyUserDataFilesMigrator._();
 
-  /// 从 [legacyDir]（默认 [MyPlatform.installDirectory]）迁到 [userDataRoot]。
+  /// 从 [legacyDir]（默认 [MyPaths.installDir]）迁到 [userDataRoot]。
   ///
   /// [fileNames] 由应用传入（如 `config.json`、业务数据库名等），不含可执行文件。
   /// 目标已存在且较新时保留目标并删除源副本。
-  static Future<void> migrateFromInstallDirectory({
+  static Future<void> migrateFromInstallDir({
     required String userDataRoot,
     required List<String> fileNames,
     String? legacyDir,
   }) async {
     final normalizedData = p.normalize(userDataRoot);
     final normalizedLegacy = p.normalize(
-      legacyDir ?? MyPlatform.installDirectory,
+      legacyDir ?? MyPaths.installDir,
     );
 
     if (_pathsEqual(normalizedData, normalizedLegacy)) return;

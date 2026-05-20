@@ -2075,20 +2075,10 @@ if (MyPlatform.isWindows) {
 String platform = MyPlatform.platformName;
 print('当前平台：$platform'); // 输出：当前平台：Windows
 
-// 文件操作（桌面：getAppDirectory / getFile 相对「安装目录」= exe 同级）
-final installDir = MyPlatform.installDirectory; // 同步，推荐新代码使用
-final appDir = await MyPlatform.getAppDirectory();
-final file = await MyPlatform.getFile('example.txt');
-final assetFile = await MyPlatform.getFilePastedFromAssets('config.json');
-// 用户配置、日志等请用 MyUserDataPaths + getUserDataFile，见 AGENTS.md 与 .doc/user_data_paths.md
-
-// 延迟显示组件
-Widget buildPingDisplay() {
-  return MyPlatform.buildDelayDisplay(
-    pingTimeFuture: Future.value(BigInt.from(150)),
-    fontSize: 14.0,
-  );
-}
+// 路径（install 轨 + userData 轨）— 详见 .doc/user_data_paths.md
+final trayIco = await MyPaths.installFile('tray.ico');
+MyPaths.setUserDataDir(userDataDirectory);
+final config = await MyPaths.userDataFile('config.json');
 ```
 
 ### 使用窗口停靠功能

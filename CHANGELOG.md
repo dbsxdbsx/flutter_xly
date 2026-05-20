@@ -1,3 +1,35 @@
+## 0.42.0 - 2026-05-20
+
+### BREAKING
+
+- **路径 API 收敛为 `MyPaths`**：`Dir` = 目录路径（`String`），`File` = `Future<File>`；`installXxx` / `userDataXxx` 双轨。删除 `MyUserDataPaths`、`MyFileRoot`、`MyPlatform` 上所有路径方法（`installDirectory`、`getAppDirectory`、`getFile`、`resolveFile`、`getUserDataFile`、`getFilePastedFromAssets` 等）。
+- **`MyUserDataFilesMigrator.migrateFromInstallDirectory`** 重命名为 **`migrateFromInstallDir`**。
+- **`MyPlatform.getFile` 的 `externalPath` 默认行为**：`installFile` 的 `androidPreferExternal` 默认为 **false**（与旧 `getFilePath` 一致，不再等同旧 `getFile` 默认 true）。
+
+### Added
+
+- **`MyPaths`**：`installDir`、`installFile`、`setUserDataDir`、`userDataDir`、`userDataFile`、`userDataLogsDir`、`copyAssetToInstallDir`、`copyAssetToUserDataDir`、`atomicWriteString`。
+- **example**：`Page14Paths` 路径演示页。
+
+### Changed
+
+- **`MyPlatform`**：仅平台检测、权限、窗口；延迟 UI 迁至 `lib/src/delay_display.dart`（`MyDelayDisplay`，默认不 export）。
+- **`lib/xly.dart`**：移除重复的 export 块。
+
+### Docs
+
+- [`.doc/user_data_paths.md`](.doc/user_data_paths.md) 全文改写；README / AGENTS 改为索引 + 链接。
+
+### Migration
+
+| 0.41 | 0.42 |
+|------|------|
+| `MyPlatform.installDirectory` / `getAppDirectory()` | `MyPaths.installDir` |
+| `MyPlatform.getFile` | `MyPaths.installFile` |
+| `MyUserDataPaths.setRoot` | `MyPaths.setUserDataDir` |
+| `MyUserDataPaths.file` | `MyPaths.userDataFile` |
+| `getFilePastedFromAssets` | `copyAssetToInstallDir` / `copyAssetToUserDataDir` |
+
 ## 0.41.0 - 2026-05-20
 
 ### Added

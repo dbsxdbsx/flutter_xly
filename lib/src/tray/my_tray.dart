@@ -7,7 +7,7 @@ import 'package:window_manager/window_manager.dart';
 import 'package:xly/src/smart_dock/smart_dock.dart';
 
 import '../logger.dart';
-import '../platform.dart';
+import '../paths/my_paths.dart';
 import '../smart_dock/mouse_tracker.dart';
 import '../smart_dock/native_window_helper.dart';
 
@@ -162,7 +162,7 @@ class MyTray extends GetxService with TrayListener {
 
     // 2) 优先检查自动生成的图标资产（统一路径）
     try {
-      final exeDir = await MyPlatform.getAppDirectory();
+      final exeDir = MyPaths.installDir;
       String autoGenFileName;
       if (Platform.isWindows) {
         autoGenFileName = 'app_icon.ico';
@@ -180,7 +180,7 @@ class MyTray extends GetxService with TrayListener {
 
     // 3) 发布结构：<exeDir>/data/flutter_assets/<targetIconPath>（向后兼容）
     try {
-      final exeDir = await MyPlatform.getAppDirectory();
+      final exeDir = MyPaths.installDir;
       final assetsPath = '$exeDir/data/flutter_assets/$targetIconPath';
       final assetsFile = File(assetsPath);
       if (assetsFile.existsSync()) return assetsFile.absolute.path;
@@ -197,7 +197,7 @@ class MyTray extends GetxService with TrayListener {
         autoGenFileName = 'app_icon.png';
       }
 
-      final pasted = await MyPlatform.getFilePastedFromAssets(
+      final pasted = await MyPaths.copyAssetToInstallDir(
           '_auto_tray_icon_gen/$autoGenFileName');
       if (await pasted.exists()) return pasted.path;
     } catch (_) {
@@ -206,7 +206,7 @@ class MyTray extends GetxService with TrayListener {
 
     // 5) 最后兜底：从原始平台路径复制
     try {
-      final pasted = await MyPlatform.getFilePastedFromAssets(targetIconPath);
+      final pasted = await MyPaths.copyAssetToInstallDir(targetIconPath);
       if (await pasted.exists()) return pasted.path;
     } catch (_) {
       // 复制失败时继续抛出统一异常

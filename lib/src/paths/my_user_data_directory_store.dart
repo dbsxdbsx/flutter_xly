@@ -66,8 +66,8 @@ class MyUserDataDirectoryStore {
       await dir.create(recursive: true);
     }
 
-    final content =
-        const JsonEncoder.withIndent('  ').convert(buildJsonPayload(normalized));
+    final content = const JsonEncoder.withIndent('  ')
+        .convert(buildJsonPayload(normalized));
 
     final tmp = File('${file.path}.tmp');
     await tmp.writeAsString(content);

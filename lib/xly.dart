@@ -63,40 +63,6 @@ export 'src/loading_dot.dart';
 export 'src/tab_view/lib.dart';
 export 'src/selector/lib.dart';
 
-// 3rd packages (re-export convenience)
-export 'package:flutter_screenutil/flutter_screenutil.dart';
-export 'package:get/get.dart';
-export 'package:window_manager/window_manager.dart';
-export 'package:screen_retriever/screen_retriever.dart';
-export 'package:get_storage/get_storage.dart';
-
-// Public APIs (non-part modules)
-export 'src/window_enums.dart' show WindowCorner, WindowEdge;
-export 'src/navigation.dart' show goToPage;
-export 'src/toast/lib.dart';
-export 'src/button.dart';
-export 'src/icon.dart';
-export 'src/dialogue/lib.dart';
-export 'src/menu/lib.dart';
-export 'src/focus.dart' show XlyFocusController, XlyFocusableExtension;
-export 'src/splash.dart';
-export 'src/end_of_list_widget.dart';
-export 'src/group_box.dart';
-export 'src/card.dart';
-export 'src/list.dart';
-export 'src/url_launcher.dart';
-export 'src/text_editor.dart';
-export 'src/spin_box.dart';
-export 'src/auto_start.dart';
-export 'src/platform.dart' show MyPlatform;
-export 'src/paths/lib.dart';
-export 'src/scaffold.dart';
-export 'src/smart_dock/smart_dock.dart';
-export 'src/tray/tray.dart';
-export 'src/notify/lib.dart';
-export 'src/loading_dot.dart';
-export 'src/selector/lib.dart';
-
 // Declare parts that are internal to this library (must come last)
 part 'src/app.dart';
 part 'src/float_panel.dart';
