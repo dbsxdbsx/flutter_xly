@@ -65,4 +65,7 @@ export 'src/selector/lib.dart';
 
 // Declare parts that are internal to this library (must come last)
 part 'src/app.dart';
-part 'src/float_panel.dart';
+part 'src/float_panel/models.dart';
+part 'src/float_panel/service.dart';
+part 'src/float_panel/box_controller.dart';
+part 'src/float_panel/widgets.dart';
