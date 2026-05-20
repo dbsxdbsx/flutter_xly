@@ -5,6 +5,9 @@
 /// - `package:xly/app.dart` — MyApp / 路由 / 窗口
 /// - `package:xly/float_panel.dart` — FloatPanel
 /// - `package:xly/paths.dart` — MyPaths（见 [paths.dart]）
+/// - `package:xly/notify.dart` / `tray.dart` — 通知与托盘
+/// - `package:xly/text_editor.dart` / `scaffold.dart` / `selector.dart` — 大型 UI 模块
+/// - `package:xly/smart_dock.dart` — 智能停靠
 library;
 
 export 'app.dart';
@@ -30,12 +33,12 @@ export 'src/group_box.dart';
 export 'src/card.dart';
 export 'src/list.dart';
 export 'src/url_launcher.dart';
-export 'src/text_editor.dart';
+export 'text_editor.dart';
 export 'src/spin_box.dart';
 export 'src/auto_start.dart';
 export 'src/platform.dart' show MyPlatform;
 export 'src/paths/lib.dart';
-export 'src/scaffold.dart';
+export 'scaffold.dart';
 export 'src/smart_dock/smart_dock.dart';
 export 'src/tray/tray.dart';
 export 'src/notify/lib.dart';

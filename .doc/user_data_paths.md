@@ -12,7 +12,7 @@
 
 需要文件路径字符串：`(await MyPaths.userDataFile('a.json')).path`。
 
-**不提供** `*FilePath()` 公开方法。Web 平台不支持本模块（`dart:io`）。
+**不提供** `*FilePath()` 公开方法。Web 目标请 `import 'package:xly/paths.dart'`：自动选用 `MyPaths` 桩实现（全部 API 抛 `UnsupportedError`）；`MyUserDataDirectoryStore` 等仍依赖 `dart:io`，Web 勿 import。
 
 ## 两条轨
 

@@ -21,3 +21,12 @@ part 'src/float_panel/models.dart';
 part 'src/float_panel/service.dart';
 part 'src/float_panel/box_controller.dart';
 part 'src/float_panel/widgets.dart';
+
+/// 与 [AGENTS.md] 命名表一致的别名（与 [FloatPanel] 同一类型）。
+typedef MyFloatPanel = FloatPanel;
+
+/// 与 [FloatPanelIconBtn] 同一类型。
+typedef MyFloatPanelIconBtn = FloatPanelIconBtn;
+
+/// 与 [FloatBoxController] 同一类型。
+typedef MyFloatBoxController = FloatBoxController;

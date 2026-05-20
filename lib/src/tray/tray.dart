@@ -36,7 +36,7 @@
 /// // 2. 在任何页面中使用
 /// final tray = MyTray.to;
 /// tray.minimizeToTray();
-/// tray.showNotification("标题", "消息");
+/// await MyNotify.to.show("标题", "消息"); // 系统通知见 package:xly/notify.dart
 /// ```
 ///
 /// ## 完整配置示例
@@ -82,7 +82,7 @@
 /// // 基础操作
 /// tray.hide();                        // 隐藏到托盘
 /// tray.pop();                         // 从托盘恢复
-/// tray.notify("标题", "消息");          // 显示通知
+/// // 通知请用 MyNotify，见 .doc/notify_channels.md
 ///
 /// // 动态配置
 /// tray.setTooltip("新提示");           // 更新提示文本
@@ -110,4 +110,3 @@
 library;
 
 export 'my_tray.dart';
-export 'tray_enums.dart';

@@ -93,7 +93,7 @@ final tray = MyTray.to;
 // 基础操作
 tray.hide();                    // 隐藏窗口到托盘
 tray.pop();                     // 从托盘恢复窗口
-tray.notify("标题", "消息");      // 显示通知
+// 系统通知用 MyNotify.to.show(...)，见 notify_channels.md
 
 // 动态配置
 tray.setTooltip("新提示");       // 更新提示文本
@@ -167,15 +167,9 @@ MyTray (GetxService)  ← 改为继承GetxService
 
 **唯一初始化方式**：现在托盘功能完全通过 `MyService<MyTray>` 管理，避免了架构重复和参数冲突。
 
-### 枚举定义
-```dart
-enum MyTrayNotificationType {
-  info,
-  warning,
-  error,
-  success,
-}
-```
+### 通知相关（0.44+）
+
+托盘**不**定义通知类型枚举；系统通知统一用 `MyNotify`，应用内反馈用 `MyToast`。见 [notify_channels.md](notify_channels.md)。
 
 ## 设计原则
 
@@ -220,7 +214,7 @@ MyButton(
   onPressed: () {
     myTray.hide();
     // 用户明确操作时显示托盘气泡通知
-    myTray.notify("已隐藏到托盘", "点击托盘图标可恢复窗口");
+    await MyNotify.to.show("已隐藏到托盘", "点击托盘图标可恢复窗口");
   },
 );
 
@@ -461,7 +455,7 @@ MyService<MyTray>(
 // 使用
 MyTray.to.hide();
 MyTray.to.pop();
-MyTray.to.notify("标题", "消息");
+await MyNotify.to.show("标题", "消息");
 MyTray.to.setIcon("new_icon.png");
 MyTray.to.setMenuItemEnabled("settings", true);
 ```

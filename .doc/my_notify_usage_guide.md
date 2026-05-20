@@ -1,5 +1,7 @@
 # MyNotify 使用指南
 
+> 三通道划界（MyToast / MyNotify / MyTray）见 [notify_channels.md](notify_channels.md)。
+
 ## 概述
 
 MyNotify 是 xly_flutter_package 中的系统通知管理器，基于 `flutter_local_notifications` 包封装，提供跨平台的系统通知功能。

@@ -1,3 +1,21 @@
+## 0.44.0 - 2026-05-20
+
+### Added
+
+- **可选子入口**：`notify.dart`、`tray.dart`、`text_editor.dart`、`scaffold.dart`、`selector.dart`、`smart_dock.dart`。
+- **`.doc/notify_channels.md`**：MyToast / MyNotify / MyTray 三通道划界与默认策略。
+- **命名别名（非 breaking）**：`MyFloatPanel`、`MyFloatPanelIconBtn`、`MyFloatBoxController`、`MySmartDock` typedef。
+- **Web**：`package:xly/paths.dart` 在 `dart.library.html` 下导出 `MyPaths` 桩实现。
+
+### Changed
+
+- **阶段 C**：`MyTextEditor`、`MyScaffold` 拆为独立 `library` + `part`（`lib/text_editor.dart`、`lib/scaffold.dart`）。
+- **托盘**：移除无实现的 `MyTrayNotificationType`；文档与示例不再使用 `myTray.notify()`。
+
+### Docs
+
+- `README.md` / `my_tray_design.md` / `tray.dart` 注释与通知文档对齐；`AGENTS.md`、`.issue` backlog 更新。
+
 ## 0.43.0 - 2026-05-20
 
 ### Added

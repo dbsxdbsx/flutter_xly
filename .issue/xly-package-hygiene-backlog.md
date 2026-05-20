@@ -1,22 +1,22 @@
-# xly 包结构卫生待办（0.44+）
+# xly 包结构卫生待办（0.45+）
 
-> **0.43.0** 已完成阶段 B（结构拆分 + 独立 library + `paths.dart` 子入口）。以下条目供 **0.44+** 领取。
+> **0.44.0** 已完成阶段 C（通知文档、子入口、命名别名、巨石拆分、Web 路径桩）。以下供后续可选优化。
 
-## B — 结构卫生（0.43.0 已闭环）
+## C — 模块边界与命名（0.44.0 已闭环）
 
-- [x] 拆分 `lib/src/app/`（`models` + `my_app`，2026-05-20）
-- [x] 拆分 `lib/src/float_panel/`（`models` / `service` / `box_controller` / `widgets`，2026-05-20）
-- [x] 独立 library + 选择性 export：`lib/app.dart`、`lib/float_panel.dart`、`lib/paths.dart`；`xly.dart` 为 barrel（2026-05-20）
+- [x] **通知三通道**：`.doc/notify_channels.md` + 移除过时 `myTray.notify` 文档 / `MyTrayNotificationType`
+- [x] **命名统一**：`MyFloatPanel` / `MySmartDock` 等 typedef 别名（非 breaking 硬改名）
+- [x] **巨石组件**：`text_editor`、`scaffold` 拆为 `library` + `part`；`selector` 已有多文件，新增 `selector.dart` 子入口
+- [x] **Web 路径**：`paths.dart` conditional export → `my_paths_web.dart` 桩
+- [x] **export 粒度**：`notify` / `tray` / `text_editor` / `scaffold` / `selector` / `smart_dock` 子入口
 
-## C — 模块边界与命名（建议 0.44+）
+## D — 可选后续（0.45+）
 
-- [ ] **通知三通道**：`MyTray` 气泡 vs `MyNotify` vs `MyToast` 兜底 — 文档划界 + 默认策略
-- [ ] **命名统一**：`FloatPanel` / `SmartDockManager` 是否纳入 `My*` 前缀
-- [ ] **巨石组件**：`MyTextEditor`、`MySelector`、`MyScaffold` 是否拆子包或降 export 粒度
-- [ ] **Web 路径**：conditional export / 抽象路径接口
-- [ ] **export 粒度**：更多子入口（如 `notify`、`tray`），减小全家桶 import（`paths.dart` 已在 0.43）
+- [ ] **Selector 内部分片**：`widget.dart`（~1000 行）拆为 `part`（overlay / panel），需改为 `library` + `part`
+- [ ] **命名硬切**：若 typedef 推广充分，再评估 `FloatPanel` → `MyFloatPanel` 主名（breaking）
+- [ ] **减 barrel export**：从 `xly.dart` 移出低频模块（单独 major 版本）
 
 ## 参考
 
-- 0.42 计划审阅：Explore / Creator / Reviewer 结论（路径专版已落地）
-- 路径详文：[`.doc/user_data_paths.md`](../.doc/user_data_paths.md)
+- [`.doc/notify_channels.md`](../.doc/notify_channels.md)
+- [`.doc/user_data_paths.md`](../.doc/user_data_paths.md)
