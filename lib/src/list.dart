@@ -108,6 +108,7 @@ class MyCardList extends StatefulWidget {
 
   // 4. 卡片布局
   final double? cardHeight;
+  final Widget Function(int)? cardSubtitle;
   final double? leadingAndBodySpacing;
   final EdgeInsets? Function(int)? cardPadding;
   final EdgeInsets? Function(int)? cardMargin;
@@ -148,6 +149,7 @@ class MyCardList extends StatefulWidget {
 
     // 4. 卡片布局
     this.cardHeight,
+    this.cardSubtitle,
     this.leadingAndBodySpacing,
     this.cardPadding,
     this.cardMargin,
@@ -324,6 +326,7 @@ class MyCardListState extends State<MyCardList> {
 
           // 2. 布局和尺寸
           height: widget.cardHeight,
+          subtitle: widget.cardSubtitle?.call(index),
           leadingAndBodySpacing: widget.leadingAndBodySpacing,
           padding: widget.cardPadding?.call(index),
           margin: widget.cardMargin?.call(index),

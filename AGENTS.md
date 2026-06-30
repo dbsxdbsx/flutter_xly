@@ -2,7 +2,7 @@
 
 > 项目级 AI agent onboarding 入口（[Agentic AI Foundation 开放标准](https://github.com/agentic-ai-foundation/agentsmd)）。
 > 本文件只记录仓库内可共享的事实、约定与索引；个人 Cursor Rules / Skills 不写入此处。
-> 最近更新：2026-05-20（0.49 DirFile 命名）。
+> 最近更新：2026-06-30（0.50 MyCard.subtitle / MyCardList.cardSubtitle / MySmartDock.wake）。
 
 ## 1. Project Identity
 
@@ -10,7 +10,7 @@
 - **主语言 / 框架**：Dart 3.5+、Flutter 3.7+；GetX、window_manager、flutter_screenutil 等（部分在 `lib/xly.dart` 再导出）。
 - **阶段**：Beta（持续发版，`CHANGELOG.md` 跟踪）。
 - **仓库**：<https://github.com/dbsxdbsx/flutter_xly>
-- **当前版本**：`pubspec.yaml` → `0.49.0`（**0.49** `*DirFile`；**0.48** `app*` 轨；见 `CHANGELOG`）。
+- **当前版本**：`pubspec.yaml` → `0.50.0`（**0.50** `MyCard.subtitle` / `MySmartDock.wake`；**0.49** `*DirFile`；**0.48** `app*` 轨；见 `CHANGELOG`）。
 
 ## 2. Project Map
 
@@ -105,7 +105,7 @@ xly/
 
 ## 5. Active Context
 
-- **最近完成**：0.49 `appDirFile` / `userDataDirFile`；0.48 `install*` → `app*`；0.47 Picker/Session。见 `CHANGELOG`。
+- **最近完成**：0.50 `MyCard.subtitle` / `MyCardList.cardSubtitle` / `MySmartDock.wake()`；0.49 `appDirFile` / `userDataDirFile`；0.48 `install*` → `app*`。见 `CHANGELOG`。
 - **上一版**：0.45.0 — 阶段 D；0.42.0 — `MyPaths` 双轨。
 - **后续**：见 [`.issue/xly-package-hygiene-backlog.md`](.issue/xly-package-hygiene-backlog.md)（可选：可配置持久化键前缀）。
 

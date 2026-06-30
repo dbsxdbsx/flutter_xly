@@ -1,3 +1,11 @@
+## 0.50.0 - 2026-06-30
+
+### Added
+
+- **`MyCard.subtitle`**：卡片第二行说明文字，对应 `ListTile.subtitle`（不要再把多行 `Column` 塞进 `child`/title）。
+- **`MyCardList.cardSubtitle`**：`Widget Function(int)?` 回调，按 index 逐项透传到每张卡片的 `subtitle`。
+- **`MySmartDock.wake()`**：将贴边隐藏的窗口滑回可见（对齐）位置，语义对齐"鼠标悬停唤出"——**不激活、不聚焦**；未开启智能停靠或窗口本就可见时为安全空操作。适用于全局热键、划词、托盘等外部触发唤回窗口。
+
 ## 0.49.0 - 2026-05-20
 
 ### BREAKING

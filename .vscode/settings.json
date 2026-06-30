@@ -56,5 +56,12 @@
   "C_Cpp_Runner.showCompilationTime": false,
   "C_Cpp_Runner.useLinkTimeOptimization": false,
   "C_Cpp_Runner.msvcSecureNoWarnings": false,
-  "cmake.ignoreCMakeListsMissing": true
+  "cmake.ignoreCMakeListsMissing": true,
+  "workbench.editorAssociations": {
+    "*.ICO": "default",
+    "*.exe": "default",
+    "*.ipynb": "jupyter-notebook",
+    "*.md": "xly.markdownLive",
+    "{git,gitlens}:/**/*.md": "default"
+  }
 }

@@ -26,6 +26,9 @@ class MyCard extends StatelessWidget {
   final Widget? deleteBackground;
   final VisualDensity? visualDensity;
 
+  /// 第二行说明文字，对应 ListTile.subtitle（勿把多行 Column 塞进 [child]/title）。
+  final Widget? subtitle;
+
   static EdgeInsets defaultPadding(BuildContext context) =>
       EdgeInsets.symmetric(horizontal: 4.w);
 
@@ -60,6 +63,7 @@ class MyCard extends StatelessWidget {
     this.textStyle,
     this.deleteBackground,
     this.visualDensity,
+    this.subtitle,
   });
 
   @override
@@ -73,6 +77,22 @@ class MyCard extends StatelessWidget {
             bottom: margin!.bottom.h,
           )
         : defaultMargin(context);
+    Widget listTile = ListTile(
+      dense: true,
+      visualDensity: visualDensity ?? VisualDensity.compact,
+      horizontalTitleGap: leadingAndBodySpacing?.w,
+      contentPadding:
+          padding ?? defaultPadding(context), // NOTE：必须有，否则card最右侧会有空白
+      leading: leading,
+      title: child,
+      subtitle: subtitle,
+      trailing: trailing,
+    );
+
+    if (height != null) {
+      listTile = SizedBox(height: height, child: listTile);
+    }
+
     Widget cardContent = Card(
       margin: effectiveMargin,
       elevation: cardElevation?.h ?? 2.h,
@@ -87,16 +107,7 @@ class MyCard extends StatelessWidget {
         hoverColor: cardHoverColor,
         splashColor: cardSplashColor,
         borderRadius: cardBorderRadius ?? BorderRadius.circular(12.r),
-        child: ListTile(
-          dense: true,
-          visualDensity: visualDensity ?? VisualDensity.compact,
-          horizontalTitleGap: leadingAndBodySpacing?.w,
-          contentPadding:
-              padding ?? defaultPadding(context), // NOTE：必须有，否则card最右侧会有空白
-          leading: leading,
-          title: child,
-          trailing: trailing,
-        ),
+        child: listTile,
       ),
     );
 

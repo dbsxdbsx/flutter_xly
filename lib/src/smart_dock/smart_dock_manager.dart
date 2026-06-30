@@ -33,6 +33,18 @@ class MySmartDock {
   /// 获取智能停靠启用状态
   static bool isSmartDockingEnabled() => _isSmartDockingEnabled;
 
+  /// 唤醒：若窗口当前处于智能停靠的隐藏态，将其滑回可见（对齐）位置。
+  ///
+  /// 语义与"鼠标悬停唤出"一致——**不激活、不聚焦**窗口；若调用方需要前台激活，
+  /// 请在此调用之后自行处理（如平台层 SetForegroundWindow）。
+  /// 未开启智能停靠、或窗口本就可见时为安全空操作。
+  ///
+  /// 适用场景：全局热键、划词、托盘等外部触发需要把贴边隐藏的窗口请回来时。
+  static Future<void> wake() async {
+    if (!MyPlatform.isDesktop) return;
+    await MouseTracker.simulateHoverReveal();
+  }
+
   /// 启用/禁用智能停靠机制
   ///
   /// [enabled] 是否启用智能停靠
