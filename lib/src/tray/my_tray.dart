@@ -65,7 +65,7 @@ class MyTrayMenuItem {
 }
 
 /// MyTray 托盘管理器
-class MyTray extends GetxService with TrayListener {
+class MyTray extends GetxService with TrayListener, WindowListener {
   static MyTray get to => Get.find();
 
   // 状态管理
@@ -77,14 +77,26 @@ class MyTray extends GetxService with TrayListener {
 
   // 对外只读访问器：获取当前策略
   bool get hideTaskBarIcon => _hideTaskBarIcon.value;
-  // 任务栏图标策略：托盘存在时是否隐藏任务栏图标（全局策略，可运行时调整）
-  final _hideTaskBarIcon = true.obs;
+  // 任务栏图标策略：窗口“可见”时是否仍隐藏任务栏图标（进阶选项，可运行时调整）。
+  //
+  // ⚠️ Windows 平台硬约束：任务栏按钮与 Alt+Tab 条目对普通顶层窗口是绑死的——
+  //   隐藏任务栏图标（setSkipTaskbar(true)）会让窗口同时从任务栏“和” Alt+Tab 切换器消失
+  //   （见 Electron #7850，这是平台限制而非 bug）。
+  // 因此本策略只决定“窗口可见时”的表现，默认 false：窗口可见 → 任务栏 + Alt+Tab 都在，
+  //   仅当 hide() 缩进托盘（窗口逻辑上不可见）时才移除。置为 true 表示“纯托盘工具”模式
+  //   （窗口开着也不要任务栏图标，代价是该状态下也进不了 Alt+Tab）。
+  final _hideTaskBarIcon = false.obs;
   // 构造函数参数
   final String? iconPath;
   final String? initialTooltip;
   final List<MyTrayMenuItem>? initialMenuItems;
   // 新增：是否左击托盘切换显示/隐藏（可运行时修改）
   final _toggleOnClick = true.obs;
+  // 关闭即隐藏（QQ 式）：拦截窗口关闭请求，改为缩回托盘而非退出进程（可运行时修改）。
+  // 真正退出请走托盘菜单 → MyApp.exit()（内部 exit(0) 硬退出，天然绕过本拦截）。
+  final _closeToTray = true.obs;
+  // 标记窗口关闭监听是否已注册，避免重复 addListener 导致回调多次触发
+  bool _windowListenerAdded = false;
 
   // 私有：用于智能停靠下的切换记忆
   bool _smartDockShownByTray = false;
@@ -97,12 +109,14 @@ class MyTray extends GetxService with TrayListener {
     this.iconPath,
     String? tooltip,
     List<MyTrayMenuItem>? menuItems,
-    bool hideTaskBarIcon = true,
+    bool hideTaskBarIcon = false,
     bool toggleOnClick = true,
+    bool closeToTray = true,
   })  : initialTooltip = tooltip,
         initialMenuItems = menuItems {
     _hideTaskBarIcon.value = hideTaskBarIcon;
     _toggleOnClick.value = toggleOnClick;
+    _closeToTray.value = closeToTray;
     if (tooltip != null) {
       this.tooltip.value = tooltip;
     }
@@ -247,6 +261,10 @@ class MyTray extends GetxService with TrayListener {
       // 应用任务栏图标显示策略（隐藏/显示）
       await windowManager.setSkipTaskbar(_hideTaskBarIcon.value);
 
+      // 应用“关闭即隐藏”策略（QQ 式）。注意 MyApp 初始化阶段会先 setPreventClose(false)，
+      // 这里在托盘就绪后覆盖，确保拦截优先生效。
+      await _applyCloseToTray(_closeToTray.value);
+
       XlyLogger.info('MyTray: 托盘初始化成功，使用图标: $absoluteIconPath');
     } catch (e) {
       XlyLogger.error('MyTray: 托盘初始化失败', e);
@@ -332,6 +350,8 @@ class MyTray extends GetxService with TrayListener {
     // - 当 toggleOnClick=true：切换语义
     if (!_toggleOnClick.value) {
       if (_isInSmartDockMode()) {
+        // 弹出前按策略还原任务栏图标（可能此前被托盘收起/closeToTray 隐藏过）
+        await windowManager.setSkipTaskbar(_hideTaskBarIcon.value);
         await MouseTracker.simulateHoverReveal();
       } else {
         await pop();
@@ -342,9 +362,14 @@ class MyTray extends GetxService with TrayListener {
     if (_isInSmartDockMode()) {
       // 智能停靠：在“无激活弹出”和“强制收起到隐藏位”之间切换
       if (_smartDockShownByTray) {
+        // 收起到边缘＝用户主动“收走”：连任务栏图标一起移除（与 hide() 语义一致）。
+        // 注意：鼠标移开触发的自动收起不在此处，故不会造成任务栏图标闪烁。
         await MouseTracker.forceCollapseToHidden();
+        await windowManager.setSkipTaskbar(true);
         _smartDockShownByTray = false;
       } else {
+        // 弹出：先按策略还原任务栏图标，再无激活弹出
+        await windowManager.setSkipTaskbar(_hideTaskBarIcon.value);
         await MouseTracker.simulateHoverReveal();
         _smartDockShownByTray = true;
       }
@@ -549,8 +574,9 @@ class MyTray extends GetxService with TrayListener {
       // 设置托盘模式状态
       isTrayMode.value = true;
 
-      // 根据策略设置任务栏图标显示/隐藏
-      await windowManager.setSkipTaskbar(_hideTaskBarIcon.value);
+      // 缩进托盘＝窗口逻辑上不可见：无论 hideTaskBarIcon 策略如何，
+      // 都移除任务栏按钮（同时也会移出 Alt+Tab，符合“已隐藏不该当切换目标”）。
+      await windowManager.setSkipTaskbar(true);
 
       // 根据智能停靠状态决定是否隐藏窗口UI
       if (!_isInSmartDockMode()) {
@@ -588,7 +614,9 @@ class MyTray extends GetxService with TrayListener {
       // 退出托盘模式
       isTrayMode.value = false;
 
-      // 遵从策略，不强制显示任务栏图标
+      // 窗口将恢复可见：按策略还原任务栏图标。
+      // 默认（hideTaskBarIcon=false）→ setSkipTaskbar(false)，任务栏 + Alt+Tab 一并恢复；
+      // 纯托盘模式（true）→ 维持隐藏。
       await windowManager.setSkipTaskbar(_hideTaskBarIcon.value);
 
       // 恢复正常的任务栏激活行为
@@ -613,6 +641,10 @@ class MyTray extends GetxService with TrayListener {
       if (!_isInitialized.value) return;
 
       trayManager.removeListener(this);
+      if (_windowListenerAdded) {
+        windowManager.removeListener(this);
+        _windowListenerAdded = false;
+      }
       await trayManager.destroy();
 
       // 通知插件会自动清理，无需手动清理
@@ -636,6 +668,52 @@ class MyTray extends GetxService with TrayListener {
 
   Future<void> toggleToggleOnClick() async {
     _toggleOnClick.value = !_toggleOnClick.value;
+  }
+
+  // === 关闭即隐藏（closeToTray）：对外API（get/set/toggle） ===
+  bool getCloseToTray() => _closeToTray.value;
+
+  /// 设置“点关闭按钮是否隐藏到托盘”策略，立即生效。
+  ///
+  /// 关闭（`true`）：拦截窗口关闭（Alt+F4、系统菜单、或自定义关闭按钮调用
+  /// `windowManager.close()`），统一改为 [hide]，应用退到托盘继续驻留；真正退出请走
+  /// 托盘菜单 → `MyApp.exit()`。开启（`false`）：恢复关闭即退出进程的原生行为。
+  Future<void> setCloseToTray(bool enabled) async {
+    _closeToTray.value = enabled;
+    if (_isInitialized.value) {
+      await _applyCloseToTray(enabled);
+    }
+  }
+
+  Future<void> toggleCloseToTray() async {
+    await setCloseToTray(!_closeToTray.value);
+  }
+
+  /// 应用 closeToTray 策略：注册/注销窗口监听并切换 preventClose。
+  Future<void> _applyCloseToTray(bool enable) async {
+    if (enable) {
+      if (!_windowListenerAdded) {
+        windowManager.addListener(this);
+        _windowListenerAdded = true;
+      }
+      await windowManager.setPreventClose(true);
+    } else {
+      if (_windowListenerAdded) {
+        windowManager.removeListener(this);
+        _windowListenerAdded = false;
+      }
+      await windowManager.setPreventClose(false);
+    }
+  }
+
+  /// WindowListener：窗口收到关闭请求时回调（仅在 preventClose=true 时触发）。
+  /// 开启 closeToTray 时改为缩回托盘；真正退出走 MyApp.exit() 的硬退出，不经此处。
+  @override
+  void onWindowClose() {
+    if (_closeToTray.value) {
+      // 异步隐藏，fire-and-forget（onWindowClose 为同步回调）
+      hide();
+    }
   }
 
   /// 设置任务栏图标隐藏策略（全局），默认立即生效

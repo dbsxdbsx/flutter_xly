@@ -114,7 +114,8 @@ tray.toggleToggleOnClick();               // 切换开关状态
 ### 默认行为
 - **tooltip**: 不显示（`null`）
 - **menuItems**: 无菜单（`null`）
-- **hideTaskBarIcon**: 隐藏任务栏图标（`true`）
+- **hideTaskBarIcon**: 窗口可见时保留任务栏图标 + Alt+Tab（`false`）；仅缩进托盘时移除。`true` 为纯托盘模式（Windows 上该状态也会移出 Alt+Tab，属平台硬约束）
+- **closeToTray**: 点关闭按钮(Alt+F4/自渲染X)隐藏到托盘而非退出（`true`）；初始化时 `setPreventClose(true)` 并监听 `onWindowClose` → `hide()`。真正退出走 `MyApp.exit()`（`exit(0)` 硬退出，绕过拦截）。无边框窗口需自渲染关闭按钮调 `windowManager.close()` 或 `MyTray.to.hide()`
 - **toggleOnClick**: 开启切换语义（`true`）
 - **图标验证**: 构造时检查文件存在性，不存在则抛异常
 - **平台检查**: 非桌面平台自动跳过初始化

@@ -1,3 +1,19 @@
+## 0.51.0 - 2026-07-01
+
+### Added
+
+- **`MyTray.closeToTray`（默认 `true`）**：QQ 式「关闭即隐藏」。开启后 `MyTray` 监听窗口关闭（`with WindowListener`），初始化时 `setPreventClose(true)`，`onWindowClose` → `hide()`——Alt+F4、系统关闭菜单、或自渲染关闭按钮调用 `windowManager.close()` 都统一缩回托盘而非退出；真正退出走托盘菜单 → `MyApp.exit()`（内部 `exit(0)` 硬退出，绕过拦截）。配套运行时 API：`setCloseToTray()` / `getCloseToTray()` / `toggleCloseToTray()`。专为无边框窗口（无系统 X 按钮）补齐「隐藏回托盘」入口。
+
+### Fixed
+
+- **`MyTray` 应用从 Alt+Tab 切换器消失**：托盘初始化时无条件 `setSkipTaskbar(true)`，导致窗口明明可见却同时被移出任务栏**和** Alt+Tab（Windows 10/11 上任务栏与 Alt+Tab 对普通顶层窗口绑死，见 Electron #7850，属平台行为）。现在 `skipTaskbar` 跟随窗口可见性：窗口可见 → 任务栏 + Alt+Tab 都在；仅 `hide()` 缩进托盘时移除；`pop()` 恢复窗口时一并还原。
+- **智能停靠下托盘收起不隐藏任务栏图标**：`onTrayIconMouseDown` 的智能停靠分支只挪动窗口位置（`forceCollapseToHidden` / `simulateHoverReveal`），绕过了 `setSkipTaskbar`，导致托盘点击收起后任务栏图标残留。现在托盘点击收起会连任务栏图标一起移除、弹出时按 `hideTaskBarIcon` 策略还原（与 `hide()`/`pop()` 一致）；鼠标移开触发的自动收起保持图标不变，避免闪烁。
+
+### BREAKING
+
+- **`MyTray(hideTaskBarIcon)` 默认值 `true` → `false`**：默认行为改为「窗口可见时保留任务栏图标 + Alt+Tab，仅缩进托盘时隐藏」（QQ/微信式）。`hideTaskBarIcon` 降级为进阶选项，置 `true` 才进入「纯托盘模式」（窗口开着也无任务栏图标，该状态在 Windows 上同样进不了 Alt+Tab）。旧版依赖默认隐藏任务栏图标的应用，请显式传 `hideTaskBarIcon: true`。
+- **`MyTray(closeToTray)` 默认 `true`，关闭按钮行为由「退出」变为「隐藏到托盘」**：有托盘的应用，点关闭/Alt+F4 不再退出进程。**务必**保留一个真正的退出入口（托盘菜单"退出" → `MyApp.exit()`），否则应用只能从任务管理器结束。需要旧的「关闭即退出」行为请显式传 `closeToTray: false`。
+
 ## 0.50.0 - 2026-06-30
 
 ### Added

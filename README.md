@@ -980,13 +980,16 @@ void main() async {
     tray: MyTray(
       // iconPath: "assets/icon.png",  // 可选：为空时自动使用默认应用图标
       tooltip: "我的应用",              // 可选：悬停提示
-      hideTaskBarIcon: true,          // 可选：托盘存在时是否隐藏任务栏图标（默认true）
+      hideTaskBarIcon: false,         // 可选：窗口可见时是否仍隐藏任务栏图标（默认false）
+                                      //       ⚠️ Windows 上隐藏会同时移出 Alt+Tab 切换器
       toggleOnClick: true,            // 可选：托盘左键点击是否切换显示/隐藏（默认true）
+      closeToTray: true,              // 可选：点关闭按钮(Alt+F4/自渲染X)隐藏到托盘而非退出（默认true）
+                                      //       ⚠️ 务必提供“退出”菜单项，否则只能从任务管理器结束
       menuItems: [                    // 可选：右键菜单
         MyTrayMenuItem(key: 'show', label: '显示', onTap: () => MyTray.to.pop()),
         MyTrayMenuItem.separator(),
         MyTrayMenuItem(key: 'settings', label: '设置', enabled: false), // 禁用项
-        MyTrayMenuItem(key: 'exit', label: '退出', onTap: () => exit(0)),
+        MyTrayMenuItem(key: 'exit', label: '退出', onTap: () => MyApp.exit()),
       ],
     ),
   );
@@ -1045,6 +1048,7 @@ MyTray 特性：
 - **🆕 智能托盘隐藏**：根据智能停靠状态自动选择隐藏模式，与智能停靠功能完美协作
 - **🆕 原生禁用样式**：支持菜单项的启用/禁用状态，使用系统原生灰色样式和不可点击行为
 - **🆕 任务栏图标策略控制**：hideTaskBarIcon 参数控制托盘存在时任务栏图标显示，支持运行时切换
+- **🆕 关闭即隐藏（closeToTray）**：点关闭按钮/Alt+F4 缩回托盘而非退出（QQ 式），无边框窗口同样适用；默认开启
 - **🆕 托盘点击切换功能**：toggleOnClick 参数控制托盘左键点击行为，支持切换显示/隐藏或保持现状
 - **🔌 完全独立**：MyTray 与智能停靠功能完全解耦，可单独使用或配合使用
 
@@ -1052,10 +1056,12 @@ MyTray 特性：
 
 MyTray 支持灵活的任务栏图标显示策略，允许用户选择"纯托盘模式"或"托盘+任务栏双入口模式"：
 
-- **hideTaskBarIcon = true（默认）**：托盘存在时隐藏任务栏图标，提供干净的任务栏体验
-- **hideTaskBarIcon = false**：托盘存在时保留任务栏图标，提供双入口访问方式
+- **hideTaskBarIcon = false（默认）**：窗口可见时保留任务栏图标 + Alt+Tab 条目（QQ/微信式体验），仅缩进托盘时移除
+- **hideTaskBarIcon = true**：纯托盘模式，窗口开着也不显示任务栏图标
 - **运行时切换**：支持通过 API 动态改变策略，无需重启应用
 - **与智能停靠解耦**：任务栏图标显示策略不影响智能停靠的悬停唤醒等行为
+
+> ⚠️ **Windows 平台硬约束**：任务栏按钮与 Alt+Tab 条目对普通顶层窗口是绑死的——隐藏任务栏图标会让窗口**同时**从任务栏和 Alt+Tab 切换器消失（Windows 平台限制，非 bug）。若需要窗口在 Alt+Tab 中可见，请保持默认 `hideTaskBarIcon = false`。
 
 ```dart
 // 初始化时配置策略
@@ -1068,6 +1074,33 @@ MyTray.to.showTaskbarIcon();    // 显示任务栏图标
 MyTray.to.hideTaskbarIcon();    // 隐藏任务栏图标
 bool isHidden = MyTray.to.hideTaskBarIcon;  // 获取当前策略
 ```
+
+#### 关闭即隐藏（closeToTray）
+
+QQ/微信式行为：点窗口关闭按钮不退出，而是缩回托盘继续驻留；真正退出走托盘菜单的"退出"。
+
+- **closeToTray = true（默认）**：拦截窗口关闭请求（Alt+F4、系统关闭菜单、或你自渲染的关闭按钮调用 `windowManager.close()`），统一改为 `hide()` 缩回托盘。真正退出请调 `MyApp.exit()`（内部 `exit(0)` 硬退出，天然绕过拦截）。
+- **closeToTray = false**：恢复原生行为，关闭即退出进程。
+
+> ⚠️ 开启 closeToTray 后，**必须**给用户留一个真正的退出入口（托盘菜单"退出" → `MyApp.exit()`），否则关闭按钮永远只是隐藏，应用只能从任务管理器结束。
+
+**无边框窗口（`setTitleBarHidden: true`，默认）没有系统"X"按钮**，需要你在界面里自渲染一个关闭入口：
+
+```dart
+// 自渲染关闭按钮：交给 closeToTray 统一拦截为“隐藏到托盘”（推荐）
+IconButton(
+  icon: const Icon(Icons.close),
+  onPressed: () => windowManager.close(),
+);
+// 或直接隐藏：
+//   onPressed: () => MyTray.to.hide();
+
+// 运行时切换策略
+MyTray.to.setCloseToTray(false);          // 关闭=退出
+bool isCloseToTray = MyTray.to.getCloseToTray();
+```
+
+即使不放按钮，Alt+F4 与"再点一次托盘图标"（toggleOnClick）也能把窗口收回托盘。
 
 #### 托盘点击切换功能
 

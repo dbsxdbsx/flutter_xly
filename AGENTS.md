@@ -10,7 +10,7 @@
 - **主语言 / 框架**：Dart 3.5+、Flutter 3.7+；GetX、window_manager、flutter_screenutil 等（部分在 `lib/xly.dart` 再导出）。
 - **阶段**：Beta（持续发版，`CHANGELOG.md` 跟踪）。
 - **仓库**：<https://github.com/dbsxdbsx/flutter_xly>
-- **当前版本**：`pubspec.yaml` → `0.50.0`（**0.50** `MyCard.subtitle` / `MySmartDock.wake`；**0.49** `*DirFile`；**0.48** `app*` 轨；见 `CHANGELOG`）。
+- **当前版本**：`pubspec.yaml` → `0.51.0`（**0.51** `MyTray.closeToTray` 关闭即隐藏 + Alt+Tab 修复 / `hideTaskBarIcon` 默认改 `false`；**0.50** `MyCard.subtitle` / `MySmartDock.wake`；**0.49** `*DirFile`；见 `CHANGELOG`）。
 
 ## 2. Project Map
 
@@ -105,7 +105,7 @@ xly/
 
 ## 5. Active Context
 
-- **最近完成**：0.50 `MyCard.subtitle` / `MyCardList.cardSubtitle` / `MySmartDock.wake()`；0.49 `appDirFile` / `userDataDirFile`；0.48 `install*` → `app*`。见 `CHANGELOG`。
+- **最近完成**：0.51 新增 `MyTray.closeToTray`（QQ 式「关闭即隐藏」，`with WindowListener` + `setPreventClose(true)` + `onWindowClose`→`hide()`，默认开；退出走 `MyApp.exit()` 硬退出绕过拦截；为无边框窗口补齐隐藏入口）；并修复初始化即 `setSkipTaskbar(true)` 导致窗口从 Alt+Tab 消失（`skipTaskbar` 改为跟随窗口可见性；`hideTaskBarIcon` 默认 `true`→`false`）；0.50 `MyCard.subtitle` / `MySmartDock.wake()`。见 `CHANGELOG`。
 - **上一版**：0.45.0 — 阶段 D；0.42.0 — `MyPaths` 双轨。
 - **后续**：见 [`.issue/xly-package-hygiene-backlog.md`](.issue/xly-package-hygiene-backlog.md)（可选：可配置持久化键前缀）。
 

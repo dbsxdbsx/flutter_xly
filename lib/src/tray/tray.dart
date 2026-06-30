@@ -45,16 +45,19 @@
 ///   service: () => MyTray(
 ///     iconPath: "assets/icon.png",        // 可选：托盘图标路径，为空时使用默认应用图标
 ///     tooltip: "My App",                  // 可选：悬停提示
-///     hideTaskBarIcon: true,              // 可选：托盘存在时是否隐藏任务栏图标（默认true）
+///     hideTaskBarIcon: false,            // 可选：窗口可见时是否仍隐藏任务栏图标（默认false；
+///                                        //       Windows 上隐藏会同时移出 Alt+Tab）
+///     closeToTray: true,                 // 可选：点关闭按钮(Alt+F4/自渲染X)隐藏到托盘而非退出（默认true）
+///                                        //       ⚠️ 务必提供“退出”菜单项，否则只能从任务管理器结束
 ///     menuItems: [                        // 可选：右键菜单
 ///       MyTrayMenuItem(
 ///         label: '显示主窗口',
-///         onTap: () => MyTray.to.restoreFromTray(),
+///         onTap: () => MyTray.to.pop(),
 ///       ),
 ///       MyTrayMenuItem.separator(),
 ///       MyTrayMenuItem(
 ///         label: '退出应用',
-///         onTap: () => exit(0),
+///         onTap: () => MyApp.exit(),     // closeToTray=true 下唯一真正退出的入口
 ///       ),
 ///     ],
 ///   ),
@@ -93,11 +96,27 @@
 /// tray.showTaskbarIcon();             // 显示任务栏图标
 /// tray.hideTaskbarIcon();             // 隐藏任务栏图标
 /// bool isHidden = tray.hideTaskBarIcon; // 获取当前策略
+///
+/// // 关闭即隐藏策略控制
+/// tray.setCloseToTray(false);         // 关闭=退出（恢复原生行为）
+/// bool isCloseToTray = tray.getCloseToTray();
 /// ```
+///
+/// ## 无边框窗口的关闭按钮（重要）
+/// 无边框（`setTitleBarHidden: true`，默认）窗口没有系统“X”按钮。配合 `closeToTray`：
+/// - 在你自己的界面右上角放一个关闭图标，`onTap: () => windowManager.close()`，
+///   会被拦截为“缩回托盘”（推荐，语义统一，将来改 closeToTray 也无需改 UI）。
+/// - 或直接 `onTap: () => MyTray.to.hide()`。
+/// 即使不放按钮，Alt+F4 与“再点一次托盘图标”（toggleOnClick）也能把窗口收回托盘。
 ///
 /// ## 默认行为
 /// - **tooltip**: 不显示（null）
 /// - **menuItems**: 无菜单（null）
+/// - **hideTaskBarIcon**: `false` —— 窗口可见时保留任务栏图标 + Alt+Tab 条目；
+///   仅 `hide()` 缩进托盘时移除。置 `true` 为“纯托盘工具”模式（窗口开着也无任务栏图标，
+///   该状态下在 Windows 上也进不了 Alt+Tab，属平台硬约束）。
+/// - **closeToTray**: `true` —— 点关闭按钮(Alt+F4/自渲染X)缩回托盘而非退出进程；
+///   真正退出走托盘菜单 → `MyApp.exit()`。置 `false` 恢复关闭即退出的原生行为。
 /// - **图标验证**: 构造时检查文件存在性，不存在则抛异常
 /// - **平台检查**: 非桌面平台自动跳过初始化
 /// - **生命周期**: 随应用启动/关闭自动管理
