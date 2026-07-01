@@ -54,7 +54,9 @@ class MySelectorController<T> {
 
   final MySelectorClearOption? clearOption;
   final bool allowReselect;
-  final bool? showPanelAbove;
+
+  /// 弹出方向策略（默认首选向下、放不下才上翻），详见 [MyPanelPlacement]。
+  final MyPanelPlacement placement;
   final bool showSearch;
   final String searchHint;
   final bool Function(MySelectorItem<T> item, String query)? searchFilter;
@@ -81,7 +83,7 @@ class MySelectorController<T> {
     T? initialValue,
     this.clearOption,
     this.allowReselect = false,
-    this.showPanelAbove,
+    this.placement = MyPanelPlacement.below,
     this.showSearch = false,
     this.searchHint = '搜索…',
     this.searchFilter,
@@ -153,7 +155,7 @@ class MySelectorController<T> {
       currentValue: selectedValue,
       clearOption: clearOption,
       allowReselect: allowReselect,
-      showPanelAbove: showPanelAbove,
+      placement: placement,
       showSearch: showSearch,
       searchHint: searchHint,
       searchFilter: searchFilter,

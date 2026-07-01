@@ -2,7 +2,7 @@
 
 > 项目级 AI agent onboarding 入口（[Agentic AI Foundation 开放标准](https://github.com/agentic-ai-foundation/agentsmd)）。
 > 本文件只记录仓库内可共享的事实、约定与索引；个人 Cursor Rules / Skills 不写入此处。
-> 最近更新：2026-06-30（0.50 MyCard.subtitle / MyCardList.cardSubtitle / MySmartDock.wake）。
+> 最近更新：2026-07-01（0.52 MySelector placement / panel width autosize）。
 
 ## 1. Project Identity
 
@@ -10,7 +10,7 @@
 - **主语言 / 框架**：Dart 3.5+、Flutter 3.7+；GetX、window_manager、flutter_screenutil 等（部分在 `lib/xly.dart` 再导出）。
 - **阶段**：Beta（持续发版，`CHANGELOG.md` 跟踪）。
 - **仓库**：<https://github.com/dbsxdbsx/flutter_xly>
-- **当前版本**：`pubspec.yaml` → `0.51.0`（**0.51** `MyTray.closeToTray` 关闭即隐藏 + Alt+Tab 修复 / `hideTaskBarIcon` 默认改 `false`；**0.50** `MyCard.subtitle` / `MySmartDock.wake`；**0.49** `*DirFile`；见 `CHANGELOG`）。
+- **当前版本**：`pubspec.yaml` → `0.52.0`（**0.52** `MySelector` 新增 `placement` / 面板宽度不传即自适应、传值即固定；**0.51** `MyTray.closeToTray` 关闭即隐藏 + Alt+Tab 修复；**0.50** `MyCard.subtitle` / `MySmartDock.wake`；见 `CHANGELOG`）。
 
 ## 2. Project Map
 
@@ -51,6 +51,7 @@ xly/
 
 - 改 **路径 API** → `lib/src/paths/`、[`.doc/user_data_paths.md`](.doc/user_data_paths.md)
 - 改 **系统选文件/夹 / Bootstrap 编排** → `lib/picker.dart`、`lib/src/picker/`、[`.doc/user_data_picker.md`](.doc/user_data_picker.md)
+- 改 **MySelector 浮层选择器** → `lib/selector.dart`、`lib/src/selector/`、[`.doc/my_selector_usage.md`](.doc/my_selector_usage.md)
 - 改 **MyApp 启动 / Zone / 异常** → `lib/app.dart`、`lib/src/app/`、`.doc/error_handling.md`
 - 改 **Windows 通知** → `lib/src/notify/`、`.doc/my_notify_usage_guide.md`
 - 改 **CLI** → `bin/`、`tool/`
@@ -105,7 +106,8 @@ xly/
 
 ## 5. Active Context
 
-- **最近完成**：0.51 新增 `MyTray.closeToTray`（QQ 式「关闭即隐藏」，`with WindowListener` + `setPreventClose(true)` + `onWindowClose`→`hide()`，默认开；退出走 `MyApp.exit()` 硬退出绕过拦截；为无边框窗口补齐隐藏入口）；并修复初始化即 `setSkipTaskbar(true)` 导致窗口从 Alt+Tab 消失（`skipTaskbar` 改为跟随窗口可见性；`hideTaskBarIcon` 默认 `true`→`false`）；0.50 `MyCard.subtitle` / `MySmartDock.wake()`。见 `CHANGELOG`。
+- **最近完成**：0.52 `MySelector` 新增 `MyPanelPlacement` / `placement`，默认首选向下且按内容高度判断翻转；面板宽度改为不传即完全自适应、传值即固定，`panelWidth` 不再内部 `.w`。见 `CHANGELOG` 与 [`.doc/my_selector_usage.md`](.doc/my_selector_usage.md)。
+- **上一轮**：0.51 新增 `MyTray.closeToTray`（关闭即隐藏）并修复 Alt+Tab / 任务栏可见性绑定；0.50 `MyCard.subtitle` / `MySmartDock.wake()`。
 - **上一版**：0.45.0 — 阶段 D；0.42.0 — `MyPaths` 双轨。
 - **后续**：见 [`.issue/xly-package-hygiene-backlog.md`](.issue/xly-package-hygiene-backlog.md)（可选：可配置持久化键前缀）。
 
@@ -115,6 +117,7 @@ xly/
 
 - [`.doc/user_data_paths.md`](.doc/user_data_paths.md) — **路径 API**（双轨、两层目录、`prepare` 流程图、何时用哪套能力）
 - [`.doc/user_data_picker.md`](.doc/user_data_picker.md) — **MyPicker / Session**（端到端流程图、API 速查、集成示例）
+- [`.doc/my_selector_usage.md`](.doc/my_selector_usage.md) — **MySelector**（item / style / placement / 键盘与搜索用法）
 - [`.doc/notify_channels.md`](.doc/notify_channels.md) — **MyToast / MyNotify / MyTray 三通道**
 - [`.issue/xly-package-hygiene-backlog.md`](.issue/xly-package-hygiene-backlog.md) — 可选增强待办
 - [`.doc/error_handling.md`](.doc/error_handling.md)

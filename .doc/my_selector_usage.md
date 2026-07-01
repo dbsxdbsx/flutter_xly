@@ -239,7 +239,7 @@ MySelectorItem<T>(
 ```dart
 MySelectorStyle(
   maxHeight: 360,           // 面板最大高度（设计稿像素，自动 .h 转换）
-  panelWidth: 280,          // 面板宽度（不传则与触发按钮同宽，最小 220）
+  panelWidth: 280.w,        // 固定宽度；不传则完全自适应（值不做 .w，自行传）
   borderRadius: 14,         // 圆角
   blurSigma: 28,            // 毛玻璃模糊强度
   selectedColor: Color(0xFF4F6BFE), // 选中色（指示条、文字、勾）
@@ -248,18 +248,40 @@ MySelectorStyle(
 )
 ```
 
+### 面板宽度策略
+
+- **不传 `panelWidth`（默认）**：**完全自适应**——面板宽度贴合内容（不窄于触发
+  按钮），内容更长时自动增长，最宽不超过屏内安全宽。测宽会带上触发处的字体与
+  文字缩放，对齐实际渲染；传入自定义 `itemBuilder` 时会先离屏布局测量自然宽度。
+- **传 `panelWidth`**：**固定宽度**，无视内容一律按此值显示。该值**不做** `.w`
+  缩放，请自行按需传入，如 `panelWidth: 280.w`（随屏适配）或 `280`（固定逻辑像素）。
+- 若某个自定义 `itemBuilder` 强依赖外部固定宽度导致无法可靠测量，可显式传
+  `panelWidth` 作为兜底。
+
 ---
 
 ## 7. 弹出方向控制
 
+用 `placement`（`MyPanelPlacement`）控制面板相对触发按钮的弹出方向。`show` 与
+`MySelectorController` 均支持，默认 `below`。
+
 ```dart
-MySelectorController<String>(
+MySelector.show<String>(
+  triggerContext: context,
   items: items,
-  showPanelAbove: true,   // 强制弹到触发按钮上方
-  // showPanelAbove: false, // 强制弹到下方
-  // showPanelAbove: null,  // 默认：根据可用空间自动判断
-)
+  placement: MyPanelPlacement.below, // 默认：首选向下，放不下才自动上翻
+);
 ```
+
+| 值 | 语义 |
+|---|---|
+| `below`（默认） | 首选向下，仅当下方放不下面板且上方更宽裕时自动上翻 |
+| `above` | 首选向上，仅当上方放不下面板且下方更宽裕时自动下翻 |
+| `forceBelow` | 强制向下，永不翻转 |
+| `forceAbove` | 强制向上，永不翻转 |
+
+> 智能策略（`below` / `above`）按**内容**估算面板高度来判断是否翻转：内容少时
+> 不会因为另一侧有大片留白就翻转。
 
 ---
 

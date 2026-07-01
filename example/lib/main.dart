@@ -189,7 +189,7 @@ void main() async {
           MyAdaptiveNavigationItem(
             icon: Icon(Icons.layers_outlined),
             selectedIcon: Icon(Icons.layers),
-            label: '弹窗对话',
+            label: 'MyDialog',
             subtitle: 'Dialog 与 BottomSheet',
             group: '展示测试',
             route: MyRoutes.page3,
@@ -214,7 +214,7 @@ void main() async {
           MyAdaptiveNavigationItem(
             icon: Icon(Icons.edit),
             selectedIcon: Icon(Icons.edit_outlined),
-            label: '文本编辑器',
+            label: 'MyTextEditor',
             subtitle: '富文本编辑组件',
             group: '功能测试',
             route: MyRoutes.page6,
@@ -222,7 +222,7 @@ void main() async {
           MyAdaptiveNavigationItem(
             icon: Icon(Icons.tune),
             selectedIcon: Icon(Icons.tune_outlined),
-            label: '自定义编辑框',
+            label: 'MySpinBox',
             subtitle: '输入框定制化',
             group: '功能测试',
             route: MyRoutes.page7,
@@ -231,7 +231,7 @@ void main() async {
           MyAdaptiveNavigationItem(
             icon: Icon(Icons.notifications),
             selectedIcon: Icon(Icons.notifications_active),
-            label: '通知功能测试',
+            label: 'MyNotify',
             subtitle: '本地通知推送',
             group: '系统功能',
             route: MyRoutes.page8,
@@ -239,7 +239,7 @@ void main() async {
           MyAdaptiveNavigationItem(
             icon: Icon(Icons.system_update_alt),
             selectedIcon: Icon(Icons.system_update_alt_outlined),
-            label: '托盘功能测试',
+            label: 'MyTray',
             subtitle: '系统托盘交互',
             group: '系统功能',
             route: MyRoutes.page9,
@@ -248,7 +248,7 @@ void main() async {
           MyAdaptiveNavigationItem(
             icon: Icon(Icons.more_horiz),
             selectedIcon: Icon(Icons.more_horiz_outlined),
-            label: 'LoadingDot演示',
+            label: 'MyLoadingDot',
             subtitle: '加载动画效果',
             group: '动画样式',
             route: MyRoutes.page10,
@@ -256,7 +256,7 @@ void main() async {
           MyAdaptiveNavigationItem(
             icon: Icon(Icons.palette),
             selectedIcon: Icon(Icons.palette_outlined),
-            label: 'MyFloatPanel样式',
+            label: 'MyFloatPanel',
             subtitle: '浮动面板定制',
             group: '动画样式',
             route: MyRoutes.page11,
@@ -265,7 +265,7 @@ void main() async {
           MyAdaptiveNavigationItem(
             icon: Icon(Icons.tab_outlined),
             selectedIcon: Icon(Icons.tab),
-            label: 'TabView 面板',
+            label: 'MyTabView',
             subtitle: '分段选项卡组件',
             group: '面板组件',
             route: MyRoutes.page12,
@@ -273,7 +273,7 @@ void main() async {
           MyAdaptiveNavigationItem(
             icon: Icon(Icons.checklist_outlined),
             selectedIcon: Icon(Icons.checklist),
-            label: '选择器面板',
+            label: 'MySelector',
             subtitle: 'Selector 选择浮层',
             group: '面板组件',
             route: MyRoutes.page13,
@@ -281,7 +281,7 @@ void main() async {
           MyAdaptiveNavigationItem(
             icon: Icon(Icons.folder_outlined),
             selectedIcon: Icon(Icons.folder),
-            label: 'MyPaths 路径',
+            label: 'MyPaths',
             subtitle: 'app / userData 双轨',
             group: '面板组件',
             route: MyRoutes.page14Paths,

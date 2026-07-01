@@ -1,3 +1,19 @@
+## 0.52.0 - 2026-07-01
+
+### Added
+
+- **`MySelector` 弹出方向 `placement`（`MyPanelPlacement`）**：`show` 与 `MySelectorController` 新增 `placement` 参数，四态——`below`（默认，首选向下、放不下才上翻）、`above`（首选向上、放不下才下翻）、`forceBelow` / `forceAbove`（强制不翻）。智能策略按**内容估算**面板高度判断是否翻转，内容少时不会因另一侧留白就翻转。
+
+### Changed
+
+- **`MySelector` 自动弹出方向默认改为「首选向下」**：旧启发式「上方空间 ≥ 面板 60% 就上翻」在中上部触发按钮上会误判上翻，且不看下方是否够。现按内容估算面板高度，默认向下，仅当下方放不下且上方更宽裕时才上翻。
+- **`MySelector` 面板宽度改为「不传即完全自适应、传值即固定」**：不传 `panelWidth` 时面板贴合内容（不窄于触发按钮）、内容更长自动增长、封顶屏内安全宽；默认条目测宽带上触发处字体与文字缩放，修复内容被省略号截断。自定义 `itemBuilder` 会先离屏布局测量自然宽度，移除旧的 220 硬性下界。显式传 `panelWidth` 时跳过测量并固定宽度。
+
+### BREAKING
+
+- **移除 `MySelector` / `MySelectorController` 的 `showPanelAbove`**：改用 `placement`（`MyPanelPlacement`）。等价替换：`true→MyPanelPlacement.forceAbove`、`false→forceBelow`、`null→below`（默认）。
+- **`MySelectorStyle.panelWidth` 不再内部 `.w` 缩放**：现视为原始像素，需随屏适配请自行传 `panelWidth: 280.w`（旧写法 `panelWidth: 280` 现表示固定 280 逻辑像素）。
+
 ## 0.51.0 - 2026-07-01
 
 ### Added

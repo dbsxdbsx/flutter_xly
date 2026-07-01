@@ -50,17 +50,15 @@ class Page3View extends GetView<Page3Controller> {
 
                 SizedBox(height: 30.h),
 
-                // Overlay 问题测试（已修复）
-                // 自 Flutter 3.38.1 起，GetX 的 overlayContext 在对话框关闭后可能失效
-                // 参考: https://github.com/jonataslaw/getx/issues/3425
-                Text('✅ Overlay 问题测试',
+                // Dialog 关闭后的 Overlay 行为验证。
+                Text('Dialog Overlay',
                     style: TextStyle(
                         fontSize: 16.sp,
                         fontWeight: FontWeight.w600,
-                        color: Colors.green)),
+                        color: Colors.green.shade700)),
                 SizedBox(height: 8.h),
                 Text(
-                  'Flutter 3.38.1+ Overlay 问题已修复',
+                  '验证对话框关闭后 Snackbar / Toast 的显示行为',
                   style: TextStyle(fontSize: 12.sp, color: Colors.grey),
                 ),
                 SizedBox(height: 15.h),
@@ -421,7 +419,7 @@ class Page3Controller extends GetxController {
     );
   }
 
-  // ========== Overlay 问题测试 ==========
+  // ========== Dialog Overlay 行为验证 ==========
   // 自 Flutter 3.38.1 起，GetX 的 overlayContext 在对话框关闭后可能失效
   // 导致 "No Overlay widget found" 异常
   // 已通过在 GetMaterialApp builder 中包裹 Overlay 修复
@@ -436,15 +434,14 @@ class Page3Controller extends GetxController {
         children: [
           Text(
             '点击"确认"后将直接调用原生 Get.snackbar\n'
-            '已通过在 App 根部包裹 Overlay 修复\n'
-            '现在可以正常工作',
+            '用于验证对话框关闭后的 Overlay 可用性',
             style: TextStyle(fontSize: 14.sp),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: 10.h),
           Text(
-            '✅ 已修复：应该正常显示',
-            style: TextStyle(fontSize: 12.sp, color: Colors.green),
+            '确认后应在顶部显示 Snackbar',
+            style: TextStyle(fontSize: 12.sp, color: Colors.grey),
           ),
         ],
       ),
@@ -477,14 +474,14 @@ class Page3Controller extends GetxController {
         children: [
           Text(
             '点击"确认"后将调用 MyToast.showUpWarn\n'
-            '已通过在 App 根部包裹 Overlay 修复',
+            '用于验证对话框关闭后的顶部 Toast',
             style: TextStyle(fontSize: 14.sp),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: 10.h),
           Text(
-            '✅ 已修复：应该正常显示',
-            style: TextStyle(fontSize: 12.sp, color: Colors.green),
+            '确认后应在顶部显示 Toast',
+            style: TextStyle(fontSize: 12.sp, color: Colors.grey),
           ),
         ],
       ),
@@ -515,8 +512,8 @@ class Page3Controller extends GetxController {
           ),
           SizedBox(height: 10.h),
           Text(
-            '✅ 天然安全：不依赖 GetX',
-            style: TextStyle(fontSize: 12.sp, color: Colors.blue),
+            '确认后应在中间显示 Toast',
+            style: TextStyle(fontSize: 12.sp, color: Colors.grey),
           ),
         ],
       ),
@@ -547,8 +544,8 @@ class Page3Controller extends GetxController {
           ),
           SizedBox(height: 10.h),
           Text(
-            '✅ 已修复：App 根部包裹 Overlay',
-            style: TextStyle(fontSize: 12.sp, color: Colors.green),
+            '确认后应在底部显示 Toast',
+            style: TextStyle(fontSize: 12.sp, color: Colors.grey),
           ),
         ],
       ),

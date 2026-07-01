@@ -62,6 +62,33 @@ extension MySelectorResultX<T> on MySelectorResult<T> {
 }
 
 // ============================================================================
+// 弹出方向
+// ============================================================================
+
+/// 选择器面板相对触发按钮的弹出方向策略。
+///
+/// - [below] / [above] 为**智能**策略：优先按首选方向弹出，仅当首选方向放不下
+///   面板（按内容估算）且反方向更宽裕时，才自动翻转。
+/// - [forceBelow] / [forceAbove] 为**强制**策略：始终固定在该方向，不做翻转
+///   （即使该方向空间不足，面板会被压缩/裁剪）。
+///
+/// 传给 [MySelector.show] 或 [MySelectorController] 的 `placement` 参数；
+/// 默认 [below]（首选向下，不足才上翻）。
+enum MyPanelPlacement {
+  /// 首选向下，放不下则自动上翻（默认）。
+  below,
+
+  /// 首选向上，放不下则自动下翻。
+  above,
+
+  /// 强制向下，永不翻转。
+  forceBelow,
+
+  /// 强制向上，永不翻转。
+  forceAbove,
+}
+
+// ============================================================================
 // 清除项配置
 // ============================================================================
 
@@ -126,11 +153,23 @@ class MySelectorItem<T> {
 
 /// 选择器样式配置
 ///
-/// 传入的数值为设计稿尺寸（基于 ScreenUtil 初始化的设计稿宽度），
-/// 构造时自动通过 `.h` `.w` `.r` 转换。
+/// 除 [panelWidth] 外，传入的数值为设计稿尺寸（基于 ScreenUtil 初始化的设计稿宽度），
+/// 构造时自动通过 `.h` / `.r` 转换。[panelWidth] 表示调用方已经换算后的固定宽度，
+/// 不再内部 `.w`。
 class MySelectorStyle {
   final double maxHeight;
+
+  /// 面板宽度。
+  ///
+  /// - 为 `null`（默认）：**完全自适应**——面板宽度贴合内容（不窄于触发按钮），
+  ///   内容更长时自动增长，最宽不超过屏内安全宽。默认条目用文本测宽；自定义
+  ///   `itemBuilder` 会离屏布局测量。
+  /// - 非 `null`：**固定宽度**，无视内容一律按此值显示（仍夹到屏内安全宽）。
+  ///
+  /// 注意：此值**不做** `.w` 缩放，请自行按需传入 ScreenUtil 表达式，
+  /// 如 `panelWidth: 280.w`（要随屏适配）或 `panelWidth: 280`（固定逻辑像素）。
   final double? panelWidth;
+
   final double borderRadius;
   final double blurSigma;
   final Color selectedColor;
@@ -148,14 +187,13 @@ class MySelectorStyle {
 
   MySelectorStyle({
     double maxHeight = 360,
-    double? panelWidth,
+    this.panelWidth,
     double borderRadius = 14,
     double blurSigma = 28,
     this.selectedColor = const Color(0xFF4F6BFE),
     this.shadowOpacity = 0.12,
     this.hoverColor = defaultHoverColor,
   })  : maxHeight = maxHeight.h,
-        panelWidth = panelWidth?.w,
         borderRadius = borderRadius.r,
         blurSigma = blurSigma.r;
 }
