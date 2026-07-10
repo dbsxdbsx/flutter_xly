@@ -74,8 +74,15 @@ class UserDataPathState {
     return logs;
   }
 
+  static int _atomicWriteCounter = 0;
+
   static Future<void> atomicWriteString(File file, String content) async {
-    final tmpFile = File('${file.path}.tmp');
+    // 临时文件名带 pid + 时间戳 + 进程内自增序号，确保并发写同一目标时
+    // 各自持有独立 .tmp，避免多个调用共用一个 .tmp 互相 rename 踩踏
+    // （在移动端会表现为 ENOENT：源 .tmp 已被另一次调用移走）。
+    final unique =
+        '$pid.${DateTime.now().microsecondsSinceEpoch}.${_atomicWriteCounter++}';
+    final tmpFile = File('${file.path}.$unique.tmp');
     try {
       await tmpFile.writeAsString(content);
       try {

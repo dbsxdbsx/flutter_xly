@@ -1,3 +1,10 @@
+## 0.52.1 - 2026-07-10
+
+### Fixed
+
+- **`CustomDragArea` 移动端 `MissingPluginException` 刷屏**：窗口拖动/双击最大化调用的 `window_manager` 是桌面专属插件，移动端无实现，此前每次 pan 手势都会抛 `MissingPluginException: startDragging` 刷爆日志。现在 `CustomDragArea` 在非桌面平台直接零开销透传 `child`（与 `MyDragProtectedArea` 同一兜底策略）——窗口物理能力的平台判断由框架层负责，业务侧无需再传 `draggable: MyPlatform.isDesktop` 之类的 workaround。
+- **`atomicWriteString` 并发写同一文件时 rename 踩踏（`ENOENT`）**：临时文件名固定为 `<file>.tmp`，两个并发调用会共用同一 `.tmp`——先完成者 rename 走掉后，后者 rename 时源文件已不存在，报 `PathNotFoundException`（Android 上首次暴露：订阅对话框失焦与确认几乎同时触发两次保存，导致订阅 URL 始终没写进磁盘）。现在临时名带 `pid + 微秒时间戳 + 进程内自增序号`，并发调用各持独立 `.tmp` 互不干扰。
+
 ## 0.52.0 - 2026-07-01
 
 ### Added

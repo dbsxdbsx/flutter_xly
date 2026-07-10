@@ -97,6 +97,9 @@ class CustomDragArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 窗口拖动/最大化是桌面物理能力，window_manager 在移动端无实现，
+    // 直接调用会抛 MissingPluginException。框架层兜底：非桌面平台零开销透传。
+    if (!MyPlatform.isDesktop) return child;
     return GestureDetector(
       onPanStart: draggable
           ? (details) async {
