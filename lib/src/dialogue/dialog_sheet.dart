@@ -142,8 +142,6 @@ class _BottomSheetContainer extends StatelessWidget {
 
 /// 中心弹出对话框组件
 class _CenterDialogSheet extends StatelessWidget {
-  static const double _baseWidth = 350.0;
-  static const double _baseHeight = 600.0;
   static const double _baseDialogWidthRatio = 0.95;
   static const double _baseDialogMaxHeightRatio = 0.95;
   static const double _baseInsetRatio = 0.07;
@@ -176,30 +174,24 @@ class _CenterDialogSheet extends StatelessWidget {
     this.exitText = '取消',
   });
 
-  double _getAdaptiveSize(BuildContext context, double baseSize) {
-    final designSize = MediaQuery.of(context).size;
-    final scaleFactor =
-        (designSize.width + designSize.height) / (_baseWidth + _baseHeight);
-    return baseSize * scaleFactor;
-  }
-
   @override
   Widget build(BuildContext context) {
-    final designSize = MediaQuery.of(context).size;
+    final viewportSize = MediaQuery.sizeOf(context);
 
-    // 计算对话框尺寸
-    final dialogWidth = designSize.width * _baseDialogWidthRatio;
-    final dialogMaxHeight = designSize.height * _baseDialogMaxHeightRatio;
+    // MediaQuery 返回的已经是当前视口的逻辑像素，不能再套 .w/.h，
+    // 否则在非设计尺寸设备上会二次缩放，导致移动端对话框异常放大。
+    final dialogWidth = viewportSize.width * _baseDialogWidthRatio;
+    final dialogMaxHeight =
+        viewportSize.height * _baseDialogMaxHeightRatio;
 
-    // 计算inset尺寸
-    final insetWidthSize = designSize.width * _baseInsetRatio;
-    final insetHeightSize = designSize.height * _baseInsetRatio;
+    final insetWidthSize = viewportSize.width * _baseInsetRatio;
+    final insetHeightSize = viewportSize.height * _baseInsetRatio;
 
     final titleWidget = title != null
         ? Text(
             title!,
             style: TextStyle(
-              fontSize: titleFontSize ?? _getAdaptiveSize(context, 18.0).sp,
+              fontSize: titleFontSize ?? 18.sp,
             ),
           )
         : null;
@@ -214,8 +206,8 @@ class _CenterDialogSheet extends StatelessWidget {
             Padding(
               padding: titlePadding ??
                   EdgeInsets.symmetric(
-                    vertical: _getAdaptiveSize(context, 8.0).w,
-                    horizontal: _getAdaptiveSize(context, 8.0).w,
+                    vertical: 8.w,
+                    horizontal: 8.w,
                   ),
               child: centerTitle ? Center(child: titleWidget) : titleWidget,
             ),
@@ -223,7 +215,7 @@ class _CenterDialogSheet extends StatelessWidget {
             child: Container(
               padding: contentPadding ??
                   EdgeInsets.symmetric(
-                    horizontal: _getAdaptiveSize(context, 4.0).w,
+                    horizontal: 4.w,
                   ),
               child: content,
             ),
@@ -231,7 +223,7 @@ class _CenterDialogSheet extends StatelessWidget {
           if (onConfirm != null)
             Padding(
               padding: actionsPadding ??
-                  EdgeInsets.all(_getAdaptiveSize(context, 8.0).w),
+                  EdgeInsets.all(8.w),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -255,7 +247,7 @@ class _CenterDialogSheet extends StatelessWidget {
                     child: Text(
                       exitText,
                       style: TextStyle(
-                        fontSize: _getAdaptiveSize(context, 14.0).sp,
+                        fontSize: 14.sp,
                         color: Colors.black54,
                       ),
                     ),
@@ -278,7 +270,7 @@ class _CenterDialogSheet extends StatelessWidget {
                     child: Text(
                       confirmText,
                       style: TextStyle(
-                        fontSize: _getAdaptiveSize(context, 14.0).sp,
+                        fontSize: 14.sp,
                         color: Colors.blue,
                       ),
                     ),
@@ -291,17 +283,15 @@ class _CenterDialogSheet extends StatelessWidget {
     );
 
     dialogContent = Container(
-      width: dialogWidth.w,
+      width: dialogWidth,
       constraints: BoxConstraints(
-        maxHeight: dialogMaxHeight.h,
+        maxHeight: dialogMaxHeight,
       ),
       decoration: ShapeDecoration(
         color: Theme.of(context).dialogTheme.backgroundColor ??
             Theme.of(context).colorScheme.surface,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(
-            _getAdaptiveSize(context, 28.0).r,
-          ),
+          borderRadius: BorderRadius.circular(28.r),
         ),
       ),
       child: dialogContent,
@@ -310,13 +300,11 @@ class _CenterDialogSheet extends StatelessWidget {
     return Dialog(
       insetPadding: insetPadding ??
           EdgeInsets.symmetric(
-            horizontal: insetWidthSize.w,
-            vertical: insetHeightSize.h,
+            horizontal: insetWidthSize,
+            vertical: insetHeightSize,
           ),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(
-          _getAdaptiveSize(context, 28.0).r,
-        ),
+        borderRadius: BorderRadius.circular(28.r),
       ),
       child: dialogContent,
     );
