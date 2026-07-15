@@ -644,9 +644,27 @@ class MyApp extends StatelessWidget {
 
   /// 静态方法用于退出应用
   static Future<void> exit() async {
-    // 清理单实例管理器资源
-    await SingleInstanceManager.instance.dispose();
-    await exitApp();
+    final tray = Get.isRegistered<MyTray>() ? MyTray.to : null;
+    if (tray != null) {
+      try {
+        await tray.beginExit().timeout(const Duration(seconds: 2));
+      } catch (e, stackTrace) {
+        XlyLogger.error('MyApp: 托盘进入退出状态失败，将继续退出', e, stackTrace);
+      }
+    }
+
+    try {
+      // 单实例服务属于辅助资源，释放失败或超时不能阻止最终进程退出。
+      await SingleInstanceManager.instance
+          .dispose()
+          .timeout(const Duration(seconds: 2));
+    } catch (e, stackTrace) {
+      XlyLogger.error('MyApp: 释放单实例服务失败，将继续退出', e, stackTrace);
+    } finally {
+      await exitApp(
+        beforeProcessExit: tray?.destroy,
+      );
+    }
   }
 
   static final isSplashFinished = false.obs;

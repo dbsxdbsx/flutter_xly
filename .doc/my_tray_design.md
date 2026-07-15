@@ -115,7 +115,7 @@ tray.toggleToggleOnClick();               // 切换开关状态
 - **tooltip**: 不显示（`null`）
 - **menuItems**: 无菜单（`null`）
 - **hideTaskBarIcon**: 窗口可见时保留任务栏图标 + Alt+Tab（`false`）；仅缩进托盘时移除。`true` 为纯托盘模式（Windows 上该状态也会移出 Alt+Tab，属平台硬约束）
-- **closeToTray**: 点关闭按钮(Alt+F4/自渲染X)隐藏到托盘而非退出（`true`）；初始化时 `setPreventClose(true)` 并监听 `onWindowClose` → `hide()`。真正退出走 `MyApp.exit()`（`exit(0)` 硬退出，绕过拦截）。无边框窗口需自渲染关闭按钮调 `windowManager.close()` 或 `MyTray.to.hide()`
+- **closeToTray**: 点关闭按钮(Alt+F4/自渲染X)隐藏到托盘而非退出（`true`）；初始化时仅在本组件真正启用 `preventClose` 时记录所有权（`_ownsPreventClose`），并监听 `onWindowClose` → `hide()`，销毁/禁用时只解除自己开启的拦截，不动其他 listener。真正退出走 `MyApp.exit()`：先 `beginExit()` 进入“正在安全退出…”态（保留图标、禁用交互），再在进程终止前的最后一步显式 `destroy()`，桌面端于 Flutter Engine 仍可用时完成原生清理后 `exit(0)`（不再依赖 `SystemNavigator.pop`，避免窗口/Engine 关闭后调插件的竞态与 Windows 幽灵图标）。无边框窗口需自渲染关闭按钮调 `windowManager.close()` 或 `MyTray.to.hide()`
 - **toggleOnClick**: 开启切换语义（`true`）
 - **图标验证**: 构造时检查文件存在性，不存在则抛异常
 - **平台检查**: 非桌面平台自动跳过初始化
