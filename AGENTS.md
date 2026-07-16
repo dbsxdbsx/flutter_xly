@@ -2,7 +2,7 @@
 
 > 项目级 AI agent onboarding 入口（[Agentic AI Foundation 开放标准](https://github.com/agentic-ai-foundation/agentsmd)）。
 > 本文件只记录仓库内可共享的事实、约定与索引；个人 Cursor Rules / Skills 不写入此处。
-> 最近更新：2026-07-01（0.52 MySelector placement / panel width autosize）。
+> 最近更新：2026-07-16（0.54 统一菜单系统 / MyMenuAnchor / 田字格定位 / 按钮视觉优化）。
 
 ## 1. Project Identity
 
@@ -10,7 +10,7 @@
 - **主语言 / 框架**：Dart 3.5+、Flutter 3.7+；GetX、window_manager、flutter_screenutil 等（部分在 `lib/xly.dart` 再导出）。
 - **阶段**：Beta（持续发版，`CHANGELOG.md` 跟踪）。
 - **仓库**：<https://github.com/dbsxdbsx/flutter_xly>
-- **当前版本**：`pubspec.yaml` → `0.52.0`（**0.52** `MySelector` 新增 `placement` / 面板宽度不传即自适应、传值即固定；**0.51** `MyTray.closeToTray` 关闭即隐藏 + Alt+Tab 修复；**0.50** `MyCard.subtitle` / `MySmartDock.wake`；见 `CHANGELOG`）。
+- **当前版本**：`pubspec.yaml` → `0.54.0`（**0.54** 统一菜单系统：`MyMenuAnchor` / `MyMenuAnchorOrigin` 田字格定位 / `MyMenuButton` 视觉优化 / `reveal` 动画；**0.53** `MyTray.beginExit` 安全退出态；**0.52** `MySelector` placement / 自适应宽度；见 `CHANGELOG`）。
 
 ## 2. Project Map
 
@@ -54,6 +54,7 @@ xly/
 - 改 **MySelector 浮层选择器** → `lib/selector.dart`、`lib/src/selector/`、[`.doc/my_selector_usage.md`](.doc/my_selector_usage.md)
 - 改 **MyApp 启动 / Zone / 异常** → `lib/app.dart`、`lib/src/app/`、`.doc/error_handling.md`
 - 改 **Windows 通知** → `lib/src/notify/`、`.doc/my_notify_usage_guide.md`
+- 改 **菜单系统（MyMenu / MyMenuAnchor / MyMenuButton）** → `lib/src/menu/`
 - 改 **CLI** → `bin/`、`tool/`
 
 `analysis_options.yaml` 排除：`lib/xly.dart`、`user_code/**`。
@@ -106,9 +107,9 @@ xly/
 
 ## 5. Active Context
 
-- **最近完成**：0.52 `MySelector` 新增 `MyPanelPlacement` / `placement`，默认首选向下且按内容高度判断翻转；面板宽度改为不传即完全自适应、传值即固定，`panelWidth` 不再内部 `.w`。见 `CHANGELOG` 与 [`.doc/my_selector_usage.md`](.doc/my_selector_usage.md)。
-- **上一轮**：0.51 新增 `MyTray.closeToTray`（关闭即隐藏）并修复 Alt+Tab / 任务栏可见性绑定；0.50 `MyCard.subtitle` / `MySmartDock.wake()`。
-- **上一版**：0.45.0 — 阶段 D；0.42.0 — `MyPaths` 双轨。
+- **最近完成**：0.54 统一菜单系统——右键 / 锚定 / `MyMenuButton` 共享 `MyMenu` 渲染核心；新增 `MyMenuAnchor`（挂接任意控件）与 `MyMenuAnchorOrigin.center`（田字格象限定位）；`MyMenuButton` 视觉优化（半透明阴影 + 收薄内凹）；默认 `reveal` 动画。见 `CHANGELOG`。
+- **上一轮**：0.53 `MyTray.beginExit` 安全退出态；0.52 `MySelector` placement / 自适应宽度。
+- **上一版**：0.51 `MyTray.closeToTray`；0.50 `MyCard.subtitle` / `MySmartDock.wake()`。
 - **后续**：见 [`.issue/xly-package-hygiene-backlog.md`](.issue/xly-package-hygiene-backlog.md)（可选：可配置持久化键前缀）。
 
 > **公开仓库纪律**：`AGENTS.md` / `README` / `CHANGELOG` / `.doc/` 中**禁止**写入未开源消费者项目名、内部路径或私有仓库线索。

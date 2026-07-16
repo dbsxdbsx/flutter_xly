@@ -1249,6 +1249,27 @@ Widget buildMenuButton() {
 }
 ```
 
+### 将菜单挂接到现有按钮
+
+`MyMenuAnchor` 只负责锚点与弹层，不改变现有按钮的外观：
+
+```dart
+MyMenuAnchor(
+  menuElements: [
+    MyMenuItem(text: '设置', icon: Icons.settings, onTap: openSettings),
+  ],
+  builder: (_, showMenu) => IconButton(
+    tooltip: '菜单',
+    icon: const Icon(Icons.menu),
+    onPressed: showMenu,
+  ),
+)
+```
+
+左键锚定菜单与下文的右键菜单共用 `MyMenu` 和 `MyMenuStyle`，仅锚点来源不同。
+锚定菜单默认显示在控件下方，并按控件靠近屏幕的一侧做边缘对齐；下方空间不足时自动上翻。
+根菜单和子菜单默认从靠近触发源的边角向实际放置方向展开。
+
 ### 使用焦点管理
 
 ```dart

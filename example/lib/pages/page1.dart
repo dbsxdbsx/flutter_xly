@@ -123,11 +123,13 @@ class Page1View extends GetView<Page1Controller> {
               isPressed: controller.isMenuButtonActivated.value,
               menuItems: _buildComplexMenuItems(),
             )),
-        MyMenuButton(
-          icon: Icons.more_vert,
-          iconSize: 25.w,
-          iconColor: Colors.green,
-          menuItems: _buildSimpleMenuItems(),
+        MyMenuAnchor(
+          menuElements: _buildSimpleMenuItems(),
+          anchorOrigin: MyMenuAnchorOrigin.center,
+          builder: (_, showMenu) => IconButton(
+            icon: Icon(Icons.more_vert, color: Colors.green, size: 25.sp),
+            onPressed: showMenu,
+          ),
         ),
         MyButton(
           text: '切换菜单按钮状态',

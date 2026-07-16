@@ -8,10 +8,9 @@ extension RightClickMenuExtension on Widget {
   Widget showRightMenu({
     required BuildContext context,
     required List<MyMenuElement> menuElements,
-    MyMenuPopStyle animationStyle = MyMenuPopStyle.scale,
+    MyMenuPopStyle animationStyle = MyMenuPopStyle.reveal,
     MyMenuStyle? style,
   }) {
-    style ??= MyMenuStyle();
     return GestureDetector(
       onSecondaryTapDown: (TapDownDetails details) {
         MyMenu.show(

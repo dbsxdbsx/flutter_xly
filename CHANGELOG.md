@@ -1,8 +1,25 @@
-## Unreleased
+## 0.54.0 - 2026-07-16
 
 ### Added
 
-- **`MyToast.showBottom(atTop:)`**：新增 `atTop` 布尔参数，为 `true` 时 Toast 从屏幕顶部滑入（`SnackPosition.TOP`），避免遮挡底栏等固定 UI；默认 `false` 保持原有底部滑入行为，完全向后兼容。
+- **统一菜单系统**：右键菜单、锚定菜单与 `MyMenuButton` 共享同一渲染核心（`MyMenu`）、样式（`MyMenuStyle`）与动画（`MyMenuPopStyle`），三者仅在触发方式与锚点来源上不同。
+- **`MyMenuAnchor`**：将菜单挂接到任意现有控件（如 `IconButton`、自定义按钮），通过 `builder(context, showMenu)` 回调触发，不接管控件视觉样式。
+- **`MyMenuAnchorOrigin`**：锚定菜单新增 `edge`（边缘对齐，传统下拉）与 `center`（田字格象限对齐）两种起始策略。`center` 模式下菜单从锚点中心象限引出，适合小尺寸图标按钮，视觉上有明确的方向感。
+- **`MyMenuPopStyle.reveal`**：默认动画从靠近触发源的边角向最终放置方向裁剪展开（Windows 风格），取代旧的中心缩放。
+- **`MyToast.showBottom(atTop:)`**：新增 `atTop` 布尔参数，为 `true` 时 Toast 从屏幕顶部滑入，避免遮挡底栏等固定 UI。
+
+### Changed
+
+- **`MyMenuButton` 默认田字格定位**：内部复用 `MyMenuAnchor`（`anchorOrigin: center`），菜单从按钮中心象限展开。
+- **`MyMenuButton` 视觉优化**：阴影颜色改用半透明（≈56% / 47%），保留原有深邃凹凸感同时降低厚重度；内凹幅度收薄使按下态更精致。
+- **`MyMenuStyle` 延迟适配**：`fontSize` / `itemHeight` 等字段保存设计稿原值，通过 getter 延迟换算 `.sp` / `.r`，避免窗口尺寸变化后样式冻结；`borderRadius` / `blurSigma` / `borderWidth` 改为稳定逻辑像素。
+
+### Fixed
+
+- **锚定菜单外部右键不再重开**：锚定菜单（左键触发）在菜单外右键时仅关闭，不会在鼠标位置重新弹出；右键菜单仍保留"在新位置重开"行为。
+- **`LocalHistoryEntry` 泄漏**：正常关闭菜单时正确清理路由历史条目，避免累积幽灵 back 拦截。
+- **禁用菜单项可点击**：`MyMenuItem(enabled: false)` 现在正确屏蔽 `onTap` 回调。
+- **子菜单 1px 边框误判翻转**：子菜单定位使用父菜单外边缘而非条目内边缘，避免 1px 重叠被误判为碰撞并错误翻转到另一侧。
 
 ## 0.53.0 - 2026-07-15
 

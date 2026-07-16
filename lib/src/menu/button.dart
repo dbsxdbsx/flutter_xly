@@ -2,18 +2,25 @@ import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
 import 'package:flutter_inset_shadow/flutter_inset_shadow.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import 'anchor.dart';
 import 'menu_models.dart';
 import 'style.dart';
-import 'widget.dart';
 
 class MyMenuButton extends StatefulWidget {
   final IconData icon;
   final double iconSize;
   final Color iconColor;
-  final List<MyMenuItem> menuItems;
+  final List<MyMenuElement> menuItems;
   final MyMenuStyle? menuStyle;
+  final MyMenuPopStyle animationStyle;
+  final double menuGap;
+
+  /// 左上高光阴影颜色。
   final Color shadowColor1;
+
+  /// 右下深度阴影颜色。
   final Color shadowColor2;
+
   final double containerSizeRatio;
   final double radiusRatio;
   final bool? isPressed;
@@ -25,8 +32,10 @@ class MyMenuButton extends StatefulWidget {
     this.iconColor = Colors.black87,
     required this.menuItems,
     this.menuStyle,
-    this.shadowColor1 = const Color(0xff494d52),
-    this.shadowColor2 = const Color(0xff090d12),
+    this.animationStyle = MyMenuPopStyle.reveal,
+    this.menuGap = 4,
+    this.shadowColor1 = const Color(0x90494d52),
+    this.shadowColor2 = const Color(0x78090d12),
     this.containerSizeRatio = 1.39,
     this.radiusRatio = 0.26,
     this.isPressed,
@@ -42,63 +51,66 @@ class MyMenuButtonState extends State<MyMenuButton> {
   bool _isDeepPressed = false;
   bool _isMenuOpen = false;
 
+  bool get _isSunken =>
+      _isDeepPressed || _isMenuOpen || (widget.isPressed ?? false);
+
   @override
   Widget build(BuildContext context) {
-    // 计算自定义缩放因子
-    final double scaleFactor = 0.8 + (1.w / ScreenUtil().screenWidth) * 0.2;
+    final double iconSize = widget.iconSize.sp;
+    final double containerSize = widget.containerSizeRatio * iconSize;
+    final double radius = widget.radiusRatio * iconSize;
 
-    // 使用自定义缩放因子来计算尺寸
-    final double containerSize =
-        widget.containerSizeRatio * widget.iconSize * scaleFactor;
-    final double radius = widget.radiusRatio * widget.iconSize; // 保持固定值
-    final double iconSize = widget.iconSize * scaleFactor;
-
-    return GestureDetector(
-      onTapDown: (_) => setState(() => _isDeepPressed = true),
-      onTapUp: (TapUpDetails details) async {
-        setState(() {
-          _isDeepPressed = false;
-          _isMenuOpen = true;
-        });
-        await _showMenu(context, details.globalPosition);
+    return MyMenuAnchor(
+      menuElements: widget.menuItems,
+      animationStyle: widget.animationStyle,
+      style: widget.menuStyle,
+      gap: widget.menuGap,
+      anchorOrigin: MyMenuAnchorOrigin.center,
+      onOpenChanged: (isOpen) {
+        if (mounted && _isMenuOpen != isOpen) {
+          setState(() => _isMenuOpen = isOpen);
+        }
       },
-      onTapCancel: () => setState(() {
-        _isDeepPressed = false;
-        _isMenuOpen = false;
-      }),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        width: containerSize,
-        height: containerSize,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(radius),
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Colors.white, Colors.white70],
+      builder: (_, showMenu) => GestureDetector(
+        onTapDown: (_) => setState(() => _isDeepPressed = true),
+        onTapUp: (_) {
+          setState(() => _isDeepPressed = false);
+          showMenu();
+        },
+        onTapCancel: () => setState(() => _isDeepPressed = false),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          width: containerSize,
+          height: containerSize,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(radius),
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Colors.white, Colors.white70],
+            ),
+            boxShadow: _buildShadows(containerSize),
           ),
-          boxShadow: _getBoxShadows(containerSize),
-        ),
-        child: Icon(
-          widget.icon,
-          size: iconSize,
-          color: widget.iconColor,
+          child: Icon(
+            widget.icon,
+            size: iconSize,
+            color: widget.iconColor,
+          ),
         ),
       ),
     );
   }
 
-  List<BoxShadow> _getBoxShadows(double containerSize) {
-    bool isActivated = widget.isPressed ?? false;
+  List<BoxShadow> _buildShadows(double containerSize) {
     if (_isDeepPressed) {
-      _distance = 0.18 * containerSize;
-      _blur = 2.0;
-    } else if (_isMenuOpen || isActivated) {
-      _distance = 0.14 * containerSize;
-      _blur = 4.0;
+      _distance = 0.13 * containerSize;
+      _blur = 3.r;
+    } else if (_isSunken) {
+      _distance = 0.10 * containerSize;
+      _blur = 4.r;
     } else {
       _distance = 0.11 * containerSize;
-      _blur = 6.0;
+      _blur = 6.r;
     }
 
     return [
@@ -106,35 +118,14 @@ class MyMenuButtonState extends State<MyMenuButton> {
         color: widget.shadowColor1,
         offset: Offset(-_distance * 0.3, -_distance * 0.15),
         blurRadius: _blur,
-        spreadRadius: 0.0,
-        inset: _isDeepPressed || _isMenuOpen || isActivated,
+        inset: _isSunken,
       ),
       BoxShadow(
         color: widget.shadowColor2,
         offset: Offset(_distance, _distance),
         blurRadius: _blur,
-        spreadRadius: 0.0,
-        inset: _isDeepPressed || _isMenuOpen || isActivated,
+        inset: _isSunken,
       ),
     ];
-  }
-
-  Future<void> _showMenu(BuildContext context, Offset position) async {
-    try {
-      await MyMenu.show(
-        context,
-        position,
-        widget.menuItems,
-        animationStyle: MyMenuPopStyle.scale,
-        style: widget.menuStyle ?? MyMenuStyle(),
-      );
-    } finally {
-      // 菜单关闭后恢复按钮原始状态
-      if (mounted) {
-        setState(() {
-          _isMenuOpen = false;
-        });
-      }
-    }
   }
 }

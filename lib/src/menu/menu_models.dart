@@ -60,10 +60,27 @@ class MyMenuDivider extends MyMenuElement {
   }
 }
 
+/// 锚定菜单的起始对齐策略。
+enum MyMenuAnchorOrigin {
+  /// 菜单从锚点控件的对应边缘弹出（传统下拉）。
+  ///
+  /// 适合宽按钮、工具栏或 AppBar 操作。
+  edge,
+
+  /// 菜单从锚点控件的中心象限引出（田字格模式）。
+  ///
+  /// 菜单的起始角与锚点中心对齐，朝展开方向生长，
+  /// 适合小尺寸图标按钮，视觉上有明确的方向性和起源感。
+  center,
+}
+
 /// 菜单弹出动画样式
 enum MyMenuPopStyle {
   scale,
   fade,
   slideFromTop,
   slideFromRight,
+
+  /// 从靠近触发源的边角向最终放置方向裁剪展开。
+  reveal,
 }

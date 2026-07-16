@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:ui';
 
+import 'package:flutter/gestures.dart'
+    show kPrimaryMouseButton, kSecondaryMouseButton;
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -31,16 +33,46 @@ class MyMenu {
     BuildContext context,
     Offset position,
     List<MyMenuElement> menuElements, {
-    MyMenuPopStyle animationStyle = MyMenuPopStyle.scale,
+    MyMenuPopStyle animationStyle = MyMenuPopStyle.reveal,
     MyMenuStyle? style,
   }) async {
-    style ??= MyMenuStyle();
+    style ??= MyMenuStyle.adaptive();
     return _stateManager.showMenu(
       context,
-      position,
+      _PointMenuPosition(position),
       menuElements,
       animationStyle: animationStyle,
       style: style,
+      repositionOnSecondaryTap: true,
+    );
+  }
+
+  /// 以现有控件的全局矩形为锚点显示菜单。
+  ///
+  /// 菜单优先显示在锚点下方：屏幕右半侧的锚点按右边缘对齐，
+  /// 左半侧按左边缘对齐；下方空间不足时自动翻转到上方。
+  /// [gap] 是菜单与锚点在垂直方向上的逻辑像素间距。
+  ///
+  /// 适合 AppBar、工具栏等已有按钮。右键菜单仍应使用 [show]，
+  /// 直接以鼠标位置为锚点。
+  static Future<void> showAnchored(
+    BuildContext context,
+    Rect anchorRect,
+    List<MyMenuElement> menuElements, {
+    MyMenuPopStyle animationStyle = MyMenuPopStyle.reveal,
+    MyMenuStyle? style,
+    double gap = 4,
+    MyMenuAnchorOrigin anchorOrigin = MyMenuAnchorOrigin.edge,
+  }) {
+    assert(gap >= 0, 'gap 必须大于等于 0');
+    style ??= MyMenuStyle.adaptive();
+    return _stateManager.showMenu(
+      context,
+      _AnchoredMenuPosition(anchorRect, gap: gap, anchorOrigin: anchorOrigin),
+      menuElements,
+      animationStyle: animationStyle,
+      style: style,
+      repositionOnSecondaryTap: false,
     );
   }
 
@@ -83,6 +115,91 @@ class MyMenu {
       _stateManager.activeSubMenus;
 }
 
+class _ResolvedMenuPosition {
+  final Offset offset;
+  final Alignment growthAlignment;
+
+  const _ResolvedMenuPosition({
+    required this.offset,
+    required this.growthAlignment,
+  });
+}
+
+abstract class _MenuPosition {
+  const _MenuPosition();
+
+  _ResolvedMenuPosition resolve(
+    BuildContext context,
+    RenderBox overlayBox,
+    Size menuSize,
+  );
+}
+
+class _PointMenuPosition extends _MenuPosition {
+  final Offset globalPosition;
+
+  const _PointMenuPosition(this.globalPosition);
+
+  @override
+  _ResolvedMenuPosition resolve(
+    BuildContext context,
+    RenderBox overlayBox,
+    Size menuSize,
+  ) {
+    final localPosition = overlayBox.globalToLocal(globalPosition);
+    final offset = _MenuPositionCalculator.calculate(
+      context,
+      localPosition,
+      menuSize,
+    );
+    return _ResolvedMenuPosition(
+      offset: offset,
+      growthAlignment: _MenuPositionCalculator.growthAlignment(
+        offset & menuSize,
+        Rect.fromCenter(center: localPosition, width: 0, height: 0),
+      ),
+    );
+  }
+}
+
+class _AnchoredMenuPosition extends _MenuPosition {
+  final Rect globalAnchorRect;
+  final double gap;
+  final MyMenuAnchorOrigin anchorOrigin;
+
+  const _AnchoredMenuPosition(
+    this.globalAnchorRect, {
+    required this.gap,
+    this.anchorOrigin = MyMenuAnchorOrigin.edge,
+  });
+
+  @override
+  _ResolvedMenuPosition resolve(
+    BuildContext context,
+    RenderBox overlayBox,
+    Size menuSize,
+  ) {
+    final localAnchorRect = Rect.fromPoints(
+      overlayBox.globalToLocal(globalAnchorRect.topLeft),
+      overlayBox.globalToLocal(globalAnchorRect.bottomRight),
+    );
+    final offset = _MenuPositionCalculator.calculateAnchored(
+      localAnchorRect,
+      menuSize,
+      overlayBox.size,
+      gap: gap,
+      anchorOrigin: anchorOrigin,
+    );
+    return _ResolvedMenuPosition(
+      offset: offset,
+      growthAlignment: _MenuPositionCalculator.growthAlignment(
+        offset & menuSize,
+        localAnchorRect,
+      ),
+    );
+  }
+}
+
 // ============================================================================
 // 菜单状态管理器
 // ============================================================================
@@ -91,7 +208,9 @@ class MyMenu {
 class _MenuStateManager {
   OverlayEntry? _mainMenuEntry;
   Completer<void>? _menuCompleter;
-  MyMenuPopStyle _currentAnimationStyle = MyMenuPopStyle.scale;
+  LocalHistoryEntry? _historyEntry;
+  ModalRoute<dynamic>? _historyRoute;
+  MyMenuPopStyle _currentAnimationStyle = MyMenuPopStyle.reveal;
 
   // 活跃的子菜单列表
   final ValueNotifier<List<OverlayEntry>> activeSubMenus =
@@ -107,16 +226,23 @@ class _MenuStateManager {
   /// 显示菜单
   Future<void> showMenu(
     BuildContext context,
-    Offset position,
+    _MenuPosition position,
     List<MyMenuElement> menuElements, {
-    MyMenuPopStyle animationStyle = MyMenuPopStyle.scale,
+    MyMenuPopStyle animationStyle = MyMenuPopStyle.reveal,
     required MyMenuStyle style,
+    required bool repositionOnSecondaryTap,
   }) async {
     _currentAnimationStyle = animationStyle;
     closeAll(); // 关闭现有菜单
     _menuCompleter = Completer<void>();
 
-    _showMainMenu(context, position, menuElements, style);
+    _showMainMenu(
+      context,
+      position,
+      menuElements,
+      style,
+      repositionOnSecondaryTap: repositionOnSecondaryTap,
+    );
 
     return _menuCompleter!.future;
   }
@@ -124,19 +250,21 @@ class _MenuStateManager {
   /// 显示主菜单
   void _showMainMenu(
     BuildContext context,
-    Offset position,
+    _MenuPosition position,
     List<MyMenuElement> menuElements,
-    MyMenuStyle style,
-  ) {
+    MyMenuStyle style, {
+    required bool repositionOnSecondaryTap,
+  }) {
     _mainMenuEntry = OverlayEntry(
       builder: (context) => _MenuOverlay(
         position: position,
         menuElements: menuElements,
         animationStyle: _currentAnimationStyle,
         style: style,
+        repositionOnSecondaryTap: repositionOnSecondaryTap,
         onClose: _closeMainMenu,
         onItemSelected: (item) async {
-          if (item.onTap != null) {
+          if (item.enabled && item.onTap != null) {
             _closeMainMenu();
             // 直接执行回调，无需 microtask 包装
             // Overlay 问题已通过在 App 根部包裹 Overlay 解决
@@ -163,25 +291,54 @@ class _MenuStateManager {
   void _addNavigationListener(BuildContext context) {
     final route = ModalRoute.of(context);
     if (route != null) {
-      route.addLocalHistoryEntry(
-        LocalHistoryEntry(onRemove: _closeMainMenu),
+      late final LocalHistoryEntry entry;
+      entry = LocalHistoryEntry(
+        impliesAppBarDismissal: false,
+        onRemove: () {
+          if (!identical(_historyEntry, entry)) return;
+          _historyEntry = null;
+          _historyRoute = null;
+          _closeMainMenu(removeHistoryEntry: false);
+        },
       );
+      _historyEntry = entry;
+      _historyRoute = route;
+      route.addLocalHistoryEntry(entry);
     }
   }
 
   /// 关闭主菜单
-  void _closeMainMenu() {
-    _mainMenuEntry?.remove();
+  void _closeMainMenu({bool removeHistoryEntry = true}) {
+    final canRemoveOverlay = _historyRoute?.isActive ?? true;
+    if (canRemoveOverlay) {
+      _mainMenuEntry?.remove();
+    }
     _mainMenuEntry = null;
-    _menuCompleter?.complete();
+    final completer = _menuCompleter;
+    if (completer != null && !completer.isCompleted) {
+      completer.complete();
+    }
     _menuCompleter = null;
-    _closeAllSubMenus();
+    _closeAllSubMenus(removeEntries: canRemoveOverlay);
+    mainMenuRect = null;
+
+    if (removeHistoryEntry) {
+      final historyEntry = _historyEntry;
+      final historyRoute = _historyRoute;
+      _historyEntry = null;
+      _historyRoute = null;
+      if (historyRoute?.isActive ?? false) {
+        historyEntry?.remove();
+      }
+    }
   }
 
   /// 关闭所有子菜单
-  void _closeAllSubMenus() {
-    for (var entry in activeSubMenus.value) {
-      entry.remove();
+  void _closeAllSubMenus({bool removeEntries = true}) {
+    if (removeEntries) {
+      for (var entry in activeSubMenus.value) {
+        entry.remove();
+      }
     }
     activeSubMenus.value = [];
     activeMenuRects.value = [];
@@ -190,8 +347,6 @@ class _MenuStateManager {
   /// 关闭所有菜单
   void closeAll() {
     _closeMainMenu();
-    mainMenuRect = null;
-    activeMenuRects.value = [];
   }
 }
 
@@ -207,6 +362,7 @@ class _MenuSizeCalculator {
     List<MyMenuElement> menuElements,
     MyMenuStyle style, {
     double? rowHeightOverride,
+    BuildContext? context,
   }) {
     double maxWidth = 0.0;
     double totalHeight = 0.0;
@@ -214,10 +370,15 @@ class _MenuSizeCalculator {
     for (var element in menuElements) {
       if (element is MyMenuItem) {
         // 计算实际所需宽度：文字宽度 + 图标/箭头 + 左右内边距
-        final textWidth = _calculateTextWidth(element.text ?? '', style);
-        final double horizontalPadding = 16.w + 16.w; // 与 _MenuItemWidget 一致
+        final textWidth = _calculateTextWidth(
+          element.text ?? '',
+          style,
+          context,
+        );
+        // 与 _MenuItemWidget 的外层 6.w + 内层 10.w 保持一致。
+        final double horizontalPadding = 16.w + 16.w;
         final double iconAndGap =
-            element.icon != null ? (18.sp + 8.w) : 0; // 图标尺寸+间距
+            element.icon != null ? (18.sp + 10.w) : 0; // 图标尺寸+间距
         final double arrowWidth = element.hasSubMenu ? 18.sp : 0; // 右侧箭头
         final itemWidth =
             textWidth + iconAndGap + arrowWidth + horizontalPadding;
@@ -227,21 +388,45 @@ class _MenuSizeCalculator {
         // 高度采用 override（例如传入父项真实高度），未提供则退回样式值
         totalHeight += rowHeightOverride ?? style.itemHeight;
       } else if (element is MyMenuDivider) {
-        totalHeight += element.height.h * element.thicknessMultiplier;
+        totalHeight += element.margin.top.h +
+            element.height.h * element.thicknessMultiplier +
+            element.margin.bottom.h;
       }
     }
 
-    return Size(maxWidth, totalHeight);
+    final borderExtent = style.borderWidth * 2;
+    return Size(
+      maxWidth + borderExtent,
+      totalHeight + borderExtent,
+    );
   }
 
-  static double _calculateTextWidth(String text, MyMenuStyle style) {
+  static double _calculateTextWidth(
+    String text,
+    MyMenuStyle style,
+    BuildContext? context,
+  ) {
+    final menuTextStyle = TextStyle(
+      fontSize: style.fontSize,
+      fontWeight: FontWeight.w400,
+      height: 1.2,
+      letterSpacing: 0,
+    );
+    final effectiveTextStyle = context == null
+        ? menuTextStyle
+        : DefaultTextStyle.of(context).style.merge(menuTextStyle);
     final textPainter = TextPainter(
       text: TextSpan(
         text: text,
-        style: TextStyle(fontSize: style.fontSize),
+        style: effectiveTextStyle,
       ),
       maxLines: 1,
-      textDirection: TextDirection.ltr,
+      textDirection:
+          context == null ? TextDirection.ltr : Directionality.of(context),
+      textScaler: context == null
+          ? TextScaler.noScaling
+          : MediaQuery.textScalerOf(context),
+      locale: context == null ? null : Localizations.maybeLocaleOf(context),
     )..layout(minWidth: 0, maxWidth: double.infinity);
 
     return textPainter.width;
@@ -273,6 +458,7 @@ class _MenuPositionCalculator {
     double? itemHeightHint,
     List<Rect> avoidRects = const [],
     double? parentMenuLeft,
+    double? parentMenuRight,
   }) {
     final screenSize = _getScreenSize(context);
 
@@ -286,6 +472,7 @@ class _MenuPositionCalculator {
         itemHeightHint: itemHeightHint,
         avoidRects: avoidRects,
         parentMenuLeft: parentMenuLeft,
+        parentMenuRight: parentMenuRight,
       );
     } else {
       return _calculateMainMenuPosition(
@@ -303,6 +490,116 @@ class _MenuPositionCalculator {
         .context
         .findRenderObject() as RenderBox;
     return overlay.size;
+  }
+
+  /// 返回需要固定不动的菜单边角；菜单从该边角朝最终放置方向展开。
+  static Alignment growthAlignment(Rect menuRect, Rect sourceRect) {
+    final horizontal = menuRect.center.dx < sourceRect.center.dx ? 1.0 : -1.0;
+    final vertical = menuRect.center.dy < sourceRect.center.dy ? 1.0 : -1.0;
+    return Alignment(horizontal, vertical);
+  }
+
+  /// 计算锚定菜单的位置。
+  ///
+  /// [anchorOrigin] 控制菜单相对于锚点的起始对齐策略：
+  /// - [MyMenuAnchorOrigin.edge]：从锚点边缘弹出（传统下拉）。
+  /// - [MyMenuAnchorOrigin.center]：从锚点中心象限引出（田字格模式），
+  ///   菜单起始角对准锚点中心，朝展开方向生长。
+  static Offset calculateAnchored(
+    Rect anchorRect,
+    Size menuSize,
+    Size screenSize, {
+    required double gap,
+    MyMenuAnchorOrigin anchorOrigin = MyMenuAnchorOrigin.edge,
+  }) {
+    if (anchorOrigin == MyMenuAnchorOrigin.center) {
+      return _calculateAnchoredCenter(anchorRect, menuSize, screenSize, gap);
+    }
+    return _calculateAnchoredEdge(anchorRect, menuSize, screenSize, gap);
+  }
+
+  /// 边缘对齐：菜单从锚点对应边缘弹出（传统下拉）。
+  static Offset _calculateAnchoredEdge(
+    Rect anchorRect,
+    Size menuSize,
+    Size screenSize,
+    double gap,
+  ) {
+    final alignToEnd = anchorRect.center.dx >= screenSize.width / 2;
+    final startX = anchorRect.left;
+    final endX = anchorRect.right - menuSize.width;
+    final preferredX = alignToEnd ? endX : startX;
+    final alternateX = alignToEnd ? startX : endX;
+
+    bool fitsHorizontally(double x) =>
+        x >= 0 && x + menuSize.width <= screenSize.width;
+
+    double x = preferredX;
+    if (!fitsHorizontally(x) && fitsHorizontally(alternateX)) {
+      x = alternateX;
+    }
+    x = x.clamp(0.0, max(0, screenSize.width - menuSize.width));
+
+    final belowY = anchorRect.bottom + gap;
+    final aboveY = anchorRect.top - gap - menuSize.height;
+    final fitsBelow = belowY + menuSize.height <= screenSize.height;
+    final fitsAbove = aboveY >= 0;
+
+    double y;
+    if (fitsBelow) {
+      y = belowY;
+    } else if (fitsAbove) {
+      y = aboveY;
+    } else {
+      final belowSpace = max(0, screenSize.height - anchorRect.bottom - gap);
+      final aboveSpace = max(0, anchorRect.top - gap);
+      y = belowSpace >= aboveSpace ? belowY : aboveY;
+    }
+    y = y.clamp(0.0, max(0, screenSize.height - menuSize.height));
+
+    return Offset(x, y);
+  }
+
+  /// 中心象限对齐（田字格模式）：菜单起始角对准锚点中心。
+  ///
+  /// 根据可用空间判断展开方向，然后让菜单的对应角
+  /// 与锚点中心对齐（加上 gap 偏移），形成"从象限生长"的视觉效果。
+  static Offset _calculateAnchoredCenter(
+    Rect anchorRect,
+    Size menuSize,
+    Size screenSize,
+    double gap,
+  ) {
+    final cx = anchorRect.center.dx;
+    final cy = anchorRect.center.dy;
+
+    final spaceRight = screenSize.width - cx;
+    final spaceLeft = cx;
+    final spaceBelow = screenSize.height - cy;
+    final spaceAbove = cy;
+
+    final expandRight = spaceRight >= menuSize.width || spaceRight >= spaceLeft;
+    final expandDown =
+        spaceBelow >= menuSize.height || spaceBelow >= spaceAbove;
+
+    double x;
+    if (expandRight) {
+      x = cx + gap;
+    } else {
+      x = cx - gap - menuSize.width;
+    }
+
+    double y;
+    if (expandDown) {
+      y = cy + gap;
+    } else {
+      y = cy - gap - menuSize.height;
+    }
+
+    x = x.clamp(0.0, max(0, screenSize.width - menuSize.width));
+    y = y.clamp(0.0, max(0, screenSize.height - menuSize.height));
+
+    return Offset(x, y);
   }
 
   /// 计算主菜单位置
@@ -365,35 +662,37 @@ class _MenuPositionCalculator {
     double? itemHeightHint,
     List<Rect> avoidRects = const [],
     double? parentMenuLeft,
+    double? parentMenuRight,
   }) {
     // 与父菜单之间保留一个水平间隙，避免视觉重叠
     final double gap = 0.w; // 去除主菜单与子菜单间隙，紧贴对齐
 
-    // parentPosition.dx 代表父菜单右边缘（在 _showSubMenu 中传入的是 item 的右侧）
-    final double parentRight = parentPosition.dx;
-    // 如果能获取到父菜单宽度，则推导出父菜单左边缘；否则退化为 parentRight
-    final double parentLeft = parentMenuSize != null
-        ? parentRight - parentMenuSize.width
-        : parentRight;
+    // 条目位于菜单边框内部；优先使用父菜单的真实外边缘，避免 1px
+    // 边框重叠被误判为碰撞并错误翻转到另一侧。
+    final double fallbackParentRight = parentPosition.dx;
+    final double fallbackParentLeft = parentMenuSize != null
+        ? fallbackParentRight - parentMenuSize.width
+        : fallbackParentRight;
+    final double effectiveParentRight = parentMenuRight ?? fallbackParentRight;
+    final double effectiveParentLeft = parentMenuLeft ?? fallbackParentLeft;
 
     // 计算左右可用空间（需扣除 gap）
-    final double rightSpace = screenSize.width - (parentRight + gap);
-    final double leftSpace = parentLeft - gap;
+    final double rightSpace = screenSize.width - (effectiveParentRight + gap);
+    final double leftSpace = effectiveParentLeft - gap;
 
     // 先计算两个候选位置
-    final double candidateRightX = parentRight + gap;
-    // 左侧候选优先使用父菜单容器左边界；若不可用则退回到条目左边界
-    final double effectiveParentLeft = parentMenuLeft ?? parentLeft;
+    final double candidateRightX = effectiveParentRight + gap;
     final double candidateLeftX = effectiveParentLeft - gap - menuSize.width;
 
-    // 先按可用空间选择一侧
-    double x = rightSpace >= menuSize.width
-        ? candidateRightX
-        : (leftSpace >= menuSize.width
-            ? candidateLeftX
-            : (rightSpace >= leftSpace
-                ? max(0, screenSize.width - menuSize.width)
-                : 0));
+    // 先按可用空间选择一侧；候选点会先夹进可视区，再参与碰撞判断。
+    final preferRight = rightSpace >= menuSize.width ||
+        (leftSpace < menuSize.width && rightSpace >= leftSpace);
+    final double rightBound = max(0.0, screenSize.width - menuSize.width);
+    final double boundedRightX =
+        candidateRightX.clamp(0.0, rightBound).toDouble();
+    final double boundedLeftX =
+        candidateLeftX.clamp(0.0, rightBound).toDouble();
+    double x = preferRight ? boundedRightX : boundedLeftX;
 
     // 垂直对齐策略：
     // 1) 首选让子菜单的顶部与当前条目的顶部对齐；
@@ -415,6 +714,8 @@ class _MenuPositionCalculator {
 
     // 对齐到像素边界，减少亚像素渲染导致的轻微错位
     y = y.roundToDouble();
+    final double bottomBound = max(0.0, screenSize.height - menuSize.height);
+    y = y.clamp(0.0, bottomBound).toDouble();
 
     // 再做重叠避让：若与任一已有菜单矩形重叠，则尝试另一侧
     bool overlapsAt(Offset p) {
@@ -425,22 +726,21 @@ class _MenuPositionCalculator {
       return false;
     }
 
-    final Offset rightPos = Offset(candidateRightX, y);
-    final Offset leftPos = Offset(candidateLeftX, y);
+    final Offset rightPos = Offset(boundedRightX, y);
+    final Offset leftPos = Offset(boundedLeftX, y);
 
     final bool rightOverlap = overlapsAt(rightPos);
     final bool leftOverlap = overlapsAt(leftPos);
 
-    if (x == candidateRightX && rightOverlap && !leftOverlap) {
-      x = candidateLeftX;
-    } else if (x == candidateLeftX && leftOverlap && !rightOverlap) {
-      x = candidateRightX;
+    if (preferRight && rightOverlap && !leftOverlap) {
+      x = boundedLeftX;
+    } else if (!preferRight && leftOverlap && !rightOverlap) {
+      x = boundedRightX;
     }
 
     // 若最终位置仍然重叠，则沿垂直方向做智能避让（先向下，后向上），直到不重叠或到达边界
     if (overlapsAt(Offset(x, y))) {
       final double topBound = 0.0;
-      final double bottomBound = max(0, screenSize.height - menuSize.height);
       final double step =
           max(4.w, (parentItemHeight > 0 ? parentItemHeight : 24.h) / 2);
       const int maxIter = 40; // 安全上限
@@ -461,7 +761,6 @@ class _MenuPositionCalculator {
     // 若仍重叠，则进行横向多跳避让（先向左再向右），必要时再做一次微量垂直调整
     if (overlapsAt(Offset(x, y))) {
       final double leftBound = 0.0;
-      final double rightBound = max(0, screenSize.width - menuSize.width);
       final double hStep = max(8.w, menuSize.width * 0.25);
       const int hMaxIter = 20;
       bool resolved = false;
@@ -482,7 +781,6 @@ class _MenuPositionCalculator {
       if (!resolved) {
         // 在新x附近再尝试一次垂直小步避让
         final double topBound = 0.0;
-        final double bottomBound = max(0, screenSize.height - menuSize.height);
         final double vStep =
             max(4.w, (parentItemHeight > 0 ? parentItemHeight : 24.h) / 2);
         for (int i = 1; i <= 20; i++) {
@@ -516,10 +814,11 @@ class _MenuPositionCalculator {
 
 /// 菜单覆盖层 - 全屏透明层+菜单内容
 class _MenuOverlay extends StatelessWidget {
-  final Offset position;
+  final _MenuPosition position;
   final List<MyMenuElement> menuElements;
   final MyMenuPopStyle animationStyle;
   final MyMenuStyle style;
+  final bool repositionOnSecondaryTap;
   final VoidCallback onClose;
   final Function(MyMenuItem) onItemSelected;
   final ValueChanged<Rect> onLayoutRect;
@@ -529,6 +828,7 @@ class _MenuOverlay extends StatelessWidget {
     required this.menuElements,
     required this.animationStyle,
     required this.style,
+    required this.repositionOnSecondaryTap,
     required this.onClose,
     required this.onItemSelected,
     required this.onLayoutRect,
@@ -538,20 +838,21 @@ class _MenuOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        // 🔧 关键修复：将全局坐标转换为 Overlay 的本地坐标
-        // 使用 rootOverlay 确保在 Dialog/BottomSheet 内也能正常显示
         final overlayBox = Overlay.of(context, rootOverlay: true)
             .context
             .findRenderObject() as RenderBox;
-        final localPosition = overlayBox.globalToLocal(position);
 
-        // 在实际渲染时重新计算位置，使用本地坐标
-        final menuSize = _MenuSizeCalculator.calculate(menuElements, style);
-        final adjustedPosition = _MenuPositionCalculator.calculate(
+        final menuSize = _MenuSizeCalculator.calculate(
+          menuElements,
+          style,
+          context: context,
+        );
+        final resolvedPosition = position.resolve(
           context,
-          localPosition, // 使用转换后的本地坐标
+          overlayBox,
           menuSize,
         );
+        final adjustedPosition = resolvedPosition.offset;
         // 当前菜单的矩形区域（Overlay 本地坐标）
         final Rect menuRect = Rect.fromLTWH(
           adjustedPosition.dx,
@@ -572,20 +873,24 @@ class _MenuOverlay extends StatelessWidget {
                   final Offset lp = event.localPosition;
                   final bool outside = !menuRect.contains(lp);
 
-                  // 右键：点在菜单外 → 关旧开新（保持原行为）
-                  if (event.buttons == 2 && outside) {
-                    MyMenu.show(
-                      context,
-                      event.position, // 全局坐标
-                      menuElements,
-                      animationStyle: animationStyle,
-                      style: style,
-                    );
+                  // 仅右键菜单支持在新的鼠标位置重开；锚定菜单只关闭。
+                  if ((event.buttons & kSecondaryMouseButton) != 0 && outside) {
+                    if (repositionOnSecondaryTap) {
+                      MyMenu.show(
+                        context,
+                        event.position,
+                        menuElements,
+                        animationStyle: animationStyle,
+                        style: style,
+                      );
+                    } else {
+                      onClose();
+                    }
                     return;
                   }
 
                   // 左键：点在菜单外 → 按下即关闭（避免 onTap 的延迟）
-                  if (event.buttons == 1 && outside) {
+                  if ((event.buttons & kPrimaryMouseButton) != 0 && outside) {
                     onClose();
                     return;
                   }
@@ -599,19 +904,18 @@ class _MenuOverlay extends StatelessWidget {
                 ),
               ),
             ),
-            // 菜单内容
+            // 菜单内容：定位结果同时决定展开时固定的边角。
             Positioned(
               left: adjustedPosition.dx,
               top: adjustedPosition.dy,
               child: GestureDetector(
                 onTap: () {}, // 防止点击菜单时关闭
-                child: _AnimatedMenuWrapper(
+                child: _MenuContent(
+                  menuElements: menuElements,
+                  onItemSelected: onItemSelected,
+                  style: style,
                   animationStyle: animationStyle,
-                  child: _MenuContent(
-                    menuElements: menuElements,
-                    onItemSelected: onItemSelected,
-                    style: style,
-                  ),
+                  growthAlignment: resolvedPosition.growthAlignment,
                 ),
               ),
             ),
@@ -626,10 +930,12 @@ class _MenuOverlay extends StatelessWidget {
 class _AnimatedMenuWrapper extends StatefulWidget {
   final Widget child;
   final MyMenuPopStyle animationStyle;
+  final Alignment growthAlignment;
 
   const _AnimatedMenuWrapper({
     required this.child,
     required this.animationStyle,
+    required this.growthAlignment,
   });
 
   @override
@@ -665,6 +971,7 @@ class _AnimatedMenuWrapperState extends State<_AnimatedMenuWrapper>
       case MyMenuPopStyle.fade:
       case MyMenuPopStyle.slideFromTop:
       case MyMenuPopStyle.slideFromRight:
+      case MyMenuPopStyle.reveal:
         return Tween<double>(begin: 0.0, end: 1.0).animate(curve);
     }
   }
@@ -681,6 +988,7 @@ class _AnimatedMenuWrapperState extends State<_AnimatedMenuWrapper>
       case MyMenuPopStyle.scale:
         return ScaleTransition(
           scale: _animation,
+          alignment: widget.growthAlignment,
           child: widget.child,
         );
       case MyMenuPopStyle.fade:
@@ -704,7 +1012,50 @@ class _AnimatedMenuWrapperState extends State<_AnimatedMenuWrapper>
           ).animate(_animation),
           child: widget.child,
         );
+      case MyMenuPopStyle.reveal:
+        return AnimatedBuilder(
+          animation: _animation,
+          child: widget.child,
+          builder: (context, child) {
+            if (_animation.value >= 1) return child!;
+            return ClipRect(
+              clipper: _DirectionalRevealClipper(
+                progress: _animation.value,
+                growthAlignment: widget.growthAlignment,
+              ),
+              child: child,
+            );
+          },
+        );
     }
+  }
+}
+
+class _DirectionalRevealClipper extends CustomClipper<Rect> {
+  final double progress;
+  final Alignment growthAlignment;
+
+  const _DirectionalRevealClipper({
+    required this.progress,
+    required this.growthAlignment,
+  });
+
+  @override
+  Rect getClip(Size size) {
+    final resolvedProgress = progress.clamp(0.0, 1.0);
+    final width = size.width * resolvedProgress;
+    final height = size.height * resolvedProgress;
+    final left =
+        (size.width - width) * ((growthAlignment.x + 1) / 2).clamp(0.0, 1.0);
+    final top =
+        (size.height - height) * ((growthAlignment.y + 1) / 2).clamp(0.0, 1.0);
+    return Rect.fromLTWH(left, top, width, height);
+  }
+
+  @override
+  bool shouldReclip(_DirectionalRevealClipper oldClipper) {
+    return progress != oldClipper.progress ||
+        growthAlignment != oldClipper.growthAlignment;
   }
 }
 
@@ -713,12 +1064,16 @@ class _MenuContent extends StatelessWidget {
   final List<MyMenuElement> menuElements;
   final Function(MyMenuItem) onItemSelected;
   final MyMenuStyle style;
+  final MyMenuPopStyle animationStyle;
+  final Alignment growthAlignment;
   final int level;
 
   const _MenuContent({
     required this.menuElements,
     required this.onItemSelected,
     required this.style,
+    required this.growthAlignment,
+    this.animationStyle = MyMenuPopStyle.reveal,
     this.level = 0,
   });
 
@@ -727,56 +1082,87 @@ class _MenuContent extends StatelessWidget {
     return ValueListenableBuilder<List<OverlayEntry>>(
       valueListenable: MyMenu._activeSubMenus,
       builder: (context, _, __) {
-        return Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(style.borderRadius),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2 * style.shadowRatio),
-                blurRadius: 10.r * style.shadowRatio,
-                spreadRadius: 2.r * style.shadowRatio,
-              ),
-            ],
+        final menuBody = IntrinsicWidth(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: menuElements.map((element) {
+              if (element is MyMenuItem) {
+                return _MenuItemWidget(
+                  item: element,
+                  onItemSelected: onItemSelected,
+                  style: style,
+                  animationStyle: animationStyle,
+                  level: level,
+                );
+              } else if (element is MyMenuDivider) {
+                return element.build(context);
+              }
+              return const SizedBox.shrink();
+            }).toList(),
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(style.borderRadius),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(
-                sigmaX: style.blurSigma,
-                sigmaY: style.blurSigma,
+        );
+        final animatedBody = animationStyle == MyMenuPopStyle.reveal
+            ? menuBody
+            : _AnimatedMenuWrapper(
+                animationStyle: animationStyle,
+                growthAlignment: growthAlignment,
+                child: menuBody,
+              );
+        final shadowDecoration = BoxDecoration(
+          borderRadius: BorderRadius.circular(style.borderRadius),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(
+                alpha: 0.05 * style.shadowRatio,
               ),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.8),
-                  borderRadius: BorderRadius.circular(style.borderRadius),
-                  border: Border.all(
-                    color:
-                        Colors.grey.withValues(alpha: 0.3 * style.shadowRatio),
-                    width: style.borderWidth * style.shadowRatio,
-                  ),
-                ),
-                child: IntrinsicWidth(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: menuElements.map((element) {
-                      if (element is MyMenuItem) {
-                        return _MenuItemWidget(
-                          item: element,
-                          onItemSelected: onItemSelected,
-                          style: style,
-                          level: level,
-                        );
-                      } else if (element is MyMenuDivider) {
-                        return element.build(context);
-                      }
-                      return const SizedBox.shrink();
-                    }).toList(),
-                  ),
+              blurRadius: 4,
+              offset: const Offset(0, 1),
+            ),
+            BoxShadow(
+              color: Colors.black.withValues(
+                alpha: 0.14 * style.shadowRatio,
+              ),
+              blurRadius: 24,
+              spreadRadius: -5,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        );
+        final material = ClipRRect(
+          borderRadius: BorderRadius.circular(style.borderRadius),
+          child: BackdropFilter(
+            // 默认 srcOver；定向展开仅做裁剪，不创建透明 saveLayer。
+            // 其它动画保留在滤镜内部，避免影响背景采样。
+            filter: ImageFilter.blur(
+              sigmaX: style.blurSigma,
+              sigmaY: style.blurSigma,
+              tileMode: TileMode.clamp,
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: style.surfaceColor,
+                borderRadius: BorderRadius.circular(style.borderRadius),
+                border: Border.all(
+                  color: style.borderColor,
+                  width: style.borderWidth,
                 ),
               ),
+              child: animatedBody,
             ),
           ),
+        );
+        // 仅裁剪磨砂材质，阴影保持稳定，避免动画末帧突然跳出。
+        final animatedMaterial = animationStyle == MyMenuPopStyle.reveal
+            ? _AnimatedMenuWrapper(
+                animationStyle: animationStyle,
+                growthAlignment: growthAlignment,
+                child: material,
+              )
+            : material;
+        return Container(
+          decoration: shadowDecoration,
+          child: animatedMaterial,
         );
       },
     );
@@ -788,12 +1174,14 @@ class _MenuItemWidget extends StatefulWidget {
   final MyMenuItem item;
   final Function(MyMenuItem) onItemSelected;
   final MyMenuStyle style;
+  final MyMenuPopStyle animationStyle;
   final int level;
 
   const _MenuItemWidget({
     required this.item,
     required this.onItemSelected,
     required this.style,
+    required this.animationStyle,
     required this.level,
   });
 
@@ -804,57 +1192,74 @@ class _MenuItemWidget extends StatefulWidget {
 class _MenuItemWidgetState extends State<_MenuItemWidget> {
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        // 改为“按下即触发”，提升选择速度；子菜单项保持不触发
-        onTap: null,
-        onTapDown: widget.item.hasSubMenu
-            ? null
-            : (_) => widget.onItemSelected(widget.item),
-        onHover: (isHovering) {
-          if (isHovering) {
-            _handleHover(context);
-          }
-        },
-        highlightColor: widget.style.focusColor.withValues(alpha: 0.1),
-        splashColor: widget.style.focusColor.withValues(alpha: 0.05),
-        hoverColor: widget.style.focusColor.withValues(alpha: 0.05),
-        child: MouseRegion(
-          onEnter: (_) => _handleHover(context),
-          child: SizedBox(
-            // 关键：统一行高，避免计算高度与实际渲染不一致导致“上弹”时出现空隙
-            height: widget.style.itemHeight,
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.w),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (widget.item.icon != null) ...[
-                    Icon(
-                      widget.item.icon,
-                      color: Colors.black87,
-                      size: 18.sp,
-                    ),
-                    SizedBox(width: 8.w),
-                  ],
-                  Expanded(
-                    child: Text(
-                      widget.item.text ?? '',
-                      style: TextStyle(
-                        color: Colors.black87,
-                        fontSize: widget.style.fontSize,
+    final itemColor = widget.item.enabled ? Colors.black87 : Colors.black38;
+    final VoidCallback? onTap = !widget.item.enabled
+        ? null
+        : widget.item.hasSubMenu
+            ? () => _showSubMenu(context)
+            : () => widget.onItemSelected(widget.item);
+
+    // 外层高度与尺寸计算器保持一致；hover 仅在内部圆角区域绘制。
+    return SizedBox(
+      height: widget.style.itemHeight,
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2),
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(7),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(7),
+            onTap: onTap,
+            canRequestFocus: widget.item.enabled,
+            onHover: widget.item.enabled
+                ? (isHovering) {
+                    if (isHovering) {
+                      _handleHover(context);
+                    }
+                  }
+                : null,
+            highlightColor: widget.style.focusColor.withValues(alpha: 0.07),
+            splashColor: widget.style.focusColor.withValues(alpha: 0.03),
+            hoverColor: widget.style.focusColor.withValues(alpha: 0.04),
+            child: MouseRegion(
+              cursor: widget.item.enabled
+                  ? SystemMouseCursors.click
+                  : SystemMouseCursors.forbidden,
+              onEnter: (_) => _handleHover(context),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10.w),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (widget.item.icon != null) ...[
+                      Icon(
+                        widget.item.icon,
+                        color: itemColor,
+                        size: 18.sp,
                       ),
-                      maxLines: 1,
+                      SizedBox(width: 10.w),
+                    ],
+                    Expanded(
+                      child: Text(
+                        widget.item.text ?? '',
+                        style: TextStyle(
+                          color: itemColor,
+                          fontSize: widget.style.fontSize,
+                          fontWeight: FontWeight.w400,
+                          height: 1.2,
+                          letterSpacing: 0,
+                        ),
+                        maxLines: 1,
+                      ),
                     ),
-                  ),
-                  if (widget.item.hasSubMenu)
-                    Icon(
-                      Icons.arrow_right,
-                      color: Colors.black87,
-                      size: 18.sp,
-                    ),
-                ],
+                    if (widget.item.hasSubMenu)
+                      Icon(
+                        Icons.arrow_right,
+                        color: itemColor,
+                        size: 18.sp,
+                      ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -865,7 +1270,9 @@ class _MenuItemWidgetState extends State<_MenuItemWidget> {
 
   /// 处理悬停事件
   void _handleHover(BuildContext context) {
-    if (widget.item.hasSubMenu) {
+    if (!widget.item.enabled) {
+      _closeSubMenusAfterLevel(widget.level);
+    } else if (widget.item.hasSubMenu) {
       _showSubMenu(context);
     } else {
       _closeSubMenusAfterLevel(widget.level);
@@ -892,6 +1299,7 @@ class _MenuItemWidgetState extends State<_MenuItemWidget> {
       widget.item.subItems!,
       widget.style,
       rowHeightOverride: itemBox.size.height,
+      context: context,
     );
 
     // 子菜单相邻但不重叠
@@ -907,8 +1315,8 @@ class _MenuItemWidgetState extends State<_MenuItemWidget> {
       ...state.activeMenuRects.value,
     ];
 
-    // 父菜单容器的左边界：优先取最近一个已存在的菜单矩形，否则取主菜单矩形
-    final Rect? parentRectForLeft = state.activeMenuRects.value.isNotEmpty
+    // 优先取最近一级子菜单矩形，否则使用主菜单矩形。
+    final Rect? parentMenuRect = state.activeMenuRects.value.isNotEmpty
         ? state.activeMenuRects.value.last
         : state.mainMenuRect;
 
@@ -921,7 +1329,8 @@ class _MenuItemWidgetState extends State<_MenuItemWidget> {
       alignedY: itemPositionInOverlay.dy,
       itemHeightHint: widget.style.itemHeight,
       avoidRects: avoidRects,
-      parentMenuLeft: parentRectForLeft?.left,
+      parentMenuLeft: parentMenuRect?.left,
+      parentMenuRight: parentMenuRect?.right,
     );
 
     // 创建子菜单覆盖层（不再做额外边框修正，直接使用条目顶部对齐）
@@ -931,19 +1340,23 @@ class _MenuItemWidgetState extends State<_MenuItemWidget> {
       menuSize.width,
       menuSize.height,
     );
+    final parentItemRect = itemPositionInOverlay & itemBox.size;
+    final growthAlignment = _MenuPositionCalculator.growthAlignment(
+      subRect,
+      parentItemRect,
+    );
 
     final subMenuEntry = OverlayEntry(
       builder: (context) => Positioned(
         left: adjustedPosition.dx,
         top: adjustedPosition.dy,
-        child: _AnimatedMenuWrapper(
-          animationStyle: MyMenuPopStyle.scale,
-          child: _MenuContent(
-            menuElements: widget.item.subItems!,
-            onItemSelected: widget.onItemSelected,
-            style: widget.style,
-            level: widget.level + 1,
-          ),
+        child: _MenuContent(
+          menuElements: widget.item.subItems!,
+          onItemSelected: widget.onItemSelected,
+          style: widget.style,
+          animationStyle: widget.animationStyle,
+          growthAlignment: growthAlignment,
+          level: widget.level + 1,
         ),
       ),
     );
