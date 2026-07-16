@@ -1,3 +1,9 @@
+## Unreleased
+
+### Added
+
+- **`MyToast.showBottom(atTop:)`**：新增 `atTop` 布尔参数，为 `true` 时 Toast 从屏幕顶部滑入（`SnackPosition.TOP`），避免遮挡底栏等固定 UI；默认 `false` 保持原有底部滑入行为，完全向后兼容。
+
 ## 0.53.0 - 2026-07-15
 
 ### Added

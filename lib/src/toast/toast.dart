@@ -217,19 +217,21 @@ class MyToast extends StatelessWidget {
     return const SizedBox.shrink();
   }
 
-  /// 在屏幕底部显示一个黑色样式的提示消息
+  /// 显示一个黑色通栏样式的提示消息
   ///
   /// [message] 提示消息内容
   /// [duration] 显示持续时间，默认2秒
   /// [backgroundColor] 自定义背景颜色，默认为黑色半透明
-  /// [textColor] 自定义文字颜色，认为白色
-  /// [opacity] 背景透明度，取值范围0.0-1.0，默认0.9
+  /// [textColor] 自定义文字颜色，默认为白色
+  /// [opacity] 背景透明度，取值范围0.0-1.0，默认0.7
+  /// [atTop] 为 true 时从顶部滑入（避免遮挡底栏等 UI），默认从底部滑入
   static Widget showBottom(
     String message, {
     Duration? duration,
     Color? backgroundColor,
     Color? textColor,
     double opacity = 0.7,
+    bool atTop = false,
   }) {
     assert(opacity >= 0.0 && opacity <= 1.0,
         'opacity must be between 0.0 and 1.0');
@@ -255,6 +257,7 @@ class MyToast extends StatelessWidget {
           horizontal: 15.w,
           vertical: 12.w,
         ),
+        snackPosition: atTop ? SnackPosition.TOP : SnackPosition.BOTTOM,
         snackStyle: SnackStyle.GROUNDED,
         isDismissible: true,
         dismissDirection: DismissDirection.horizontal,
