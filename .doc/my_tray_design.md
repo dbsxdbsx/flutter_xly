@@ -388,9 +388,17 @@ myTray.setIcon("assets/tray_busy.png");     // 忙碌状态
 ### Windows平台菜单问题
 - **问题描述**：在Windows平台上，右键菜单在点击菜单项后可能不会自动关闭
 - **相关Issue**：[tray_manager#63](https://github.com/leanflutter/tray_manager/issues/63)
-- **临时解决方案**：MyTray组件实现了一个workaround，通过重置菜单来强制关闭
-- **影响**：可能会有轻微的视觉闪烁，但确保菜单能正确关闭
-- **状态**：等待tray_manager官方修复
+- **解决方案**：`SetForegroundWindow` + `PostMessage(WM_NULL)` 组合修复
+- **状态**：已在 `TrayPopupHelper` 中内置解决
+
+### Windows 任务栏非底部时菜单遮挡（已修复）
+- **问题描述**：`tray_manager` 的 `TrackPopupMenu` 对齐标志硬编码为 `TPM_BOTTOMALIGN | TPM_LEFTALIGN`，任务栏在右侧或顶部时菜单会被遮挡
+- **修复方案**：`TrayPopupHelper`（`lib/src/tray/tray_popup_helper.dart`）通过 `dart:ffi` 直接调用 Windows API，绕过 `tray_manager` 的弹出方法：
+  1. `SHAppBarMessage(ABM_GETTASKBARPOS)` 检测任务栏位于哪条屏幕边缘
+  2. 根据边缘动态选择 `TrackPopupMenu` 的 `TPM_*ALIGN` 标志组合
+  3. `TPM_RETURNCMD` 同步获取选中项，无需 `WM_COMMAND` 回调
+- **对齐策略**：底部 → 向上+向右；右侧 → 向上+向左；顶部 → 向下+向右；左侧 → 向上+向右
+- **回退机制**：FFI 不可用时自动回退到 `tray_manager.popUpContextMenu()`；非 Windows 平台直接使用原生弹出
 
 ### 图标格式要求
 - **Windows**：推荐使用 `.ico` 格式，支持多尺寸

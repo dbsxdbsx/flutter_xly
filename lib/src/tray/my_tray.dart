@@ -10,6 +10,7 @@ import '../logger.dart';
 import '../paths/my_paths.dart';
 import '../smart_dock/mouse_tracker.dart';
 import '../smart_dock/native_window_helper.dart';
+import 'tray_popup_helper.dart';
 
 /// 托盘菜单项配置类
 class MyTrayMenuItem {
@@ -238,6 +239,9 @@ class MyTray extends GetxService with TrayListener, WindowListener {
       // 统一解析图标路径
       final absoluteIconPath = await _resolveIconPath(iconPath);
 
+      // 初始化智能弹出助手（Windows 专用，其他平台自动跳过）
+      TrayPopupHelper.initialize();
+
       // 添加托盘监听器
       trayManager.addListener(this);
 
@@ -391,12 +395,24 @@ class MyTray extends GetxService with TrayListener, WindowListener {
 
   @override
   Future<void> onTrayIconRightMouseDown() async {
-    // 右键点击显示菜单
     XlyLogger.debug('MyTray: 托盘图标右键点击');
 
-    // 修复Windows上托盘菜单无法通过点击空白区域关闭的问题
-    // 参考：https://github.com/leanflutter/tray_manager/issues/63
-    // 注意：bringAppToFront参数虽被标记为deprecated，但仍是解决此问题的最简方案
+    // Windows：使用自建 FFI 弹出，根据任务栏位置智能选择展开方向
+    // （tray_manager 的 popUpContextMenu 硬编码 TPM_BOTTOMALIGN | TPM_LEFTALIGN，
+    //  任务栏在右侧/顶部时菜单会被遮挡）
+    if (Platform.isWindows && TrayPopupHelper.isAvailable) {
+      final items = _currentMenuItems ?? initialMenuItems;
+      if (items != null && items.isNotEmpty) {
+        try {
+          await TrayPopupHelper.showPopup(items);
+          return;
+        } catch (e) {
+          XlyLogger.warning('TrayPopupHelper 失败，回退到 tray_manager 弹出: $e');
+        }
+      }
+    }
+
+    // 非 Windows 平台或 FFI 不可用时回退到 tray_manager 原生弹出
     // ignore: deprecated_member_use
     await trayManager.popUpContextMenu(bringAppToFront: true);
   }
@@ -660,8 +676,7 @@ class MyTray extends GetxService with TrayListener, WindowListener {
         _ownsPreventClose = false;
       }
       await trayManager.destroy();
-
-      // 通知插件会自动清理，无需手动清理
+      TrayPopupHelper.dispose();
 
       _isInitialized.value = false;
 
@@ -700,6 +715,14 @@ class MyTray extends GetxService with TrayListener, WindowListener {
           currentTooltip.isEmpty ? statusText : '$currentTooltip · $statusText';
       await trayManager.setToolTip(exitingTooltip);
       tooltip.value = exitingTooltip;
+      // 同步更新内部菜单状态（Windows FFI 弹出读取此字段）
+      _currentMenuItems = [
+        MyTrayMenuItem(
+          key: '__xly_exiting__',
+          label: statusText,
+          enabled: false,
+        ),
+      ];
       await trayManager.setContextMenu(
         Menu(
           items: [

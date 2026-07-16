@@ -1,3 +1,9 @@
+## Unreleased
+
+### Fixed
+
+- **Windows 托盘菜单任务栏遮挡**：任务栏在右侧或顶部时托盘右键菜单不再被遮挡。新增 `TrayPopupHelper` 通过 `dart:ffi` 直接调用 `SHAppBarMessage` 检测任务栏边缘，动态选择 `TrackPopupMenu` 对齐标志（`tray_manager` 硬编码 `TPM_BOTTOMALIGN | TPM_LEFTALIGN` 仅适配底部任务栏），非 Windows 平台和 FFI 不可用时自动回退到 `tray_manager` 原生弹出。
+
 ## 0.54.0 - 2026-07-16
 
 ### Added
