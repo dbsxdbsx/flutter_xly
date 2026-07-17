@@ -32,11 +32,37 @@
 
 
 
+## G — 退出与托盘可靠性（0.53.0+ 进行中）
+
+- [x] **安全退出态**：`MyTray.beginExit()` / `isExiting`，保留图标禁用交互
+- [x] **桌面退出不卡**：`MyApp.exit()` 限时 + `exit(0)` 硬退出
+- [x] **初始化/销毁竞态**：`destroy()` 等待 `_initializeFuture`
+- [x] **关闭拦截所有权**：`_ownsPreventClose` 追踪
+- [x] **退出时隐藏窗口**：`MyApp.exit()` 首步 `windowManager.hide()`（0.55）
+- [x] **单向状态机**：`beginExit` 不回退，共享 Future 幂等（0.55）
+- [ ] **退出竞态单元测试**：`beginExit`/`destroy`/`onWindowClose` 并发序列验证
+- [ ] **移动端 MyTray guard**：非桌面平台注册时跳过插件调用（当前由 `!MyPlatform.isDesktop` 在初始化时短路，但构造和 GetX 注册仍发生）
+
+## H — 统一菜单系统（0.54.0 已闭环）
+
+- [x] **MyMenu 渲染核心**：右键/锚定/MenuButton 共享
+- [x] **MyMenuAnchor**：挂接任意控件
+- [x] **田字格定位**：`MyMenuAnchorOrigin.center`
+- [x] **reveal 动画**：`MyMenuPopStyle.reveal`
+- [ ] **菜单 widget 测试**：覆盖定位象限、子菜单、禁用项
+
+## I — 托盘菜单方向（Unreleased）
+
+- [x] **TrayPopupHelper FFI**：`SHAppBarMessage` + 动态对齐标志
+- [ ] **非 Windows 平台回退验证**：macOS/Linux 弹出位置确认
+
 ## E — 可选后续
 
 
 
 - [ ] **GetStorage 键可配置**：`MyFloatPanel.configure(persistenceKeyPrefix: ...)`（需迁移说明）
+
+- [ ] **发布前 dry-run 清单**：`dart pub publish --dry-run` 扫描、tracked-files 隐私审计
 
 
 

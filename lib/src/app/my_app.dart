@@ -642,8 +642,22 @@ class MyApp extends StatelessWidget {
     );
   }
 
-  /// 静态方法用于退出应用
+  /// 退出应用的唯一推荐入口。
+  ///
+  /// 桌面端流程：立即隐藏窗口 → 托盘进入退出态 → 释放辅助资源 → 销毁托盘 → exit(0)。
+  /// 移动端流程：请求系统导航退出（不强杀进程）。
+  ///
+  /// 典型用法：托盘菜单"退出" → `MyApp.exit()`。
+  /// 如需在退出前执行自定义清理（如停止代理核心），请在调用本方法前完成，
+  /// 或使用 [exitApp] 的 `beforeProcessExit` 回调。
   static Future<void> exit() async {
+    // 桌面端第一步：立即隐藏窗口，让用户感知"退出已响应"。
+    if (MyPlatform.isDesktop) {
+      try {
+        await windowManager.hide();
+      } catch (_) {}
+    }
+
     final tray = Get.isRegistered<MyTray>() ? MyTray.to : null;
     if (tray != null) {
       try {

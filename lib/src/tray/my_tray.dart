@@ -76,6 +76,10 @@ class MyTray extends GetxService with TrayListener, WindowListener {
   final tooltip = ''.obs;
   final _isInitialized = false.obs;
   final _isExiting = false.obs;
+  final _isDestroyed = false.obs;
+
+  Completer<void>? _beginExitCompleter;
+  Completer<void>? _destroyCompleter;
 
   // 对外只读访问器：获取当前策略
   bool get hideTaskBarIcon => _hideTaskBarIcon.value;
@@ -656,8 +660,12 @@ class MyTray extends GetxService with TrayListener, WindowListener {
     }
   }
 
-  /// 销毁托盘
+  /// 销毁托盘（幂等；多次调用共享同一 Future）。
   Future<void> destroy() async {
+    if (_isDestroyed.value) return;
+    if (_destroyCompleter != null) return _destroyCompleter!.future;
+    _destroyCompleter = Completer<void>();
+
     try {
       final initializing = _initializeFuture;
       if (initializing != null) {
@@ -679,10 +687,13 @@ class MyTray extends GetxService with TrayListener, WindowListener {
       TrayPopupHelper.dispose();
 
       _isInitialized.value = false;
+      _isDestroyed.value = true;
 
       XlyLogger.info('MyTray: 托盘已销毁');
     } catch (e) {
       XlyLogger.error('MyTray: 销毁托盘失败', e);
+    } finally {
+      _destroyCompleter!.complete();
     }
   }
 
@@ -692,8 +703,11 @@ class MyTray extends GetxService with TrayListener, WindowListener {
   /// 原菜单全部禁用，只显示退出状态。最终由 [MyApp.exit] 在 `exit(0)` 前显式
   /// [destroy]，既保持状态真实，也避免 Windows Explorer 的幽灵托盘图标。
   Future<void> beginExit({String statusText = '正在安全退出…'}) async {
-    if (_isExiting.value) return;
+    if (_isExiting.value) {
+      return _beginExitCompleter?.future ?? Future.value();
+    }
     _isExiting.value = true;
+    _beginExitCompleter = Completer<void>();
 
     try {
       final initializing = _initializeFuture;
@@ -736,9 +750,10 @@ class MyTray extends GetxService with TrayListener, WindowListener {
       );
       XlyLogger.info('MyTray: 已进入退出状态，托盘将在进程终止前销毁');
     } catch (e, stackTrace) {
-      _isExiting.value = false;
+      // 不回退 _isExiting——进入退出态是单向的，失败也继续退出流程。
       XlyLogger.error('MyTray: 切换退出状态失败，将继续退出', e, stackTrace);
-      rethrow;
+    } finally {
+      _beginExitCompleter!.complete();
     }
   }
 
@@ -824,6 +839,7 @@ class MyTray extends GetxService with TrayListener, WindowListener {
   /// 检查是否已初始化
   bool get isInitialized => _isInitialized.value;
   bool get isExiting => _isExiting.value;
+  bool get isDestroyed => _isDestroyed.value;
 
   @override
   void onClose() {

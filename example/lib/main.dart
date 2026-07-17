@@ -44,7 +44,7 @@ void main() async {
         const MyTrayMenuItem.separator(),
         MyTrayMenuItem(
           label: '退出应用',
-          onTap: () => exit(0),
+          onTap: () => MyApp.exit(),
         ),
       ],
     ),

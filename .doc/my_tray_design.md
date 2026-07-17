@@ -47,7 +47,7 @@ void main() async {
         MyTrayMenuItem(key: 'show', label: '显示', onTap: () => MyTray.to.pop()),
         MyTrayMenuItem.separator(),
         MyTrayMenuItem(key: 'settings', label: '设置', enabled: false), // 禁用项
-        MyTrayMenuItem(key: 'exit', label: '退出', onTap: () => exit(0)),
+        MyTrayMenuItem(key: 'exit', label: '退出', onTap: () => MyApp.exit()),
       ],
     ),
   );
@@ -76,7 +76,7 @@ void main() async {
           menuItems: [
             MyTrayMenuItem(label: '显示', onTap: () => MyTray.to.pop()),
             MyTrayMenuItem.separator(),
-            MyTrayMenuItem(label: '退出', onTap: () => exit(0)),
+            MyTrayMenuItem(label: '退出', onTap: () => MyApp.exit()),
           ],
         ),
         permanent: true,
@@ -240,7 +240,7 @@ await MyApp.initialize(
           MyTrayMenuItem(key: 'show', label: '显示主窗口', onTap: () => MyTray.to.pop()),
           MyTrayMenuItem.separator(),
           MyTrayMenuItem(key: 'settings', label: '设置', enabled: false), // 禁用项示例
-          MyTrayMenuItem(key: 'exit', label: '退出应用', onTap: () => exit(0)),
+          MyTrayMenuItem(key: 'exit', label: '退出应用', onTap: () => MyApp.exit()),
         ],
       ),
     ),
@@ -300,7 +300,7 @@ MyTray(
     MyTrayMenuItem(key: 'sync', label: '同步数据', enabled: false), // 初始禁用
     MyTrayMenuItem(key: 'settings', label: '设置', onTap: () => openSettings()),
     MyTrayMenuItem.separator(),
-    MyTrayMenuItem(key: 'exit', label: '退出', onTap: () => exit(0)),
+    MyTrayMenuItem(key: 'exit', label: '退出', onTap: () => MyApp.exit()),
   ],
 ),
 
@@ -456,7 +456,7 @@ MyService<MyTray>(
     menuItems: [                    // 可选：右键菜单
       MyTrayMenuItem(label: '显示', onTap: () => MyTray.to.pop()),
       MyTrayMenuItem.separator(),
-      MyTrayMenuItem(label: '退出', onTap: () => exit(0)),
+      MyTrayMenuItem(label: '退出', onTap: () => MyApp.exit()),
     ],
   ),
 );
