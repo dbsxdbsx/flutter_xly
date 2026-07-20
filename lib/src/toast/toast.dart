@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+import '../logger.dart';
+import 'scrim_host.dart';
 import 'toast_widget/middle_toast_style_widgets/base_toast_widget.dart';
 import 'toast_widget/middle_toast_style_widgets/error_toast_widget.dart';
 import 'toast_widget/middle_toast_style_widgets/info_toast_widget.dart';
@@ -66,7 +68,9 @@ class MyToast extends StatelessWidget {
     return Toast(
       duration: const Duration(seconds: 2),
       alignment: Alignment.center,
-      child: child,
+      // 根级遮罩宿主兜底：没有更近的表面宿主（对话框 / Sheet）时，
+      // showScrim 会降级为覆盖整个应用；Toast 通知层始终位于遮罩之上。
+      child: MyScrimHost(child: child),
     );
   }
 
@@ -566,6 +570,69 @@ class MyToast extends StatelessWidget {
 
     return const SizedBox.shrink();
   }
+
+  // ---------------------------------------------------------------------
+  // Scrim（作用域遮罩）：Toast 家族中唯一"阻塞型"成员
+  // ---------------------------------------------------------------------
+
+  /// 显示作用域遮罩（阻塞型加载指示）。
+  ///
+  /// 与其他 Toast 的区别：普通 Toast 是非阻塞的瞬时通知；Scrim 是持续的
+  /// 交互锁，会盖住并锁死它所属的表面，需调用 [hideScrim] 手动关闭。
+  ///
+  /// 遮罩只覆盖"最近的表面"而非全屏：不传 [context] 时自动定位到最上层
+  /// 的 [MyScrimHost]（`MyDialogSheet.showCenter` / `showBottom` 与 MyApp
+  /// 根节点均已内置宿主，即最上层对话框 / Sheet / 页面）；传 [context]
+  /// 则精确定位到该 context 最近的祖先宿主。
+  ///
+  /// [message] / [detail] 为默认卡片的主文案与细节行（如进度 `3/16`），
+  /// 可通过 [updateScrim] 动态刷新；[onCancel] 非空时显示取消按钮；
+  /// [builder] 非空时完全接管中央内容（居中由宿主负责，此时
+  /// message/detail/onCancel 失效，内容刷新请用自己的响应式状态驱动）。
+  ///
+  /// 示例：
+  /// ```dart
+  /// MyToast.showScrim(message: '智选中...', onCancel: cancel);
+  /// MyToast.updateScrim(detail: '$done/$total');
+  /// MyToast.hideScrim();
+  /// ```
+  static void showScrim({
+    BuildContext? context,
+    String? message,
+    String? detail,
+    VoidCallback? onCancel,
+    String cancelText = '取消',
+    WidgetBuilder? builder,
+    Color? barrierColor,
+  }) {
+    final host = MyScrimHostState.resolve(context);
+    if (host == null) {
+      XlyLogger.error('MyToast.showScrim: 未找到 MyScrimHost 宿主，遮罩未显示。'
+          '请确认使用了 MyApp / MyDialogSheet，或手动包裹 MyScrimHost。');
+      return;
+    }
+    host.show(
+      message: message,
+      detail: detail,
+      onCancel: onCancel,
+      cancelText: cancelText,
+      builder: builder,
+      barrierColor: barrierColor,
+    );
+  }
+
+  /// 更新当前遮罩默认卡片的文案（未显示遮罩时静默忽略）
+  static void updateScrim({String? message, String? detail}) {
+    MyScrimHostState.topmostActive()?.update(message: message, detail: detail);
+  }
+
+  /// 关闭当前遮罩（未显示遮罩时静默忽略）
+  static void hideScrim() {
+    MyScrimHostState.topmostActive()?.hide();
+  }
+
+  /// 当前是否有遮罩正在显示
+  static bool get isScrimShowing => MyScrimHostState.topmostActive() != null;
 }
 
 /// 定义文本相对于加载动画的位置

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:xly/xly.dart';
 
 import '../logger.dart';
+import '../toast/scrim_host.dart';
 
 /// 统一的对话框管理类
 class MyDialogSheet {
@@ -113,28 +114,35 @@ class _BottomSheetContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    // 与中心对话框同理：白底矩形 + 遮罩 + 内容先合成同一图层，再用
+    // saveLayer 统一裁顶部圆角，避免遮罩显示时边缘二次混合出细边。
+    return SizedBox(
       height: height,
-      decoration: BoxDecoration(
-        color: backgroundColor,
+      child: ClipRRect(
         borderRadius: BorderRadius.vertical(top: Radius.circular(borderRadius)),
-      ),
-      child: Column(
-        children: [
-          SizedBox(height: 10.h),
-          Container(
-            width: 40.w,
-            height: 4.h,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(2.r),
+        clipBehavior: Clip.antiAliasWithSaveLayer,
+        child: ColoredBox(
+          color: backgroundColor,
+          child: MyScrimHost(
+            child: Column(
+              children: [
+                SizedBox(height: 10.h),
+                Container(
+                  width: 40.w,
+                  height: 4.h,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2.r),
+                  ),
+                ),
+                SizedBox(height: 20.h),
+                // SingleChildScrollView 作为安全网：
+                // 内容不超出时正常显示，超出时自动可滚动，避免 overflow
+                Expanded(child: SingleChildScrollView(child: child)),
+              ],
             ),
           ),
-          SizedBox(height: 20.h),
-          // SingleChildScrollView 作为安全网：
-          // 内容不超出时正常显示，超出时自动可滚动，避免 overflow
-          Expanded(child: SingleChildScrollView(child: child)),
-        ],
+        ),
       ),
     );
   }
@@ -181,8 +189,7 @@ class _CenterDialogSheet extends StatelessWidget {
     // MediaQuery 返回的已经是当前视口的逻辑像素，不能再套 .w/.h，
     // 否则在非设计尺寸设备上会二次缩放，导致移动端对话框异常放大。
     final dialogWidth = viewportSize.width * _baseDialogWidthRatio;
-    final dialogMaxHeight =
-        viewportSize.height * _baseDialogMaxHeightRatio;
+    final dialogMaxHeight = viewportSize.height * _baseDialogMaxHeightRatio;
 
     final insetWidthSize = viewportSize.width * _baseInsetRatio;
     final insetHeightSize = viewportSize.height * _baseInsetRatio;
@@ -222,8 +229,7 @@ class _CenterDialogSheet extends StatelessWidget {
           ),
           if (onConfirm != null)
             Padding(
-              padding: actionsPadding ??
-                  EdgeInsets.all(8.w),
+              padding: actionsPadding ?? EdgeInsets.all(8.w),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -282,30 +288,41 @@ class _CenterDialogSheet extends StatelessWidget {
       ),
     );
 
+    // 表面绘制策略：白底画成"矩形"，与遮罩（MyScrimHost）、内容一起先
+    // 合成为同一图层，最后用 saveLayer 对整层做一次圆角裁剪。
+    //
+    // 若让 Dialog/Container 各自按圆角画白底、再裁剪半透明遮罩，同一条
+    // 圆角边缘会被抗锯齿混合两次（白底一次、遮罩/裁剪一次），在深色
+    // barrier 上会析出一圈亮度偏高的细边；单层合成后边缘只混合一次，
+    // 数学上不存在细边。saveLayer 只在对话框存续期间占一个离屏层，可接受。
     dialogContent = Container(
       width: dialogWidth,
       constraints: BoxConstraints(
         maxHeight: dialogMaxHeight,
       ),
-      decoration: ShapeDecoration(
-        color: Theme.of(context).dialogTheme.backgroundColor ??
-            Theme.of(context).colorScheme.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(28.r),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28.r),
+        clipBehavior: Clip.antiAliasWithSaveLayer,
+        child: ColoredBox(
+          color: Theme.of(context).dialogTheme.backgroundColor ??
+              Theme.of(context).colorScheme.surface,
+          // 宿主放在裁剪边界之内：遮罩随表面形状裁剪，圆角天然正确
+          child: MyScrimHost(child: dialogContent),
         ),
       ),
-      child: dialogContent,
     );
 
     return Dialog(
+      // 表面已由上方 ColoredBox + ClipRRect 单层绘制，Dialog 自身完全透明，
+      // 避免再叠一层带抗锯齿边缘的背景。
+      backgroundColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
       insetPadding: insetPadding ??
           EdgeInsets.symmetric(
             horizontal: insetWidthSize,
             vertical: insetHeightSize,
           ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(28.r),
-      ),
       child: dialogContent,
     );
   }

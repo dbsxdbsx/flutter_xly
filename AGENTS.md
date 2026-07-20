@@ -55,6 +55,7 @@ xly/
 - 改 **MyApp 启动 / Zone / 异常** → `lib/app.dart`、`lib/src/app/`、`.doc/error_handling.md`
 - 改 **Windows 通知** → `lib/src/notify/`、`.doc/my_notify_usage_guide.md`
 - 改 **菜单系统（MyMenu / MyMenuAnchor / MyMenuButton）** → `lib/src/menu/`
+- 改 **Toast / 作用域遮罩（MyToast / MyScrimHost / showScrim）** → `lib/src/toast/`、[`.doc/my_scrim_usage.md`](.doc/my_scrim_usage.md)
 - 改 **CLI** → `bin/`、`tool/`
 
 `analysis_options.yaml` 排除：`lib/xly.dart`、`user_code/**`。
@@ -120,6 +121,7 @@ xly/
 - [`.doc/user_data_picker.md`](.doc/user_data_picker.md) — **MyPicker / Session**（端到端流程图、API 速查、集成示例）
 - [`.doc/my_selector_usage.md`](.doc/my_selector_usage.md) — **MySelector**（item / style / placement / 键盘与搜索用法）
 - [`.doc/notify_channels.md`](.doc/notify_channels.md) — **MyToast / MyNotify / MyTray 三通道**
+- [`.doc/my_scrim_usage.md`](.doc/my_scrim_usage.md) — **MyToast.showScrim 作用域遮罩**（宿主模式、builder 自定义、scrimButtonStyle）
 - [`.issue/xly-package-hygiene-backlog.md`](.issue/xly-package-hygiene-backlog.md) — 可选增强待办
 - [`.doc/error_handling.md`](.doc/error_handling.md)
 - [`.doc/my_notify_usage_guide.md`](.doc/my_notify_usage_guide.md)

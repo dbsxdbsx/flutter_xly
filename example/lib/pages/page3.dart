@@ -120,6 +120,44 @@ class Page3View extends GetView<Page3Controller> {
                     ),
                   ],
                 ),
+
+                SizedBox(height: 30.h),
+
+                // MyToast.showScrim 示例
+                Text('MyToast.showScrim - 作用域遮罩',
+                    style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.deepOrange.shade700)),
+                SizedBox(height: 8.h),
+                Text(
+                  '阻塞型遮罩只盖住最近的表面：对话框 / 底部Sheet 内置宿主，'
+                  '页面上调用则由根宿主兜底覆盖全屏',
+                  style: TextStyle(fontSize: 12.sp, color: Colors.grey),
+                ),
+                SizedBox(height: 15.h),
+                Wrap(
+                  spacing: 8.w,
+                  runSpacing: 10.h,
+                  alignment: WrapAlignment.center,
+                  children: [
+                    MyButton(
+                      text: '对话框内遮罩',
+                      onPressed: controller.showScrimInCenterDialog,
+                      backgroundColor: Colors.deepOrange.shade50,
+                    ),
+                    MyButton(
+                      text: '底部Sheet内遮罩',
+                      onPressed: controller.showScrimInBottomSheet,
+                      backgroundColor: Colors.deepOrange.shade50,
+                    ),
+                    MyButton(
+                      text: '全屏兜底遮罩',
+                      onPressed: controller.runScrimDemoTask,
+                      backgroundColor: Colors.deepOrange.shade50,
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -224,6 +262,92 @@ class Page3Controller extends GetxController {
     } else if (result == MyDialogChosen.left) {
       MyToast.show('取消删除');
     }
+  }
+
+  // ---------------------------------------------------------------------
+  // MyToast.showScrim 作用域遮罩示例
+  // ---------------------------------------------------------------------
+
+  /// 模拟一个可取消的耗时任务：遮罩自动落在"最近的表面"上——
+  /// 在对话框 / 底部 Sheet 里调用就只遮它们，在页面上调用则全屏兜底。
+  Future<void> runScrimDemoTask() async {
+    var cancelled = false;
+    MyToast.showScrim(
+      message: '处理中...',
+      detail: '0/3',
+      onCancel: () {
+        cancelled = true;
+        MyToast.hideScrim();
+        MyToast.showWarn('任务已取消');
+      },
+    );
+    for (var i = 1; i <= 3; i++) {
+      await Future.delayed(const Duration(seconds: 1));
+      if (cancelled) return;
+      MyToast.updateScrim(detail: '$i/3');
+    }
+    MyToast.hideScrim();
+    MyToast.showOk('处理完成');
+  }
+
+  void showScrimInCenterDialog() {
+    MyDialogSheet.showCenter(
+      title: '作用域遮罩演示',
+      content: Padding(
+        padding: EdgeInsets.all(16.w),
+        // 撑起足够高度，让遮罩的默认卡片无需缩放即可完整展示；
+        // 表面比卡片小时卡片也会自动 scaleDown，不会溢出
+        child: ConstrainedBox(
+          constraints: BoxConstraints(minHeight: 280.h),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '点击下方按钮启动任务：遮罩只会盖住本对话框表面，'
+                '外部页面不受影响（已被 barrier 压暗）。',
+                style: TextStyle(fontSize: 14.sp),
+              ),
+              SizedBox(height: 20.h),
+              MyButton(
+                text: '开始任务(3秒,可取消)',
+                onPressed: runScrimDemoTask,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void showScrimInBottomSheet() {
+    MyDialogSheet.showBottom(
+      designHeight: 260,
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 20.w),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '底部 Sheet 内的作用域遮罩',
+              style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 12.h),
+            Text(
+              '遮罩只盖住本 Sheet（含顶部圆角裁剪），不会遮住整个屏幕。',
+              style: TextStyle(fontSize: 13.sp, color: Colors.grey),
+            ),
+            SizedBox(height: 16.h),
+            Center(
+              child: MyButton(
+                text: '开始任务(3秒,可取消)',
+                onPressed: runScrimDemoTask,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void showBottomSheet() {
