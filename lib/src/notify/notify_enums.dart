@@ -25,6 +25,32 @@ enum MyNotifyFallbackPolicy {
   always,
 }
 
+/// 系统通知投递结果。
+///
+/// [submitted] 只表示平台通知 API 已接受请求；横幅是否立即弹出仍由系统的
+/// 勿扰 / 专注助手、通知样式和平台策略决定。
+enum MyNotifyDispatchStatus {
+  submitted,
+  unavailable,
+  permissionDenied,
+  failed,
+}
+
+/// [MyNotify.showWithResult] 的结构化结果。
+class MyNotifyDispatchResult {
+  const MyNotifyDispatchResult({
+    required this.status,
+    this.inAppFallbackShown = false,
+    this.detail,
+  });
+
+  final MyNotifyDispatchStatus status;
+  final bool inAppFallbackShown;
+  final String? detail;
+
+  bool get systemSubmitted => status == MyNotifyDispatchStatus.submitted;
+}
+
 /// Windows 专注助手 / 勿扰模式状态。
 enum MyNotifyWindowsFocusAssistMode {
   /// 当前平台不支持该诊断。

@@ -63,13 +63,25 @@ class WindowsNotificationSettingsSnapshot {
   final bool? showInActionCenter;
   final MyNotifyWindowsFocusAssistMode focusAssistMode;
 
-  bool get canShowNotifications {
+  /// 系统通知 API 是否仍有可用投递面。
+  ///
+  /// 专注助手只控制横幅呈现，不应被误当成“没有通知权限”；否则调用方会在
+  /// Toast API 之前提前返回，连通知中心也收不到消息。
+  bool get canSubmitNotifications {
     return globalToastEnabled != false &&
         appNotificationsEnabled != false &&
-        showBanner != false &&
-        focusAssistMode != MyNotifyWindowsFocusAssistMode.priorityOnly &&
-        focusAssistMode != MyNotifyWindowsFocusAssistMode.alarmsOnly;
+        (showBanner != false || showInActionCenter != false);
   }
+
+  /// 当前已知条件是否允许普通通知立即弹出横幅。
+  bool get canShowBanner =>
+      canSubmitNotifications &&
+      showBanner != false &&
+      !focusAssistSuppressesNormalNotifications;
+
+  /// 兼容旧调用；权限门槛现在表示“可提交”，不再表示“保证弹横幅”。
+  @Deprecated('Use canSubmitNotifications or canShowBanner explicitly.')
+  bool get canShowNotifications => canSubmitNotifications;
 
   bool get focusAssistSuppressesNormalNotifications {
     return focusAssistMode == MyNotifyWindowsFocusAssistMode.priorityOnly ||

@@ -49,6 +49,12 @@ await myNotify.show("信息", "这是一条信息通知", type: MyNotifyType.inf
 await myNotify.show("警告", "这是一条警告通知", type: MyNotifyType.warning);
 await myNotify.show("错误", "这是一条错误通知", type: MyNotifyType.error);
 await myNotify.show("成功", "这是一条成功通知", type: MyNotifyType.success);
+
+// 需要可靠事故去重时，等待平台提交结果
+final dispatch = await myNotify.showWithResult("告警", "服务不可用");
+if (dispatch.systemSubmitted) {
+  // 此时才记录“已通知”；不应在调用前预写去重时间
+}
 ```
 
 ## 高级功能
@@ -78,7 +84,9 @@ bool granted = await myNotify.requestPermissions();
 
 // Windows：展示条件诊断（每应用开关、横幅、专注助手等）
 final status = await myNotify.checkPermissionStatus();
-// status.canShowNotifications / status.windowsFocusAssistMode / status.summary
+// status.canSubmitNotifications：能否提交到系统
+// status.canShowBanner：当前是否允许立即弹横幅
+// status.windowsFocusAssistMode / status.summary
 
 // Windows：尽力打开注册表可控项；需要用户手动时可选打开设置页
 final ensured = await myNotify.ensurePermissions(openSettingsIfNeeded: true);
@@ -88,7 +96,7 @@ final ensured = await myNotify.ensurePermissions(openSettingsIfNeeded: true);
 
 未打包为 MSIX 时，系统 Toast 依赖 **AppUserModelID** 与开始菜单快捷方式等身份链。本包会在初始化阶段自动准备常见前置条件，并输出 `XlyLogger.diagnostic` 便于排查。
 
-**常见「API 成功但不弹右下角横幅」原因**：系统 **专注助手** 处于「仅优先通知」或「仅限闹钟」——此时通知可能只进操作中心或被静默。可调用：
+**“系统可提交”不等于“保证弹横幅”**。常见「API 成功但不弹右下角横幅」原因是系统 **专注助手** 处于「仅优先通知」或「仅限闹钟」——此时 XLY 仍会把通知提交给 Windows，通知可能只进操作中心或被静默，不会再把该状态误判为“无权限”并提前返回。可调用：
 
 - `await myNotify.checkWindowsFocusAssistMode()` → `MyNotifyWindowsFocusAssistMode`（`off` / `priorityOnly` / `alarmsOnly` / `unknown` / `unavailable`）
 - `await myNotify.openWindowsFocusAssistSettings()` 引导用户关闭专注助手或调整规则
@@ -96,7 +104,9 @@ final ensured = await myNotify.ensurePermissions(openSettingsIfNeeded: true);
 
 专注助手三态读取依赖系统内部机制，**失败时为 `unknown`**，请勿当作与微软长期契约的稳定 API。
 
-**应用内兜底**：Windows 默认在 `show` 成功或失败后仍可走 `MyToast` 提示（`MyNotifyFallbackPolicy`，可在构造 `MyNotify` 时调整）。
+**应用内兜底**：Windows 默认在 `show` 成功、插件不可用、权限拒绝或提交失败后仍可走 `MyToast` 提示（`MyNotifyFallbackPolicy`，可在构造 `MyNotify` 时调整）。业务已经自行显示前台 Toast 时，可传 `showInAppFallback: false` 避免重复。
+
+**可靠去重**：`showWithResult().systemSubmitted == true` 仅证明平台通知 API 已接受请求，不证明用户已经阅读，也不保证专注助手下会弹横幅；但它是本地应用能获得的正确“投递成功”边界。事故账本应在该结果返回后再写 `lastNotifiedAt`，失败时单独记录 `lastAttemptAt` 并短间隔重试。
 
 ### 通知管理
 
@@ -150,7 +160,7 @@ await myNotify.show("已隐藏到托盘", "点击托盘图标可恢复窗口");
 
 ## 最佳实践
 
-1. **权限检查**：在显示通知前检查权限状态
+1. **提交与横幅分离**：用 `canSubmitNotifications` 决定能否投递，用 `canShowBanner` 解释横幅是否可能被静默
 2. **错误处理**：妥善处理权限被拒绝的情况
 3. **通知管理**：及时清理不需要的通知
 4. **用户体验**：避免过度通知，影响用户体验

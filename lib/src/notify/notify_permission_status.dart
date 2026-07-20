@@ -2,8 +2,9 @@ import 'notify_enums.dart';
 
 /// 通知权限 / 展示能力状态。
 ///
-/// Windows 桌面端没有移动端那种运行时授权弹窗，这里的“权限”包含：
-/// 系统全局 Toast 开关、当前应用通知开关、横幅开关、通知中心开关和专注助手状态等展示条件。
+/// Windows 桌面端没有移动端那种运行时授权弹窗。这里明确区分：
+/// - 通知是否能提交到 Windows；
+/// - 横幅是否会被专注助手 / 勿扰模式静默。
 class MyNotifyPermissionStatus {
   const MyNotifyPermissionStatus({
     required this.canShowNotifications,
@@ -17,8 +18,23 @@ class MyNotifyPermissionStatus {
     this.openedSystemSettings = false,
   });
 
-  /// 当前已知条件是否允许显示通知横幅。
+  /// 当前已知条件是否允许向系统提交通知。
+  ///
+  /// 保留旧字段名以兼容现有调用；Windows 专注助手开启时仍可为 true，因为
+  /// 通知通常仍可进入通知中心，只是不保证弹出横幅。
   final bool canShowNotifications;
+
+  bool get canSubmitNotifications => canShowNotifications;
+
+  /// 当前已知条件是否允许立即显示横幅。
+  bool get canShowBanner {
+    if (!canSubmitNotifications) return false;
+    if (platform != 'windows') return true;
+    if (windowsShowBanner == false) return false;
+    return windowsFocusAssistMode !=
+            MyNotifyWindowsFocusAssistMode.priorityOnly &&
+        windowsFocusAssistMode != MyNotifyWindowsFocusAssistMode.alarmsOnly;
+  }
 
   /// 当前平台名称，便于日志和 UI 展示。
   final String? platform;
@@ -41,11 +57,14 @@ class MyNotifyPermissionStatus {
   /// 是否已经打开系统通知设置页。
   final bool openedSystemSettings;
 
-  /// 不满足通知展示条件的原因。
+  /// 影响系统提交或横幅呈现的诊断信息。
   final List<String> issues;
 
   String get summary {
-    if (canShowNotifications) return '通知条件已开启';
+    if (canSubmitNotifications && issues.isEmpty) return '系统通知可提交并可显示横幅';
+    if (canSubmitNotifications) {
+      return '系统通知可提交，但横幅可能被静默：\n${issues.join('\n')}';
+    }
     if (issues.isEmpty) return '通知条件未完全确认';
     return issues.join('\n');
   }

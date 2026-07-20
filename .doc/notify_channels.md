@@ -30,7 +30,7 @@
 
 - **`MyTray.notify()` / `showNotification()` 已移除**（0.42 前后职责分离）。README / 旧示例若仍写 `myTray.notify`，请改为 `MyNotify.to.show(...)`。
 - **`MyTrayNotificationType` 已移除**（无对应实现）。
-- **Windows**：`MyNotify` 构造参数 `fallbackPolicy`（默认 `windowsOnly`）在 Toast API 成功但不弹横幅等场景下，可自动 fallback 到 `MyToast`；不要在业务里再套一层「失败再 Toast」除非关闭 fallback。
+- **Windows**：`MyNotify` 构造参数 `fallbackPolicy`（默认 `windowsOnly`）在 Toast API 成功但不弹横幅等场景下，可自动 fallback 到 `MyToast`；不要在业务里再套一层「失败再 Toast」除非关闭 fallback。专注助手只影响横幅，不等于无权限；可靠事故去重使用 `showWithResult`，只在 `systemSubmitted` 后记录成功。
 
 ## 推荐组合（桌面 + 托盘）
 

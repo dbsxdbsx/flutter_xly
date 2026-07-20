@@ -241,7 +241,7 @@ class MyNotify extends GetxService {
           openSettingsIfNeeded: openSettingsIfNeeded,
           includeGlobalWindowsSetting: includeGlobalWindowsSetting,
         );
-        _permissionGranted.value = status.canShowNotifications;
+        _permissionGranted.value = status.canSubmitNotifications;
         return _permissionGranted.value;
       }
 
@@ -297,7 +297,7 @@ class MyNotify extends GetxService {
       );
       return MyNotifyPermissionStatus(
         platform: 'windows',
-        canShowNotifications: snapshot.canShowNotifications,
+        canShowNotifications: snapshot.canSubmitNotifications,
         windowsGlobalToastEnabled: snapshot.globalToastEnabled,
         windowsAppNotificationsEnabled: snapshot.appNotificationsEnabled,
         windowsShowBanner: snapshot.showBanner,
@@ -340,7 +340,7 @@ class MyNotify extends GetxService {
         includeGlobalWindowsSetting: includeGlobalWindowsSetting,
       );
       var openedSettings = false;
-      if (!snapshot.canShowNotifications && openSettingsIfNeeded) {
+      if (!snapshot.canSubmitNotifications && openSettingsIfNeeded) {
         openedSettings = snapshot.focusAssistSuppressesNormalNotifications
             ? await WindowsNotificationIdentityManager
                 .openSystemFocusAssistSettings()
@@ -350,7 +350,7 @@ class MyNotify extends GetxService {
 
       final status = MyNotifyPermissionStatus(
         platform: 'windows',
-        canShowNotifications: snapshot.canShowNotifications,
+        canShowNotifications: snapshot.canSubmitNotifications,
         windowsGlobalToastEnabled: snapshot.globalToastEnabled,
         windowsAppNotificationsEnabled: snapshot.appNotificationsEnabled,
         windowsShowBanner: snapshot.showBanner,
@@ -422,11 +422,44 @@ class MyNotify extends GetxService {
     String? payload,
     bool? showInAppFallback,
   }) async {
+    await showWithResult(
+      title,
+      body,
+      type: type,
+      id: id,
+      payload: payload,
+      showInAppFallback: showInAppFallback,
+    );
+  }
+
+  /// 显示通知并返回平台提交结果。
+  ///
+  /// [MyNotifyDispatchStatus.submitted] 只说明平台通知 API 已接受请求；Windows
+  /// 专注助手仍可能把横幅静默到通知中心。需要可靠去重的业务应等待本方法，
+  /// 只在 [MyNotifyDispatchResult.systemSubmitted] 为 true 后记录“已通知”。
+  Future<MyNotifyDispatchResult> showWithResult(
+    String title,
+    String body, {
+    MyNotifyType type = MyNotifyType.info,
+    int id = 0,
+    String? payload,
+    bool? showInAppFallback,
+  }) async {
     await _ensureInitialized();
 
     if (!_isInitialized.value) {
       XlyLogger.diagnostic('MyNotify: 插件未初始化，无法显示通知');
-      return;
+      final fallbackShown = _showInAppFallbackIfNeeded(
+        title: title,
+        body: body,
+        type: type,
+        override: showInAppFallback,
+      );
+      return MyNotifyDispatchResult(
+        status: MyNotifyDispatchStatus.unavailable,
+        inAppFallbackShown: fallbackShown,
+        detail: 'notification_plugin_not_initialized',
+      );
     }
 
     if (!_permissionGranted.value) {
@@ -434,7 +467,17 @@ class MyNotify extends GetxService {
       final granted = await requestPermissions();
       if (!granted) {
         XlyLogger.warning('MyNotify: 权限请求失败，无法显示通知');
-        return;
+        final fallbackShown = _showInAppFallbackIfNeeded(
+          title: title,
+          body: body,
+          type: type,
+          override: showInAppFallback,
+        );
+        return MyNotifyDispatchResult(
+          status: MyNotifyDispatchStatus.permissionDenied,
+          inAppFallbackShown: fallbackShown,
+          detail: 'notification_permission_denied',
+        );
       }
     }
 
@@ -451,7 +494,7 @@ class MyNotify extends GetxService {
         payload: payload,
       );
 
-      XlyLogger.info('MyNotify: 通知显示成功 - $title: $body');
+      XlyLogger.info('MyNotify: 通知已提交至系统 API - $title: $body');
       if (Platform.isWindows) {
         if (_windowsIdentity != null) {
           WindowsNotificationIdentityManager.logNotificationSettings(
@@ -464,31 +507,40 @@ class MyNotify extends GetxService {
           'AUMID=${_windowsIdentity?.appUserModelId ?? "(unknown)"}',
         );
       }
-      _showInAppFallbackIfNeeded(
+      final fallbackShown = _showInAppFallbackIfNeeded(
         title: title,
         body: body,
         type: type,
         override: showInAppFallback,
       );
+      return MyNotifyDispatchResult(
+        status: MyNotifyDispatchStatus.submitted,
+        inAppFallbackShown: fallbackShown,
+      );
     } catch (e) {
       XlyLogger.error('MyNotify: 显示通知失败', e);
-      _showInAppFallbackIfNeeded(
+      final fallbackShown = _showInAppFallbackIfNeeded(
         title: title,
         body: body,
         type: type,
-        override: showInAppFallback ?? true,
+        override: showInAppFallback,
+      );
+      return MyNotifyDispatchResult(
+        status: MyNotifyDispatchStatus.failed,
+        inAppFallbackShown: fallbackShown,
+        detail: '$e',
       );
     }
   }
 
-  void _showInAppFallbackIfNeeded({
+  bool _showInAppFallbackIfNeeded({
     required String title,
     required String body,
     required MyNotifyType type,
     bool? override,
   }) {
     final shouldShow = override ?? _shouldShowInAppFallback;
-    if (!shouldShow) return;
+    if (!shouldShow) return false;
 
     final message = body.isEmpty ? title : '$title\n$body';
     try {
@@ -523,8 +575,10 @@ class MyNotify extends GetxService {
           break;
       }
       XlyLogger.diagnostic('MyNotify: 已显示 XLY 应用内通知兜底。');
+      return true;
     } catch (e) {
       XlyLogger.diagnostic('MyNotify: 显示应用内通知兜底失败: $e');
+      return false;
     }
   }
 
