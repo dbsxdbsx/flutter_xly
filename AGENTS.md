@@ -2,7 +2,7 @@
 
 > 项目级 AI agent onboarding 入口（[Agentic AI Foundation 开放标准](https://github.com/agentic-ai-foundation/agentsmd)）。
 > 本文件只记录仓库内可共享的事实、约定与索引；个人 Cursor Rules / Skills 不写入此处。
-> 最近更新：2026-07-16（0.54 统一菜单系统 / MyMenuAnchor / 田字格定位 / 按钮视觉优化）。
+> 最近更新：2026-07-20（公开 Widget 尺寸参数统一为 Flutter 逻辑像素契约）。
 
 ## 1. Project Identity
 
@@ -105,11 +105,14 @@ xly/
 - `app` / `float_panel` 为独立 library（`lib/app.dart`、`lib/float_panel.dart`），非 `xly.dart` 的 part。
 - `MyPlatform` **不含**路径方法。
 - `MyApp.initialize` 默认 `enableZoneGuard: false`（见 `.doc/error_handling.md`）。
+- 公开 Widget 的显式尺寸参数按 Flutter 逻辑像素直接使用，组件内部不得再次套 `.w/.h/.r/.sp`；响应式单位由调用方明确传入，组件自己的默认设计值只换算一次。
+- 只有参数名含 `design` 或文档明确声明保存设计稿原值的 Style / 配置对象，才允许在组件内部延迟执行 ScreenUtil 换算。
+- 当前设计稿值例外集中记录在 README「尺寸参数契约」：`MyDialogSheet.showBottom(design*)`、`MyMenuStyle`、`MySelectorStyle` 的指定字段、`MySplash` 与 `MyFloatPanel` 配置；新增例外必须同步文档，不能只靠实现中的 `.w/.h` 暗示。
 
 ## 5. Active Context
 
-- **最近完成**：0.54 统一菜单系统——右键 / 锚定 / `MyMenuButton` 共享 `MyMenu` 渲染核心；新增 `MyMenuAnchor`（挂接任意控件）与 `MyMenuAnchorOrigin.center`（田字格象限定位）；`MyMenuButton` 视觉优化（半透明阴影 + 收薄内凹）；默认 `reveal` 动画。见 `CHANGELOG`。
-- **上一轮**：0.53 `MyTray.beginExit` 安全退出态；0.52 `MySelector` placement / 自适应宽度。
+- **最近完成**：统一公开 Widget 的逻辑像素参数契约，消除 `MyTextEditor`、`MySpinBox`、`MyCard`、`MyIcon` 等组件的 ScreenUtil 二次缩放，并增加非 1:1 视口回归测试。见 `CHANGELOG` Unreleased。
+- **上一轮**：0.54 统一菜单系统；0.53 `MyTray.beginExit` 安全退出态；0.52 `MySelector` placement / 自适应宽度。
 - **上一版**：0.51 `MyTray.closeToTray`；0.50 `MyCard.subtitle` / `MySmartDock.wake()`。
 - **后续**：见 [`.issue/xly-package-hygiene-backlog.md`](.issue/xly-package-hygiene-backlog.md)（可选：可配置持久化键前缀）。
 

@@ -28,32 +28,35 @@ class MyMenuItem extends MyMenuElement {
   bool get hasSubMenu => subItems != null && subItems!.isNotEmpty;
 }
 
-/// 菜单分隔线
+/// 菜单分隔线。
+///
+/// [height] 与 [margin] 均返回当前逻辑像素；显式传入值会直接使用，
+/// 省略时才由组件把内置设计默认值换算一次。
 class MyMenuDivider extends MyMenuElement {
-  final double height;
+  final double? _height;
   final Color color;
-  final EdgeInsets margin;
+  final EdgeInsets? _margin;
   final double thicknessMultiplier;
 
   MyMenuDivider({
-    this.height = 1.0,
+    double? height,
     this.color = const Color(0x1F000000),
-    this.margin = const EdgeInsets.symmetric(horizontal: 8.0),
+    EdgeInsets? margin,
     this.thicknessMultiplier = 0.7,
-  });
+  })  : _height = height,
+        _margin = margin;
+
+  /// 分隔线基准高度，单位为当前逻辑像素。
+  double get height => _height ?? 1.h;
+
+  /// 分隔线外边距，单位为当前逻辑像素。
+  EdgeInsets get margin => _margin ?? EdgeInsets.symmetric(horizontal: 8.w);
 
   Widget build(BuildContext context) {
-    // 转换 margin 为 screenutil 适配后的值
-    final adaptiveMargin = EdgeInsets.only(
-      left: margin.left.w,
-      right: margin.right.w,
-      top: margin.top.h,
-      bottom: margin.bottom.h,
-    );
     return Padding(
-      padding: adaptiveMargin,
+      padding: margin,
       child: Container(
-        height: (height * thicknessMultiplier).h,
+        height: height * thicknessMultiplier,
         color: color,
       ),
     );

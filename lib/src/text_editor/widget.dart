@@ -400,53 +400,56 @@ class MyTextEditor extends GetView<MyTextEditorController> {
         }
         return KeyEventResult.ignored;
       },
-      child: TextField(
-        controller: textController,
-        focusNode: controller.focusNode,
-        enabled: enabled && !readOnly,
-        readOnly: readOnly,
-        keyboardType: keyboardType,
-        inputFormatters: inputFormatters,
-        onChanged: (value) {
-          controller.updateHasText(value);
-          // 用户开始输入时，重置手动关闭标志，允许下拉列表重新显示
-          controller.resetManuallyClosedFlag();
-          // 标记为“输入触发”，以便 optionsBuilder 按输入过滤
-          controller._lastOpenTrigger = _OpenTrigger.typing;
-          onChanged?.call(value);
-        },
-        maxLines: maxLines,
-        textAlign: textAlign,
-        textAlignVertical: TextAlignVertical.center,
-        style: TextStyle(
-          fontSize: textFontSize?.sp ?? defaultTextFontSize,
-          height: 1.0,
-          color: textColor,
-          fontWeight: textFontWeight,
-        ),
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: TextStyle(
-            fontSize: labelFontSize?.sp ?? defaultLabelFontSize,
-            color: enabled ? labelColor : Colors.grey,
-            fontWeight: labelFontWeight,
-          ),
-          hintText: hint,
-          hintStyle: TextStyle(
-            color: hintColor ?? Colors.grey[400],
-            fontSize: hintFontSize?.sp ?? defaultHintFontSize,
+      child: SizedBox(
+        height: height,
+        child: TextField(
+          controller: textController,
+          focusNode: controller.focusNode,
+          enabled: enabled && !readOnly,
+          readOnly: readOnly,
+          keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
+          onChanged: (value) {
+            controller.updateHasText(value);
+            // 用户开始输入时，重置手动关闭标志，允许下拉列表重新显示
+            controller.resetManuallyClosedFlag();
+            // 标记为“输入触发”，以便 optionsBuilder 按输入过滤
+            controller._lastOpenTrigger = _OpenTrigger.typing;
+            onChanged?.call(value);
+          },
+          maxLines: maxLines,
+          textAlign: textAlign,
+          textAlignVertical: textAlignVertical ?? TextAlignVertical.center,
+          style: TextStyle(
+            fontSize: textFontSize ?? defaultTextFontSize,
             height: 1.0,
+            color: textColor,
+            fontWeight: textFontWeight,
           ),
-          isDense: true,
-          filled: backgroundColor != null,
-          fillColor: backgroundColor,
-          floatingLabelBehavior: floatingLabelBehavior,
-          floatingLabelAlignment: floatingLabelAlignment,
-          contentPadding: _getEditorBoxContentPadding(),
-          border: _buildBorder(normalBorderColor),
-          enabledBorder: _buildBorder(enabledBorderColor),
-          focusedBorder: _buildBorder(focusedBorderColor),
-          suffixIcon: _buildSuffixIcon(context, onSuffixIconTap),
+          decoration: InputDecoration(
+            labelText: label,
+            labelStyle: TextStyle(
+              fontSize: labelFontSize ?? defaultLabelFontSize,
+              color: enabled ? labelColor : Colors.grey,
+              fontWeight: labelFontWeight,
+            ),
+            hintText: hint,
+            hintStyle: TextStyle(
+              color: hintColor ?? Colors.grey[400],
+              fontSize: hintFontSize ?? defaultHintFontSize,
+              height: 1.0,
+            ),
+            isDense: isDense,
+            filled: backgroundColor != null,
+            fillColor: backgroundColor,
+            floatingLabelBehavior: floatingLabelBehavior,
+            floatingLabelAlignment: floatingLabelAlignment,
+            contentPadding: _getEditorBoxContentPadding(),
+            border: _buildBorder(normalBorderColor),
+            enabledBorder: _buildBorder(enabledBorderColor),
+            focusedBorder: _buildBorder(focusedBorderColor),
+            suffixIcon: _buildSuffixIcon(context, onSuffixIconTap),
+          ),
         ),
       ),
     );
@@ -665,8 +668,9 @@ class MyTextEditor extends GetView<MyTextEditorController> {
         child: Material(
           elevation: 4.0,
           shape: RoundedRectangleBorder(
-            borderRadius:
-                BorderRadius.circular((borderRadius ?? defaultBorderRadius).r),
+            borderRadius: BorderRadius.circular(
+              borderRadius ?? defaultBorderRadius,
+            ),
           ),
           clipBehavior: Clip.antiAlias,
           child: ConstrainedBox(
@@ -701,9 +705,11 @@ class MyTextEditor extends GetView<MyTextEditorController> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(
-                        (borderRadius ?? defaultBorderRadius).r),
+                      borderRadius ?? defaultBorderRadius,
+                    ),
                     topRight: Radius.circular(
-                        (borderRadius ?? defaultBorderRadius).r),
+                      borderRadius ?? defaultBorderRadius,
+                    ),
                   ),
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
@@ -775,20 +781,20 @@ class MyTextEditor extends GetView<MyTextEditorController> {
               : null,
           padding: dropDownItemPadding ??
               EdgeInsets.symmetric(
-                horizontal: defaultDropdownItemHorizontalPadding.w,
-                vertical: defaultDropdownItemVerticalPadding.h,
+                horizontal: defaultDropdownItemHorizontalPadding,
+                vertical: defaultDropdownItemVerticalPadding,
               ),
           child: Row(
             children: [
               if (leadingBuilder != null) ...[
                 leadingBuilder!(option),
-                SizedBox(width: defaultDropdownItemSpacing.w),
+                SizedBox(width: defaultDropdownItemSpacing),
               ],
               Expanded(
                 child: Text(
                   _displayStringForOption(option),
                   style: TextStyle(
-                    fontSize: textFontSize?.sp ?? defaultTextFontSize,
+                    fontSize: textFontSize ?? defaultTextFontSize,
                     color: isHighlighted ? Colors.blue[700] : null,
                   ),
                 ),
@@ -801,8 +807,12 @@ class MyTextEditor extends GetView<MyTextEditorController> {
   }
 
   EdgeInsetsGeometry _getEditorBoxContentPadding() {
+    if (contentPadding != null) {
+      return EdgeInsets.all(contentPadding!);
+    }
+
     // defaultTextEditorHeight 和 defaultTextFontSize 已经是 screenutil 转换后的值
-    final effectiveFontSize = textFontSize?.sp ?? defaultTextFontSize;
+    final effectiveFontSize = textFontSize ?? defaultTextFontSize;
     final double verticalPadding =
         (defaultTextEditorHeight - effectiveFontSize) / 2;
 
@@ -820,21 +830,22 @@ class MyTextEditor extends GetView<MyTextEditorController> {
     }
     if (inSetVerticalPadding != null) {
       return EdgeInsets.symmetric(
-        horizontal: defaultHorizontalPadding.w,
+        horizontal: defaultHorizontalPadding,
         vertical: inSetVerticalPadding!,
       );
     }
     return EdgeInsets.symmetric(
       vertical: verticalPadding,
-      horizontal: defaultHorizontalPadding.w,
+      horizontal: defaultHorizontalPadding,
     );
   }
 
   OutlineInputBorder _buildBorder(Color color) {
     return OutlineInputBorder(
-      borderRadius:
-          BorderRadius.circular((borderRadius ?? defaultBorderRadius).r),
-      borderSide: BorderSide(color: color),
+      borderRadius: BorderRadius.circular(
+        borderRadius ?? defaultBorderRadius,
+      ),
+      borderSide: BorderSide(color: color, width: borderWidth ?? 1),
     );
   }
 }

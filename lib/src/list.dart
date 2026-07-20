@@ -53,7 +53,13 @@ class MyList<T> extends StatelessWidget {
                 scrollController: scrollController,
                 itemCount: items.length,
                 itemBuilder: itemBuilder,
-                onReorder: onCardReordered!,
+                onReorderItem: (oldIndex, newIndex) {
+                  // 保持 MyList 既有回调契约：向后移动时仍传移除前的插入下标。
+                  onCardReordered!(
+                    oldIndex,
+                    oldIndex < newIndex ? newIndex + 1 : newIndex,
+                  );
+                },
                 footer: footer,
                 buildDefaultDragHandles: false,
                 proxyDecorator: _proxyDecorator,

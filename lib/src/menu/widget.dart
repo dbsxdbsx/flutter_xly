@@ -388,9 +388,9 @@ class _MenuSizeCalculator {
         // 高度采用 override（例如传入父项真实高度），未提供则退回样式值
         totalHeight += rowHeightOverride ?? style.itemHeight;
       } else if (element is MyMenuDivider) {
-        totalHeight += element.margin.top.h +
-            element.height.h * element.thicknessMultiplier +
-            element.margin.bottom.h;
+        totalHeight += element.margin.top +
+            element.height * element.thicknessMultiplier +
+            element.margin.bottom;
       }
     }
 

@@ -8,7 +8,7 @@ import 'style.dart';
 
 class MyMenuButton extends StatefulWidget {
   final IconData icon;
-  final double iconSize;
+  final double? iconSize;
   final Color iconColor;
   final List<MyMenuElement> menuItems;
   final MyMenuStyle? menuStyle;
@@ -28,7 +28,7 @@ class MyMenuButton extends StatefulWidget {
   const MyMenuButton({
     super.key,
     this.icon = Icons.menu,
-    this.iconSize = 24,
+    this.iconSize,
     this.iconColor = Colors.black87,
     required this.menuItems,
     this.menuStyle,
@@ -56,7 +56,7 @@ class MyMenuButtonState extends State<MyMenuButton> {
 
   @override
   Widget build(BuildContext context) {
-    final double iconSize = widget.iconSize.sp;
+    final double iconSize = widget.iconSize ?? 24.sp;
     final double containerSize = widget.containerSizeRatio * iconSize;
     final double radius = widget.radiusRatio * iconSize;
 

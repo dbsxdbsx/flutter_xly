@@ -15,10 +15,10 @@ class MyEndOfListWidget extends StatelessWidget {
   final String deadLineText;
   final IconData? icon;
   final String? subDeadLineText;
-  final double dividerFontSize;
+  final double? dividerFontSize;
   final Color dividerColor;
   final FontWeight dividerFontWeight;
-  final double textFontSize;
+  final double? textFontSize;
   final Color textColor;
   final FontWeight textFontWeight;
   final bool useSliver;
@@ -34,10 +34,10 @@ class MyEndOfListWidget extends StatelessWidget {
     this.deadLineText = '我是有底线的',
     this.icon = Icons.sentiment_satisfied_alt,
     this.subDeadLineText = '已经到底啦，休息一下吧',
-    this.dividerFontSize = 12,
+    this.dividerFontSize,
     this.dividerColor = Colors.grey,
     this.dividerFontWeight = FontWeight.w300,
-    this.textFontSize = 12,
+    this.textFontSize,
     this.textColor = Colors.grey,
     this.textFontWeight = FontWeight.w300,
     this.useSliver = false,
@@ -70,7 +70,10 @@ class MyEndOfListWidget extends StatelessWidget {
           children: [
             CircularProgressIndicator(strokeWidth: 2.w),
             SizedBox(width: 10.w),
-            Text(loadingText, style: TextStyle(fontSize: textFontSize.sp)),
+            Text(
+              loadingText,
+              style: TextStyle(fontSize: textFontSize ?? 12.sp),
+            ),
           ],
         ),
       ),
@@ -90,7 +93,10 @@ class MyEndOfListWidget extends StatelessWidget {
         padding: EdgeInsets.symmetric(vertical: 20.h),
         child: Center(
           child: Text(errorText,
-              style: TextStyle(fontSize: textFontSize.sp, color: Colors.red)),
+              style: TextStyle(
+                fontSize: textFontSize ?? 12.sp,
+                color: Colors.red,
+              )),
         ),
       ),
     );
@@ -109,7 +115,7 @@ class MyEndOfListWidget extends StatelessWidget {
                 child: Text(
                   deadLineText,
                   style: TextStyle(
-                    fontSize: dividerFontSize.sp,
+                    fontSize: dividerFontSize ?? 12.sp,
                     color: dividerColor,
                     fontWeight: dividerFontWeight,
                   ),
@@ -131,7 +137,7 @@ class MyEndOfListWidget extends StatelessWidget {
             Text(
               subDeadLineText!,
               style: TextStyle(
-                fontSize: textFontSize.sp,
+                fontSize: textFontSize ?? 12.sp,
                 color: textColor,
                 fontWeight: textFontWeight,
               ),

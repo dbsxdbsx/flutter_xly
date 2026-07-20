@@ -68,19 +68,11 @@ class MyCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 用户传入的 margin 需要转换，defaultMargin 已经转换过
-    final effectiveMargin = margin != null
-        ? EdgeInsets.only(
-            left: margin!.left.w,
-            right: margin!.right.w,
-            top: margin!.top.h,
-            bottom: margin!.bottom.h,
-          )
-        : defaultMargin(context);
+    final effectiveMargin = margin ?? defaultMargin(context);
     Widget listTile = ListTile(
       dense: true,
       visualDensity: visualDensity ?? VisualDensity.compact,
-      horizontalTitleGap: leadingAndBodySpacing?.w,
+      horizontalTitleGap: leadingAndBodySpacing,
       contentPadding:
           padding ?? defaultPadding(context), // NOTE：必须有，否则card最右侧会有空白
       leading: leading,
@@ -95,7 +87,7 @@ class MyCard extends StatelessWidget {
 
     Widget cardContent = Card(
       margin: effectiveMargin,
-      elevation: cardElevation?.h ?? 2.h,
+      elevation: cardElevation ?? 2.h,
       shadowColor: cardShadowColor,
       shape: RoundedRectangleBorder(
         borderRadius: cardBorderRadius ?? BorderRadius.circular(12.r),

@@ -321,17 +321,17 @@ class _MySpinBoxState extends State<MySpinBox> {
     if (widget.inSetHorizontalPadding != null &&
         widget.inSetVerticalPadding != null) {
       return EdgeInsets.fromLTRB(
-        widget.inSetHorizontalPadding!.w,
-        widget.inSetVerticalPadding!.h,
-        widget.inSetHorizontalPadding!.w,
-        widget.inSetVerticalPadding!.h,
+        widget.inSetHorizontalPadding!,
+        widget.inSetVerticalPadding!,
+        widget.inSetHorizontalPadding!,
+        widget.inSetVerticalPadding!,
       );
     }
     if (widget.inSetHorizontalPadding != null) {
-      return EdgeInsets.symmetric(horizontal: widget.inSetHorizontalPadding!.w);
+      return EdgeInsets.symmetric(horizontal: widget.inSetHorizontalPadding!);
     }
     if (widget.inSetVerticalPadding != null) {
-      return EdgeInsets.symmetric(vertical: widget.inSetVerticalPadding!.h);
+      return EdgeInsets.symmetric(vertical: widget.inSetVerticalPadding!);
     }
     return EdgeInsets.symmetric(
       horizontal: MySpinBox.defaultInSetHorizontalPadding,

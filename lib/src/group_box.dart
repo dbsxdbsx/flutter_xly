@@ -13,6 +13,9 @@ class MyGroupBox extends StatelessWidget {
   final EdgeInsetsGeometry padding;
   final TextStyle? titleStyle;
   final SectionBorderStyle style;
+  final bool _usesDefaultBorderWidth;
+  final bool _usesDefaultBorderRadius;
+  final bool _usesDefaultPadding;
 
   const MyGroupBox({
     super.key,
@@ -20,30 +23,24 @@ class MyGroupBox extends StatelessWidget {
     required this.title,
     this.borderColor = Colors.grey,
     this.titleColor = Colors.black,
-    this.borderWidth = 1.0,
-    this.borderRadius = 4.0,
-    this.padding = const EdgeInsets.only(top: 10.0),
+    double? borderWidth,
+    double? borderRadius,
+    EdgeInsetsGeometry? padding,
     this.titleStyle,
     this.style = SectionBorderStyle.normal,
-  });
-
-  /// 将 EdgeInsetsGeometry 转换为 screenutil 适配后的值
-  EdgeInsetsGeometry _convertPadding(EdgeInsetsGeometry padding) {
-    if (padding is EdgeInsets) {
-      return EdgeInsets.only(
-        left: padding.left.w,
-        right: padding.right.w,
-        top: padding.top.h,
-        bottom: padding.bottom.h,
-      );
-    }
-    // 对于其他类型的 EdgeInsetsGeometry（如 EdgeInsetsDirectional），直接返回
-    // 调用者需要自行确保传入的值已经适配
-    return padding;
-  }
+  })  : borderWidth = borderWidth ?? 1.0,
+        borderRadius = borderRadius ?? 4.0,
+        padding = padding ?? const EdgeInsets.only(top: 10),
+        _usesDefaultBorderWidth = borderWidth == null,
+        _usesDefaultBorderRadius = borderRadius == null,
+        _usesDefaultPadding = padding == null;
 
   @override
   Widget build(BuildContext context) {
+    final effectiveBorderWidth = _usesDefaultBorderWidth ? 1.w : borderWidth;
+    final effectiveBorderRadius = _usesDefaultBorderRadius ? 4.r : borderRadius;
+    final effectivePadding =
+        _usesDefaultPadding ? EdgeInsets.only(top: 10.h) : padding;
     return Stack(
       children: [
         Container(
@@ -51,26 +48,30 @@ class MyGroupBox extends StatelessWidget {
           decoration: style == SectionBorderStyle.inset
               ? BoxDecoration(
                   border: Border.all(
-                      color: borderColor.withValues(alpha: 0.5),
-                      width: borderWidth.w),
-                  borderRadius: BorderRadius.circular(borderRadius.r),
+                    color: borderColor.withValues(alpha: 0.5),
+                    width: effectiveBorderWidth,
+                  ),
+                  borderRadius: BorderRadius.circular(effectiveBorderRadius),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.white,
-                      offset: Offset(borderWidth.w, borderWidth.w),
+                      offset:
+                          Offset(effectiveBorderWidth, effectiveBorderWidth),
                     ),
                     BoxShadow(
                       color: borderColor.withValues(alpha: 0.5),
-                      offset: Offset(-borderWidth.w, -borderWidth.w),
+                      offset:
+                          Offset(-effectiveBorderWidth, -effectiveBorderWidth),
                     ),
                   ],
                 )
               : BoxDecoration(
-                  border: Border.all(color: borderColor, width: borderWidth.w),
-                  borderRadius: BorderRadius.circular(borderRadius.r),
+                  border: Border.all(
+                      color: borderColor, width: effectiveBorderWidth),
+                  borderRadius: BorderRadius.circular(effectiveBorderRadius),
                 ),
           child: Padding(
-            padding: _convertPadding(padding),
+            padding: effectivePadding,
             child: child,
           ),
         ),

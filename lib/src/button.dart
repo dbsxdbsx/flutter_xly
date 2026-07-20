@@ -92,51 +92,47 @@ class MyButton extends StatelessWidget {
       case MyButtonShape.cube:
         return 8.r * cornerRadius;
       case MyButtonShape.round:
-        return (size?.w ?? _defaultSize) / 2;
+        return (size ?? _defaultSize) / 2;
     }
   }
 
   Widget _buildNormalButton() {
-    return IntrinsicHeight(
-      child: IntrinsicWidth(
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: gradient,
-            borderRadius: BorderRadius.circular(_effectiveCornerRadius),
-            boxShadow: [
-              if (elevation > 0)
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.3),
-                  blurRadius: elevation,
-                  offset: Offset(0, elevation / 2),
-                ),
-            ],
-          ),
-          child: ElevatedButton(
-            onPressed: onPressed,
-            style: ElevatedButton.styleFrom(
-              foregroundColor: foregroundColor,
-              backgroundColor:
-                  gradient != null ? Colors.transparent : backgroundColor,
-              elevation: 0,
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.w),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(_effectiveCornerRadius),
-                side: BorderSide(
-                  color: outlineColor,
-                  width: outlineWidth,
-                ),
-              ),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: gradient,
+        borderRadius: BorderRadius.circular(_effectiveCornerRadius),
+        boxShadow: [
+          if (elevation > 0)
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: elevation,
+              offset: Offset(0, elevation / 2),
             ),
-            child: _buildButtonContent(isNormal: true),
+        ],
+      ),
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          foregroundColor: foregroundColor,
+          backgroundColor:
+              gradient != null ? Colors.transparent : backgroundColor,
+          elevation: 0,
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.w),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(_effectiveCornerRadius),
+            side: BorderSide(
+              color: outlineColor,
+              width: outlineWidth,
+            ),
           ),
         ),
+        child: _buildButtonContent(isNormal: true),
       ),
     );
   }
 
   Widget _buildCubeButton() {
-    final effectiveSize = size?.w ?? _defaultSize;
+    final effectiveSize = size ?? _defaultSize;
     return Container(
       width: effectiveSize,
       height: effectiveSize,
@@ -169,7 +165,7 @@ class MyButton extends StatelessWidget {
   }
 
   Widget _buildRoundButton() {
-    final effectiveSize = size?.w ?? _defaultSize;
+    final effectiveSize = size ?? _defaultSize;
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
@@ -189,9 +185,6 @@ class MyButton extends StatelessWidget {
   }
 
   Widget _buildButtonContent({bool isCube = false, bool isNormal = false}) {
-    Widget iconWidget = icon != null
-        ? Icon(icon, color: foregroundColor, size: isNormal ? 24.w : 20.w)
-        : const SizedBox.shrink();
     final TextStyle textStyle = TextStyle(
       color: foregroundColor,
       fontSize: isNormal ? 16.sp : (isCube ? 13.sp : 16.sp),
@@ -201,6 +194,15 @@ class MyButton extends StatelessWidget {
       text,
       style: textStyle,
       textAlign: TextAlign.center,
+      maxLines: isNormal ? 1 : 2,
+      overflow: TextOverflow.ellipsis,
+    );
+    if (icon == null) return textWidget;
+
+    final iconWidget = Icon(
+      icon,
+      color: foregroundColor,
+      size: isNormal ? 24.w : 20.w,
     );
 
     List<Widget> children = [];
@@ -213,10 +215,18 @@ class MyButton extends StatelessWidget {
 
     switch (effectiveIconPosition) {
       case MyIconPosition.left:
-        children = [iconWidget, SizedBox(width: spacing), textWidget];
+        children = [
+          iconWidget,
+          SizedBox(width: spacing),
+          Flexible(child: textWidget),
+        ];
         break;
       case MyIconPosition.right:
-        children = [textWidget, SizedBox(width: spacing), iconWidget];
+        children = [
+          Flexible(child: textWidget),
+          SizedBox(width: spacing),
+          iconWidget,
+        ];
         break;
       case MyIconPosition.top:
         children = [iconWidget, SizedBox(height: spacing), textWidget];

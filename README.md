@@ -93,6 +93,23 @@ XLY 是一个 Flutter 懒人工具包，提供了一些常用的功能和组件�
 - `flutter_local_notifications: ^20.0.0` - 本地通知
 - `timezone: ^0.10.0` - 时区处理
 
+### 尺寸参数契约
+
+- Widget 的公开尺寸参数遵循 Flutter 约定：传入值是**当前逻辑像素**，组件内部不会再次套用 `.w`、`.h`、`.r` 或 `.sp`。
+- 需要响应式适配时，由调用方明确传入 `24.w`、`12.sp`、`8.r` 等；省略参数时，XLY 的默认样式会在内部完成一次 ScreenUtil 换算。
+- 只有参数名明确带 `design`（如 `designHeight`），或文档明确说明保存设计稿原值的 Style / 配置对象，才由 XLY 延迟换算。
+- 不要把已经经过 ScreenUtil 换算的值再交给要求设计稿原值的 API，也不要依赖组件对显式参数进行隐式二次缩放。
+
+当前明确的设计稿值例外：
+
+- `MyDialogSheet.showBottom` 的 `designHeight` / `designBorderRadius`；
+- `MyMenuStyle` 的字号、图标间距与条目高度等设计字段；
+- `MySelectorStyle` 中文档标明的面板高度、圆角与模糊参数（`panelWidth` 是逻辑像素）；
+- `MySplash` 的尺寸配置；
+- `MyFloatPanel` 的面板、图标、圆角与停靠偏移配置。
+
+除以上明确例外外，公开尺寸参数一律按当前逻辑像素理解。
+
 ## 命令行工具
 
 XLY 提供了便捷的命令行工具，可通过交互式菜单或直接执行子命令：
@@ -1899,10 +1916,10 @@ Widget buildEditBox() {
     suffix: '个',
     onChanged: (value) => print('数值已更改: $value'),
     // 自定义样式
-    labelFontSize: 15.0,
-    centerTextFontSize: 12.0,
-    spinIconSize: 13.0,
-    spinButtonSize: 28.0,
+    labelFontSize: 15.sp,
+    centerTextFontSize: 12.sp,
+    spinIconSize: 13.w,
+    spinButtonSize: 28.w,
   );
 }
 ```
@@ -2032,10 +2049,10 @@ Widget buildMyGroupBox() {
     borderColor: Colors.blue,
     titleColor: Colors.blue,
     borderWidth: 1.5,
-    borderRadius: 8.0,
+    borderRadius: 8.r,
     style: SectionBorderStyle.normal, // 或 SectionBorderStyle.inset
     titleStyle: TextStyle(
-      fontSize: 14,
+      fontSize: 14.sp,
       fontWeight: FontWeight.bold,
     ),
   );
@@ -2060,9 +2077,9 @@ Widget buildEndOfListWidget() {
 
     // 自定义样式
     icon: Icons.sentiment_satisfied_alt,
-    dividerFontSize: 12,
+    dividerFontSize: 12.sp,
     dividerColor: Colors.grey,
-    textFontSize: 12,
+    textFontSize: 12.sp,
     textColor: Colors.grey,
 
     // 是否用于Sliver列表
@@ -2078,12 +2095,15 @@ Widget buildMyIcon() {
   return MyIcon(
     icon: Icons.settings,
     iconColor: Colors.blue,
-    size: 24.0,
+    size: 24.w,
     tooltip: '设置',
     onPressed: () => print('图标被点击'),
 
+    // 点击区域与视觉图标独立；移动端建议至少 48 逻辑像素
+    tapTargetSize: kMinInteractiveDimension,
+
     // 悬停效果
-    hoverShadowRadius: 20.0,
+    hoverShadowRadius: 20.w,
     hoverColor: Colors.blue.withOpacity(0.1),
     splashColor: Colors.blue.withOpacity(0.3),
   );

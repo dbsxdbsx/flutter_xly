@@ -4,11 +4,21 @@
 
 - **作用域遮罩（Scrim）**：Toast 家族新增阻塞型成员 `MyToast.showScrim` / `updateScrim` / `hideScrim`。遮罩由 `MyScrimHost` 宿主承载而非全屏浮层：`MyDialogSheet.showCenter` / `showBottom` 与 `MyApp` 根节点已内置宿主，不传 context 时自动定位到最上层表面（最近挂载的宿主），实现"只遮住上一级"；支持默认「转圈 + 消息 + 细节 + 取消」卡片或 `builder` 完全自定义中央内容。中央卡片在宿主表面过小时自动 `scaleDown`，不会像素溢出；配套导出 `scrimButtonStyle`——深色遮罩卡片上的高对比按钮样式（悬停/按下前景变纯白 + 白色半透明药丸底，替代 Material 默认几乎不可见的 8% hover overlay），默认取消按钮已启用，业务自定义卡片可复用。example 的 Page3 新增三个演示入口（对话框内 / 底部 Sheet 内 / 全屏兜底）。
 
+### Changed
+
+- **统一公开 Widget 的尺寸参数契约**：`MyButton`、`MyIcon`、`MyCard`、`MyGroupBox`、`MyTextEditor`、`MySpinBox`、`MyMenuButton`、`MyMenuDivider`、`MyEndOfListWidget` 与焦点边框的显式尺寸现在均按 Flutter 逻辑像素直接使用；响应式值由调用方显式传 `.w/.h/.r/.sp`，组件默认值仍只在内部换算一次。
+
 ### Fixed
 
+- **ScreenUtil 二次缩放**：修复显式字号、图标、卡片 margin/elevation、输入框 inset、菜单分隔线等已经适配的值被组件再次换算的问题；修复 `MyTextEditor` 默认圆角、下拉间距和输入框水平 padding 自身重复换算的问题；`MyIcon.tapTargetSize` 可独立设置触控区且不会改变视觉尺寸，也不再受 `hoverShadowRadius` 隐式影响。
 - **对话框表面收敛为单图层合成**：`MyDialogSheet.showCenter` 原先 `Dialog` 与内层 `Container` 各画一层圆角白底，半透明遮罩盖上时同一条圆角边缘被抗锯齿混合多次，在深色 barrier 上析出一圈亮度偏高的细边。现将白底画成矩形，与遮罩、内容合成同一图层后用 `ClipRRect(Clip.antiAliasWithSaveLayer)` 一次裁圆角（`Dialog` 自身透明、无高程），边缘只混合一次，细边从数学上消除；`showBottom` 底部 Sheet 同步采用该策略。
 
 - **Windows 托盘菜单任务栏遮挡**：任务栏在右侧或顶部时托盘右键菜单不再被遮挡。新增 `TrayPopupHelper` 通过 `dart:ffi` 直接调用 `SHAppBarMessage` 检测任务栏边缘，动态选择 `TrackPopupMenu` 对齐标志（`tray_manager` 硬编码 `TPM_BOTTOMALIGN | TPM_LEFTALIGN` 仅适配底部任务栏），非 Windows 平台和 FFI 不可用时自动回退到 `tray_manager` 原生弹出。
+
+### BREAKING
+
+- **显式尺寸不再隐式 ScreenUtil 换算**：旧代码若向上述 Widget 传裸设计稿数值并依赖组件内部 `.w/.h/.r/.sp`，需改为显式响应式值（如 `size: 24.w`、`fontSize: 12.sp`）；已经传入响应式值的调用方无需修改，并会消除原有二次缩放。
+- **`MyIcon` 点击区与反馈半径解耦**：自定义 `hoverShadowRadius` 不再隐式改变点击区域；如需同步调整，请显式设置 `tapTargetSize`。
 
 ## 0.54.0 - 2026-07-16
 

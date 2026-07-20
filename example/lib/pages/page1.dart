@@ -435,39 +435,45 @@ class Page1View extends GetView<Page1Controller> {
         ),
         SizedBox(height: 16.h),
         // 窗口停靠按钮
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Expanded(
-              child: MyButton(
-                text: '停靠到左上角',
-                onPressed: controller.dockToTopLeft,
-              ),
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: MyButton(
-                text: '停靠到右上角',
-                onPressed: controller.dockToTopRight,
-              ),
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: MyButton(
-                text: '停靠到左下角',
-                onPressed: controller.dockToBottomLeft,
-              ),
-            ),
-            SizedBox(width: 12.w),
-            Expanded(
-              child: MyButton(
-                text: '停靠到右下角',
-                onPressed: controller.dockToBottomRight,
-              ),
-            ),
-          ],
-        ),
+        _buildDockingButtonGrid(),
       ],
+    );
+  }
+
+  Widget _buildDockingButtonGrid() {
+    final buttons = <({String text, VoidCallback onPressed})>[
+      (text: '停靠到左上角', onPressed: controller.dockToTopLeft),
+      (text: '停靠到右上角', onPressed: controller.dockToTopRight),
+      (text: '停靠到左下角', onPressed: controller.dockToBottomLeft),
+      (text: '停靠到右下角', onPressed: controller.dockToBottomRight),
+    ];
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final spacing = 12.w;
+        final minButtonWidth = 160.w;
+        final columns =
+            ((constraints.maxWidth + spacing) / (minButtonWidth + spacing))
+                .floor()
+                .clamp(1, buttons.length);
+        final buttonWidth =
+            (constraints.maxWidth - spacing * (columns - 1)) / columns;
+
+        return Wrap(
+          spacing: spacing,
+          runSpacing: 12.h,
+          children: [
+            for (final button in buttons)
+              SizedBox(
+                width: buttonWidth,
+                child: MyButton(
+                  text: button.text,
+                  onPressed: button.onPressed,
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 
