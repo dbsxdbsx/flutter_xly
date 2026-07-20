@@ -6,10 +6,16 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
 import '../logger.dart';
+import 'modal_attention.dart';
 
 enum MyDialogChosen { left, right, canceled }
 
 class MyDialog {
+  /// 显示 Material 风格对话框。
+  ///
+  /// [barrierDismissible] 为 `false`（模态）时，点击遮罩默认播放
+  /// [barrierAttentionEffect] 注意力反馈（抖动）提示用户需显式操作；
+  /// 传 [MyModalAttentionEffect.none] 可恢复静默无效的旧行为。
   static Future<MyDialogChosen> show({
     required Widget content,
     FutureOr<void> Function()? onLeftButtonPressed,
@@ -25,6 +31,8 @@ class MyDialog {
     double? elevation,
     double? barrierOpacity,
     bool barrierDismissible = true,
+    MyModalAttentionEffect barrierAttentionEffect =
+        MyModalAttentionEffect.shake,
   }) async {
     return _showDialog(
       dialog: AlertDialog(
@@ -55,6 +63,7 @@ class MyDialog {
       ),
       barrierOpacity: barrierOpacity,
       barrierDismissible: barrierDismissible,
+      barrierAttentionEffect: barrierAttentionEffect,
     );
   }
 
@@ -73,6 +82,8 @@ class MyDialog {
     double? elevation,
     double? barrierOpacity,
     bool barrierDismissible = true,
+    MyModalAttentionEffect barrierAttentionEffect =
+        MyModalAttentionEffect.shake,
   }) async {
     return _showDialog(
       dialog: CupertinoAlertDialog(
@@ -93,6 +104,7 @@ class MyDialog {
       ),
       barrierOpacity: barrierOpacity,
       barrierDismissible: barrierDismissible,
+      barrierAttentionEffect: barrierAttentionEffect,
     );
   }
 
@@ -100,7 +112,15 @@ class MyDialog {
     required Widget dialog,
     double? barrierOpacity,
     bool barrierDismissible = true,
+    MyModalAttentionEffect barrierAttentionEffect =
+        MyModalAttentionEffect.shake,
   }) async {
+    if (!barrierDismissible) {
+      dialog = MyModalAttention(
+        effect: barrierAttentionEffect,
+        child: dialog,
+      );
+    }
     final result = await Get.dialog<MyDialogChosen>(
       dialog,
       barrierDismissible: barrierDismissible,

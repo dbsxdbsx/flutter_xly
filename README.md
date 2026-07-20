@@ -1655,7 +1655,27 @@ MyDialogSheet.showCenter(
   confirmText: '我知道了',
   exitText: '稍后提醒',
 );
+
+// 7. 模态对话框：点击遮罩自动播放"拒绝抖动"（attention shake）
+// barrierDismissible: false 时默认启用，无需额外参数；
+// 可改为 pulse（微弱放大回弹）或 none（静默无效）
+MyDialogSheet.showCenter(
+  title: '订阅管理',
+  content: const Text('必须显式选择保存或取消'),
+  confirmText: '保存',
+  onConfirm: () => Get.back(),
+  barrierDismissible: false,
+  // barrierAttentionEffect: MyModalAttentionEffect.pulse,
+);
+
+// 直接用 Get.dialog / showDialog 的调用方可手动包裹 MyModalAttention
+Get.dialog(
+  MyModalAttention(child: myDialogWidget),
+  barrierDismissible: false,
+);
 ```
+
+`MyDialog.show` / `MyDialog.showIos` 在 `barrierDismissible: false` 时同样默认启用该反馈。
 
 ### 右键菜单
 

@@ -111,8 +111,8 @@ xly/
 
 ## 5. Active Context
 
-- **最近完成**：统一公开 Widget 的逻辑像素参数契约，消除 `MyTextEditor`、`MySpinBox`、`MyCard`、`MyIcon` 等组件的 ScreenUtil 二次缩放，并增加非 1:1 视口回归测试。见 `CHANGELOG` Unreleased。
-- **上一轮**：0.54 统一菜单系统；0.53 `MyTray.beginExit` 安全退出态；0.52 `MySelector` placement / 自适应宽度。
+- **最近完成**：模态对话框注意力反馈——新增 `MyModalAttention` / `MyModalAttentionEffect`，`MyDialogSheet.showCenter` 与 `MyDialog.show/showIos` 在 `barrierDismissible: false` 时点遮罩默认播放拒绝抖动；变换节点常驻树避免子树重建。见 `CHANGELOG` Unreleased。
+- **上一轮**：统一公开 Widget 的逻辑像素参数契约，消除 ScreenUtil 二次缩放并增加非 1:1 视口回归测试；0.54 统一菜单系统；0.53 `MyTray.beginExit` 安全退出态。
 - **上一版**：0.51 `MyTray.closeToTray`；0.50 `MyCard.subtitle` / `MySmartDock.wake()`。
 - **后续**：见 [`.issue/xly-package-hygiene-backlog.md`](.issue/xly-package-hygiene-backlog.md)（可选：可配置持久化键前缀）。
 

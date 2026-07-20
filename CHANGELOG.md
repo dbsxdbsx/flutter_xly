@@ -2,6 +2,8 @@
 
 ### Added
 
+- **模态对话框注意力反馈（attention shake）**：新增 `MyModalAttention` 组件与 `MyModalAttentionEffect` 枚举（`shake` 水平抖动 / `pulse` 微弱放大回弹 / `none` 静默）。`MyDialogSheet.showCenter` 与 `MyDialog.show/showIos` 在 `barrierDismissible: false` 时，点击遮罩默认播放抖动动画，提示用户需通过显式按钮操作关闭（参考 macOS 模态窗口的拒绝抖动），替代原先"点了没反应"的体验；通过 `barrierAttentionEffect: MyModalAttentionEffect.none` 可恢复静默旧行为。实现上在对话框下方铺全屏透明手势层接管遮罩点击（`ModalBarrier` 在不可关闭时不提供点击回调）；抖动幅度缺省按设计稿 8px 延迟 `.w` 换算，动画进行中忽略重复触发避免相位跳变，并尊重系统"减弱动效"设置；变换节点常驻 widget 树（空闲时取恒等值），避免动画首尾的结构切换导致对话框子树重建、内部动画（如进度条）随抖动重播。
+
 - **作用域遮罩（Scrim）**：Toast 家族新增阻塞型成员 `MyToast.showScrim` / `updateScrim` / `hideScrim`。遮罩由 `MyScrimHost` 宿主承载而非全屏浮层：`MyDialogSheet.showCenter` / `showBottom` 与 `MyApp` 根节点已内置宿主，不传 context 时自动定位到最上层表面（最近挂载的宿主），实现"只遮住上一级"；支持默认「转圈 + 消息 + 细节 + 取消」卡片或 `builder` 完全自定义中央内容。中央卡片在宿主表面过小时自动 `scaleDown`，不会像素溢出；配套导出 `scrimButtonStyle`——深色遮罩卡片上的高对比按钮样式（悬停/按下前景变纯白 + 白色半透明药丸底，替代 Material 默认几乎不可见的 8% hover overlay），默认取消按钮已启用，业务自定义卡片可复用。example 的 Page3 新增三个演示入口（对话框内 / 底部 Sheet 内 / 全屏兜底）。
 
 ### Changed

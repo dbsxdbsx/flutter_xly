@@ -31,17 +31,17 @@ class Page3View extends GetView<Page3Controller> {
                   alignment: WrapAlignment.center,
                   children: [
                     MyButton(
-                      text: '确认(可关)',
+                      text: '确认(非模态)',
                       onPressed: controller.showConfirmDialog,
                       width: 160.w,
                     ),
                     MyButton(
-                      text: 'iOS(可关)',
+                      text: 'iOS(非模态)',
                       onPressed: controller.showIosDialog,
                       width: 160.w,
                     ),
                     MyButton(
-                      text: '删除(严格)',
+                      text: '删除(模态)',
                       onPressed: controller.showDeleteDialog,
                       width: 160.w,
                     ),
@@ -254,7 +254,7 @@ class Page3Controller extends GetxController {
       rightButtonText: '删除',
       rightButtonColor: Colors.red,
       titleColor: Colors.red,
-      barrierDismissible: false, // 严格模态
+      barrierDismissible: false, // 严格模态：点击遮罩会播放拒绝抖动（attention shake）
     );
 
     if (result == MyDialogChosen.right) {

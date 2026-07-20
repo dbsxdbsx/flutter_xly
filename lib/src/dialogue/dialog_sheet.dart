@@ -61,6 +61,10 @@ class MyDialogSheet {
   }
 
   /// 显示中心弹出对话框
+  ///
+  /// [barrierDismissible] 为 `false`（模态）时，点击遮罩默认播放
+  /// [barrierAttentionEffect] 注意力反馈（抖动）提示用户需显式操作；
+  /// 传 [MyModalAttentionEffect.none] 可恢复静默无效的旧行为。
   static Future<T?> showCenter<T>({
     String? title,
     required Widget content,
@@ -75,22 +79,31 @@ class MyDialogSheet {
     String confirmText = '确定',
     String exitText = '取消',
     bool barrierDismissible = true,
+    MyModalAttentionEffect barrierAttentionEffect =
+        MyModalAttentionEffect.shake,
   }) {
+    Widget dialog = _CenterDialogSheet(
+      title: title,
+      content: content,
+      contentPadding: contentPadding,
+      titlePadding: titlePadding,
+      actionsPadding: actionsPadding,
+      insetPadding: insetPadding,
+      titleFontSize: titleFontSize,
+      centerTitle: centerTitle,
+      onConfirm: onConfirm,
+      onExit: onExit,
+      confirmText: confirmText,
+      exitText: exitText,
+    );
+    if (!barrierDismissible) {
+      dialog = MyModalAttention(
+        effect: barrierAttentionEffect,
+        child: dialog,
+      );
+    }
     return Get.dialog(
-      _CenterDialogSheet(
-        title: title,
-        content: content,
-        contentPadding: contentPadding,
-        titlePadding: titlePadding,
-        actionsPadding: actionsPadding,
-        insetPadding: insetPadding,
-        titleFontSize: titleFontSize,
-        centerTitle: centerTitle,
-        onConfirm: onConfirm,
-        onExit: onExit,
-        confirmText: confirmText,
-        exitText: exitText,
-      ),
+      dialog,
       barrierDismissible: barrierDismissible,
       useSafeArea: true,
     );
