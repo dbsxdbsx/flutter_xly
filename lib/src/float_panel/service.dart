@@ -46,7 +46,7 @@ class MyFloatPanel extends GetxService {
   // 禁用样式（默认黄色X覆盖）
   final Rx<DisabledStyle> disabledStyle = const DisabledStyle.defaultX().obs;
 
-  // 位置持久化（通过 GetStorage 保存/恢复面板位置和展开收起状态）
+  // 位置持久化（本应用 MyStorage 容器，不写共享 GetStorage.gs）
   final RxBool enablePersistence = true.obs;
 
   // 是否允许四边停靠（true：上下左右均可；false：仅左右停靠）

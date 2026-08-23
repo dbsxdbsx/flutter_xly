@@ -1,6 +1,6 @@
 name: xly
 description: "A Flutter toolkit for rapid desktop/mobile app development — tray, exit lifecycle, notifications, smart dock, selector, and more."
-version: 0.54.0
+version: 0.54.1
 homepage: https://github.com/dbsxdbsx/flutter_xly
 repository: https://github.com/dbsxdbsx/flutter_xly
 

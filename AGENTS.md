@@ -2,7 +2,7 @@
 
 > 项目级 AI agent onboarding 入口（[Agentic AI Foundation 开放标准](https://github.com/agentic-ai-foundation/agentsmd)）。
 > 本文件只记录仓库内可共享的事实、约定与索引；个人 Cursor Rules / Skills 不写入此处。
-> 最近更新：2026-07-20（公开 Widget 尺寸参数统一为 Flutter 逻辑像素契约）。
+> 最近更新：2026-08-23（`MyStorage` 命名容器，避免桌面端共享 `GetStorage.gs`）。
 
 ## 1. Project Identity
 
@@ -10,7 +10,7 @@
 - **主语言 / 框架**：Dart 3.5+、Flutter 3.7+；GetX、window_manager、flutter_screenutil 等（部分在 `lib/xly.dart` 再导出）。
 - **阶段**：Beta（持续发版，`CHANGELOG.md` 跟踪）。
 - **仓库**：<https://github.com/dbsxdbsx/flutter_xly>
-- **当前版本**：`pubspec.yaml` → `0.54.0`（**0.54** 统一菜单系统：`MyMenuAnchor` / `MyMenuAnchorOrigin` 田字格定位 / `MyMenuButton` 视觉优化 / `reveal` 动画；**0.53** `MyTray.beginExit` 安全退出态；**0.52** `MySelector` placement / 自适应宽度；见 `CHANGELOG`）。
+- **当前版本**：`pubspec.yaml` → `0.54.1`（**0.54.1** `MyStorage` 按应用隔离 GetStorage；**0.54** 统一菜单系统；**0.53** `MyTray.beginExit`；见 `CHANGELOG`）。
 
 ## 2. Project Map
 
@@ -25,6 +25,7 @@ xly/
 │   ├── notify.dart / tray.dart / text_editor.dart / scaffold.dart / selector.dart / smart_dock.dart
 │   └── src/
 │       ├── app/              # app.dart 的 part：models + my_app
+│       ├── storage/          # MyStorage：命名 GetStorage 容器
 │       ├── platform.dart     # MyPlatform：平台检测、权限、窗口
 │       ├── paths/            # MyPaths、DirStore、DirValidator、Session
 │       ├── picker/           # MyPicker（file_selector）
@@ -53,6 +54,7 @@ xly/
 - 改 **系统选文件/夹 / Bootstrap 编排** → `lib/picker.dart`、`lib/src/picker/`、[`.doc/user_data_picker.md`](.doc/user_data_picker.md)
 - 改 **MySelector 浮层选择器** → `lib/selector.dart`、`lib/src/selector/`、[`.doc/my_selector_usage.md`](.doc/my_selector_usage.md)
 - 改 **MyApp 启动 / Zone / 异常** → `lib/app.dart`、`lib/src/app/`、`.doc/error_handling.md`
+- 改 **GetStorage / 浮窗持久化** → `lib/src/storage/my_storage.dart`、[`.doc/local_storage.md`](.doc/local_storage.md)
 - 改 **Windows 通知** → `lib/src/notify/`、`.doc/my_notify_usage_guide.md`
 - 改 **菜单系统（MyMenu / MyMenuAnchor / MyMenuButton）** → `lib/src/menu/`
 - 改 **Toast / 作用域遮罩（MyToast / MyScrimHost / showScrim）** → `lib/src/toast/`、[`.doc/my_scrim_usage.md`](.doc/my_scrim_usage.md)
@@ -83,7 +85,7 @@ xly/
 - **子入口文件名**：功能 `snake_case`，**不加** `my_`（如 `float_panel.dart`，非 `my_float_panel.dart`）。
 - **0.45+**：`FloatPanel` / `SmartDockManager` 等旧主名已删除，公开 API 类型一律 `My*`。
 - **`MyApp.initialize` 命名参数**：语义短名、**不加** `my` 前缀；类型承载 `My*`（如 `MyTray? tray`、`MyFloatPanel? floatPanel`）。局部变量可用 `tray` / `notify` 等，与 `MyTray.to` 并用时不必写成 `myTray`。
-- **持久化 / 存储键**：用 **`_xly_<feature>`** 命名空间（如 `_xly_float_panel`），**不用** `my_` 前缀，避免与业务自建 GetStorage 键冲突；与 Dart 类名 `My*` 无关。
+- **持久化 / 存储键**：xly 内部走 **`MyStorage.box`**（按应用命名容器），键用 **`_xly_<feature>`**（如 `_xly_float_panel`）。**禁止**无参 `GetStorage()`（桌面端会写入共享 `GetStorage.gs`）。与 Dart 类名 `My*` 无关。
 
 ### 4.2 路径（`MyPaths` · app / userData）
 
@@ -111,7 +113,8 @@ xly/
 
 ## 5. Active Context
 
-- **最近完成**：模态对话框注意力反馈——新增 `MyModalAttention` / `MyModalAttentionEffect`，`MyDialogSheet.showCenter` 与 `MyDialog.show/showIos` 在 `barrierDismissible: false` 时点遮罩默认播放拒绝抖动；变换节点常驻树避免子树重建。见 `CHANGELOG` Unreleased。
+- **最近完成**：`MyStorage` 命名容器 + 浮窗不再写共享 `GetStorage.gs`（0.54.1）。
+- **进行中 / Unreleased**：模态对话框注意力反馈（`MyModalAttention`）、`MyNotify.showWithResult`、作用域遮罩、尺寸参数契约等，见 `CHANGELOG` Unreleased。
 - **上一轮**：统一公开 Widget 的逻辑像素参数契约，消除 ScreenUtil 二次缩放并增加非 1:1 视口回归测试；0.54 统一菜单系统；0.53 `MyTray.beginExit` 安全退出态。
 - **上一版**：0.51 `MyTray.closeToTray`；0.50 `MyCard.subtitle` / `MySmartDock.wake()`。
 - **后续**：见 [`.issue/xly-package-hygiene-backlog.md`](.issue/xly-package-hygiene-backlog.md)（可选：可配置持久化键前缀）。
@@ -120,6 +123,7 @@ xly/
 
 ## 6. Knowledge Index
 
+- [`.doc/local_storage.md`](.doc/local_storage.md) — **MyStorage**（命名容器、勿用无参 `GetStorage()`）
 - [`.doc/user_data_paths.md`](.doc/user_data_paths.md) — **路径 API**（双轨、两层目录、`prepare` 流程图、何时用哪套能力）
 - [`.doc/user_data_picker.md`](.doc/user_data_picker.md) — **MyPicker / Session**（端到端流程图、API 速查、集成示例）
 - [`.doc/my_selector_usage.md`](.doc/my_selector_usage.md) — **MySelector**（item / style / placement / 键盘与搜索用法）

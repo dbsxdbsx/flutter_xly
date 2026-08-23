@@ -108,6 +108,10 @@ class MyApp extends StatelessWidget {
     bool initializeWindowManager = true,
     bool initializeGetStorage = true,
 
+    /// 本应用 GetStorage 容器名。不传则按 appName → 包名 → `XlyFlutterApp`。
+    /// 不要传 `GetStorage`，那会回到桌面端共享的 `GetStorage.gs`。
+    String? storageContainer,
+
     // ── 异常处理（开箱即用） ──────────────────────────
     // 默认装好 FlutterError.onError + PlatformDispatcher.instance.onError 两个 root-level
     // 异常 hook，无需用户自己包 runZonedGuarded 即可覆盖 widget 树异常和未捕获异步异常。
@@ -151,7 +155,17 @@ class MyApp extends StatelessWidget {
         await ScreenUtil.ensureScreenSize();
       }
       if (initializeGetStorage) {
-        await GetStorage.init();
+        String? packageName;
+        try {
+          packageName = (await PackageInfo.fromPlatform()).packageName;
+        } catch (e) {
+          XlyLogger.warning('MyApp: 读取 packageName 失败，存储容器将回退 appName: $e');
+        }
+        await MyStorage.ensureInitialized(
+          storageContainer: storageContainer,
+          appName: appName,
+          packageName: packageName,
+        );
       }
 
       // 单实例检查 - 在其他初始化之前进行，以免创建多余的窗口

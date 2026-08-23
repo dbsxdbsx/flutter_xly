@@ -14,8 +14,8 @@ class ExampleService extends GetxService {
   Future<void> onInit() async {
     super.onInit();
 
-    // 初始化GetStorage（MyApp.initialize已经调用了GetStorage.init()）
-    _storage = GetStorage();
+    // 使用本应用命名容器（MyApp.initialize 已 init MyStorage）
+    _storage = MyStorage.box;
 
     // 恢复窗口可拖动状态
     final savedDraggable = _storage.read('window_draggable') ?? true;

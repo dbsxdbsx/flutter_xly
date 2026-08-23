@@ -30,7 +30,7 @@ XLY 是一个 Flutter 懒人工具包，提供了一些常用的功能和组件�
 2. 基于 ScreenUtil 的屏幕适配(不用再加入"flutter_screenutil"包了)
 3. 基于 window_manager 的窗口管理(不用再加入"window_manager"包了)
 4. 基于 screen_retriever 的屏幕信息获取(不用再加入"screen_retriever"包了)
-5. 基于 GetStorage 的本地存储(不用再加入"get_storage"包了)
+5. 基于 GetStorage 的本地存储（`MyStorage.box` 按应用隔离容器；不用再加入 get_storage 包）
 6. Toast 消息显示(内置实现，支持自定义动画和样式)
 7. 导航辅助函数
 8. 自定义按钮组件
@@ -735,8 +735,8 @@ class MyCustomService extends GetxService {
     // 在这里可以安全使用ScreenUtil扩展方法
     final fontSize = 16.sp;  // 不会返回无限值
 
-    // 初始化GetStorage（MyApp.initialize已经调用了GetStorage.init()）
-    _storage = GetStorage();
+    // 本应用命名容器（不要用 GetStorage()，桌面端会写入共享的 GetStorage.gs）
+    _storage = MyStorage.box;
     counter.value = _storage.read('counter') ?? 0;
   }
 
@@ -2803,6 +2803,7 @@ class MyHomePage extends StatelessWidget {
 - [异常处理与 Zone 决策](.doc/error_handling.md) - 库与应用边界、为什么不再默认开 Zone Guard、`installErrorHandlers` / `onError` 设计、踩坑场景
 - [路径与 userData](.doc/user_data_paths.md) - app / userData 双轨、`Session.prepare`、何时用 Store / Picker
 - [MyPicker 与启动编排](.doc/user_data_picker.md) - 系统选夹、`onAfterApply`、与 `MySelector` 边界
+- [本地 KV 存储](.doc/local_storage.md) - `MyStorage` 命名容器，勿用无参 `GetStorage()`
 
 ## 许可证
 

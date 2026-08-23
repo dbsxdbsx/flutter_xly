@@ -53,7 +53,8 @@ class MyFloatBoxController extends GetxController {
   bool _isFirstTimePositioning = true;
   _DockEdge _currentDockEdge = _DockEdge.right; // 默认停靠右侧
 
-  MyFloatBoxController() : panelIcon = MyFloatPanel.to.initialPanelIcon.value.obs {
+  MyFloatBoxController()
+      : panelIcon = MyFloatPanel.to.initialPanelIcon.value.obs {
     _syncFocusColorsList();
   }
 
@@ -188,10 +189,10 @@ class MyFloatBoxController extends GetxController {
 
   // --- 持久化方法 ---
 
-  /// 持久化当前状态下的位置比例到 GetStorage
+  /// 持久化当前状态下的位置比例到本应用 GetStorage 容器
   void _persistPosition() {
-    if (!_enablePersistence) return;
-    final storage = GetStorage();
+    if (!_enablePersistence || !MyStorage.isReady) return;
+    final storage = MyStorage.box;
     if (panelState.value == PanelState.closed) {
       storage.write('${_kPersistPrefix}_closed_x_ratio', _xOffsetRatio);
       storage.write('${_kPersistPrefix}_closed_y_ratio', _yOffsetRatio);
@@ -203,15 +204,15 @@ class MyFloatBoxController extends GetxController {
 
   /// 持久化面板展开/收起状态
   void _persistPanelState() {
-    if (!_enablePersistence) return;
-    final storage = GetStorage();
+    if (!_enablePersistence || !MyStorage.isReady) return;
+    final storage = MyStorage.box;
     storage.write('${_kPersistPrefix}_state', panelState.value.name);
   }
 
   /// 从持久化存储恢复位置和状态，返回是否成功恢复
   bool _restoreFromPersistence() {
-    if (!_enablePersistence) return false;
-    final storage = GetStorage();
+    if (!_enablePersistence || !MyStorage.isReady) return false;
+    final storage = MyStorage.box;
 
     final savedClosedXRatio =
         storage.read<double>('${_kPersistPrefix}_closed_x_ratio');

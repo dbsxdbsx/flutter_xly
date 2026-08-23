@@ -24,6 +24,12 @@
 - **显式尺寸不再隐式 ScreenUtil 换算**：旧代码若向上述 Widget 传裸设计稿数值并依赖组件内部 `.w/.h/.r/.sp`，需改为显式响应式值（如 `size: 24.w`、`fontSize: 12.sp`）；已经传入响应式值的调用方无需修改，并会消除原有二次缩放。
 - **`MyIcon` 点击区与反馈半径解耦**：自定义 `hoverShadowRadius` 不再隐式改变点击区域；如需同步调整，请显式设置 `tapTargetSize`。
 
+## 0.54.1 - 2026-08-23
+
+### Fixed
+
+- **桌面端 GetStorage 跨应用污染**：`MyApp.initialize` 不再把 xly 内部状态写进共享的 `GetStorage.gs`。新增 `MyStorage` 与可选参数 `storageContainer`（默认按 `appName` / 包名），浮窗位置写入本应用命名容器；首次启动只把 `_xly_*` 键从默认盒迁走。旧代码仍可 `GetStorage()`（默认盒继续 init 以兼容），新代码请用 `MyStorage.box`。详见 `.doc/local_storage.md`。
+
 ## 0.54.0 - 2026-07-16
 
 ### Added
