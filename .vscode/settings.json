@@ -60,8 +60,6 @@
   "workbench.editorAssociations": {
     "*.ICO": "default",
     "*.exe": "default",
-    "*.ipynb": "jupyter-notebook",
-    "*.md": "xly.markdownLive",
-    "{git,gitlens}:/**/*.md": "default"
+    "*.ipynb": "jupyter-notebook"
   }
 }
