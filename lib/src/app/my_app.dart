@@ -20,6 +20,10 @@ class MyApp extends StatelessWidget {
 
   final bool enableDoubleClickFullScreen;
   final bool draggable;
+  final bool safeAreaTop;
+  final bool safeAreaBottom;
+  final bool safeAreaLeft;
+  final bool safeAreaRight;
 
   const MyApp._({
     required this.designSize,
@@ -40,6 +44,10 @@ class MyApp extends StatelessWidget {
     this.pageTransitionDuration = const Duration(milliseconds: 300),
     this.enableDoubleClickFullScreen = false,
     this.draggable = true,
+    this.safeAreaTop = true,
+    this.safeAreaBottom = true,
+    this.safeAreaLeft = true,
+    this.safeAreaRight = true,
   });
 
   static Future<void> initialize({
@@ -88,6 +96,13 @@ class MyApp extends StatelessWidget {
     ThemeData? theme,
     bool showDebugTag = true,
     bool dragToMoveArea = true,
+
+    /// 根 [SafeArea] 各边。默认全开，兼容旧应用。
+    /// 顶栏要画进状态栏时关 [safeAreaTop]，由页面自己吃 [MediaQuery.padding.top]。
+    bool safeAreaTop = true,
+    bool safeAreaBottom = true,
+    bool safeAreaLeft = true,
+    bool safeAreaRight = true,
 
     // 其他功能配置
     LogicalKeyboardKey? keyToRollBack,
@@ -323,6 +338,10 @@ class MyApp extends StatelessWidget {
         pageTransitionDuration: pageTransitionDuration,
         enableDoubleClickFullScreen: doubleClickToFullScreen,
         draggable: draggable,
+        safeAreaTop: safeAreaTop,
+        safeAreaBottom: safeAreaBottom,
+        safeAreaLeft: safeAreaLeft,
+        safeAreaRight: safeAreaRight,
       ));
     }
 
@@ -652,6 +671,10 @@ class MyApp extends StatelessWidget {
 
   Widget _buildSafeArea(Widget child) {
     return SafeArea(
+      top: safeAreaTop,
+      bottom: safeAreaBottom,
+      left: safeAreaLeft,
+      right: safeAreaRight,
       child: child,
     );
   }

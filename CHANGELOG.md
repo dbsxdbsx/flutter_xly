@@ -1,7 +1,10 @@
 ## Unreleased
 
+## 0.55.0 - 2026-08-24
+
 ### Added
 
+- **根 SafeArea 可分边关闭**：`MyApp.initialize` 新增 `safeAreaTop` / `safeAreaBottom` / `safeAreaLeft` / `safeAreaRight`（默认全开）。顶栏要画进状态栏时关 `safeAreaTop`，由页面自己吃 `MediaQuery.padding.top`；`appBuilder` 包在 SafeArea 之后，关不掉这一层。
 - **可确认的通知提交结果**：新增 `MyNotify.showWithResult`、`MyNotifyDispatchResult` 与 `MyNotifyDispatchStatus`。需要可靠事故去重的业务可区分“平台通知 API 已接受”“权限拒绝”“插件不可用”“提交失败”；原 `show` 保持兼容并继续返回 `Future<void>`。
 - **模态对话框注意力反馈（attention shake）**：新增 `MyModalAttention` 组件与 `MyModalAttentionEffect` 枚举（`shake` 水平抖动 / `pulse` 微弱放大回弹 / `none` 静默）。`MyDialogSheet.showCenter` 与 `MyDialog.show/showIos` 在 `barrierDismissible: false` 时，点击遮罩默认播放抖动动画，提示用户需通过显式按钮操作关闭（参考 macOS 模态窗口的拒绝抖动），替代原先"点了没反应"的体验；通过 `barrierAttentionEffect: MyModalAttentionEffect.none` 可恢复静默旧行为。实现上在对话框下方铺全屏透明手势层接管遮罩点击（`ModalBarrier` 在不可关闭时不提供点击回调）；抖动幅度缺省按设计稿 8px 延迟 `.w` 换算，动画进行中忽略重复触发避免相位跳变，并尊重系统"减弱动效"设置；变换节点常驻 widget 树（空闲时取恒等值），避免动画首尾的结构切换导致对话框子树重建、内部动画（如进度条）随抖动重播。
 

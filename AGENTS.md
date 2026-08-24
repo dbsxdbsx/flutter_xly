@@ -2,7 +2,7 @@
 
 > 项目级 AI agent onboarding 入口（[Agentic AI Foundation 开放标准](https://github.com/agentic-ai-foundation/agentsmd)）。
 > 本文件只记录仓库内可共享的事实、约定与索引；个人 Cursor Rules / Skills 不写入此处。
-> 最近更新：2026-08-23（`MyStorage` 命名容器，避免桌面端共享 `GetStorage.gs`）。
+> 最近更新：2026-08-24（`MyApp.initialize` 根 SafeArea 可分边关闭）。
 
 ## 1. Project Identity
 
@@ -10,7 +10,7 @@
 - **主语言 / 框架**：Dart 3.5+、Flutter 3.7+；GetX、window_manager、flutter_screenutil 等（部分在 `lib/xly.dart` 再导出）。
 - **阶段**：Beta（持续发版，`CHANGELOG.md` 跟踪）。
 - **仓库**：<https://github.com/dbsxdbsx/flutter_xly>
-- **当前版本**：`pubspec.yaml` → `0.54.1`（**0.54.1** `MyStorage` 按应用隔离 GetStorage；**0.54** 统一菜单系统；**0.53** `MyTray.beginExit`；见 `CHANGELOG`）。
+- **当前版本**：`pubspec.yaml` → `0.55.0`（**0.55.0** 根 SafeArea 可分边关闭；**0.54.1** `MyStorage` 按应用隔离 GetStorage；**0.54** 统一菜单系统；见 `CHANGELOG`）。
 
 ## 2. Project Map
 
@@ -113,9 +113,9 @@ xly/
 
 ## 5. Active Context
 
-- **最近完成**：`MyStorage` 命名容器 + 浮窗不再写共享 `GetStorage.gs`（0.54.1）。
-- **进行中 / Unreleased**：模态对话框注意力反馈（`MyModalAttention`）、`MyNotify.showWithResult`、作用域遮罩、尺寸参数契约等，见 `CHANGELOG` Unreleased。
-- **上一轮**：统一公开 Widget 的逻辑像素参数契约，消除 ScreenUtil 二次缩放并增加非 1:1 视口回归测试；0.54 统一菜单系统；0.53 `MyTray.beginExit` 安全退出态。
+- **最近完成**：**0.55.0** `MyApp.initialize` 根 `SafeArea` 可分边关闭（`safeAreaTop` 等，默认全开）；同版本收入作用域遮罩、模态注意力反馈、尺寸参数契约与通知提交结果。
+- **进行中 / Unreleased**：无（见 `CHANGELOG` Unreleased）。
+- **上一轮**：0.54.1 `MyStorage` 命名容器，浮窗不再写共享 `GetStorage.gs`；0.54 统一菜单系统；0.53 `MyTray.beginExit`。
 - **上一版**：0.51 `MyTray.closeToTray`；0.50 `MyCard.subtitle` / `MySmartDock.wake()`。
 - **后续**：见 [`.issue/xly-package-hygiene-backlog.md`](.issue/xly-package-hygiene-backlog.md)（可选：可配置持久化键前缀）。
 

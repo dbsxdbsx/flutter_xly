@@ -534,6 +534,22 @@ class Routes {
 }
 ```
 
+#### 根 SafeArea（沉浸式顶栏）
+
+`MyApp` 在路由外再包一层根 `SafeArea`，**默认四边全开**，旧应用一行不改行为不变。`appBuilder` 包在这层之后，关不掉。
+
+顶栏要画进状态栏 / 刘海时关 `safeAreaTop`，由页面自己吃 `MediaQuery.padding.top`（Material `AppBar` 的 `primary: true` 也会加这段）。底、左、右同理。
+
+```dart
+await MyApp.initialize(
+  designSize: const Size(800, 600),
+  routes: [...],
+  safeAreaTop: false, // 顶栏自己处理状态栏；桌面 padding.top 通常为 0
+);
+```
+
+这只决定 Flutter 内容要不要先垫一圈。安卓窗口透明、状态栏图标深浅、能不能画进挖孔，是**该应用自己的** `android/.../styles.xml` 与 `SystemChrome`，不是 xly 的职责。
+
 #### 异常处理（开箱即用）
 
 > 详细决策记录、踩坑场景与高级用法见：[本地](.doc/error_handling.md) | [GitHub](https://github.com/dbsxdbsx/flutter_xly/blob/main/.doc/error_handling.md)
