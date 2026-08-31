@@ -136,11 +136,9 @@ void main() async {
       ),
     ],
     splash: const MySplash(
-      nextRoute: MyRoutes.page1,
       lottieAssetPath: 'assets/animation/splash_loading.json',
       appTitle: '😜My Awesome App😜',
       backgroundColor: Colors.blueGrey,
-      splashDuration: Duration(seconds: 3),
       textColor: Colors.white,
       fontSize: 60,
       fontWeight: FontWeight.bold,

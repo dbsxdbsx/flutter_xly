@@ -59,6 +59,19 @@ class MyApp extends StatelessWidget {
     // 服务配置
     List<MyService>? services,
 
+    /// 首帧提交后的 blocking 初始化。不挡 `runApp`；揭开叠层前会等到终态。
+    ///
+    /// 旧 [services] 仍在 `runApp` 前注册（会推迟第一帧）。首页数据层请
+    /// `await MyApp.bootstrapReady`，不要对这里的依赖直接 `Get.find`。
+    List<MyBootstrapTask>? bootstrap,
+
+    /// blocking bootstrap 的超时。超过且无未决 fatal 时按 degraded 揭开。
+    /// [Duration.zero] 表示不设超时。
+    Duration bootstrapTimeout = const Duration(seconds: 20),
+
+    /// 叠层第一帧提交后打一次，纯通知。不要在这里起影响离场的初始化。
+    VoidCallback? onSplashVisible,
+
     // 托盘配置 - 简化配置方式
     MyTray? tray,
 
@@ -166,6 +179,8 @@ class MyApp extends StatelessWidget {
     }
 
     Future<void> initializeInCurrentZone() async {
+      _prepareSplashStatics(hasOverlay: splash != null);
+
       if (ensureScreenSize) {
         await ScreenUtil.ensureScreenSize();
       }
@@ -214,6 +229,7 @@ class MyApp extends StatelessWidget {
         if (!isFirstInstance) {
           // 不是首个实例，退出当前实例
           XlyLogger.info('检测到应用已在运行，当前实例即将退出');
+          _markSplashSkipped();
           await exitApp();
           return;
         }
@@ -235,6 +251,17 @@ class MyApp extends StatelessWidget {
             setAspectRatio: setAspectRatio && setAspectRatioEnabled,
             minimumSize: minimumSize,
           );
+        }
+        if (tray != null && tray.getCloseToTray()) {
+          try {
+            await windowManager.setPreventClose(true);
+          } catch (e, stackTrace) {
+            XlyLogger.error(
+              'MyApp: 叠层期间预启用 closeToTray 失败',
+              e,
+              stackTrace,
+            );
+          }
         }
       }
 
@@ -319,6 +346,22 @@ class MyApp extends StatelessWidget {
       if (appName != null) {
         _globalWindowTitle.value = appName;
       }
+
+      final splashGate = MySplashGate(
+        hasOverlay: splash != null,
+        hasBrandLottie: splash?.lottieAssetPath != null,
+        hasStaticBrandFace: splash != null && splash.lottieAssetPath == null,
+        minVisible: splash?.minVisible ?? const Duration(milliseconds: 300),
+        brandTimeout: splash?.brandTimeout ?? const Duration(seconds: 8),
+        bootstrapTimeout: bootstrapTimeout,
+        tasks: bootstrap,
+        onVisible: onSplashVisible,
+        showWindowAfterFirstFrame: MyPlatform.isDesktop && !showWindowOnInit,
+        focusWindowAfterFirstFrame: focusWindowOnInit,
+        onError: onError,
+      );
+      splashGate.attachToApp();
+
       runApp(MyApp._(
         designSize: designSize,
         theme: theme,
@@ -343,6 +386,7 @@ class MyApp extends StatelessWidget {
         safeAreaLeft: safeAreaLeft,
         safeAreaRight: safeAreaRight,
       ));
+      unawaited(splashGate.startAfterFirstFrame());
     }
 
     if (enableZoneGuard) {
@@ -367,6 +411,8 @@ class MyApp extends StatelessWidget {
       await initializeInCurrentZone();
     } catch (error, stackTrace) {
       XlyLogger.error('MyApp 初始化失败', error, stackTrace);
+      _splashGate?.dispose();
+      _splashGate = null;
       // 初始化失败是致命的：直接 rethrow 让 main 看到，避免被 onError 沉默吞掉
       rethrow;
     }
@@ -595,12 +641,8 @@ class MyApp extends StatelessWidget {
                   return fp.buildOverlay();
                 }),
 
-              // 顶层启动屏
-              if (splash != null && !isSplashFinished.value)
-                Visibility(
-                  visible: !isSplashFinished.value,
-                  child: splash!,
-                ),
+              // 顶层启动屏（揭开由 MySplashGate 写 isSplashFinished）
+              if (splash != null && !isSplashFinished.value) splash!,
             ],
           ),
         ));
@@ -719,6 +761,41 @@ class MyApp extends StatelessWidget {
   }
 
   static final isSplashFinished = false.obs;
+  static final isBootstrapReady = false.obs;
+  static final splashPhase = MySplashPhase.finished.obs;
+  static String? splashFatalMessage;
+  static MySplashGate? _splashGate;
+
+  /// blocking bootstrap 已到 ready / degraded。fatal 时 completeError。
+  static Future<void> get bootstrapReady =>
+      _splashGate?.ready ?? Future<void>.value();
+
+  static void reportBrandAnimationDone() => _splashGate?.reportAnimationDone();
+
+  static void _prepareSplashStatics({required bool hasOverlay}) {
+    _splashGate?.dispose();
+    _splashGate = null;
+    isSplashFinished.value = !hasOverlay;
+    isBootstrapReady.value = false;
+    splashPhase.value =
+        hasOverlay ? MySplashPhase.running : MySplashPhase.finished;
+    splashFatalMessage = null;
+  }
+
+  static void _markSplashSkipped() {
+    isSplashFinished.value = true;
+    isBootstrapReady.value = true;
+    splashPhase.value = MySplashPhase.finished;
+    splashFatalMessage = null;
+  }
+
+  /// 测试隔离：丢掉当前门闩并恢复静态量。
+  @visibleForTesting
+  static void debugResetSplashGate() {
+    _prepareSplashStatics(hasOverlay: false);
+    isBootstrapReady.value = true;
+  }
+
   static final _globalEnableDoubleClickMaximize = false.obs;
   static final _globalEnableResizable = false.obs;
   static final _globalEnableDraggable = true.obs;

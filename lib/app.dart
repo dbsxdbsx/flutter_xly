@@ -31,4 +31,5 @@ import 'src/window_enums.dart';
 export 'src/storage/my_storage.dart';
 
 part 'src/app/models.dart';
+part 'src/app/splash_gate.dart';
 part 'src/app/my_app.dart';

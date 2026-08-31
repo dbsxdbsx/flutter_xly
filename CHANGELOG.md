@@ -1,5 +1,24 @@
 ## Unreleased
 
+## 0.56.0 - 2026-08-31
+
+### Added
+
+- **启动叠层门闩**：`MyApp.initialize` 新增 `bootstrap` / `bootstrapTimeout` / `onSplashVisible`。blocking 初始化在首帧提交后跑，不再只能堵在 `runApp` 前。消费方可 `await MyApp.bootstrapReady`，并观察 `isBootstrapReady` / `splashPhase`。每项 `MyBootstrapTask` 自报 `fatal` / `degraded` / `optional`。详见 `.doc/splash_mechanism.md`。
+
+### Changed
+
+- **`MySplash` 揭开改为 init × 动画**：有 Lottie 时 `repeat: false` 播完一圈（loading 短也不中途掐）；静态品牌脸用 `minVisible` 防闪；hang 靠 `brandTimeout` / `bootstrapTimeout`。库负责揭开，不要再靠固定 Timer。
+- **`showWindowOnInit: false`**：桌面端由库在首帧提交后 `show()`。传入 `tray` 且 `closeToTray` 时，窗口初始化后先 `setPreventClose(true)`，避免叠层期间点关闭直接退出。
+
+### Deprecated
+
+- **`MySplash.nextRoute` / `splashDuration`**：前者从无导航作用的死参数改为可选废弃项；后者不再参与揭开。无品牌脸请传 `splash: null`。
+
+### Fixed
+
+- **`splash: null` 时 `isSplashFinished` 一直为 false**：无叠层时启动即视为已揭开；`bootstrap` 仍会跑。
+
 ## 0.55.0 - 2026-08-24
 
 ### Added

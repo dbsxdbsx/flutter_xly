@@ -83,6 +83,52 @@ class MyService<T> {
   }
 }
 
+/// [MyApp.initialize] `bootstrap` 项的失败等级。未分级时按 [degraded]。
+enum MyBootstrapSeverity {
+  /// 没有它不能装成已启动：叠层停在错误态，不揭开首页。
+  fatal,
+
+  /// 壳能出，但缺一块能力：按公式揭开，首页须能表达缺失。
+  degraded,
+
+  /// 增强项：失败只打日志，不影响门闩。
+  optional,
+}
+
+/// 首帧提交后再跑的 blocking 初始化项。
+///
+/// 旧 [MyService] 列表仍在 `runApp` 前注册，语义不变。
+/// 首页数据层应 `await MyApp.bootstrapReady`，不要对未就绪依赖直接 `Get.find`。
+class MyBootstrapTask {
+  const MyBootstrapTask(
+    this.run, {
+    this.severity = MyBootstrapSeverity.degraded,
+    this.debugLabel,
+  });
+
+  final Future<void> Function() run;
+  final MyBootstrapSeverity severity;
+  final String? debugLabel;
+}
+
+/// 启动叠层门闩阶段。
+enum MySplashPhase {
+  /// 正在跑 blocking bootstrap，或还在等品牌一圈 / 静态脸 [MySplash.minVisible]。
+  running,
+
+  /// blocking 项全部成功。
+  ready,
+
+  /// 仅 degraded / optional 失败，或 bootstrap 超时且无未决 fatal。
+  degraded,
+
+  /// 有 fatal 失败：叠层留错误态。
+  fatal,
+
+  /// 已按公式揭开（或无叠层）。
+  finished,
+}
+
 class CustomDragArea extends StatelessWidget {
   final Widget child;
   final bool enableDoubleClickMaximize;
