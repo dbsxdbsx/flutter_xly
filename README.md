@@ -492,19 +492,22 @@ void main() async {
     ],
 
     splash: const MySplash(
-      nextRoute: Routes.page1,
       lottieAssetPath: 'assets/animation/splash_loading.json',
       appTitle: 'My Awesome App',
       backgroundColor: Colors.blueGrey,
-      splashDuration: Duration(seconds: 3),
       textColor: Colors.white,
       fontSize: 60,
       fontWeight: FontWeight.bold,
       lottieWidth: 250,
       spaceBetween: 30,
     ),
-    // 启动叠层的时序与改良方向见 .doc/splash_mechanism.md
-    // （当前 services 仍在 runApp 前注册，Splash 只是定时揭开）
+    // 能挪的初始化放 bootstrap（首帧后再跑）
+    bootstrap: [
+      MyBootstrapTask.run(() async {
+        await restoreSession();
+      }),
+      MyBootstrapTask.putAsync<HeavyService>(() => HeavyService.create()),
+    ],
     routes: [
       MyRoute<Page1Controller>(
         path: Routes.page1,
@@ -2800,7 +2803,7 @@ class MyHomePage extends StatelessWidget {
 
 ## splash Json 动画资源
 
-启动叠层的职责、时序问题和改良方向见 [`.doc/splash_mechanism.md`](.doc/splash_mechanism.md)。
+启动叠层的职责、门闩公式和 `MyBootstrapTask.run` / `putAsync` 见 [`.doc/splash_mechanism.md`](.doc/splash_mechanism.md)。
 
 - [lottie 动画参考 1](https://lottiefiles.com/featured)
 - [lottie 动画参考 2](https://iconscout.com/lottie-animations/)
@@ -2821,7 +2824,7 @@ class MyHomePage extends StatelessWidget {
 
 - [日志系统规范](.doc/contributor_logging_guide.md) - 了解如何正确使用 `XlyLogger` 进行日志输出
 - [异常处理与 Zone 决策](.doc/error_handling.md) - 库与应用边界、为什么不再默认开 Zone Guard、`installErrorHandlers` / `onError` 设计、踩坑场景
-- [启动叠层 MySplash](.doc/splash_mechanism.md) - 与路由解绑、`runApp` 前后时序、跨平台静帧
+- [启动叠层 MySplash](.doc/splash_mechanism.md) - 与路由解绑、`bootstrap` 门闩、`run` / `putAsync`、跨平台静帧
 - [路径与 userData](.doc/user_data_paths.md) - app / userData 双轨、`Session.prepare`、何时用 Store / Picker
 - [MyPicker 与启动编排](.doc/user_data_picker.md) - 系统选夹、`onAfterApply`、与 `MySelector` 边界
 - [本地 KV 存储](.doc/local_storage.md) - `MyStorage` 命名容器，勿用无参 `GetStorage()`

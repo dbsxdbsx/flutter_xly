@@ -187,7 +187,7 @@ class MySplashGate {
     Future<void> runAll() async {
       for (final task in tasks) {
         try {
-          await task.run();
+          await task.execute();
           completed++;
         } catch (e, st) {
           XlyLogger.error(
@@ -197,6 +197,11 @@ class MySplashGate {
             st,
           );
           onError?.call(e, st);
+          if (e is MyBootstrapContractError) {
+            sawFatal = true;
+            _fatalMessage = e.message;
+            return;
+          }
           switch (task.severity) {
             case MyBootstrapSeverity.fatal:
               sawFatal = true;

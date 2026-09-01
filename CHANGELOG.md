@@ -1,4 +1,8 @@
-## Unreleased
+## 0.57.0 - 2026-09-01
+
+### Changed
+
+- **`MyBootstrapTask` 构造改为 `run<T>`（破坏性）**：不再接受 `Future<void> Function()` 构造函数。普通工作走 `MyBootstrapTask.run`，登记异步 GetX 服务走 `putAsync<T>`。`run` 按闭包返回类型推断，不会把内层 `Get.putAsync` 预先收成 `void`。若仍先写成 `Future<void> Function()` 再交给 `run`，任务结束后（含中途抛错）会检查无 tag 的 `void` / `dynamic`，抛 `MyBootstrapContractError`，门闩按 fatal 处理。带 tag 的擦除登记检测不到。详见 `.doc/splash_mechanism.md`。
 
 ## 0.56.0 - 2026-08-31
 

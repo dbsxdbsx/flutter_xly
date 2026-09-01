@@ -95,20 +95,102 @@ enum MyBootstrapSeverity {
   optional,
 }
 
+/// 无 tag 的 `void` / `dynamic` 被登记进 GetX。门闩按 fatal 处理，不看 [MyBootstrapSeverity]。
+///
+/// GetX 注册键是 Type+tag，公开 API 无法枚举 tag，因此带 tag 的擦除登记检测不到。
+class MyBootstrapContractError extends StateError {
+  MyBootstrapContractError(
+    super.message, {
+    this.cause,
+    this.causeStackTrace,
+  });
+
+  /// 同一任务里先污染 DI、随后又抛出的原始异常。
+  final Object? cause;
+  final StackTrace? causeStackTrace;
+}
+
 /// 首帧提交后再跑的 blocking 初始化项。
 ///
 /// 旧 [MyService] 列表仍在 `runApp` 前注册，语义不变。
 /// 首页数据层应 `await MyApp.bootstrapReady`，不要对未就绪依赖直接 `Get.find`。
+///
+/// 任意工作走 [run]。登记异步 GetX 服务走 [putAsync]。
 class MyBootstrapTask {
-  const MyBootstrapTask(
-    this.run, {
+  MyBootstrapTask._(
+    this._body, {
     this.severity = MyBootstrapSeverity.degraded,
     this.debugLabel,
   });
 
-  final Future<void> Function() run;
+  /// 任意会完成的工作。返回类型由闭包推断，不会预先钉成 `void`。
+  static MyBootstrapTask run<T>(
+    Future<T> Function() body, {
+    MyBootstrapSeverity severity = MyBootstrapSeverity.degraded,
+    String? debugLabel,
+  }) {
+    return MyBootstrapTask._(
+      () => _executeGuarded(body),
+      severity: severity,
+      debugLabel: debugLabel,
+    );
+  }
+
+  /// 带类型地把异步服务登记进 GetX（[permanent] / [tag] 原样交给 GetX）。
+  static MyBootstrapTask putAsync<T extends Object>(
+    Future<T> Function() builder, {
+    MyBootstrapSeverity severity = MyBootstrapSeverity.degraded,
+    String? debugLabel,
+    bool permanent = false,
+    String? tag,
+  }) {
+    return run(
+      () => Get.putAsync<T>(builder, permanent: permanent, tag: tag),
+      severity: severity,
+      debugLabel: debugLabel,
+    );
+  }
+
+  final Future<void> Function() _body;
   final MyBootstrapSeverity severity;
   final String? debugLabel;
+
+  /// 门闩与测试调用。
+  Future<void> execute() => _body();
+
+  static Future<void> _executeGuarded<T>(Future<T> Function() body) async {
+    final voidBefore = Get.isRegistered<void>();
+    final dynamicBefore = Get.isRegistered<dynamic>();
+    Object? thrown;
+    StackTrace? thrownSt;
+    try {
+      await body();
+    } catch (e, st) {
+      thrown = e;
+      thrownSt = st;
+    }
+
+    final voidAdded = !voidBefore && Get.isRegistered<void>();
+    final dynamicAdded = !dynamicBefore && Get.isRegistered<dynamic>();
+    if (voidAdded) {
+      await Get.delete<void>(force: true);
+    }
+    if (dynamicAdded) {
+      await Get.delete<dynamic>(force: true);
+    }
+    if (voidAdded || dynamicAdded) {
+      throw MyBootstrapContractError(
+        'MyBootstrapTask: GetX 把实例登记成了 '
+        '${voidAdded ? 'void' : 'dynamic'}。'
+        '登记异步服务请用 MyBootstrapTask.putAsync<YourType>(...)。',
+        cause: thrown,
+        causeStackTrace: thrownSt,
+      );
+    }
+    if (thrown != null) {
+      Error.throwWithStackTrace(thrown, thrownSt!);
+    }
+  }
 }
 
 /// 启动叠层门闩阶段。

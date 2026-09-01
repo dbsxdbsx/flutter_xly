@@ -63,6 +63,8 @@ class MyApp extends StatelessWidget {
     ///
     /// 旧 [services] 仍在 `runApp` 前注册（会推迟第一帧）。首页数据层请
     /// `await MyApp.bootstrapReady`，不要对这里的依赖直接 `Get.find`。
+    ///
+    /// 任意工作 [MyBootstrapTask.run]，登记异步 GetX 服务 [MyBootstrapTask.putAsync]。
     List<MyBootstrapTask>? bootstrap,
 
     /// blocking bootstrap 的超时。超过且无未决 fatal 时按 degraded 揭开。

@@ -2,7 +2,7 @@
 
 > 项目级 AI agent onboarding 入口（[Agentic AI Foundation 开放标准](https://github.com/agentic-ai-foundation/agentsmd)）。
 > 本文件只记录仓库内可共享的事实、约定与索引；个人 Cursor Rules / Skills 不写入此处。
-> 最近更新：2026-08-31（`MySplash` 启动叠层门闩见 `.doc/splash_mechanism.md`）。
+> 最近更新：2026-09-01（`MyBootstrapTask.run` / `putAsync` 见 `.doc/splash_mechanism.md`）。
 
 ## 1. Project Identity
 
@@ -10,7 +10,7 @@
 - **主语言 / 框架**：Dart 3.5+、Flutter 3.7+；GetX、window_manager、flutter_screenutil 等（部分在 `lib/xly.dart` 再导出）。
 - **阶段**：Beta（持续发版，`CHANGELOG.md` 跟踪）。
 - **仓库**：<https://github.com/dbsxdbsx/flutter_xly>
-- **当前版本**：`pubspec.yaml` → `0.56.0`（**0.56.0** `MySplash` 门闩 / `bootstrap`；**0.55.0** 根 SafeArea 可分边关闭；**0.54.1** `MyStorage` 按应用隔离 GetStorage；见 `CHANGELOG`）。
+- **当前版本**：`pubspec.yaml` → `0.57.0`（**0.57.0** `MyBootstrapTask.run` / `putAsync`；**0.56.0** `MySplash` 门闩 / `bootstrap`；**0.55.0** 根 SafeArea 可分边关闭；见 `CHANGELOG`）。
 
 ## 2. Project Map
 
@@ -71,6 +71,7 @@ xly/
 | 全量测试 | `flutter test` | |
 | 路径测试 | `flutter test test/my_paths_test.dart` | |
 | 启动叠层门闩 | `flutter test test/splash_gate_test.dart` | |
+| bootstrap 登记类型 | `flutter test test/bootstrap_put_async_test.dart` | `run<T>` / `putAsync<T>` 对 `void` 推断 |
 | 静态分析 | `flutter analyze` | |
 | 跑示例 | `cd example && flutter run` | 桌面需对应平台工程 |
 
@@ -115,9 +116,8 @@ xly/
 
 ## 5. Active Context
 
-- **最近完成**：**0.56.0** `MySplash` 门闩：`bootstrap` 在首帧后跑，揭开看 init × 动画；旧 `services` 语义不变。
-- **进行中 / Unreleased**：无（见 `CHANGELOG` Unreleased）。
-- **上一轮**：0.55.0 根 SafeArea 可分边关闭；0.54.1 `MyStorage` 命名容器；0.54 统一菜单系统。
+- **最近完成**：**0.57.0** `MyBootstrapTask.run<T>` / `putAsync<T>`：去掉会把 `Get.putAsync` 收成 `void` 的构造函数。
+- **上一轮**：**0.56.0** `MySplash` 门闩；0.55.0 根 SafeArea 可分边关闭；0.54.1 `MyStorage` 命名容器。
 - **上一版**：0.51 `MyTray.closeToTray`；0.50 `MyCard.subtitle` / `MySmartDock.wake()`。
 - **后续**：见 [`.issue/xly-package-hygiene-backlog.md`](.issue/xly-package-hygiene-backlog.md)（可选：可配置持久化键前缀）。
 
@@ -133,7 +133,7 @@ xly/
 - [`.doc/my_scrim_usage.md`](.doc/my_scrim_usage.md) — **MyToast.showScrim 作用域遮罩**（宿主模式、builder 自定义、scrimButtonStyle）
 - [`.issue/xly-package-hygiene-backlog.md`](.issue/xly-package-hygiene-backlog.md) — 可选增强待办
 - [`.doc/error_handling.md`](.doc/error_handling.md)
-- [`.doc/splash_mechanism.md`](.doc/splash_mechanism.md) — **MySplash / 启动叠层**（门闩公式、`bootstrap`、四层启动、跨平台静帧）
+- [`.doc/splash_mechanism.md`](.doc/splash_mechanism.md) — **MySplash / 启动叠层**（门闩公式、`bootstrap`、`run` / `putAsync`、跨平台静帧）
 - [`.doc/my_notify_usage_guide.md`](.doc/my_notify_usage_guide.md)
 - 其余见 `README.md` 内链
 

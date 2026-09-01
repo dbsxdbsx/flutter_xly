@@ -36,7 +36,7 @@ void main() {
       lottie: false,
       staticBrand: false,
       tasks: [
-        MyBootstrapTask(() async {
+        MyBootstrapTask.run(() async {
           ran = true;
         }),
       ],
@@ -75,7 +75,7 @@ void main() {
       lottie: true,
       staticBrand: false,
       tasks: [
-        MyBootstrapTask(() async {
+        MyBootstrapTask.run(() async {
           started.complete();
           await release.future;
         }),
@@ -129,7 +129,7 @@ void main() {
       staticBrand: true,
       minVisible: Duration.zero,
       tasks: [
-        MyBootstrapTask(
+        MyBootstrapTask.run(
           () async => throw StateError('boom'),
           severity: MyBootstrapSeverity.fatal,
           debugLabel: 'fatal-task',
@@ -153,7 +153,7 @@ void main() {
       staticBrand: true,
       minVisible: Duration.zero,
       tasks: [
-        MyBootstrapTask(
+        MyBootstrapTask.run(
           () async => throw StateError('soft'),
           severity: MyBootstrapSeverity.degraded,
         ),
@@ -175,7 +175,7 @@ void main() {
       staticBrand: true,
       minVisible: Duration.zero,
       tasks: [
-        MyBootstrapTask(
+        MyBootstrapTask.run(
           () async => throw StateError('skip'),
           severity: MyBootstrapSeverity.optional,
         ),

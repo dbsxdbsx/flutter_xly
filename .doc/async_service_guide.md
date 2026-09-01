@@ -666,6 +666,7 @@ class Service extends GetxService {
 
 ### Q2: 异步服务会阻塞应用启动吗？
 
+
 **A**: 会有轻微延迟，但 XLY 采用并行注册优化性能。
 
 ```dart
@@ -793,6 +794,20 @@ services: [
   MyService<ChatService>(asyncService: ChatService.create),          // 后注册（依赖 Database）
 ]
 ```
+
+### Q7: 可以在 `bootstrap` 里直接 `Get.putAsync` 吗？
+
+**A**: 门闩里登记服务用 `MyBootstrapTask.putAsync<Foo>`。普通工作用 `MyBootstrapTask.run`。不要先把闭包写成 `Future<void> Function()` 再塞进去——那会把 `Get.putAsync` 收成 `void`，门闩会抛 `MyBootstrapContractError`。
+
+```dart
+MyBootstrapTask.putAsync<Foo>(() => Foo().init())
+MyBootstrapTask.run(() async {
+  await restoreSession();
+})
+MyService<Foo>(asyncService: () => Foo().init()) // runApp 前的正式口
+```
+
+这和「`putAsync` 不等 `onInit()`」是两件事。启动时序见 [启动叠层](splash_mechanism.md)。
 
 ## 用户反馈
 
