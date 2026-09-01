@@ -211,58 +211,188 @@ enum MySplashPhase {
   finished,
 }
 
-class CustomDragArea extends StatelessWidget {
+/// 桌面端整窗拖拽与双击最大化的根手势层。
+///
+/// 双击检测**只**在 [Listener] 层做，全程不参与手势竞技场。这里**禁止**注册
+/// [DoubleTapGestureRecognizer]（哪怕回调是空的）：它会让全 App 每一次点击都被
+/// hold 约 300ms，且双击时内层 `onTap` / `onTapDown` 可能一次都不触发。
+///
+/// 拖拽用 [MyWindowDragGestureRecognizer]，而不是默认的 `PanGestureRecognizer`
+///（鼠标只要 2px 就认，点击手抖足以把 pointer 交给操作系统原生移动循环）。
+///
+/// 双击按 hitTest 分成三种情况，见 [classifyDesktopHit]。
+class CustomDragArea extends StatefulWidget {
   final Widget child;
   final bool enableDoubleClickMaximize;
   final bool draggable;
+
+  /// 测试或自定义最大化切换；为 null 时走 `window_manager`。
+  final Future<void> Function()? onToggleMaximize;
 
   const CustomDragArea({
     super.key,
     required this.child,
     required this.enableDoubleClickMaximize,
     required this.draggable,
+    this.onToggleMaximize,
   });
 
   @override
-  Widget build(BuildContext context) {
-    // 窗口拖动/最大化是桌面物理能力，window_manager 在移动端无实现，
-    // 直接调用会抛 MissingPluginException。框架层兜底：非桌面平台零开销透传。
-    if (!MyPlatform.isDesktop) return child;
-    return GestureDetector(
-      onPanStart: draggable
-          ? (details) async {
-              // 运行时再次检查，兜底 Obx 重建前的竞态窗口
-              if (!MyApp._globalEnableDraggable.value) return;
-              await windowManager.startDragging();
-            }
-          : null,
-      onDoubleTap: enableDoubleClickMaximize
-          ? () async {
-              // 检查是否处于智能停靠状态
-              if (MySmartDock.isSmartDockingEnabled()) {
-                XlyLogger.debug('智能停靠状态下已禁用双击最大化功能');
-                return;
-              }
+  State<CustomDragArea> createState() => _CustomDragAreaState();
+}
 
-              bool isMaximized = await windowManager.isMaximized();
-              if (isMaximized) {
-                await windowManager.restore();
-              } else {
-                await windowManager.maximize();
-              }
-            }
-          : null,
+class _CustomDragAreaState extends State<CustomDragArea> {
+  Offset? _currentDownPos;
+  DateTime? _lastTapTime;
+  Offset? _lastTapPos;
+
+  /// 第二次 DOWN 时预先缓存的分类，避免内层回调改树后 UP 时误判成 background。
+  MyDesktopHitKind? _preClassifiedHit;
+
+  static const _kTapMoveTolerance = kDoubleTapSlop;
+
+  void _onPointerDown(PointerDownEvent event) {
+    if (event.kind != PointerDeviceKind.mouse) return;
+    _currentDownPos = event.position;
+
+    if (_lastTapTime != null &&
+        _lastTapPos != null &&
+        DateTime.now().difference(_lastTapTime!) < kDoubleTapTimeout &&
+        (event.position - _lastTapPos!).distance < kDoubleTapSlop) {
+      _preClassifiedHit = classifyDesktopHit(event.position);
+    } else {
+      _preClassifiedHit = null;
+    }
+  }
+
+  void _onPointerUp(PointerUpEvent event) {
+    if (event.kind != PointerDeviceKind.mouse) return;
+    final downPos = _currentDownPos;
+    _currentDownPos = null;
+    if (downPos == null) return;
+
+    if ((event.position - downPos).distance > _kTapMoveTolerance) {
+      _lastTapTime = null;
+      _lastTapPos = null;
+      _preClassifiedHit = null;
+      return;
+    }
+
+    final now = DateTime.now();
+    if (_lastTapTime != null &&
+        _lastTapPos != null &&
+        now.difference(_lastTapTime!) < kDoubleTapTimeout &&
+        (event.position - _lastTapPos!).distance < kDoubleTapSlop) {
+      _onMouseDoubleTap(event.position);
+      _lastTapTime = null;
+      _lastTapPos = null;
+      return;
+    }
+
+    _lastTapTime = now;
+    _lastTapPos = event.position;
+  }
+
+  void _onPointerCancel(PointerCancelEvent event) {
+    if (event.kind != PointerDeviceKind.mouse) return;
+    _currentDownPos = null;
+    _preClassifiedHit = null;
+    _lastTapTime = null;
+    _lastTapPos = null;
+  }
+
+  void _onMouseDoubleTap(Offset globalPosition) {
+    if (!widget.enableDoubleClickMaximize) return;
+    final classification =
+        _preClassifiedHit ?? classifyDesktopHit(globalPosition);
+    _preClassifiedHit = null;
+
+    switch (classification) {
+      case MyDesktopHitKind.editable:
+      case MyDesktopHitKind.interactive:
+        return;
+      case MyDesktopHitKind.background:
+        _toggleWindowMaximize();
+    }
+  }
+
+  Future<void> _toggleWindowMaximize() async {
+    if (MySmartDock.isSmartDockingEnabled()) {
+      XlyLogger.debug('智能停靠状态下已禁用双击最大化功能');
+      return;
+    }
+
+    final custom = widget.onToggleMaximize;
+    if (custom != null) {
+      await custom();
+      return;
+    }
+
+    try {
+      final isMaximized = await windowManager.isMaximized();
+      if (isMaximized) {
+        await windowManager.restore();
+      } else {
+        await windowManager.maximize();
+      }
+    } catch (e) {
+      XlyLogger.warning('窗口最大化切换失败: $e');
+    }
+  }
+
+  bool _isSuspectedSecondTap(Offset globalPosition) {
+    final lastTime = _lastTapTime;
+    final lastPos = _lastTapPos;
+    if (lastTime == null || lastPos == null) return false;
+    return DateTime.now().difference(lastTime) < kDoubleTapTimeout &&
+        (globalPosition - lastPos).distance < kDoubleTapSlop;
+  }
+
+  void _onWindowDragStart(DragStartDetails details) {
+    if (!widget.draggable) return;
+    if (!MyApp._globalEnableDraggable.value) return;
+    if (_isSuspectedSecondTap(details.globalPosition)) return;
+    windowManager.startDragging();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // 窗口拖动/最大化是桌面物理能力，window_manager 在移动端无实现。
+    // 传入 [CustomDragArea.onToggleMaximize] 时仍挂 Listener，便于 widget 测试
+    // （测试绑定默认是 Android，[MyPlatform.isDesktop] 为 false）。
+    if (!MyPlatform.isDesktop && widget.onToggleMaximize == null) {
+      return widget.child;
+    }
+
+    Widget result = widget.child;
+    if (widget.draggable && MyPlatform.isDesktop) {
+      result = RawGestureDetector(
+        behavior: HitTestBehavior.translucent,
+        gestures: <Type, GestureRecognizerFactory>{
+          MyWindowDragGestureRecognizer: GestureRecognizerFactoryWithHandlers<
+              MyWindowDragGestureRecognizer>(
+            () => MyWindowDragGestureRecognizer(debugOwner: this),
+            (instance) => instance.onStart = _onWindowDragStart,
+          ),
+        },
+        child: result,
+      );
+    }
+
+    return Listener(
       behavior: HitTestBehavior.translucent,
-      child: child,
+      onPointerDown: _onPointerDown,
+      onPointerUp: _onPointerUp,
+      onPointerCancel: _onPointerCancel,
+      child: result,
     );
   }
 }
 
 /// 拖拽保护区域，用于解决子组件拖拽手势与窗口拖拽之间的竞争冲突。
 ///
-/// 桌面端 [CustomDragArea] 的 `onPanStart` 会拦截所有 pan 手势来触发
-/// `windowManager.startDragging()`，导致 [ReorderableListView]、[Draggable]
-/// 等需要拖拽手势的组件无法正常工作。
+/// 桌面端 [CustomDragArea] 的窗口拖拽识别器会与子组件拖拽手势竞争，
+/// 导致 [ReorderableListView]、[Draggable] 等需要拖拽手势的组件无法正常工作。
 ///
 /// 本组件通过在 pointer 事件层（早于手势识别阶段）临时禁用窗口拖拽来解决此问题：
 /// - `onPointerDown`: 保存当前拖拽状态并禁用窗口拖拽

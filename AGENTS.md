@@ -2,7 +2,7 @@
 
 > 项目级 AI agent onboarding 入口（[Agentic AI Foundation 开放标准](https://github.com/agentic-ai-foundation/agentsmd)）。
 > 本文件只记录仓库内可共享的事实、约定与索引；个人 Cursor Rules / Skills 不写入此处。
-> 最近更新：2026-09-01（`MyBootstrapTask.run` / `putAsync` 见 `.doc/splash_mechanism.md`）。
+> 最近更新：2026-09-01（桌面双击最大化与连点分流见 `.doc/desktop_window_gestures.md`）。
 
 ## 1. Project Identity
 
@@ -10,7 +10,7 @@
 - **主语言 / 框架**：Dart 3.5+、Flutter 3.7+；GetX、window_manager、flutter_screenutil 等（部分在 `lib/xly.dart` 再导出）。
 - **阶段**：Beta（持续发版，`CHANGELOG.md` 跟踪）。
 - **仓库**：<https://github.com/dbsxdbsx/flutter_xly>
-- **当前版本**：`pubspec.yaml` → `0.57.0`（**0.57.0** `MyBootstrapTask.run` / `putAsync`；**0.56.0** `MySplash` 门闩 / `bootstrap`；**0.55.0** 根 SafeArea 可分边关闭；见 `CHANGELOG`）。
+- **当前版本**：`pubspec.yaml` → `0.57.1`（**0.57.1** 桌面双击与连点分流；**0.57.0** `MyBootstrapTask.run` / `putAsync`；**0.56.0** `MySplash` 门闩 / `bootstrap`；见 `CHANGELOG`）。
 
 ## 2. Project Map
 
@@ -24,7 +24,7 @@ xly/
 │   ├── picker.dart           # MyPicker.dir/file/files（可选；Web 为桩）
 │   ├── notify.dart / tray.dart / text_editor.dart / scaffold.dart / selector.dart / smart_dock.dart
 │   └── src/
-│       ├── app/              # app.dart 的 part：models + splash_gate + my_app
+│       ├── app/              # app.dart 的 part：models + splash_gate + my_app；另含 desktop_window_gestures.dart
 │       ├── storage/          # MyStorage：命名 GetStorage 容器
 │       ├── platform.dart     # MyPlatform：平台检测、权限、窗口
 │       ├── paths/            # MyPaths、DirStore、DirValidator、Session
@@ -54,6 +54,7 @@ xly/
 - 改 **系统选文件/夹 / Bootstrap 编排** → `lib/picker.dart`、`lib/src/picker/`、[`.doc/user_data_picker.md`](.doc/user_data_picker.md)
 - 改 **MySelector 浮层选择器** → `lib/selector.dart`、`lib/src/selector/`、[`.doc/my_selector_usage.md`](.doc/my_selector_usage.md)
 - 改 **MyApp 启动 / Zone / 异常** → `lib/app.dart`、`lib/src/app/`、`.doc/error_handling.md`
+- 改 **桌面拖窗 / 双击最大化** → `lib/src/app/desktop_window_gestures.dart`、`CustomDragArea`、[`.doc/desktop_window_gestures.md`](.doc/desktop_window_gestures.md)
 - 改 **MySplash / 启动叠层** → `lib/src/splash.dart`、`lib/src/app/splash_gate.dart`、[`.doc/splash_mechanism.md`](.doc/splash_mechanism.md)
 - 改 **GetStorage / 浮窗持久化** → `lib/src/storage/my_storage.dart`、[`.doc/local_storage.md`](.doc/local_storage.md)
 - 改 **Windows 通知** → `lib/src/notify/`、`.doc/my_notify_usage_guide.md`
@@ -72,6 +73,7 @@ xly/
 | 路径测试 | `flutter test test/my_paths_test.dart` | |
 | 启动叠层门闩 | `flutter test test/splash_gate_test.dart` | |
 | bootstrap 登记类型 | `flutter test test/bootstrap_put_async_test.dart` | `run<T>` / `putAsync<T>` 对 `void` 推断 |
+| 桌面拖窗 / 双击分流 | `flutter test test/desktop_window_gestures_test.dart test/window_drag_gesture_recognizer_test.dart` | 连点不最大化；鼠标手抖不拖窗 |
 | 静态分析 | `flutter analyze` | |
 | 跑示例 | `cd example && flutter run` | 桌面需对应平台工程 |
 
@@ -116,8 +118,8 @@ xly/
 
 ## 5. Active Context
 
-- **最近完成**：**0.57.0** `MyBootstrapTask.run<T>` / `putAsync<T>`：去掉会把 `Get.putAsync` 收成 `void` 的构造函数。
-- **上一轮**：**0.56.0** `MySplash` 门闩；0.55.0 根 SafeArea 可分边关闭；0.54.1 `MyStorage` 命名容器。
+- **最近完成**：**0.57.1** 桌面双击最大化改为 Listener 命中分类；`CustomDragArea` 不再注册 `onDoubleTap`。
+- **上一轮**：**0.57.0** `MyBootstrapTask.run<T>` / `putAsync<T>`；0.56.0 `MySplash` 门闩；0.55.0 根 SafeArea 可分边关闭。
 - **上一版**：0.51 `MyTray.closeToTray`；0.50 `MyCard.subtitle` / `MySmartDock.wake()`。
 - **后续**：见 [`.issue/xly-package-hygiene-backlog.md`](.issue/xly-package-hygiene-backlog.md)（可选：可配置持久化键前缀）。
 
@@ -134,6 +136,7 @@ xly/
 - [`.issue/xly-package-hygiene-backlog.md`](.issue/xly-package-hygiene-backlog.md) — 可选增强待办
 - [`.doc/error_handling.md`](.doc/error_handling.md)
 - [`.doc/splash_mechanism.md`](.doc/splash_mechanism.md) — **MySplash / 启动叠层**（门闩公式、`bootstrap`、`run` / `putAsync`、跨平台静帧）
+- [`.doc/desktop_window_gestures.md`](.doc/desktop_window_gestures.md) — **桌面拖窗 / 双击最大化**（禁止外层 `onDoubleTap`、命中分类、`MyDoubleClickConsumeZone`）
 - [`.doc/my_notify_usage_guide.md`](.doc/my_notify_usage_guide.md)
 - 其余见 `README.md` 内链
 

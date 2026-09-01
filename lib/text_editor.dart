@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 
+import 'src/app/desktop_window_gestures.dart';
 import 'src/logger.dart';
 
 part 'src/text_editor/models.dart';

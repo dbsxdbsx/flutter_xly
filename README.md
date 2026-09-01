@@ -63,6 +63,7 @@ XLY 是一个 Flutter 懒人工具包，提供了一些常用的功能和组件�
 35. 浮层选择器(`MySelector` / `MySelectorController`)(在触发按钮附近弹出半透明毛玻璃面板，支持搜索、清除项、自定义渲染、键盘导航；`MySelectorController` 封装选中状态和配置，支持外部直接操控 `setValue` / `clear` 等)
 36. 路径双轨(`MyPaths` app / userData；`MyUserDataDirStore` / `MyUserDataDirSession` 启动编排) — 见 [`.doc/user_data_paths.md`](.doc/user_data_paths.md)
 37. 系统文件/夹选择(`MyPicker`，封装 `file_selector`；与 `MySelector` 应用内列表分离) — 见 [`.doc/user_data_picker.md`](.doc/user_data_picker.md)
+38. 桌面双击消费区(`MyDoubleClickConsumeZone`)(标记 Listener-only 自定义控件，避免连点/双击穿透到窗口最大化；`MySpinBox` / `MyTextEditor` 已内置，见 [`.doc/desktop_window_gestures.md`](.doc/desktop_window_gestures.md))
 
 ## 内置依赖包
 
@@ -2445,7 +2446,7 @@ bool canResize = MyApp.isResizableEnabled();
 await MyApp.setDraggableEnabled(true);   // 允许拖动窗口
 bool canDrag = MyApp.isDraggableEnabled();
 
-// 双击最大化控制
+// 双击最大化控制（只作用于空白区域；按钮 / 输入框上的连点不会最大化）
 await MyApp.setDoubleClickMaximizeEnabled(true);  // 允许双击最大化
 bool canDoubleClick = MyApp.isDoubleClickMaximizeEnabled();
 
@@ -2495,7 +2496,9 @@ await MyApp.toggleFullScreen();
 
 ### 使用拖拽保护区域（MyDragProtectedArea）
 
-在桌面端，`MyApp` 通过 `CustomDragArea`（内部 `GestureDetector`）覆盖整个内容区域来实现窗口拖拽。当子组件自身也需要拖拽手势时（如 `ReorderableListView` 使用了 `ReorderableDelayedDragStartListener`），会出现**手势竞争**：`CustomDragArea` 的 pan 手势早于子组件的延迟拖拽被识别，导致触发 `windowManager.startDragging()` 使窗口移动，子组件排序失效。
+在桌面端，`MyApp` 通过 `CustomDragArea`（内部 `Listener` + `MyWindowDragGestureRecognizer`）覆盖整个内容区域来实现窗口拖拽和空白处双击最大化。当子组件自身也需要拖拽手势时（如 `ReorderableListView` 使用了 `ReorderableDelayedDragStartListener`），会出现**手势竞争**：窗口拖拽识别器早于子组件的延迟拖拽被识别，导致触发 `windowManager.startDragging()` 使窗口移动，子组件排序失效。
+
+双击最大化与页面内连点的分流见 [`.doc/desktop_window_gestures.md`](.doc/desktop_window_gestures.md)。不要在整窗再挂 `GestureDetector.onDoubleTap`。
 
 `MyDragProtectedArea` 通过在 pointer 事件层（早于所有手势识别阶段）临时禁用窗口拖拽来解决此问题：
 
@@ -2828,6 +2831,7 @@ class MyHomePage extends StatelessWidget {
 - [路径与 userData](.doc/user_data_paths.md) - app / userData 双轨、`Session.prepare`、何时用 Store / Picker
 - [MyPicker 与启动编排](.doc/user_data_picker.md) - 系统选夹、`onAfterApply`、与 `MySelector` 边界
 - [本地 KV 存储](.doc/local_storage.md) - `MyStorage` 命名容器，勿用无参 `GetStorage()`
+- [桌面拖窗与双击最大化](.doc/desktop_window_gestures.md) - 禁止外层 `onDoubleTap`、命中分类、`MyDoubleClickConsumeZone`
 
 ## 许可证
 

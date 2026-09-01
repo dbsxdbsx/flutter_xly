@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import 'menu_models.dart';
@@ -11,11 +12,16 @@ extension RightClickMenuExtension on Widget {
     MyMenuPopStyle animationStyle = MyMenuPopStyle.reveal,
     MyMenuStyle? style,
   }) {
-    return GestureDetector(
-      onSecondaryTapDown: (TapDownDetails details) {
+    // 必须用 Listener，不能用 GestureDetector(onSecondaryTapDown)。
+    // Flutter 只要存在 TapGestureRecognizer，就会给
+    // RenderSemanticsGestureHandler.onTap 填上非空回调；整页右键热区
+    // 会被桌面双击分类误判成 interactive，空白处无法最大化。
+    return Listener(
+      onPointerDown: (event) {
+        if (event.buttons != kSecondaryMouseButton) return;
         MyMenu.show(
           context,
-          details.globalPosition,
+          event.position,
           menuElements,
           animationStyle: animationStyle,
           style: style,

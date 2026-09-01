@@ -1,3 +1,13 @@
+## 0.57.1 - 2026-09-01
+
+### Added
+
+- **`MyDoubleClickConsumeZone`**：给只用 `Listener`、没有 tap 语义的自定义控件显式标记交互区，避免桌面端双击穿透到窗口最大化。`MySpinBox` / `MyTextEditor` 已内置。`showRightMenu` 改为 `Listener` 收右键，避免整页右键热区被误判成可点击区、空白处无法最大化。
+
+### Fixed
+
+- **连点加减 / 双击输入框不再触发窗口最大化**：`CustomDragArea` 不再在整窗注册 `onDoubleTap`（那会 hold 每一次点击约 300ms，并和内层 tap 抢竞技场）。双击改为 Listener 层判定，再按 hitTest 分成输入框 / 可点击区 / 空白：只有空白才切换最大化。整窗拖拽改用 `MyWindowDragGestureRecognizer`（鼠标 12px 阈值），避免点击手抖把 pointer 交给系统原生拖窗、双击凑不齐两击。详见 [`.doc/desktop_window_gestures.md`](.doc/desktop_window_gestures.md)。
+
 ## 0.57.0 - 2026-09-01
 
 ### Changed

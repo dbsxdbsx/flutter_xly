@@ -7,6 +7,7 @@ library;
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -27,8 +28,10 @@ import 'src/splash.dart';
 import 'src/toast/toast.dart';
 import 'src/tray/my_tray.dart';
 import 'src/window_enums.dart';
+import 'src/app/desktop_window_gestures.dart';
 
 export 'src/storage/my_storage.dart';
+export 'src/app/desktop_window_gestures.dart';
 
 part 'src/app/models.dart';
 part 'src/app/splash_gate.dart';

@@ -179,142 +179,144 @@ class MyTextEditor extends GetView<MyTextEditorController> {
   @override
   Widget build(BuildContext context) {
     if (getDropDownOptions == null) {
-      return _buildTextField(context);
+      return MyDoubleClickConsumeZone(child: _buildTextField(context));
     }
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return FutureBuilder<List<String>>(
-          future: getDropDownOptions!(),
-          builder: (context, snapshot) {
-            // 在窗口尺寸变化或布局变化时，自动重算方向（通过 LayoutBuilder 触发 build）
-            final openDirection = _computeOpenDirection(context);
+    return MyDoubleClickConsumeZone(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return FutureBuilder<List<String>>(
+            future: getDropDownOptions!(),
+            builder: (context, snapshot) {
+              // 在窗口尺寸变化或布局变化时，自动重算方向（通过 LayoutBuilder 触发 build）
+              final openDirection = _computeOpenDirection(context);
 
-            // 首帧后：在自动模式下，计算并保存方向，用于未弹出时也能正确显示箭头
-            if (showListCandidateBelow == null) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                final dir = _computeOpenDirection(context);
-                if (controller.optionsDirection != dir) {
-                  controller.setOptionsDirection(dir);
-                }
-              });
-            }
+              // 首帧后：在自动模式下，计算并保存方向，用于未弹出时也能正确显示箭头
+              if (showListCandidateBelow == null) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  final dir = _computeOpenDirection(context);
+                  if (controller.optionsDirection != dir) {
+                    controller.setOptionsDirection(dir);
+                  }
+                });
+              }
 
-            return RawAutocomplete<String>(
-              textEditingController: textController,
-              focusNode: controller.focusNode,
-              optionsViewOpenDirection: openDirection,
-              optionsBuilder: (TextEditingValue textEditingValue) {
-                if (!enabled) return <String>[];
+              return RawAutocomplete<String>(
+                textEditingController: textController,
+                focusNode: controller.focusNode,
+                optionsViewOpenDirection: openDirection,
+                optionsBuilder: (TextEditingValue textEditingValue) {
+                  if (!enabled) return <String>[];
 
-                // 如果刚刚选择了一个选项，不显示下拉列表
-                if (controller.justSelected) {
-                  controller.updateCurrentOptions([]);
-                  return <String>[];
-                }
+                  // 如果刚刚选择了一个选项，不显示下拉列表
+                  if (controller.justSelected) {
+                    controller.updateCurrentOptions([]);
+                    return <String>[];
+                  }
 
-                final allOptions = snapshot.data ?? <String>[];
+                  final allOptions = snapshot.data ?? <String>[];
 
-                // 当由“获得焦点”或“点击箭头”触发，且要求始终展示全量候选时，忽略输入进行过滤
-                if (controller._lastOpenTrigger != _OpenTrigger.typing &&
-                    showAllOnPopWithNonTyping) {
+                  // 当由“获得焦点”或“点击箭头”触发，且要求始终展示全量候选时，忽略输入进行过滤
+                  if (controller._lastOpenTrigger != _OpenTrigger.typing &&
+                      showAllOnPopWithNonTyping) {
+                    controller.updateCurrentOptions(allOptions);
+                    return allOptions;
+                  }
+
+                  if (textEditingValue.text.isNotEmpty) {
+                    final filteredOptions = allOptions
+                        .where(
+                          (option) =>
+                              _filterOption(option, textEditingValue.text),
+                        )
+                        .toList();
+
+                    // 更新控制器中的选项列表，用于键盘导航
+                    controller.updateCurrentOptions(filteredOptions);
+                    return filteredOptions;
+                  }
                   controller.updateCurrentOptions(allOptions);
                   return allOptions;
-                }
+                },
+                onSelected: (String selected) {
+                  controller.markJustSelected();
+                  onOptionSelected?.call(selected);
+                  controller.setDropdownOpen(false);
+                  controller.clearHighlight();
+                },
+                optionsViewBuilder: (context, onSelected, options) {
+                  // 只有在用户没有手动关闭下拉列表时才显示
+                  final shouldShow =
+                      options.isNotEmpty && !controller.manuallyClosedDropdown;
+                  // 避免在build期间触发响应式更新，延迟到frame结束
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    controller.setDropdownOpen(shouldShow);
+                  });
+                  final dropdownWidth = constraints.maxWidth;
 
-                if (textEditingValue.text.isNotEmpty) {
-                  final filteredOptions = allOptions
-                      .where(
-                        (option) =>
-                            _filterOption(option, textEditingValue.text),
-                      )
-                      .toList();
-
-                  // 更新控制器中的选项列表，用于键盘导航
-                  controller.updateCurrentOptions(filteredOptions);
-                  return filteredOptions;
-                }
-                controller.updateCurrentOptions(allOptions);
-                return allOptions;
-              },
-              onSelected: (String selected) {
-                controller.markJustSelected();
-                onOptionSelected?.call(selected);
-                controller.setDropdownOpen(false);
-                controller.clearHighlight();
-              },
-              optionsViewBuilder: (context, onSelected, options) {
-                // 只有在用户没有手动关闭下拉列表时才显示
-                final shouldShow =
-                    options.isNotEmpty && !controller.manuallyClosedDropdown;
-                // 避免在build期间触发响应式更新，延迟到frame结束
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  controller.setDropdownOpen(shouldShow);
-                });
-                final dropdownWidth = constraints.maxWidth;
-
-                // 让 RawAutocomplete 控制展开方向（3.35+），我们仅提供内容和尺寸
-                return _buildDropdownList(
+                  // 让 RawAutocomplete 控制展开方向（3.35+），我们仅提供内容和尺寸
+                  return _buildDropdownList(
+                    context,
+                    onSelected,
+                    options,
+                    dropdownWidth,
+                  );
+                },
+                fieldViewBuilder: (
                   context,
-                  onSelected,
-                  options,
-                  dropdownWidth,
-                );
-              },
-              fieldViewBuilder: (
-                context,
-                textEditingController,
-                focusNode,
-                onFieldSubmitted,
-              ) {
-                return _buildTextField(
-                  context,
-                  onSuffixIconTap: () {
-                    if (enabled) {
-                      // 记录触发来源为“箭头点击”并清除手动关闭标记
-                      controller._lastOpenTrigger = _OpenTrigger.arrow;
-                      controller.resetManuallyClosedFlag();
+                  textEditingController,
+                  focusNode,
+                  onFieldSubmitted,
+                ) {
+                  return _buildTextField(
+                    context,
+                    onSuffixIconTap: () {
+                      if (enabled) {
+                        // 记录触发来源为“箭头点击”并清除手动关闭标记
+                        controller._lastOpenTrigger = _OpenTrigger.arrow;
+                        controller.resetManuallyClosedFlag();
 
-                      // 若当前未获得焦点，先请求焦点
-                      if (!focusNode.hasFocus) {
-                        focusNode.requestFocus();
+                        // 若当前未获得焦点，先请求焦点
+                        if (!focusNode.hasFocus) {
+                          focusNode.requestFocus();
 
-                        // 当 showAllOnPopWithNonTyping 为 false 且文本非空时，焦点回调不会触发“轻微文本变更”，
-                        // 因此在此处补一次以打开（保持按输入过滤的语义）。
-                        if (!showAllOnPopWithNonTyping) {
-                          final currentText = textEditingController.text;
-                          textEditingController.text = ' ';
-                          Future.microtask(() {
-                            textEditingController.text = currentText;
-                            textEditingController.selection =
-                                TextSelection.collapsed(
-                              offset: currentText.length,
-                            );
-                          });
+                          // 当 showAllOnPopWithNonTyping 为 false 且文本非空时，焦点回调不会触发“轻微文本变更”，
+                          // 因此在此处补一次以打开（保持按输入过滤的语义）。
+                          if (!showAllOnPopWithNonTyping) {
+                            final currentText = textEditingController.text;
+                            textEditingController.text = ' ';
+                            Future.microtask(() {
+                              textEditingController.text = currentText;
+                              textEditingController.selection =
+                                  TextSelection.collapsed(
+                                offset: currentText.length,
+                              );
+                            });
+                          }
+                          // 不调用 onFieldSubmitted，避免与焦点回调产生重复触发
+                          return;
                         }
-                        // 不调用 onFieldSubmitted，避免与焦点回调产生重复触发
-                        return;
-                      }
 
-                      // 已经获得焦点：直接触发一次轻微文本变更以打开下拉
-                      final currentText = textEditingController.text;
-                      textEditingController.text = ' ';
-                      Future.microtask(() {
-                        textEditingController.text = currentText;
-                        textEditingController.selection =
-                            TextSelection.collapsed(
-                          offset: currentText.length,
-                        );
-                      });
-                      onFieldSubmitted();
-                    }
-                  },
-                );
-              },
-            );
-          },
-        );
-      },
+                        // 已经获得焦点：直接触发一次轻微文本变更以打开下拉
+                        final currentText = textEditingController.text;
+                        textEditingController.text = ' ';
+                        Future.microtask(() {
+                          textEditingController.text = currentText;
+                          textEditingController.selection =
+                              TextSelection.collapsed(
+                            offset: currentText.length,
+                          );
+                        });
+                        onFieldSubmitted();
+                      }
+                    },
+                  );
+                },
+              );
+            },
+          );
+        },
+      ),
     );
   }
 
