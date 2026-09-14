@@ -29,12 +29,14 @@ class Page9Controller extends GetxController {
   // 显示任务栏图标
   Future<void> showTaskbarIcon() async {
     await MyTray.to.showTaskbarIcon();
+    await ExampleService.to.setHideTaskBarIcon(false);
     refreshTaskbarState();
   }
 
   // 隐藏任务栏图标
   Future<void> hideTaskbarIcon() async {
     await MyTray.to.hideTaskbarIcon();
+    await ExampleService.to.setHideTaskBarIcon(true);
     refreshTaskbarState();
   }
 
@@ -306,7 +308,8 @@ class Page9View extends GetView<Page9Controller> {
               '任务栏图标策略',
               [
                 Obx(() => Text(
-                      '当前：${controller.isTaskbarHidden.value ? "隐藏" : "显示"}',
+                      '当前：${controller.isTaskbarHidden.value ? "隐藏" : "显示"}'
+                      '（与窗口显隐正交；下次启动会记住）',
                       style: TextStyle(fontSize: 14.sp),
                     )),
                 SizedBox(height: 8.h),

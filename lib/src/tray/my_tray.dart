@@ -269,8 +269,12 @@ class MyTray extends GetxService with TrayListener, WindowListener {
       currentIcon.value = absoluteIconPath;
       _isInitialized.value = true;
 
-      // 应用任务栏图标显示策略（隐藏/显示）
-      await windowManager.setSkipTaskbar(_hideTaskBarIcon.value);
+      // 窗口尚未出示时一律跳过任务栏，避免隐藏窗先冒出按钮。
+      // 可见后的策略由 hideTaskBarIcon / pop() / 首帧出示接管。
+      final windowVisible = await windowManager.isVisible();
+      await windowManager.setSkipTaskbar(
+        windowVisible ? _hideTaskBarIcon.value : true,
+      );
 
       // 应用“关闭即隐藏”策略（QQ 式）。注意 MyApp 初始化阶段会先 setPreventClose(false)，
       // 这里在托盘就绪后覆盖，确保拦截优先生效。
@@ -593,8 +597,16 @@ class MyTray extends GetxService with TrayListener, WindowListener {
     }
   }
 
+  Future<void> _ensureInitialized() async {
+    final pending = _initializeFuture;
+    if (pending != null) {
+      await pending;
+    }
+  }
+
   /// 进入托盘模式（智能隐藏：根据智能停靠状态决定行为）
   Future<void> hide() async {
+    await _ensureInitialized();
     try {
       // 设置托盘模式状态
       isTrayMode.value = true;
@@ -635,6 +647,7 @@ class MyTray extends GetxService with TrayListener, WindowListener {
 
   /// 从托盘恢复窗口（退出托盘模式）
   Future<void> pop() async {
+    await _ensureInitialized();
     try {
       // 退出托盘模式
       isTrayMode.value = false;
@@ -667,10 +680,7 @@ class MyTray extends GetxService with TrayListener, WindowListener {
     _destroyCompleter = Completer<void>();
 
     try {
-      final initializing = _initializeFuture;
-      if (initializing != null) {
-        await initializing;
-      }
+      await _ensureInitialized();
 
       // 即使初始化在置 isInitialized 前失败，也可能已经注册 listener 或创建图标；
       // 销毁必须幂等地尝试回收所有部分初始化资源，不能提前返回。
@@ -710,10 +720,7 @@ class MyTray extends GetxService with TrayListener, WindowListener {
     _beginExitCompleter = Completer<void>();
 
     try {
-      final initializing = _initializeFuture;
-      if (initializing != null) {
-        await initializing;
-      }
+      await _ensureInitialized();
 
       if (_windowListenerAdded) {
         windowManager.removeListener(this);

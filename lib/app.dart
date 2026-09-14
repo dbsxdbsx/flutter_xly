@@ -29,9 +29,11 @@ import 'src/toast/toast.dart';
 import 'src/tray/my_tray.dart';
 import 'src/window_enums.dart';
 import 'src/app/desktop_window_gestures.dart';
+import 'src/app/desktop_window_launch.dart';
 
 export 'src/storage/my_storage.dart';
 export 'src/app/desktop_window_gestures.dart';
+export 'src/app/desktop_window_launch.dart';
 
 part 'src/app/models.dart';
 part 'src/app/splash_gate.dart';

@@ -15,6 +15,7 @@ class MySplashGate {
     this.onVisible,
     this.showWindowAfterFirstFrame = false,
     this.focusWindowAfterFirstFrame = false,
+    this.skipTaskbarWhenVisible = false,
     this.onError,
   }) : tasks = List<MyBootstrapTask>.unmodifiable(tasks ?? const []);
 
@@ -28,6 +29,9 @@ class MySplashGate {
   final VoidCallback? onVisible;
   final bool showWindowAfterFirstFrame;
   final bool focusWindowAfterFirstFrame;
+
+  /// 首帧出示窗口时的任务栏策略。有托盘时跟 [MyTray.hideTaskBarIcon]。
+  final bool skipTaskbarWhenVisible;
   final void Function(Object error, StackTrace stack)? onError;
 
   final Completer<void> _ready = Completer<void>();
@@ -147,6 +151,7 @@ class MySplashGate {
 
     if (showWindowAfterFirstFrame && MyPlatform.isDesktop) {
       try {
+        await windowManager.setSkipTaskbar(skipTaskbarWhenVisible);
         await windowManager.show();
         if (focusWindowAfterFirstFrame) {
           await windowManager.focus();

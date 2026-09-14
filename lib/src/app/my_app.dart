@@ -91,8 +91,18 @@ class MyApp extends StatelessWidget {
     // 窗口基础配置
     Size? minimumSize,
     bool centerWindowOnInit = true,
+
+    /// 启动结束后主窗口是否可见。默认 `true`。
+    ///
+    /// `false` 表示静默驻留（托盘工具）；不会在首帧后再自动 `show()`。
+    /// 等首帧再出示请用 [deferShowUntilFirstFrame]，不要把本参数当防闪开关。
     bool showWindowOnInit = true,
     bool focusWindowOnInit = true,
+
+    /// 仅在 [showWindowOnInit] 为 `true` 时生效：等到 Flutter 首帧提交后再 `show()`。
+    ///
+    /// `null`（默认）：桌面且传入了 [splash] 时为 `true`，否则 `false`。
+    bool? deferShowUntilFirstFrame,
 
     // 窗口交互配置
     bool draggable = true,
@@ -200,6 +210,21 @@ class MyApp extends StatelessWidget {
         );
       }
 
+      final skipTaskbarWhenVisible = tray?.hideTaskBarIcon ?? setSkipTaskbar;
+      if (tray != null && setSkipTaskbar) {
+        XlyLogger.warning(
+          'MyApp.setSkipTaskbar 在传入 tray 时由 MyTray.hideTaskBarIcon '
+          '接管窗口可见后的任务栏策略',
+        );
+      }
+
+      final windowLaunch = DesktopWindowLaunch.resolve(
+        isDesktop: MyPlatform.isDesktop,
+        showWindowOnInit: showWindowOnInit,
+        hasSplash: splash != null,
+        deferShowUntilFirstFrame: deferShowUntilFirstFrame,
+      );
+
       // 单实例检查 - 在其他初始化之前进行，以免创建多余的窗口
       if (singleInstance) {
         final instanceKey = singleInstanceKey ?? appName ?? 'XlyFlutterApp';
@@ -207,24 +232,9 @@ class MyApp extends StatelessWidget {
           instanceKey: instanceKey,
           activateExisting: singleInstanceActivateOnSecond,
           onActivate: MyPlatform.isDesktop
-              ? () async {
-                  // 当收到激活请求时，显示并聚焦窗口
-                  try {
-                    await windowManager.show();
-                    await windowManager.focus();
-                    await windowManager.setAlwaysOnTop(true);
-                    // 短暂置顶后取消，避免影响用户体验
-                    Future.delayed(const Duration(milliseconds: 100), () async {
-                      try {
-                        await windowManager.setAlwaysOnTop(false);
-                      } catch (e) {
-                        XlyLogger.error('取消窗口置顶失败', e);
-                      }
-                    });
-                  } catch (e) {
-                    XlyLogger.error('激活窗口失败', e);
-                  }
-                }
+              ? () => _revealDesktopWindow(
+                    skipTaskbarWhenVisible: skipTaskbarWhenVisible,
+                  )
               : null,
         );
 
@@ -249,7 +259,7 @@ class MyApp extends StatelessWidget {
             setMaximizable: setMaximizable,
             centerWindow: centerWindowOnInit,
             focusWindow: focusWindowOnInit,
-            showWindow: showWindowOnInit,
+            showWindow: windowLaunch.showDuringWindowInit,
             setAspectRatio: setAspectRatio && setAspectRatioEnabled,
             minimumSize: minimumSize,
           );
@@ -344,6 +354,10 @@ class MyApp extends StatelessWidget {
         await service.registerService();
       }
 
+      if (windowLaunch.stayHidden && Get.isRegistered<MyTray>()) {
+        await MyTray.to.hide();
+      }
+
       // 5. 在所有配置应用完毕后，设置路由并运行应用
       if (appName != null) {
         _globalWindowTitle.value = appName;
@@ -358,8 +372,9 @@ class MyApp extends StatelessWidget {
         bootstrapTimeout: bootstrapTimeout,
         tasks: bootstrap,
         onVisible: onSplashVisible,
-        showWindowAfterFirstFrame: MyPlatform.isDesktop && !showWindowOnInit,
+        showWindowAfterFirstFrame: windowLaunch.showAfterFirstFrame,
         focusWindowAfterFirstFrame: focusWindowOnInit,
+        skipTaskbarWhenVisible: skipTaskbarWhenVisible,
         onError: onError,
       );
       splashGate.attachToApp();
@@ -505,7 +520,9 @@ class MyApp extends StatelessWidget {
     await windowManager.setMaximizable(setMaximizable);
     await windowManager.setResizable(setResizable);
 
-    if (setSkipTaskbar) await windowManager.setSkipTaskbar(setSkipTaskbar);
+    if (!showWindow || setSkipTaskbar) {
+      await windowManager.setSkipTaskbar(true);
+    }
 
     // 配置窗口的初始可见性、焦点和位置。
     if (showWindow) {
@@ -516,6 +533,31 @@ class MyApp extends StatelessWidget {
     }
     if (centerWindow) {
       await windowManager.center();
+    }
+  }
+
+  /// 第二次启动或外部激活：按托盘策略出示已有窗口。
+  static Future<void> _revealDesktopWindow({
+    required bool skipTaskbarWhenVisible,
+  }) async {
+    try {
+      if (Get.isRegistered<MyTray>()) {
+        await MyTray.to.pop();
+      } else {
+        await windowManager.setSkipTaskbar(skipTaskbarWhenVisible);
+        await windowManager.show();
+        await windowManager.focus();
+      }
+      await windowManager.setAlwaysOnTop(true);
+      Future.delayed(const Duration(milliseconds: 100), () async {
+        try {
+          await windowManager.setAlwaysOnTop(false);
+        } catch (e) {
+          XlyLogger.error('取消窗口置顶失败', e);
+        }
+      });
+    } catch (e) {
+      XlyLogger.error('激活窗口失败', e);
     }
   }
 

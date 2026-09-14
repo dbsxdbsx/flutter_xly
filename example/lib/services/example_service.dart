@@ -4,11 +4,27 @@ import 'package:xly/xly.dart';
 class ExampleService extends GetxService {
   static ExampleService get to => Get.find();
 
+  static const showWindowOnInitKey = 'show_window_on_init';
+  static const hideTaskBarIconKey = 'hide_task_bar_icon';
+
+  /// 本次进程启动时实际传给 [MyApp.initialize] 的值，由 `main` 写入。
+  static bool thisLaunchShowWindowOnInit = false;
+
   final windowDraggable = true.obs;
   final windowResizable = false.obs;
   final smartDocking = false.obs;
   final aspectRatio = false.obs;
+  final showWindowOnInit = false.obs;
+  final hideTaskBarIcon = false.obs;
   late GetStorage _storage;
+
+  static bool readShowWindowOnInit() {
+    return MyStorage.box.read<bool>(showWindowOnInitKey) ?? false;
+  }
+
+  static bool readHideTaskBarIcon() {
+    return MyStorage.box.read<bool>(hideTaskBarIconKey) ?? false;
+  }
 
   @override
   Future<void> onInit() async {
@@ -39,6 +55,19 @@ class ExampleService extends GetxService {
     final savedAspectRatio = _storage.read('aspect_ratio') ?? false;
     aspectRatio.value = savedAspectRatio;
     await MyApp.setAspectRatioEnabled(savedAspectRatio);
+
+    showWindowOnInit.value = readShowWindowOnInit();
+    hideTaskBarIcon.value = readHideTaskBarIcon();
+  }
+
+  Future<void> setShowWindowOnInit(bool enabled) async {
+    showWindowOnInit.value = enabled;
+    await _storage.write(showWindowOnInitKey, enabled);
+  }
+
+  Future<void> setHideTaskBarIcon(bool hide) async {
+    hideTaskBarIcon.value = hide;
+    await _storage.write(hideTaskBarIconKey, hide);
   }
 
   Future<void> setWindowDraggable(bool enabled) async {

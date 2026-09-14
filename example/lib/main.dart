@@ -20,13 +20,22 @@ import 'pages/page9.dart';
 import 'services/example_service.dart';
 import 'widgets/platform_info_widget.dart';
 
+const _exampleAppName = '测试用例 test';
+
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await MyStorage.ensureInitialized(appName: _exampleAppName);
+  final showWindowOnInit = ExampleService.readShowWindowOnInit();
+  final hideTaskBarIcon = ExampleService.readHideTaskBarIcon();
+  ExampleService.thisLaunchShowWindowOnInit = showWindowOnInit;
+
   await MyApp.initialize(
-    appName: "测试用例 test",
+    appName: _exampleAppName,
+    initializeWidgetsBinding: false,
 
     enableDebugLogging: true, // 开发时启用调试日志
-    showWindowOnInit: false,
-    focusWindowOnInit: false,
+    showWindowOnInit: showWindowOnInit, // 默认静默；第一个 tab 可改「下次启动」
+    focusWindowOnInit: showWindowOnInit,
 
     setTitleBarHidden: false,
     designSize: const Size(900, 700),
@@ -34,6 +43,7 @@ void main() async {
     tray: MyTray(
       // iconPath: "assets/tray_icons_for_test/tray.ico", // 明确指定图标路径，兼容Debug/Release
       tooltip: "XLY示例应用的托盘tooltip",
+      hideTaskBarIcon: hideTaskBarIcon,
       menuItems: [
         MyTrayMenuItem(
           label: '恢复显示',

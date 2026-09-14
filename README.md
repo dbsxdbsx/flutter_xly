@@ -381,69 +381,52 @@ XLY 包内置单实例管理功能，确保应用在同一台设备上只能运�
 #### 注意事项
 
 - 确保`singleInstanceKey`在不同版本间保持一致，避免多实例并存
-- 激活已有实例时会自动显示窗口并获得焦点
+- 激活已有实例时：有托盘走 `MyTray.pop()`（遵守 `hideTaskBarIcon`），否则 `show()` + `focus()`
 - 单实例检查在其他初始化步骤之前进行，避免创建多余的窗口资源
 - 极端情况下（非本应用的第三方进程恰好占用同一端口且不响应健康检查），降级放行可能允许"双实例"启动，但概率极低
 
-### 窗口初始化参数说明
+### 窗口启动：显隐、首帧出示、任务栏
 
-`MyApp.initialize` 中的窗口控制参数已重命名以提升语义清晰度：
+这三件事互相独立，详见 [`.doc/desktop_window_launch.md`](.doc/desktop_window_launch.md)。
 
-- **`showWindowOnInit`**（默认：`true`）：是否在初始化完成后显示窗口
-
-  - 仅在初始化时生效，后续可通过 `windowManager.show()/hide()` 控制
-  - 设置为 `false` 可实现"后台启动"或"托盘优先启动"
-  - 采用简化的控制逻辑，确保窗口状态与参数设置一致
-
-- **`focusWindowOnInit`**（默认：`true`）：是否在初始化时让窗口获得焦点
-
-  - **仅在 `showWindowOnInit: true` 时生效**，若窗口不显示则此参数无效
-  - 设置为 `false` 可让窗口显示但不抢夺用户当前焦点（如用户正在其他应用中打字）
-  - 后续可通过 `windowManager.focus()/blur()` 控制
-
-- **`centerWindowOnInit`**（默认：`true`）：是否在初始化时将窗口居中显示
-  - 仅在初始化时生效，后续可通过 `windowManager.center()` 或 `windowManager.setPosition()` 控制
-
-**技术说明**：为解决 Windows runner 默认模板的首帧强制显示问题，xly 内部实现了多层校正机制，确保最终窗口状态与参数设置严格一致。如需完全根除短暂闪现，可使用本包提供的工具对 Windows runner 进行一键优化。
-
-### 根除 Windows 启动闪现：静默启动补丁
-
-**问题**：即使在 `MyApp.initialize` 中设置 `showWindowOnInit: false`，你的 Flutter Windows 应用在启动时可能仍会短暂闪现一个白屏或黑屏窗口。这是因为 Flutter 官方的 Windows runner 模板默认会在渲染第一帧后强制显示窗口。
-
-**解决方案**：本包提供了一个安全的、非侵入式的一键补丁工具，用于注释掉你项目中 `windows/runner/flutter_window.cpp` 文件里的强制显示代码，将窗口显示时机完全交由 Dart 侧控制。
-
-**如何使用**：
-
-1.  打开终端，`cd` 到你的 Flutter 项目根目录。
-2.  执行以下命令：
-
-    ```bash
-    dart run xly:win_setup
-    ```
-
-**这个工具会做什么**：
-
-- **精确查找**：它会精确查找并注释掉 `flutter_window.cpp` 中导致问题的 `this->Show()` 和 `flutter_controller_->ForceRedraw()` 两行代码。
-- **保持安全**：它不会删除或覆盖你的任何其他自定义代码。如果你的文件已被修改过，它会安全跳过。
-- **自动备份**：默认情况下，它会为你创建一个 `flutter_window.cpp.bak` 备份文件。
-
-**静默启动配置**：
-
-要实现完美的静默启动（窗口不显示、无闪现），需要两步配合：
-
-1. **运行补丁工具**（一次性）：`dart run xly:win_setup`
-2. **设置初始化参数**（在 Dart 代码中）：
+- **`showWindowOnInit`**（默认：`true`）：启动结束后主窗口在不在。`false` 为静默驻留，**不会**在首帧后再自动 `show()`。
+- **`deferShowUntilFirstFrame`**（默认：`null`）：仅在要显示时生效。`null` 表示桌面且传了 `splash` 则等首帧，否则立即显示。不要用 `showWindowOnInit: false` 表达「等首帧再出示」。
+- **`focusWindowOnInit`**（默认：`true`）：仅在窗口会显示时生效。`false` 为显示但不抢焦点。
+- **`centerWindowOnInit`**（默认：`true`）：初始化时居中。
+- **任务栏**：窗口可见时由 `MyTray.hideTaskBarIcon` 决定（无托盘才看 `setSkipTaskbar`）。Windows 上藏任务栏会同时离开 Alt+Tab。
 
 ```dart
+// 默认 GUI：不配即显示
+await MyApp.initialize(/* ... */);
+
+// 托盘工具静默驻留
 await MyApp.initialize(
-  showWindowOnInit: false,  // 不自动显示窗口（静默启动只需这一个参数）
-  // ... 其他参数
+  showWindowOnInit: false,
+  tray: MyTray(/* ... */),
+);
+
+// 有叠层时默认等首帧再显示（防空窗）；无叠层也可显式 defer
+await MyApp.initialize(
+  splash: const MySplash(/* ... */),
+  // deferShowUntilFirstFrame: true,
 );
 ```
 
-应用此补丁后，窗口显示时机完全由 Dart 侧控制，直到你通过 `windowManager.show()` 或 `MyTray.to.pop()` 等方式主动显示它，从而彻底告别启动闪现。这是一个**一劳永逸**的优化。
+### 根除 Windows 启动闪现：`win_setup` 补丁
 
-> **注意**：静默启动时 `focusWindowOnInit` 参数无效（因为窗口根本不显示）。若需要"显示窗口但不抢焦点"，请使用 `showWindowOnInit: true` + `focusWindowOnInit: false`。
+Flutter 官方 Windows runner 会在渲染第一帧后强制 `this->Show()`。即使 Dart 侧决定晚一点再显示，也可能先闪一下白/黑窗。
+
+在消费应用根目录执行一次：
+
+```bash
+dart run xly:win_setup
+```
+
+工具会注释掉 `windows/runner/flutter_window.cpp` 里的 `this->Show()` 与 `flutter_controller_->ForceRedraw()`，把可见性交给 Dart。已打过补丁会跳过；默认备份为 `flutter_window.cpp.bak`。
+
+- **静默驻留**：补丁 + `showWindowOnInit: false`，再用 `MyTray.to.pop()` 或 `windowManager.show()` 出示。
+- **无空窗 GUI**：补丁 + `showWindowOnInit: true`（有 `splash` 时 defer 默认开启）。
+- 静默时 `focusWindowOnInit` 无效。要「显示但不抢焦点」：`showWindowOnInit: true` + `focusWindowOnInit: false`。
 
 **高级选项**：
 
@@ -1015,7 +998,7 @@ void main() async {
     designSize: const Size(800, 600),
     routes: [...],
 
-    // 简化的托盘配置
+    // 托盘工具要静默驻留时加：showWindowOnInit: false
     tray: MyTray(
       // iconPath: "assets/icon.png",  // 可选：为空时自动使用默认应用图标
       tooltip: "我的应用",              // 可选：悬停提示
@@ -2833,6 +2816,7 @@ class MyHomePage extends StatelessWidget {
 - [日志系统规范](.doc/contributor_logging_guide.md) - 了解如何正确使用 `XlyLogger` 进行日志输出
 - [异常处理与 Zone 决策](.doc/error_handling.md) - 库与应用边界、为什么不再默认开 Zone Guard、`installErrorHandlers` / `onError` 设计、踩坑场景
 - [启动叠层 MySplash](.doc/splash_mechanism.md) - 与路由解绑、`bootstrap` 门闩、`run` / `putAsync`、跨平台静帧
+- [桌面窗口启动显隐](.doc/desktop_window_launch.md) - `showWindowOnInit` / 首帧出示 / 任务栏，勿把静默当防闪
 - [路径与 userData](.doc/user_data_paths.md) - app / userData 双轨、`Session.prepare`、何时用 Store / Picker
 - [MyPicker 与启动编排](.doc/user_data_picker.md) - 系统选夹、`onAfterApply`、与 `MySelector` 边界
 - [本地 KV 存储](.doc/local_storage.md) - `MyStorage` 命名容器，勿用无参 `GetStorage()`

@@ -129,7 +129,8 @@
 /// - 仅在桌面平台（Windows/macOS/Linux）可用
 /// - 图标文件必须存在，否则初始化时抛异常
 /// - 作为GetxService，享受全局生命周期管理，不会被意外释放
-/// - MyApp.initialize完全不涉及托盘逻辑，保持职责分离
+/// - 启动显隐由 `MyApp.showWindowOnInit` 决定；`false` 时库会在托盘就绪后 `hide()`
+///   对齐状态，避免第一次点托盘走错成再藏一次
 library;
 
 export 'my_tray.dart';

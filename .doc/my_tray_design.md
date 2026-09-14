@@ -122,9 +122,10 @@ tray.toggleToggleOnClick();               // 切换开关状态
 - **生命周期**: 随应用启动/关闭自动管理
 
 ### 与MyApp.initialize的关系
-- **MyApp.initialize**: 完全不涉及托盘逻辑，只负责服务注册
-- **职责分离**: MyApp专注应用框架，MyTray专注托盘功能
-- **可选性**: 不注册MyTray服务，应用完全正常运行
+- **启动显隐**由 `MyApp.showWindowOnInit` 决定，不在 `MyTray` 上再开平行开关
+- **`showWindowOnInit: false`**：窗口保持隐藏；托盘初始化后库会调用 `hide()`，把 `isTrayMode` / 任务栏对齐成「已在托盘」，第一次点击走 `pop()`
+- **窗口可见时的任务栏**由 `hideTaskBarIcon` 管；`MyApp.setSkipTaskbar` 仅无托盘时有意义
+- **可选性**: 不注册 MyTray，应用仍可正常运行（无关闭回托盘、无托盘唤起）
 
 ## 核心功能
 

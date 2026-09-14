@@ -70,7 +70,7 @@ bootstrap: [
 引擎第一帧之前只能靠原生窗。消费应用自己对齐：
 
 - Android：`LaunchTheme.windowBackground` / Android 12+ `windowSplashScreenBackground` 与 `MySplash.backgroundColor` 一致。
-- Windows：需要无空窗时用现有 `showWindowOnInit: false`，库在首帧后再 `show()`。
+- Windows：需要无空窗时用 `showWindowOnInit: true`（有 `splash` 时 `deferShowUntilFirstFrame` 默认开启），并配合 `dart run xly:win_setup`。托盘静默驻留用 `showWindowOnInit: false`，不要和防闪共用这个开关。详见 [desktop_window_launch.md](desktop_window_launch.md)。
 
 ## 不要改错的部分
 

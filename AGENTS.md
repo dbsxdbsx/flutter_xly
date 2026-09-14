@@ -2,7 +2,7 @@
 
 > 项目级 AI agent onboarding 入口（[Agentic AI Foundation 开放标准](https://github.com/agentic-ai-foundation/agentsmd)）。
 > 本文件只记录仓库内可共享的事实、约定与索引；个人 Cursor Rules / Skills 不写入此处。
-> 最近更新：2026-09-14（`MyCard.below` / `MyCardList.cardBelow`）。
+> 最近更新：2026-09-14（`showWindowOnInit` 与首帧出示拆开）。
 
 ## 1. Project Identity
 
@@ -10,7 +10,7 @@
 - **主语言 / 框架**：Dart 3.5+、Flutter 3.7+；GetX、window_manager、flutter_screenutil 等（部分在 `lib/xly.dart` 再导出）。
 - **阶段**：Beta（持续发版，`CHANGELOG.md` 跟踪）。
 - **仓库**：<https://github.com/dbsxdbsx/flutter_xly>
-- **当前版本**：`pubspec.yaml` → `0.57.2`（**0.57.2** `MyCard.below`；**0.57.1** 桌面双击与连点分流；**0.57.0** `MyBootstrapTask.run` / `putAsync`；见 `CHANGELOG`）。
+- **当前版本**：`pubspec.yaml` → `0.58.0`（**0.58.0** 窗口启动显隐与首帧出示拆开；**0.57.2** `MyCard.below`；见 `CHANGELOG`）。
 
 ## 2. Project Map
 
@@ -24,7 +24,7 @@ xly/
 │   ├── picker.dart           # MyPicker.dir/file/files（可选；Web 为桩）
 │   ├── notify.dart / tray.dart / text_editor.dart / scaffold.dart / selector.dart / smart_dock.dart
 │   └── src/
-│       ├── app/              # app.dart 的 part：models + splash_gate + my_app；另含 desktop_window_gestures.dart
+│       ├── app/              # app.dart 的 part：models + splash_gate + my_app；另含 desktop_window_gestures / desktop_window_launch
 │       ├── storage/          # MyStorage：命名 GetStorage 容器
 │       ├── platform.dart     # MyPlatform：平台检测、权限、窗口
 │       ├── paths/            # MyPaths、DirStore、DirValidator、Session
@@ -54,6 +54,7 @@ xly/
 - 改 **系统选文件/夹 / Bootstrap 编排** → `lib/picker.dart`、`lib/src/picker/`、[`.doc/user_data_picker.md`](.doc/user_data_picker.md)
 - 改 **MySelector 浮层选择器** → `lib/selector.dart`、`lib/src/selector/`、[`.doc/my_selector_usage.md`](.doc/my_selector_usage.md)
 - 改 **MyApp 启动 / Zone / 异常** → `lib/app.dart`、`lib/src/app/`、`.doc/error_handling.md`
+- 改 **桌面窗口启动显隐 / 静默驻留** → `lib/src/app/desktop_window_launch.dart`、`MyApp.showWindowOnInit`、[`.doc/desktop_window_launch.md`](.doc/desktop_window_launch.md)
 - 改 **桌面拖窗 / 双击最大化** → `lib/src/app/desktop_window_gestures.dart`、`CustomDragArea`、[`.doc/desktop_window_gestures.md`](.doc/desktop_window_gestures.md)
 - 改 **MySplash / 启动叠层** → `lib/src/splash.dart`、`lib/src/app/splash_gate.dart`、[`.doc/splash_mechanism.md`](.doc/splash_mechanism.md)
 - 改 **GetStorage / 浮窗持久化** → `lib/src/storage/my_storage.dart`、[`.doc/local_storage.md`](.doc/local_storage.md)
@@ -72,6 +73,7 @@ xly/
 | 全量测试 | `flutter test` | |
 | 路径测试 | `flutter test test/my_paths_test.dart` | |
 | 启动叠层门闩 | `flutter test test/splash_gate_test.dart` | |
+| 桌面窗口启动策略 | `flutter test test/desktop_window_launch_test.dart` | `showWindowOnInit` 与首帧出示正交 |
 | bootstrap 登记类型 | `flutter test test/bootstrap_put_async_test.dart` | `run<T>` / `putAsync<T>` 对 `void` 推断 |
 | 桌面拖窗 / 双击分流 | `flutter test test/desktop_window_gestures_test.dart test/window_drag_gesture_recognizer_test.dart` | 连点不最大化；鼠标手抖不拖窗 |
 | 卡片 below 布局 | `flutter test test/card_below_layout_test.dart` | `MyCard.below` 左对齐标题并伸到 trailing 底下 |
@@ -119,9 +121,9 @@ xly/
 
 ## 5. Active Context
 
-- **最近完成**：**0.57.2** `MyCard.below` / `MyCardList.cardBelow`：标题行下的整行附件，左对齐标题、伸到 trailing 底下。
-- **上一轮**：**0.57.1** 桌面双击最大化改为 Listener 命中分类；`CustomDragArea` 不再注册 `onDoubleTap`。
-- **上一版**：0.51 `MyTray.closeToTray`；0.50 `MyCard.subtitle` / `MySmartDock.wake()`。
+- **最近完成**：**0.58.0** `showWindowOnInit` 只表示启动后窗口在不在（默认显示）；等首帧出示改走 `deferShowUntilFirstFrame`（有 `splash` 时默认开）。静默驻留会 `MyTray.hide()` 对齐状态。
+- **上一轮**：**0.57.2** `MyCard.below` / `MyCardList.cardBelow`。
+- **上一版**：**0.57.1** 桌面双击分流；**0.57.0** `MyBootstrapTask.run` / `putAsync`。
 - **后续**：见 [`.issue/xly-package-hygiene-backlog.md`](.issue/xly-package-hygiene-backlog.md)（可选：可配置持久化键前缀）。
 
 > **公开仓库纪律**：`AGENTS.md` / `README` / `CHANGELOG` / `.doc/` 中**禁止**写入未开源消费者项目名、内部路径或私有仓库线索。
@@ -137,6 +139,7 @@ xly/
 - [`.issue/xly-package-hygiene-backlog.md`](.issue/xly-package-hygiene-backlog.md) — 可选增强待办
 - [`.doc/error_handling.md`](.doc/error_handling.md)
 - [`.doc/splash_mechanism.md`](.doc/splash_mechanism.md) — **MySplash / 启动叠层**（门闩公式、`bootstrap`、`run` / `putAsync`、跨平台静帧）
+- [`.doc/desktop_window_launch.md`](.doc/desktop_window_launch.md) — **桌面窗口启动**（显隐 / 首帧出示 / 任务栏，勿把静默当防闪）
 - [`.doc/desktop_window_gestures.md`](.doc/desktop_window_gestures.md) — **桌面拖窗 / 双击最大化**（禁止外层 `onDoubleTap`、命中分类、`MyDoubleClickConsumeZone`）
 - [`.doc/my_notify_usage_guide.md`](.doc/my_notify_usage_guide.md)
 - 其余见 `README.md` 内链

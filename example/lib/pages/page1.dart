@@ -30,6 +30,10 @@ class Page1View extends GetView<Page1Controller> {
                 SizedBox(height: 8.h),
                 _buildWindowControlSection(),
                 SizedBox(height: 12.h),
+                _buildSectionTitle('启动显隐测试'),
+                SizedBox(height: 8.h),
+                _buildLaunchVisibilitySection(),
+                SizedBox(height: 12.h),
                 _buildSectionTitle('窗口标题测试'),
                 SizedBox(height: 8.h),
                 Row(
@@ -337,6 +341,42 @@ class Page1View extends GetView<Page1Controller> {
         onTap: () => MyToast.show('打开主题设置'),
       ),
     ];
+  }
+
+  Widget _buildLaunchVisibilitySection() {
+    return Column(
+      children: [
+        Text(
+          '本次启动：${ExampleService.thisLaunchShowWindowOnInit ? "显示窗口" : "静默驻留托盘"}。'
+          '开关只影响下次启动；有 splash 时显示会等首帧再出示。'
+          '任务栏是否出现由第 9 页「隐藏任务栏图标」单独决定，下次启动会记住。',
+          style: TextStyle(
+            fontSize: 12.sp,
+            color: Colors.grey[600],
+          ),
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(height: 8.h),
+        Row(
+          children: [
+            Expanded(
+              child: Obx(() => MyButton(
+                    text:
+                        '下次启动显示窗口: ${controller.showWindowOnNextLaunch.value ? "已开启" : "已关闭"}',
+                    onPressed: controller.toggleShowWindowOnNextLaunch,
+                  )),
+            ),
+            SizedBox(width: 16.w),
+            Expanded(
+              child: MyButton(
+                text: '缩回托盘（本次）',
+                onPressed: controller.hideToTray,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 
   Widget _buildWindowControlSection() {
@@ -672,6 +712,7 @@ class Page1Controller extends GetxController {
   final showTitleBar = (!MyApp.isTitleBarHidden()).obs;
   final enableSmartDocking = MyApp.isSmartDockingEnabled().obs;
   final enableAspectRatio = MyApp.isAspectRatioEnabled().obs;
+  final showWindowOnNextLaunch = false.obs;
 
   @override
   void onInit() {
@@ -687,6 +728,7 @@ class Page1Controller extends GetxController {
     _syncSmartDockingState();
     // 从ExampleService同步窗口比例调整状态
     _syncAspectRatioState();
+    _syncShowWindowOnInitState();
   }
 
   /// 从ExampleService同步拖动设置状态
@@ -734,6 +776,18 @@ class Page1Controller extends GetxController {
     } catch (e) {
       // 如果ExampleService还没有初始化，使用MyApp的状态
       enableSmartDocking.value = MyApp.isSmartDockingEnabled();
+    }
+  }
+
+  void _syncShowWindowOnInitState() {
+    try {
+      final exampleService = ExampleService.to;
+      exampleService.showWindowOnInit.listen((enabled) {
+        showWindowOnNextLaunch.value = enabled;
+      });
+      showWindowOnNextLaunch.value = exampleService.showWindowOnInit.value;
+    } catch (_) {
+      showWindowOnNextLaunch.value = ExampleService.readShowWindowOnInit();
     }
   }
 
@@ -1106,6 +1160,24 @@ class Page1Controller extends GetxController {
     } else {
       MyToast.show('智能停靠已禁用');
     }
+  }
+
+  void toggleShowWindowOnNextLaunch() async {
+    final newState = !showWindowOnNextLaunch.value;
+    await ExampleService.to.setShowWindowOnInit(newState);
+    showWindowOnNextLaunch.value = newState;
+    MyToast.show(
+      newState ? '下次启动将显示窗口（有叠层时等首帧）' : '下次启动将静默驻留托盘',
+    );
+  }
+
+  void hideToTray() {
+    if (!Get.isRegistered<MyTray>()) {
+      MyToast.showUpWarn('当前没有托盘');
+      return;
+    }
+    MyTray.to.hide();
+    MyToast.show('已缩回托盘，点托盘图标可恢复');
   }
 
   /// 切换窗口比例调整功能

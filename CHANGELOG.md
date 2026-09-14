@@ -1,3 +1,13 @@
+## 0.58.0 - 2026-09-14
+
+### Added
+
+- **example 第一个 tab**：启动显隐测试（下次启动是否显示窗口、当场缩回托盘）。第九页「隐藏任务栏图标」会持久化，与首帧出示窗口正交。
+
+### Changed
+
+- **窗口启动显隐与首帧出示拆开（破坏性）**：`showWindowOnInit` 只表示启动结束后窗口在不在，默认 `true`。`false` 为静默驻留，**不再**在首帧后自动 `show()`（这是 `0.56.0` 叠层门闩误绑的行为）。等首帧再出示改走 `deferShowUntilFirstFrame`（`null` 时：桌面且传了 `splash` 则开启）。静默且已注册托盘时库会 `MyTray.hide()`，第一次点托盘走 `pop()`。二次启动唤起走 `MyTray.pop()`，遵守 `hideTaskBarIcon`。`MyApp.setSkipTaskbar` 在传入 `tray` 时由托盘策略接管。详见 [`.doc/desktop_window_launch.md`](.doc/desktop_window_launch.md)。
+
 ## 0.57.2 - 2026-09-14
 
 ### Added
