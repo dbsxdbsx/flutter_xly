@@ -1,3 +1,13 @@
+## 0.57.2 - 2026-09-14
+
+### Added
+
+- **`MyCard.below` / `MyCardList.cardBelow`**：标题行下方的整行附件。画在 `ListTile` 外面，左缘与 title / subtitle 对齐，右缘伸到 `trailing` 底下；操作按钮仍只相对主副标题垂直居中。适合告警、健康状态这类动态底栏，避免再塞进 `subtitle` 被右侧按钮截断。
+
+### Fixed
+
+- **example Windows 构建**：无 Dart FFI native assets 时 `cmake_install` 不再因缺 `native_assets/windows` 目录失败。
+
 ## 0.57.1 - 2026-09-01
 
 ### Added

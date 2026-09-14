@@ -39,7 +39,7 @@ XLY 是一个 Flutter 懒人工具包，提供了一些常用的功能和组件�
 11. 自定义文本编辑器(支持下拉建议和样式自定义)
 12. 自定义编辑框(支持步进调节和范围控制)
 13. 列表组件(`MyList`和`MyCardList`)(支持拖拽重排序、滑动删除、加载更多等功能)
-14. 卡片组件(`MyCard`)(支持 leading/trailing、点击事件、拖拽、滑动删除等)
+14. 卡片组件(`MyCard`)(支持 leading/trailing、subtitle/below、点击事件、拖拽、滑动删除等)
 15. 分组框组件(`MyGroupBox`)(带标题的分组容器，支持多种边框样式)
 16. 列表底部状态组件(`MyEndOfListWidget`)(支持加载中、错误重试、到底提示等状态)
 17. 增强图标按钮(`MyIcon`)(支持悬停效果、工具提示、自定义样式)
@@ -2009,6 +2009,9 @@ Widget buildMyCardList() {
     cardBody: (index) => Text('卡片内容 $index'),
     cardLeading: (index) => Icon(Icons.star),
     cardTrailing: (index) => Icon(Icons.arrow_forward_ios),
+    cardSubtitle: (index) => Text('副标题 $index'),
+    // 整行附件：左对齐标题，伸到 trailing 底下
+    cardBelow: (index) => Text('底部告警 $index'),
 
     // 交互事件
     onCardPressed: (index) => print('点击了卡片 $index'),
@@ -2048,6 +2051,8 @@ Widget buildMyCard() {
     child: Text('卡片主要内容'),
     leading: Icon(Icons.star),
     trailing: Icon(Icons.arrow_forward_ios),
+    subtitle: Text('副标题'),
+    below: Text('底部告警'),
 
     // 交互事件
     onPressed: () => print('卡片被点击'),

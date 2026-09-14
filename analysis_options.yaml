@@ -4,5 +4,6 @@ analyzer:
   exclude:
     - lib/xly.dart
     - user_code/**
+    - build/**
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options

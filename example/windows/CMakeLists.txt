@@ -88,10 +88,13 @@ if(PLUGIN_BUNDLED_LIBRARIES)
 endif()
 
 # Copy the native assets provided by the build.dart from all packages.
+# 无 Dart FFI native assets 时 Flutter 会跳过建目录；缺源时 install(DIRECTORY)
+# 会让 cmake_install 失败，外层只剩 MSB3073。OPTIONAL 在 install 时跳过。
 set(NATIVE_ASSETS_DIR "${PROJECT_BUILD_DIR}native_assets/windows/")
 install(DIRECTORY "${NATIVE_ASSETS_DIR}"
    DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
-   COMPONENT Runtime)
+   COMPONENT Runtime
+   OPTIONAL)
 
 # Fully re-copy the assets directory on each build to avoid having stale files
 # from a previous install.
