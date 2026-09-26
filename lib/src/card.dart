@@ -179,7 +179,10 @@ class MyCard extends StatelessWidget {
         onTap: onPressed,
         enableFeedback: false,
         hoverColor: cardHoverColor,
-        splashColor: cardSplashColor,
+        // 可拖时按住会等长按。InkWell 未确认的水波要铺满 1 秒，
+        // 会盖住「已经可以拖」的时机，所以这层水波和高亮关掉。
+        splashColor: isDraggable ? Colors.transparent : cardSplashColor,
+        highlightColor: isDraggable ? Colors.transparent : null,
         borderRadius: cardBorderRadius ?? BorderRadius.circular(12.r),
         child: tileContent,
       ),
@@ -196,7 +199,9 @@ class MyCard extends StatelessWidget {
     }
 
     if (isDraggable) {
-      return ReorderableDragStartListener(
+      // 整张卡片都是拖动手柄。按下即拖会和滚动、点击抢手势，
+      // 各平台统一等长按（约 500ms）再拖；时限内滑开则这次只算滚动。
+      return ReorderableDelayedDragStartListener(
         index: index!,
         child: cardContent,
       );

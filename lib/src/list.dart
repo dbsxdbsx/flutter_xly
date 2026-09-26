@@ -1,7 +1,15 @@
 import 'dart:math';
 import 'dart:ui';
 
+import 'package:flutter/gestures.dart'
+    show
+        DragStartBehavior,
+        VelocityTracker,
+        kLongPressTimeout,
+        kMinFlingVelocity,
+        kTouchSlop;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:xly/xly.dart';
 
 class MyList<T> extends StatelessWidget {
@@ -49,20 +57,30 @@ class MyList<T> extends StatelessWidget {
                 canvasColor: Colors.transparent,
                 shadowColor: Colors.transparent,
               ),
-              child: ReorderableListView.builder(
-                scrollController: scrollController,
-                itemCount: items.length,
-                itemBuilder: itemBuilder,
-                onReorderItem: (oldIndex, newIndex) {
-                  // 保持 MyList 既有回调契约：向后移动时仍传移除前的插入下标。
-                  onCardReordered!(
-                    oldIndex,
-                    oldIndex < newIndex ? newIndex + 1 : newIndex,
-                  );
-                },
-                footer: footer,
-                buildDefaultDragHandles: false,
-                proxyDecorator: _proxyDecorator,
+              child: _ScrollFlingRestorer(
+                controller: scrollController,
+                child: ReorderableListView.builder(
+                  scrollController: scrollController,
+                  // 长按识别会占着竞技场，快滑的位移发生在滚动获胜之前。
+                  // start 会丢掉这段；down 把它算进滚动。
+                  dragStartBehavior: DragStartBehavior.down,
+                  itemCount: items.length,
+                  itemBuilder: itemBuilder,
+                  onReorderItem: (oldIndex, newIndex) {
+                    // 保持 MyList 既有回调契约：向后移动时仍传移除前的插入下标。
+                    onCardReordered!(
+                      oldIndex,
+                      oldIndex < newIndex ? newIndex + 1 : newIndex,
+                    );
+                  },
+                  footer: footer,
+                  buildDefaultDragHandles: false,
+                  onReorderStart: (_) {
+                    // 进入拖动时震一下。没有马达的桌面这次调用没有效果。
+                    HapticFeedback.mediumImpact();
+                  },
+                  proxyDecorator: _proxyDecorator,
+                ),
               ),
             )
           : ListView.builder(
@@ -83,15 +101,111 @@ class MyList<T> extends StatelessWidget {
       animation: animation,
       builder: (BuildContext context, Widget? child) {
         final double animValue = Curves.easeInOut.transform(animation.value);
-        final double elevation = lerpDouble(0, 6, animValue)!;
-        return Material(
-          elevation: elevation,
-          color: Colors.transparent,
-          shadowColor: Colors.transparent,
+        // 只放大卡片自己。再套一层 Material 阴影会按整行矩形来画，
+        // 和卡片圆角阴影、左右边距叠成硬边。
+        final double scale = lerpDouble(1, 1.03, animValue)!;
+        return Transform.scale(
+          scale: scale,
           child: child,
         );
       },
       child: child,
+    );
+  }
+}
+
+/// 快滑松手后，把手指速度交回列表，让它按力度滑一段再慢慢停下。
+///
+/// 长按拖动和滚动抢同一个手势时，框架有时只留下手指划过的距离，
+/// 松手速度被记成 0。这里用全部触点（含系统补出来的点）自己算速度，
+/// 下一帧按这个速度重新甩出去。按住超过长按时间才移动的，仍交给拖卡片。
+class _ScrollFlingRestorer extends StatefulWidget {
+  const _ScrollFlingRestorer({
+    required this.controller,
+    required this.child,
+  });
+
+  final ScrollController controller;
+  final Widget child;
+
+  @override
+  State<_ScrollFlingRestorer> createState() => _ScrollFlingRestorerState();
+}
+
+class _ScrollFlingRestorerState extends State<_ScrollFlingRestorer> {
+  VelocityTracker? _tracker;
+  Offset? _downPosition;
+  Duration? _downTime;
+  int? _pointer;
+  bool _flick = false;
+
+  void _down(PointerDownEvent event) {
+    if (_pointer != null) return;
+    _pointer = event.pointer;
+    _flick = false;
+    _downPosition = event.position;
+    _downTime = event.timeStamp;
+    _tracker = VelocityTracker.withKind(event.kind)
+      ..addPosition(event.timeStamp, event.position);
+  }
+
+  void _move(PointerMoveEvent event) {
+    if (event.pointer != _pointer) return;
+    _tracker?.addPosition(event.timeStamp, event.position);
+    final origin = _downPosition;
+    final start = _downTime;
+    if (origin == null || start == null || _flick) return;
+    final slop =
+        MediaQuery.maybeGestureSettingsOf(context)?.touchSlop ?? kTouchSlop;
+    if ((event.position - origin).distance <= slop) return;
+    if (event.timeStamp - start < kLongPressTimeout) {
+      _flick = true;
+    }
+  }
+
+  void _up(PointerUpEvent event) {
+    if (event.pointer != _pointer) return;
+    final tracker = _tracker;
+    final flick = _flick;
+    _pointer = null;
+    _tracker = null;
+    _downPosition = null;
+    _downTime = null;
+    _flick = false;
+    if (!flick || tracker == null) return;
+    final estimate = tracker.getVelocityEstimate();
+    if (estimate == null) return;
+    final speed = estimate.pixelsPerSecond;
+    if (speed.dx.abs() > speed.dy.abs()) return;
+    final desired = -speed.dy;
+    if (desired.abs() < kMinFlingVelocity) return;
+    final controller = widget.controller;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !controller.hasClients) return;
+      final position = controller.position;
+      if (position is! ScrollPositionWithSingleContext) return;
+      if (!position.hasContentDimensions) return;
+      position.goBallistic(desired);
+    });
+  }
+
+  void _cancel(PointerCancelEvent event) {
+    if (event.pointer != _pointer) return;
+    _pointer = null;
+    _tracker = null;
+    _downPosition = null;
+    _downTime = null;
+    _flick = false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Listener(
+      onPointerDown: _down,
+      onPointerMove: _move,
+      onPointerUp: _up,
+      onPointerCancel: _cancel,
+      child: widget.child,
     );
   }
 }
