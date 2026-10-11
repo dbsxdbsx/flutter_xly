@@ -64,9 +64,16 @@ MyDoubleClickConsumeZone(
 
 也不要把整页包进 `GestureDetector(onTap: …)` 或 `GestureDetector(onSecondaryTapDown: …)`：Flutter 只要存在 `TapGestureRecognizer` 就会填上 tap 语义，分类会把整页当成交互区。右键菜单请用 `showRightMenu`（内部是 `Listener`，不进 tap 语义）。
 
-子组件自己要拖拽（`ReorderableListView` 等）时，仍用 `MyDragProtectedArea` 临时关掉窗口拖拽；它不管双击分类。
+子组件自己要拖拽（长按排序、`Draggable`、自绘滑块等）时，用 `MyWindowDragExcludeZone`（或等价的 `MyDragProtectedArea`）包住它：在区内按下的 pointer，窗口拖拽识别器在 `isPointerAllowed` 就拒绝追踪，子组件独自走竞技场。它不改全局开关、不触发重建，也不管双击分类。可拖 `MyCard` 已自动套上。
+
+为什么不能靠「谁先过阈值」：窗口层鼠标 12px 就认，`ReorderableDelayedDragStartListener` 要等约 500ms，用户按住就拖时窗口层必赢。`ReorderableDragStartListener`（立即拖的手柄）1px 就认，本来就不会漏。
+
+可拖 `MyCard` 按下时按 pointer 种类挑识别器：鼠标（触控板按下拖动也按 mouse 上报）用 `ImmediateMultiDragGestureRecognizer`，按下即拖；触屏、触控笔仍用长按约 500ms 的识别器，时限内滑开只算滚动。鼠标拖不动列表（桌面默认 `ScrollBehavior.dragDevices` 不含 mouse），所以按下即拖不会和滚动抢。两种情况都套着排除区，拖卡片不会搬窗口。
+
+`CustomDragArea` 在桌面端恒挂 `RawGestureDetector`，`draggable` 只在识别器内部判断。不要再按开关增删这一层：`Listener` 的 child 类型一变，整棵 App 子树（含 Navigator）会卸载重挂。
 
 ## 相关测试
 
 - `test/desktop_window_gestures_test.dart` — 命中分类、连点不最大化、单击零延迟
 - `test/window_drag_gesture_recognizer_test.dart` — 鼠标手抖不触发拖窗
+- `test/window_drag_reorder_conflict_test.dart` — 可拖卡片不漏成拖窗、鼠标按下即拖 / 触屏仍长按、单击仍触发 `onPressed`、标题栏仍可拖、开关不重挂子树

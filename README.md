@@ -2041,6 +2041,7 @@ Widget buildMyCard() {
     onPressed: () => print('卡片被点击'),
 
     // 拖拽和滑动删除
+    // 可拖时整张卡片都是手柄：鼠标按下即拖；触屏长按约 500ms 再拖（时限内滑开算滚动）
     isDraggable: true,
     enableSwipeToDelete: true,
     onSwipeDeleted: () => print('卡片被滑动删除'),
@@ -2488,7 +2489,7 @@ await MyApp.toggleFullScreen();
 
 双击最大化与页面内连点的分流见 [`.doc/desktop_window_gestures.md`](.doc/desktop_window_gestures.md)。不要在整窗再挂 `GestureDetector.onDoubleTap`。
 
-`MyDragProtectedArea` 通过在 pointer 事件层（早于所有手势识别阶段）临时禁用窗口拖拽来解决此问题：
+`MyDragProtectedArea`（等价于 `MyWindowDragExcludeZone`）让区内按下的 pointer 不进窗口拖拽识别器，从而解决此问题。可拖 `MyCard` / `MyCardList` 已自动套上，无需手动包裹：
 
 ```dart
 // 将需要自己处理拖拽的区域包裹一层即可
@@ -2502,8 +2503,9 @@ MyDragProtectedArea(
 
 **工作原理：**
 
-- `onPointerDown`：保存当前窗口拖拽状态，并临时禁用窗口拖拽
-- `onPointerUp` / `onPointerCancel`：恢复先前保存的窗口拖拽状态
+- 子树里的 `Listener` 比根部窗口拖拽层先收到同一个 `PointerDownEvent`，登记该 pointer
+- `MyWindowDragGestureRecognizer.isPointerAllowed` 见到已登记的 pointer 就不追踪；抬起 / 取消时注销
+- 不改全局 `draggable`，不触发任何重建
 
 **适用场景（桌面端 + 标题栏隐藏 + 内容区域可拖拽窗口）：**
 

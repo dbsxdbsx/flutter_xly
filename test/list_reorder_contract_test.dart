@@ -69,7 +69,11 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.byType(ReorderableDelayedDragStartListener), findsOneWidget);
+    // 卡片用的是按 pointer 种类挑识别器的子类，触屏默认仍是长按。
+    expect(
+      find.byWidgetPredicate((w) => w is ReorderableDelayedDragStartListener),
+      findsOneWidget,
+    );
   });
 
   testWidgets('快速一甩会滚动可拖列表', (tester) async {

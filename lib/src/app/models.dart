@@ -348,9 +348,11 @@ class _CustomDragAreaState extends State<CustomDragArea> {
         (globalPosition - lastPos).distance < kDoubleTapSlop;
   }
 
+  bool _isWindowDragEnabled() =>
+      widget.draggable && MyApp._globalEnableDraggable.value;
+
   void _onWindowDragStart(DragStartDetails details) {
-    if (!widget.draggable) return;
-    if (!MyApp._globalEnableDraggable.value) return;
+    if (!_isWindowDragEnabled()) return;
     if (_isSuspectedSecondTap(details.globalPosition)) return;
     windowManager.startDragging();
   }
@@ -365,14 +367,19 @@ class _CustomDragAreaState extends State<CustomDragArea> {
     }
 
     Widget result = widget.child;
-    if (widget.draggable && MyPlatform.isDesktop) {
+    // 桌面端恒挂识别器，开关只在识别器内部判断。若随 [draggable] 增删这一层，
+    // Listener 的 child 类型会变，整棵 App 子树（含 Navigator）被卸载重挂，
+    // 页面状态全丢、正在进行的手势也断掉。
+    if (MyPlatform.isDesktop) {
       result = RawGestureDetector(
         behavior: HitTestBehavior.translucent,
         gestures: <Type, GestureRecognizerFactory>{
           MyWindowDragGestureRecognizer: GestureRecognizerFactoryWithHandlers<
               MyWindowDragGestureRecognizer>(
             () => MyWindowDragGestureRecognizer(debugOwner: this),
-            (instance) => instance.onStart = _onWindowDragStart,
+            (instance) => instance
+              ..isEnabled = _isWindowDragEnabled
+              ..onStart = _onWindowDragStart,
           ),
         },
         child: result,
@@ -392,11 +399,12 @@ class _CustomDragAreaState extends State<CustomDragArea> {
 /// 拖拽保护区域，用于解决子组件拖拽手势与窗口拖拽之间的竞争冲突。
 ///
 /// 桌面端 [CustomDragArea] 的窗口拖拽识别器会与子组件拖拽手势竞争，
-/// 导致 [ReorderableListView]、[Draggable] 等需要拖拽手势的组件无法正常工作。
+/// 导致 [ReorderableDelayedDragStartListener]、[Draggable] 等组件
+/// 一挪鼠标就变成拖整扇窗口。
 ///
-/// 本组件通过在 pointer 事件层（早于手势识别阶段）临时禁用窗口拖拽来解决此问题：
-/// - `onPointerDown`: 保存当前拖拽状态并禁用窗口拖拽
-/// - `onPointerUp` / `onPointerCancel`: 恢复先前的拖拽状态
+/// 现在等价于 [MyWindowDragExcludeZone]：在本区域按下的 pointer，窗口拖拽
+/// 识别器直接不追踪。旧实现靠按下时翻转全局 `draggable`，会让
+/// [CustomDragArea] 增删一层 [RawGestureDetector]，把整棵 App 子树卸载重挂。
 ///
 /// 移动端不存在此问题，组件会直接返回 [child]，零开销。
 ///
@@ -409,7 +417,7 @@ class _CustomDragAreaState extends State<CustomDragArea> {
 ///   ),
 /// )
 /// ```
-class MyDragProtectedArea extends StatefulWidget {
+class MyDragProtectedArea extends StatelessWidget {
   final Widget child;
 
   const MyDragProtectedArea({
@@ -418,33 +426,8 @@ class MyDragProtectedArea extends StatefulWidget {
   });
 
   @override
-  State<MyDragProtectedArea> createState() => _MyDragProtectedAreaState();
-}
-
-class _MyDragProtectedAreaState extends State<MyDragProtectedArea> {
-  bool _savedDraggable = true;
-
-  void _onPointerDown(PointerDownEvent _) {
-    _savedDraggable = MyApp._globalEnableDraggable.value;
-    MyApp._globalEnableDraggable.value = false;
-  }
-
-  void _onPointerUp(PointerUpEvent _) {
-    MyApp._globalEnableDraggable.value = _savedDraggable;
-  }
-
-  void _onPointerCancel(PointerCancelEvent _) {
-    MyApp._globalEnableDraggable.value = _savedDraggable;
-  }
-
-  @override
   Widget build(BuildContext context) {
-    if (!MyPlatform.isDesktop) return widget.child;
-    return Listener(
-      onPointerDown: _onPointerDown,
-      onPointerUp: _onPointerUp,
-      onPointerCancel: _onPointerCancel,
-      child: widget.child,
-    );
+    if (!MyPlatform.isDesktop) return child;
+    return MyWindowDragExcludeZone(child: child);
   }
 }

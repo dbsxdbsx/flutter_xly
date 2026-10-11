@@ -1,5 +1,8 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+
+import 'app/desktop_window_gestures.dart';
 
 class MyCard extends StatelessWidget {
   final int? index;
@@ -179,7 +182,7 @@ class MyCard extends StatelessWidget {
         onTap: onPressed,
         enableFeedback: false,
         hoverColor: cardHoverColor,
-        // 可拖时按住会等长按。InkWell 未确认的水波要铺满 1 秒，
+        // 可拖时触屏按住会等长按。InkWell 未确认的水波要铺满 1 秒，
         // 会盖住「已经可以拖」的时机，所以这层水波和高亮关掉。
         splashColor: isDraggable ? Colors.transparent : cardSplashColor,
         highlightColor: isDraggable ? Colors.transparent : null,
@@ -199,11 +202,16 @@ class MyCard extends StatelessWidget {
     }
 
     if (isDraggable) {
-      // 整张卡片都是拖动手柄。按下即拖会和滚动、点击抢手势，
-      // 各平台统一等长按（约 500ms）再拖；时限内滑开则这次只算滚动。
-      return ReorderableDelayedDragStartListener(
-        index: index!,
-        child: cardContent,
+      // 整张卡片都是拖动手柄。触屏按下即拖会和滚动抢手势，所以等长按
+      // （约 500ms）再拖，时限内滑开只算滚动；鼠标/触控板拖不动列表
+      // （滚动走滚轮），按下即拖。见 [_MyCardDragStartListener]。
+      // 桌面端根部有整窗拖拽层，鼠标挪过 12px 就会赢；排除区让卡片上按下的
+      // pointer 不进窗口层，否则按住卡片一拖就搬走整扇窗口。
+      return MyWindowDragExcludeZone(
+        child: _MyCardDragStartListener(
+          index: index!,
+          child: cardContent,
+        ),
       );
     }
 
@@ -220,6 +228,50 @@ class MyCard extends StatelessWidget {
         color: Colors.white,
         size: 16.sp,
       ),
+    );
+  }
+}
+
+/// 可拖 [MyCard] 的拖动起点：按 pointer 种类挑识别器。
+///
+/// - 鼠标（含触控板按下拖动）：按下即拖（与 [ReorderableDragStartListener] 相同，
+///   精确指针挪过约 1px 就进入拖动）。这类指针拖不动列表，
+///   不存在和滚动抢手势的问题，没必要让用户干等 500ms。
+/// - 触屏 / 触控笔：仍按 [ReorderableDelayedDragStartListener] 长按约 500ms
+///   才拖，时限内滑开这次只算滚动。
+///
+/// 继承 [ReorderableDelayedDragStartListener] 只是为了保留「默认长按」的类型
+/// 契约；[build] 自己在按下时决定用哪种识别器。
+class _MyCardDragStartListener extends ReorderableDelayedDragStartListener {
+  const _MyCardDragStartListener({
+    required super.child,
+    required super.index,
+  });
+
+  // 触控板按下拖动在 Flutter 里按 mouse 上报（PointerDownEvent 不会带
+  // trackpad，两指滑动走的是 PointerPanZoom*，不经过这里）。
+  static bool _startsImmediately(PointerDeviceKind kind) =>
+      kind == PointerDeviceKind.mouse;
+
+  @override
+  Widget build(BuildContext context) {
+    return Listener(
+      onPointerDown: enabled ? (event) => _startDragging(context, event) : null,
+      child: child,
+    );
+  }
+
+  void _startDragging(BuildContext context, PointerDownEvent event) {
+    final list = SliverReorderableList.maybeOf(context);
+    if (list == null) return;
+    final MultiDragGestureRecognizer recognizer = _startsImmediately(event.kind)
+        ? ImmediateMultiDragGestureRecognizer(debugOwner: this)
+        : createRecognizer();
+    list.startItemDragReorder(
+      index: index,
+      event: event,
+      recognizer: recognizer
+        ..gestureSettings = MediaQuery.maybeGestureSettingsOf(context),
     );
   }
 }

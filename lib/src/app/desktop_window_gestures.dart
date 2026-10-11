@@ -17,8 +17,21 @@ const double kMyWindowDragSlop = 12.0;
 /// 往往只有它一个竞争者；不开这个开关，每一次静止点击都会在抬手瞬间收到
 /// `onStart`。
 class MyWindowDragGestureRecognizer extends PanGestureRecognizer {
-  MyWindowDragGestureRecognizer({super.debugOwner}) {
+  MyWindowDragGestureRecognizer({super.debugOwner, this.isEnabled}) {
     onlyAcceptDragOnThreshold = true;
+  }
+
+  /// 为 false 时整个识别器不进竞技场（不只是不调 startDragging），
+  /// 否则关掉拖窗后它照样会赢下 pan，把子组件的拖拽吞掉。
+  bool Function()? isEnabled;
+
+  /// 按下点落在 [MyWindowDragExcludeZone] 里的 pointer 不追踪：
+  /// 让卡片长按拖动、滑块等子组件独自走竞技场，而不是靠 12px 阈值赛跑。
+  @override
+  bool isPointerAllowed(PointerEvent event) {
+    if (isEnabled != null && !isEnabled!()) return false;
+    if (_windowDragExcludedPointers.contains(event.pointer)) return false;
+    return super.isPointerAllowed(event);
   }
 
   @override
@@ -120,3 +133,42 @@ bool debugHitPathHasConsumeZone(Offset globalPosition) {
   WidgetsBinding.instance.hitTestInView(result, globalPosition, viewId);
   return result.path.any((e) => e.target is RenderMyDoubleClickConsumeZone);
 }
+
+/// 本次按下落在排除区里的 pointer。
+///
+/// 命中路径按「最深 → 根」派发 [PointerDownEvent]，排除区的 [Listener] 比根部
+/// 窗口拖拽层的 [RawGestureDetector] 先收到同一个按下，所以识别器在
+/// [MyWindowDragGestureRecognizer.isPointerAllowed] 里查这张表时一定已登记。
+final Set<int> _windowDragExcludedPointers = <int>{};
+
+/// 窗口拖拽排除区：子树里按下的 pointer 不会触发整窗拖拽。
+///
+/// 只影响这一次 pointer，不改全局开关、不触发任何重建；抬起或取消即注销。
+/// 用于自带拖拽语义的子组件（长按排序卡片、[Draggable]、自绘滑块等）。
+/// [MyCard] 可拖时已自动套上，一般无需手动使用。
+class MyWindowDragExcludeZone extends StatelessWidget {
+  const MyWindowDragExcludeZone({
+    super.key,
+    required this.child,
+    this.behavior = HitTestBehavior.deferToChild,
+  });
+
+  final Widget child;
+  final HitTestBehavior behavior;
+
+  @override
+  Widget build(BuildContext context) {
+    return Listener(
+      behavior: behavior,
+      onPointerDown: (e) => _windowDragExcludedPointers.add(e.pointer),
+      onPointerUp: (e) => _windowDragExcludedPointers.remove(e.pointer),
+      onPointerCancel: (e) => _windowDragExcludedPointers.remove(e.pointer),
+      child: child,
+    );
+  }
+}
+
+/// 供测试确认排除表没有残留 pointer。
+@visibleForTesting
+int get debugWindowDragExcludedPointerCount =>
+    _windowDragExcludedPointers.length;

@@ -1,3 +1,18 @@
+## Unreleased
+
+### Changed
+
+- **可拖卡片用鼠标时按下即拖**：0.58.1 各平台统一长按约 500ms，鼠标用户得干等。现在 `MyCard` / `MyCardList` 按 pointer 种类挑识别器：鼠标（含触控板按下拖动）挪过约 1px 就进入拖动；触屏、触控笔仍长按约 500ms，时限内滑开只算滚动。单击仍触发 `onPressed`。
+
+### Fixed
+
+- **桌面端按住可拖卡片一拖就搬走整扇窗口**：0.58.1 起 `MyCard` 改为长按约 500ms 才拖，而根部窗口拖拽识别器鼠标挪过 12px 就赢。可拖 `MyCard` 现在自动套 `MyWindowDragExcludeZone`，在卡片上按下的 pointer 窗口层不再追踪；标题栏、空白处拖窗口不变。
+- **`MyDragProtectedArea` / `MyApp.setDraggableEnabled` 会让整个 App 子树卸载重挂**：旧实现翻转全局 `draggable`，`CustomDragArea` 随之增删一层 `RawGestureDetector`，Navigator 及页面状态全丢。现在桌面端恒挂识别器，开关在识别器内部判断；`MyDragProtectedArea` 改为按 pointer 排除，不再改全局开关。
+
+### Added
+
+- **`MyWindowDragExcludeZone`**：子树内按下的 pointer 不触发整窗拖拽，供自带拖拽语义的组件使用。
+
 ## 0.58.1 - 2026-09-26
 
 ### Changed
