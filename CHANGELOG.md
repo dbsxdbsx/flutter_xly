@@ -8,6 +8,7 @@
 
 - **桌面端按住可拖卡片一拖就搬走整扇窗口**：0.58.1 起 `MyCard` 改为长按约 500ms 才拖，而根部窗口拖拽识别器鼠标挪过 12px 就赢。可拖 `MyCard` 现在自动套 `MyWindowDragExcludeZone`，在卡片上按下的 pointer 窗口层不再追踪；标题栏、空白处拖窗口不变。
 - **`MyDragProtectedArea` / `MyApp.setDraggableEnabled` 会让整个 App 子树卸载重挂**：旧实现翻转全局 `draggable`，`CustomDragArea` 随之增删一层 `RawGestureDetector`，Navigator 及页面状态全丢。现在桌面端恒挂识别器，开关在识别器内部判断；`MyDragProtectedArea` 改为按 pointer 排除，不再改全局开关。
+- **`MyAutoStart` 查询 / 设置开机自启时异步异常漏出 `try`**：`return` 未 `await` 的 Future，抛错绕过 `catch` 直达调用方。现在先 `await` 再返回，出错按原设计记日志并返回 `false`。
 
 ### Added
 

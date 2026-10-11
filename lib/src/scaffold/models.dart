@@ -1,6 +1,5 @@
 part of '../../scaffold.dart';
 
-
 /// 自适应导航项
 class MyAdaptiveNavigationItem {
   /// 图标

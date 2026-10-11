@@ -29,7 +29,7 @@ class MyAutoStart {
 
     try {
       if (MyPlatform.isDesktop) {
-        return _isDesktopAutoStartEnabled(
+        return await _isDesktopAutoStartEnabled(
           appName: appName,
           packageName: packageName,
         );
@@ -67,13 +67,13 @@ class MyAutoStart {
 
     try {
       if (MyPlatform.isDesktop) {
-        return _setDesktopAutoStart(
+        return await _setDesktopAutoStart(
           enable,
           appName: appName,
           packageName: packageName,
         );
       } else if (Platform.isAndroid) {
-        return _setAndroidAutoStart();
+        return await _setAndroidAutoStart();
       }
       return false;
     } catch (e) {
@@ -120,7 +120,7 @@ class MyAutoStart {
         appName: appName,
         packageName: packageName,
       );
-      return launchAtStartup.isEnabled();
+      return await launchAtStartup.isEnabled();
     } catch (e) {
       XlyLogger.error('查询桌面平台开机自启动状态时出错', e);
       return false;

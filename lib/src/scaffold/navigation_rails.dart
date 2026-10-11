@@ -1,6 +1,5 @@
 part of '../../scaffold.dart';
 
-
 /// Expanded 层级侧边栏（256dp，图标+文字）
 class _CustomExpandedNavigationRail extends StatelessWidget {
   const _CustomExpandedNavigationRail({

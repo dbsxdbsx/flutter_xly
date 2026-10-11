@@ -54,7 +54,8 @@ class _FloatBoxPanelState extends State<_FloatBoxPanel> {
 
   @override
   Widget build(BuildContext context) {
-    final ctrl = Get.find<MyFloatBoxController>(tag: widget.panelKey?.toString());
+    final ctrl =
+        Get.find<MyFloatBoxController>(tag: widget.panelKey?.toString());
 
     // 先计算并更新缩放值，确保后续 updateScreenSize 中的位置限位
     // 使用正确的 effectivePanelHeight（依赖 currentPanelWidth）
@@ -417,7 +418,8 @@ class _MyFloatPanelTooltipOverlay extends StatefulWidget {
       _MyFloatPanelTooltipOverlayState();
 }
 
-class _MyFloatPanelTooltipOverlayState extends State<_MyFloatPanelTooltipOverlay> {
+class _MyFloatPanelTooltipOverlayState
+    extends State<_MyFloatPanelTooltipOverlay> {
   // --- 设计稿基础值（与 Material 默认 Tooltip 风格一致）---
   // 通过 ScreenUtil 在运行时缩放，避免在窗口缩放后 tooltip 游离于 MyFloatPanel
   // 主体的尺寸体系外。横向 layout 用 .w，对称几何与圆角用 .r，字号用 .sp。
@@ -521,7 +523,9 @@ class _MyFloatPanelTooltipOverlayState extends State<_MyFloatPanelTooltipOverlay
       if (!preferBelow && spaceAbove >= bubbleSize.height) {
         return _MyFloatPanelTooltipSide.top;
       }
-      if (spaceBelow >= bubbleSize.height) return _MyFloatPanelTooltipSide.bottom;
+      if (spaceBelow >= bubbleSize.height) {
+        return _MyFloatPanelTooltipSide.bottom;
+      }
       if (spaceAbove >= bubbleSize.height) return _MyFloatPanelTooltipSide.top;
       return spaceBelow >= spaceAbove
           ? _MyFloatPanelTooltipSide.bottom
