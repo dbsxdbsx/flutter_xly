@@ -1,3 +1,35 @@
+## 0.59.0 - 2026-10-30
+
+### Added
+
+- **启动动画时间点从素材推**：`MySplash` 读 Lottie 结构推出定格帧和「大动作做完」，播到定格就停，不用写死时长。推不准的素材（透明度淡出收尾、表达式驱动、dotLottie）用 `holdFrame` / `motionEndFrame` 按帧号指定。自绘时可用 `MySplashClip.load` / `peek` 拿同一份预载结果和 `MySplashAnimationTiming`。
+- **三层初始化**：`MyBootstrapTask.run` / `putAsync` 新增 `afterSplashMotion`，会同步占住主线程的任务等动画大动作做完再跑（最多 `MySplash.motionGateLimit`）。`MyApp.initialize` 新增 `backgroundBootstrap` / `backgroundBootstrapWaitLimit`：叠层揭开、首页画完一帧后才跑，两步之间让一帧，失败只记日志；配套 `MyApp.backgroundReady` / `isBackgroundReady`。
+- **启动慢与失败页**：超过 `bootstrapSlowAfter`（默认 8 秒）提示「启动比平时慢」，配套 `MyApp.isBootstrapSlow`。失败页显示总述和出错任务（`MyApp.splashFatalDetail`），给「重新启动」（`MySplash.onRestart` 由应用实现）和「退出」（`showExitButton`，iOS 默认不显示）。遥控器 / 键盘可直接操作，焦点不会漏到下面的首页。画面播完迟迟没揭开时显示「正在启动…」（`statusLineAfter`）。文案全部在 `MySplashTexts`，主按钮底色 `accentColor`。
+- **自定义品牌区与说明区**：`brandBuilder` + `brandAnimates`，经 `MySplashHandle` 上报开播 / 大动作做完 / 播完；`captionBuilder` 拿 `MySplashStatus` 自绘提示和失败页。
+- **预载与留位置**：`lottieAssetPath` 在 `MyApp.initialize` 开头预载（`preloadLimit`），解析放到后台 isolate。叠层第一帧就按动画宽高比留好位置，没赶上时按 `lottieWidth` / 新增的 `lottieHeight`。动画等第一帧真正上屏再起表（`firstFrameLimit`）。`captionGap` 控制标题和提示区的间距。
+- **淡出离场与播放看门狗**：`fadeOutDuration`（默认 200ms）；`playLimit`：`brandBuilder` 开播后迟迟没报播完时按播完处理（内置 Lottie 按「播到定格的时长 + 2 秒」）。
+- **跳过叠层**：`MyApp.skipSplashThisLaunch()`，给通知、深链、打开文件这类外部意图；`MyApp.waitUntilSplashFinished()` 等叠层离场。
+- **启动阶梯 `MyBootTrace`**：`enableBootTrace: true` 打出 `+毫秒 步骤` 冷启动阶梯和主线程卡顿（`boot.lag`），`attachSink` 接应用日志并补写之前缓冲的行。
+- **example 第一个 tab**：「启动显隐测试」改名「启动测试」，新增「下次启动播放启动画面」开关，示范用户偏好怎么用 `skipSplashThisLaunch()` 实现（不传 `splash: null`）。
+
+### Changed
+
+- **淡出推迟 `isSplashFinished`（破坏性）**：叠层淡完才算离场，比 0.58 晚 `fadeOutDuration`。要旧行为传 `fadeOutDuration: Duration.zero`。
+- **内置 Lottie 停在定格帧（破坏性）**：不再整段播完，收尾那几帧（元素被收走、遮罩结束）不播。要整段播完，把 `holdFrame` 设成最后一帧。
+- **`brandTimeout` 只管没开播（破坏性）**：开播后改由播放看门狗兜底，长动画不再被 8 秒截断。
+- **`isSplashFinished` 只增不减（破坏性）**：跳过叠层之后才 fatal 时它保持 `true`，失败页照样盖上；判断失败页看 `splashPhase`。
+- **超时揭开后迟到的失败只记日志**：不再改写失败信息，首页可用之后也不会被盖成失败页。
+- **失败页**从一行字改为总述 + 出错任务 + 按钮；**标题**只排一行，放不下时整行缩小。
+- **`MySplash` 实现并入 `package:xly/app.dart`**：`package:xly/src/splash.dart` 保留为兼容导出，旧导入不用改。
+
+### Fixed
+
+- **画面不动时 bootstrap 可能一直不开始**：门闩等第二帧时不请求帧，叠层和首页都静止就永远等不到。现在主动请求帧，最多等 3 秒（息屏、首帧被推迟时照常开始）。
+- **动画开头被原生启动画面盖掉**：动画载好就起表，第一帧还没上屏时开头已经播过。现在等第一帧上屏，并先画出第 0 帧再起表。
+- **动画载入时标题被挤走**：叠层第一帧就留好动画的位置。
+
+详见 [`.doc/splash_mechanism.md`](.doc/splash_mechanism.md)。
+
 ## 0.58.2 - 2026-10-11
 
 ### Changed

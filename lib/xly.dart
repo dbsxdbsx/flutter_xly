@@ -28,7 +28,6 @@ export 'src/icon.dart';
 export 'src/dialogue/lib.dart';
 export 'src/menu/lib.dart';
 export 'src/focus.dart' show XlyFocusController, XlyFocusableExtension;
-export 'src/splash.dart';
 export 'src/end_of_list_widget.dart';
 export 'src/group_box.dart';
 export 'src/card.dart';

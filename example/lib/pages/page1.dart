@@ -30,7 +30,7 @@ class Page1View extends GetView<Page1Controller> {
                 SizedBox(height: 8.h),
                 _buildWindowControlSection(),
                 SizedBox(height: 12.h),
-                _buildSectionTitle('启动显隐测试'),
+                _buildSectionTitle('启动测试'),
                 SizedBox(height: 8.h),
                 _buildLaunchVisibilitySection(),
                 SizedBox(height: 12.h),
@@ -347,8 +347,9 @@ class Page1View extends GetView<Page1Controller> {
     return Column(
       children: [
         Text(
-          '本次启动：${ExampleService.thisLaunchShowWindowOnInit ? "显示窗口" : "静默驻留托盘"}。'
-          '开关只影响下次启动；有 splash 时显示会等首帧再出示。'
+          '本次启动：${ExampleService.thisLaunchShowWindowOnInit ? "显示窗口" : "静默驻留托盘"}，'
+          '${ExampleService.thisLaunchShowSplash ? "播放启动画面" : "跳过启动画面"}。'
+          '开关只影响下次启动；有 splash 时窗口会等首帧再出示，跳过启动画面也一样。'
           '任务栏是否出现由第 9 页「隐藏任务栏图标」单独决定，下次启动会记住。',
           style: TextStyle(
             fontSize: 12.sp,
@@ -368,11 +369,25 @@ class Page1View extends GetView<Page1Controller> {
             ),
             SizedBox(width: 16.w),
             Expanded(
+              child: Obx(() => MyButton(
+                    text:
+                        '下次启动播放启动画面: ${controller.showSplashOnNextLaunch.value ? "已开启" : "已关闭"}',
+                    onPressed: controller.toggleShowSplashOnNextLaunch,
+                  )),
+            ),
+          ],
+        ),
+        SizedBox(height: 12.h),
+        Row(
+          children: [
+            Expanded(
               child: MyButton(
                 text: '缩回托盘（本次）',
                 onPressed: controller.hideToTray,
               ),
             ),
+            SizedBox(width: 16.w),
+            const Spacer(),
           ],
         ),
       ],
@@ -713,6 +728,7 @@ class Page1Controller extends GetxController {
   final enableSmartDocking = MyApp.isSmartDockingEnabled().obs;
   final enableAspectRatio = MyApp.isAspectRatioEnabled().obs;
   final showWindowOnNextLaunch = false.obs;
+  final showSplashOnNextLaunch = ExampleService.readShowSplashOnLaunch().obs;
 
   @override
   void onInit() {
@@ -1169,6 +1185,13 @@ class Page1Controller extends GetxController {
     MyToast.show(
       newState ? '下次启动将显示窗口（有叠层时等首帧）' : '下次启动将静默驻留托盘',
     );
+  }
+
+  void toggleShowSplashOnNextLaunch() async {
+    final newState = !showSplashOnNextLaunch.value;
+    await ExampleService.to.setShowSplashOnLaunch(newState);
+    showSplashOnNextLaunch.value = newState;
+    MyToast.show(newState ? '下次启动将播放启动画面' : '下次启动将跳过启动画面，首页直接出来');
   }
 
   void hideToTray() {

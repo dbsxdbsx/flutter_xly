@@ -65,11 +65,30 @@ class MyApp extends StatelessWidget {
     /// `await MyApp.bootstrapReady`，不要对这里的依赖直接 `Get.find`。
     ///
     /// 任意工作 [MyBootstrapTask.run]，登记异步 GetX 服务 [MyBootstrapTask.putAsync]。
+    /// 主线程同步重活标 [MyBootstrapTask.afterSplashMotion]，等动画大动作做完再跑。
     List<MyBootstrapTask>? bootstrap,
 
     /// blocking bootstrap 的超时。超过且无未决 fatal 时按 degraded 揭开。
     /// [Duration.zero] 表示不设超时。
     Duration bootstrapTimeout = const Duration(seconds: 20),
+
+    /// blocking bootstrap 过了这么久还没到终态，[MyApp.isBootstrapSlow] 变 `true`，
+    /// 叠层换成「启动比平时慢」（传了 [MySplash.onRestart] 时带重启按钮）。不会因此揭开。
+    /// [Duration.zero] 表示不提示。
+    Duration bootstrapSlowAfter = const Duration(seconds: 8),
+
+    /// 揭开之后才跑的初始化：预热缓存、清理旧文件、拉非首屏数据。
+    ///
+    /// 等叠层淡出、首页画完一帧再开始（最多等 [backgroundBootstrapWaitLimit]），
+    /// 两步之间让出一帧；失败只记日志。全部跑完后 [MyApp.isBackgroundReady]
+    /// 变 `true`，[MyApp.backgroundReady] 完成。
+    List<MyBootstrapTask>? backgroundBootstrap,
+
+    /// 后台层最多等叠层揭开多久。[Duration.zero] 表示 blocking 一到终态就开始。
+    Duration backgroundBootstrapWaitLimit = const Duration(seconds: 10),
+
+    /// 打开冷启动阶梯 [MyBootTrace] 与主线程卡顿探针（默认关闭）。
+    bool enableBootTrace = false,
 
     /// 叠层第一帧提交后打一次，纯通知。不要在这里起影响离场的初始化。
     VoidCallback? onSplashVisible,
@@ -175,6 +194,8 @@ class MyApp extends StatelessWidget {
     // 首先初始化日志系统，以便后续初始化步骤可以使用日志
     XlyLogger.init(enabled: enableDebugLogging);
     XlyLogger.info('MyApp 初始化开始');
+    if (enableBootTrace) MyBootTrace.enabled = true;
+    MyBootTrace.mark('app.initialize');
 
     // ⚠️ binding 必须在调用方当前 Zone 中初始化，并且必须先于任何可能新建 Zone 的逻辑
     // （包括下面的 enableZoneGuard 分支）。Flutter 铁律：binding 与 runApp 必须同 Zone，
@@ -192,6 +213,14 @@ class MyApp extends StatelessWidget {
 
     Future<void> initializeInCurrentZone() async {
       _prepareSplashStatics(hasOverlay: splash != null);
+
+      // 动画素材和下面的存储、窗口、服务初始化并行加载，runApp 前再限时等它。
+      final splashClipPath =
+          splash != null && splash._usesBuiltInLottie && !_skipSplashThisLaunch
+              ? splash.lottieAssetPath
+              : null;
+      final splashClipLoad =
+          splashClipPath == null ? null : MySplashClip.load(splashClipPath);
 
       if (ensureScreenSize) {
         await ScreenUtil.ensureScreenSize();
@@ -363,14 +392,27 @@ class MyApp extends StatelessWidget {
         _globalWindowTitle.value = appName;
       }
 
+      if (splashClipLoad != null) {
+        await _awaitSplashPreload(splashClipLoad, splash!.preloadLimit);
+      }
+      final splashClip =
+          splashClipPath == null ? null : MySplashClip.peek(splashClipPath);
+
       final splashGate = MySplashGate(
         hasOverlay: splash != null,
-        hasBrandLottie: splash?.lottieAssetPath != null,
-        hasStaticBrandFace: splash != null && splash.lottieAssetPath == null,
+        hasBrandLottie: splash?._reportsPresentation ?? false,
+        hasStaticBrandFace: splash != null && !splash._reportsPresentation,
         minVisible: splash?.minVisible ?? const Duration(milliseconds: 300),
         brandTimeout: splash?.brandTimeout ?? const Duration(seconds: 8),
+        playLimit: splash?.playLimit ?? const Duration(seconds: 10),
         bootstrapTimeout: bootstrapTimeout,
+        bootstrapSlowAfter: bootstrapSlowAfter,
+        motionGateLimit: splash?._motionGateLimitFor(splashClip) ??
+            MySplash._fallbackMotionGate,
+        fadeOutDuration: splash?.fadeOutDuration ?? Duration.zero,
+        backgroundWaitLimit: backgroundBootstrapWaitLimit,
         tasks: bootstrap,
+        backgroundTasks: backgroundBootstrap,
         onVisible: onSplashVisible,
         showWindowAfterFirstFrame: windowLaunch.showAfterFirstFrame,
         focusWindowAfterFirstFrame: focusWindowOnInit,
@@ -379,6 +421,7 @@ class MyApp extends StatelessWidget {
       );
       splashGate.attachToApp();
 
+      MyBootTrace.mark('app.runApp');
       runApp(MyApp._(
         designSize: designSize,
         theme: theme,
@@ -685,8 +728,11 @@ class MyApp extends StatelessWidget {
                   return fp.buildOverlay();
                 }),
 
-              // 顶层启动屏（揭开由 MySplashGate 写 isSplashFinished）
-              if (splash != null && !isSplashFinished.value) splash!,
+              // 顶层启动屏：没揭开时盖着；跳过之后遇到 fatal，失败页也盖上来。
+              if (splash != null &&
+                  (!isSplashFinished.value ||
+                      splashPhase.value == MySplashPhase.fatal))
+                splash!,
             ],
           ),
         ));
@@ -804,26 +850,65 @@ class MyApp extends StatelessWidget {
     }
   }
 
+  /// 叠层已离场过（淡出走完、被跳过，或没有叠层），之后不再变回 `false`。
+  ///
+  /// 失败页盖着时：正常启动为 `false`；跳过叠层之后才 fatal 的仍为 `true`，
+  /// 失败页照样盖上，判断要看 [splashPhase] 是否为 [MySplashPhase.fatal]。
   static final isSplashFinished = false.obs;
   static final isBootstrapReady = false.obs;
+
+  /// blocking bootstrap 超过 `bootstrapSlowAfter` 还没到终态。
+  static final isBootstrapSlow = false.obs;
+
+  /// 后台层（`backgroundBootstrap`）全部跑完，失败的只记了日志。
+  static final isBackgroundReady = false.obs;
   static final splashPhase = MySplashPhase.finished.obs;
   static String? splashFatalMessage;
+
+  /// 失败详情：出错任务的 debugLabel + 错误第一行（最多 120 字）。
+  static String? splashFatalDetail;
   static MySplashGate? _splashGate;
+  static final _splashDismissing = false.obs;
+  static final _splashPresented = false.obs;
+  static var _skipSplashThisLaunch = false;
 
   /// blocking bootstrap 已到 ready / degraded。fatal 时 completeError。
   static Future<void> get bootstrapReady =>
       _splashGate?.ready ?? Future<void>.value();
 
+  /// 后台层全部跑完。blocking fatal 时 completeError。
+  static Future<void> get backgroundReady =>
+      _splashGate?.backgroundReady ?? Future<void>.value();
+
+  /// 等叠层第一次离场。没有叠层或已被跳过时立刻完成。
+  static Future<void> waitUntilSplashFinished() =>
+      _splashGate?.finished ?? Future<void>.value();
+
   static void reportBrandAnimationDone() => _splashGate?.reportAnimationDone();
+
+  /// 这次启动不显示叠层（粘性，本进程内有效）。
+  ///
+  /// 给外部意图用：通知、深链、投屏、打开文件直接进目标页。`MyApp.initialize`
+  /// 之前调用，叠层从一开始就不出现；盖着时调用，立刻拿掉、不淡出。
+  /// bootstrap 照常跑，fatal 时失败页仍会盖上来。
+  static void skipSplashThisLaunch() {
+    _skipSplashThisLaunch = true;
+    _splashGate?._skip();
+  }
 
   static void _prepareSplashStatics({required bool hasOverlay}) {
     _splashGate?.dispose();
     _splashGate = null;
     isSplashFinished.value = !hasOverlay;
     isBootstrapReady.value = false;
+    isBootstrapSlow.value = false;
+    isBackgroundReady.value = false;
+    _splashDismissing.value = false;
+    _splashPresented.value = false;
     splashPhase.value =
         hasOverlay ? MySplashPhase.running : MySplashPhase.finished;
     splashFatalMessage = null;
+    splashFatalDetail = null;
   }
 
   static void _markSplashSkipped() {
@@ -831,6 +916,16 @@ class MyApp extends StatelessWidget {
     isBootstrapReady.value = true;
     splashPhase.value = MySplashPhase.finished;
     splashFatalMessage = null;
+    splashFatalDetail = null;
+  }
+
+  static Future<void> _awaitSplashPreload(
+    Future<MySplashClip?> load,
+    Duration limit,
+  ) async {
+    if (limit <= Duration.zero) return;
+    final clip = await load.timeout(limit, onTimeout: () => null);
+    MyBootTrace.mark(clip == null ? 'splash.preload-late' : 'splash.preload');
   }
 
   /// 测试隔离：丢掉当前门闩并恢复静态量。
@@ -838,6 +933,7 @@ class MyApp extends StatelessWidget {
   static void debugResetSplashGate() {
     _prepareSplashStatics(hasOverlay: false);
     isBootstrapReady.value = true;
+    _skipSplashThisLaunch = false;
   }
 
   static final _globalEnableDoubleClickMaximize = false.obs;

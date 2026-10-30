@@ -27,7 +27,12 @@ void main() async {
   await MyStorage.ensureInitialized(appName: _exampleAppName);
   final showWindowOnInit = ExampleService.readShowWindowOnInit();
   final hideTaskBarIcon = ExampleService.readHideTaskBarIcon();
+  final showSplash = ExampleService.readShowSplashOnLaunch();
   ExampleService.thisLaunchShowWindowOnInit = showWindowOnInit;
+  ExampleService.thisLaunchShowSplash = showSplash;
+  // 关掉启动画面用跳过，不要改传 splash: null：
+  // 那样启动失败没有失败页，桌面窗口也不再等首帧出示。
+  if (!showSplash) MyApp.skipSplashThisLaunch();
 
   await MyApp.initialize(
     appName: _exampleAppName,

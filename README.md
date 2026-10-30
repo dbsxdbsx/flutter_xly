@@ -106,7 +106,7 @@ XLY 是一个 Flutter 懒人工具包，提供了一些常用的功能和组件�
 - `MyDialogSheet.showBottom` 的 `designHeight` / `designBorderRadius`；
 - `MyMenuStyle` 的字号、图标间距与条目高度等设计字段；
 - `MySelectorStyle` 中文档标明的面板高度、圆角与模糊参数（`panelWidth` 是逻辑像素）；
-- `MySplash` 的尺寸配置；
+- `MySplash` 的 `fontSize`、`lottieWidth`、`lottieHeight`、`spaceBetween`、`captionGap`；
 - `MyFloatPanel` 的面板、图标、圆角与停靠偏移配置。
 
 除以上明确例外外，公开尺寸参数一律按当前逻辑像素理解。
@@ -2796,7 +2796,16 @@ class MyHomePage extends StatelessWidget {
 
 ## splash Json 动画资源
 
-启动叠层的职责、门闩公式和 `MyBootstrapTask.run` / `putAsync` 见 [`.doc/splash_mechanism.md`](.doc/splash_mechanism.md)。
+启动叠层盖在首页上，不是路由。揭开 = blocking `bootstrap` 到终态 × 动画停在定格帧，再淡出。要点：
+
+- **不写死时长**：定格帧和「大动作做完」从 Lottie 素材推出来；推不准时用 `holdFrame` / `motionEndFrame` 按帧号指定。
+- **三层初始化**：首屏要的放 `bootstrap`；会同步占住主线程的标 `afterSplashMotion`，等大动作做完再跑；首屏用不到的放 `backgroundBootstrap`，揭开后才跑。
+- **慢和失败**：超过 `bootstrapSlowAfter` 提示「启动比平时慢」；fatal 停在失败页，显示出错任务，给「重新启动」（`onRestart` 由应用实现）和「退出」，遥控器可直接操作。
+- **可替换**：`brandBuilder` 换品牌区（用 `MySplashHandle` 上报），`captionBuilder` 换提示区，`MySplashTexts` 换文案。
+- **让用户关掉开屏动画**：在 `initialize` 前读应用自己存的偏好，关着就调 `MyApp.skipSplashThisLaunch()`；不要改传 `splash: null`，那样启动失败没有失败页，桌面窗口也不再等首帧出示。
+- **排查**：`enableBootTrace: true` 打出冷启动阶梯和主线程卡顿。
+
+完整的时序、每个兜底的默认值、素材建议和原生启动画面的坑见 [`.doc/splash_mechanism.md`](.doc/splash_mechanism.md)。
 
 - [lottie 动画参考 1](https://lottiefiles.com/featured)
 - [lottie 动画参考 2](https://iconscout.com/lottie-animations/)
@@ -2817,7 +2826,7 @@ class MyHomePage extends StatelessWidget {
 
 - [日志系统规范](.doc/contributor_logging_guide.md) - 了解如何正确使用 `XlyLogger` 进行日志输出
 - [异常处理与 Zone 决策](.doc/error_handling.md) - 库与应用边界、为什么不再默认开 Zone Guard、`installErrorHandlers` / `onError` 设计、踩坑场景
-- [启动叠层 MySplash](.doc/splash_mechanism.md) - 与路由解绑、`bootstrap` 门闩、`run` / `putAsync`、跨平台静帧
+- [启动叠层 MySplash](.doc/splash_mechanism.md) - 揭开公式、三层初始化、动画时间点推算、兜底默认值、失败页与重启、启动阶梯、原生启动画面
 - [桌面窗口启动显隐](.doc/desktop_window_launch.md) - `showWindowOnInit` / 首帧出示 / 任务栏，勿把静默当防闪
 - [路径与 userData](.doc/user_data_paths.md) - app / userData 双轨、`Session.prepare`、何时用 Store / Picker
 - [MyPicker 与启动编排](.doc/user_data_picker.md) - 系统选夹、`onAfterApply`、与 `MySelector` 边界

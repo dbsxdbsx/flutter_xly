@@ -116,11 +116,16 @@ class MyBootstrapContractError extends StateError {
 /// 首页数据层应 `await MyApp.bootstrapReady`，不要对未就绪依赖直接 `Get.find`。
 ///
 /// 任意工作走 [run]。登记异步 GetX 服务走 [putAsync]。
+///
+/// 列表按顺序执行。会在主线程同步跑上百毫秒的任务（解析大文件、建索引、
+/// 同步读库）标 [afterSplashMotion]：它和排在它后面的任务等启动动画的大动作
+/// 做完再跑，动画不会被卡住；揭开前仍会等它们跑完。
 class MyBootstrapTask {
   MyBootstrapTask._(
     this._body, {
     this.severity = MyBootstrapSeverity.degraded,
     this.debugLabel,
+    this.afterSplashMotion = false,
   });
 
   /// 任意会完成的工作。返回类型由闭包推断，不会预先钉成 `void`。
@@ -128,11 +133,13 @@ class MyBootstrapTask {
     Future<T> Function() body, {
     MyBootstrapSeverity severity = MyBootstrapSeverity.degraded,
     String? debugLabel,
+    bool afterSplashMotion = false,
   }) {
     return MyBootstrapTask._(
       () => _executeGuarded(body),
       severity: severity,
       debugLabel: debugLabel,
+      afterSplashMotion: afterSplashMotion,
     );
   }
 
@@ -143,17 +150,23 @@ class MyBootstrapTask {
     String? debugLabel,
     bool permanent = false,
     String? tag,
+    bool afterSplashMotion = false,
   }) {
     return run(
       () => Get.putAsync<T>(builder, permanent: permanent, tag: tag),
       severity: severity,
       debugLabel: debugLabel,
+      afterSplashMotion: afterSplashMotion,
     );
   }
 
   final Future<void> Function() _body;
   final MyBootstrapSeverity severity;
   final String? debugLabel;
+
+  /// 等启动动画的大动作做完再开始（见类注释）。后台层（`backgroundBootstrap`）
+  /// 本来就在揭开之后才跑，不看这个标志。
+  final bool afterSplashMotion;
 
   /// 门闩与测试调用。
   Future<void> execute() => _body();

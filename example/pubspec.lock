@@ -952,7 +952,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "0.58.2"
+    version: "0.59.0"
   xml:
     dependency: transitive
     description:

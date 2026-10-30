@@ -5,6 +5,8 @@
 library;
 
 import 'dart:async';
+import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -13,6 +15,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:lottie/lottie.dart' show AssetLottie, Lottie, LottieComposition;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:window_manager/window_manager.dart';
@@ -24,7 +27,6 @@ import 'src/platform.dart';
 import 'src/single_instance.dart';
 import 'src/storage/my_storage.dart';
 import 'src/smart_dock/smart_dock_manager.dart';
-import 'src/splash.dart';
 import 'src/toast/toast.dart';
 import 'src/tray/my_tray.dart';
 import 'src/window_enums.dart';
@@ -36,5 +38,8 @@ export 'src/app/desktop_window_gestures.dart';
 export 'src/app/desktop_window_launch.dart';
 
 part 'src/app/models.dart';
+part 'src/app/boot_trace.dart';
+part 'src/app/splash_animation.dart';
 part 'src/app/splash_gate.dart';
+part 'src/app/splash.dart';
 part 'src/app/my_app.dart';

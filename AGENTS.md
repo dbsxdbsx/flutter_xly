@@ -2,7 +2,7 @@
 
 > 项目级 AI agent onboarding 入口（[Agentic AI Foundation 开放标准](https://github.com/agentic-ai-foundation/agentsmd)）。
 > 本文件只记录仓库内可共享的事实、约定与索引；个人 Cursor Rules / Skills 不写入此处。
-> 最近更新：2026-09-14（`showWindowOnInit` 与首帧出示拆开）。
+> 最近更新：2026-10-30（启动叠层：动画时间点推算、三层初始化、失败页、启动阶梯）。
 
 ## 1. Project Identity
 
@@ -10,7 +10,7 @@
 - **主语言 / 框架**：Dart 3.5+、Flutter 3.7+；GetX、window_manager、flutter_screenutil 等（部分在 `lib/xly.dart` 再导出）。
 - **阶段**：Beta（持续发版，`CHANGELOG.md` 跟踪）。
 - **仓库**：<https://github.com/dbsxdbsx/flutter_xly>
-- **当前版本**：`pubspec.yaml` → `0.58.0`（**0.58.0** 窗口启动显隐与首帧出示拆开；**0.57.2** `MyCard.below`；见 `CHANGELOG`）。
+- **当前版本**：`pubspec.yaml` → `0.59.0`（**0.59.0** 启动叠层重做；**0.58.0** 窗口启动显隐与首帧出示拆开；见 `CHANGELOG`）。
 
 ## 2. Project Map
 
@@ -24,7 +24,8 @@ xly/
 │   ├── picker.dart           # MyPicker.dir/file/files（可选；Web 为桩）
 │   ├── notify.dart / tray.dart / text_editor.dart / scaffold.dart / selector.dart / smart_dock.dart
 │   └── src/
-│       ├── app/              # app.dart 的 part：models + splash_gate + my_app；另含 desktop_window_gestures / desktop_window_launch
+│       ├── app/              # app.dart 的 part：models + boot_trace + splash_animation + splash_gate + splash + my_app；另含 desktop_window_gestures / desktop_window_launch
+│       ├── splash.dart       # 兼容旧导入路径，只转导出 app.dart 里的 MySplash 系列
 │       ├── storage/          # MyStorage：命名 GetStorage 容器
 │       ├── platform.dart     # MyPlatform：平台检测、权限、窗口
 │       ├── paths/            # MyPaths、DirStore、DirValidator、Session
@@ -56,7 +57,7 @@ xly/
 - 改 **MyApp 启动 / Zone / 异常** → `lib/app.dart`、`lib/src/app/`、`.doc/error_handling.md`
 - 改 **桌面窗口启动显隐 / 静默驻留** → `lib/src/app/desktop_window_launch.dart`、`MyApp.showWindowOnInit`、[`.doc/desktop_window_launch.md`](.doc/desktop_window_launch.md)
 - 改 **桌面拖窗 / 双击最大化** → `lib/src/app/desktop_window_gestures.dart`、`CustomDragArea`、[`.doc/desktop_window_gestures.md`](.doc/desktop_window_gestures.md)
-- 改 **MySplash / 启动叠层** → `lib/src/splash.dart`、`lib/src/app/splash_gate.dart`、[`.doc/splash_mechanism.md`](.doc/splash_mechanism.md)
+- 改 **MySplash / 启动叠层** → `lib/src/app/splash.dart`（画面）、`splash_gate.dart`（门闩）、`splash_animation.dart`（素材与时间点）、`boot_trace.dart`（启动阶梯）、[`.doc/splash_mechanism.md`](.doc/splash_mechanism.md)
 - 改 **GetStorage / 浮窗持久化** → `lib/src/storage/my_storage.dart`、[`.doc/local_storage.md`](.doc/local_storage.md)
 - 改 **Windows 通知** → `lib/src/notify/`、`.doc/my_notify_usage_guide.md`
 - 改 **菜单系统（MyMenu / MyMenuAnchor / MyMenuButton）** → `lib/src/menu/`
@@ -72,7 +73,7 @@ xly/
 | 安装依赖 | `flutter pub get` | 根目录；`example/` 需单独 `pub get` 若跑示例 |
 | 全量测试 | `flutter test` | |
 | 路径测试 | `flutter test test/my_paths_test.dart` | |
-| 启动叠层门闩 | `flutter test test/splash_gate_test.dart` | |
+| 启动叠层 | `flutter test test/splash_gate_test.dart test/splash_animation_test.dart test/splash_face_test.dart test/boot_trace_test.dart` | 门闩 / 时间点推算 / 画面 / 启动阶梯 |
 | 桌面窗口启动策略 | `flutter test test/desktop_window_launch_test.dart` | `showWindowOnInit` 与首帧出示正交 |
 | bootstrap 登记类型 | `flutter test test/bootstrap_put_async_test.dart` | `run<T>` / `putAsync<T>` 对 `void` 推断 |
 | 桌面拖窗 / 双击分流 | `flutter test test/desktop_window_gestures_test.dart test/window_drag_gesture_recognizer_test.dart` | 连点不最大化；鼠标手抖不拖窗 |
@@ -121,9 +122,9 @@ xly/
 
 ## 5. Active Context
 
-- **最近完成**：**0.58.0** `showWindowOnInit` 只表示启动后窗口在不在（默认显示）；等首帧出示改走 `deferShowUntilFirstFrame`（有 `splash` 时默认开）。静默驻留会 `MyTray.hide()` 对齐状态。
-- **上一轮**：**0.57.2** `MyCard.below` / `MyCardList.cardBelow`。
-- **上一版**：**0.57.1** 桌面双击分流；**0.57.0** `MyBootstrapTask.run` / `putAsync`。
+- **最近完成**：**0.59.0** 启动叠层：从 Lottie 推定格帧和大动作结束点、`afterSplashMotion` / `backgroundBootstrap` 三层初始化、慢提示与失败页（`onRestart`）、`brandBuilder` / `captionBuilder`、淡出、`MyBootTrace`。
+- **上一轮**：**0.58.2** 可拖卡片鼠标按下即拖；**0.58.0** `showWindowOnInit` 与首帧出示拆开。
+- **上一版**：**0.57.2** `MyCard.below`；**0.57.0** `MyBootstrapTask.run` / `putAsync`。
 - **后续**：见 [`.issue/xly-package-hygiene-backlog.md`](.issue/xly-package-hygiene-backlog.md)（可选：可配置持久化键前缀）。
 
 > **公开仓库纪律**：`AGENTS.md` / `README` / `CHANGELOG` / `.doc/` 中**禁止**写入未开源消费者项目名、内部路径或私有仓库线索。
@@ -138,7 +139,7 @@ xly/
 - [`.doc/my_scrim_usage.md`](.doc/my_scrim_usage.md) — **MyToast.showScrim 作用域遮罩**（宿主模式、builder 自定义、scrimButtonStyle）
 - [`.issue/xly-package-hygiene-backlog.md`](.issue/xly-package-hygiene-backlog.md) — 可选增强待办
 - [`.doc/error_handling.md`](.doc/error_handling.md)
-- [`.doc/splash_mechanism.md`](.doc/splash_mechanism.md) — **MySplash / 启动叠层**（门闩公式、`bootstrap`、`run` / `putAsync`、跨平台静帧）
+- [`.doc/splash_mechanism.md`](.doc/splash_mechanism.md) — **MySplash / 启动叠层**（揭开公式、三层初始化、动画时间点、兜底默认值、失败页与重启、启动阶梯、原生启动画面）
 - [`.doc/desktop_window_launch.md`](.doc/desktop_window_launch.md) — **桌面窗口启动**（显隐 / 首帧出示 / 任务栏，勿把静默当防闪）
 - [`.doc/desktop_window_gestures.md`](.doc/desktop_window_gestures.md) — **桌面拖窗 / 双击最大化**（禁止外层 `onDoubleTap`、命中分类、`MyDoubleClickConsumeZone`）
 - [`.doc/my_notify_usage_guide.md`](.doc/my_notify_usage_guide.md)

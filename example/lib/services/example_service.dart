@@ -6,9 +6,13 @@ class ExampleService extends GetxService {
 
   static const showWindowOnInitKey = 'show_window_on_init';
   static const hideTaskBarIconKey = 'hide_task_bar_icon';
+  static const showSplashOnLaunchKey = 'show_splash_on_launch';
 
   /// 本次进程启动时实际传给 [MyApp.initialize] 的值，由 `main` 写入。
   static bool thisLaunchShowWindowOnInit = false;
+
+  /// 本次启动是否播放了启动画面，由 `main` 写入。
+  static bool thisLaunchShowSplash = true;
 
   final windowDraggable = true.obs;
   final windowResizable = false.obs;
@@ -24,6 +28,10 @@ class ExampleService extends GetxService {
 
   static bool readHideTaskBarIcon() {
     return MyStorage.box.read<bool>(hideTaskBarIconKey) ?? false;
+  }
+
+  static bool readShowSplashOnLaunch() {
+    return MyStorage.box.read<bool>(showSplashOnLaunchKey) ?? true;
   }
 
   @override
@@ -68,6 +76,10 @@ class ExampleService extends GetxService {
   Future<void> setHideTaskBarIcon(bool hide) async {
     hideTaskBarIcon.value = hide;
     await _storage.write(hideTaskBarIconKey, hide);
+  }
+
+  Future<void> setShowSplashOnLaunch(bool enabled) async {
+    await _storage.write(showSplashOnLaunchKey, enabled);
   }
 
   Future<void> setWindowDraggable(bool enabled) async {
