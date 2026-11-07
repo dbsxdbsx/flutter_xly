@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
+import '_durable_write.dart';
 import '_path_safety.dart';
 
 /// [MyPaths] 用户数据轨内部状态。
@@ -74,27 +75,7 @@ class UserDataPathState {
     return logs;
   }
 
-  static int _atomicWriteCounter = 0;
-
-  static Future<void> atomicWriteString(File file, String content) async {
-    // 临时文件名带 pid + 时间戳 + 进程内自增序号，确保并发写同一目标时
-    // 各自持有独立 .tmp，避免多个调用共用一个 .tmp 互相 rename 踩踏
-    // （在移动端会表现为 ENOENT：源 .tmp 已被另一次调用移走）。
-    final unique =
-        '$pid.${DateTime.now().microsecondsSinceEpoch}.${_atomicWriteCounter++}';
-    final tmpFile = File('${file.path}.$unique.tmp');
-    try {
-      await tmpFile.writeAsString(content);
-      try {
-        await tmpFile.rename(file.path);
-      } on FileSystemException {
-        if (await file.exists()) await file.delete();
-        await tmpFile.rename(file.path);
-      }
-    } finally {
-      try {
-        if (await tmpFile.exists()) await tmpFile.delete();
-      } catch (_) {}
-    }
+  static Future<void> atomicWriteString(File file, String content) {
+    return durableReplaceString(file, content);
   }
 }

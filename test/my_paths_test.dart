@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart'
@@ -72,6 +73,50 @@ void main() {
       await MyPaths.atomicWriteString(file, 'hello');
       expect(await file.readAsString(), 'hello');
     });
+
+    test('atomicWriteString 覆盖旧内容且不留 .tmp', () async {
+      final dir = Directory.systemTemp.createTempSync('xly_user_data_');
+      MyPaths.setUserDataDir(dir.path);
+      final file = await MyPaths.userDataDirFile('atomic_test.json');
+      await MyPaths.atomicWriteString(file, 'old');
+      await MyPaths.atomicWriteString(file, 'new');
+      expect(await file.readAsString(), 'new');
+      expect(
+        dir.listSync().where((e) => e.path.endsWith('.tmp')),
+        isEmpty,
+      );
+    });
+
+    // Dart 打开文件不共享删除，正好模拟杀毒 / 同步盘占着目标：
+    // 短暂占用靠重试写进去；一直占着则抛出且旧内容不动。
+    test('atomicWriteString 目标被占用时重试，一直占着则保留旧内容', () async {
+      final dir = Directory.systemTemp.createTempSync('xly_user_data_');
+      MyPaths.setUserDataDir(dir.path);
+      final file = await MyPaths.userDataDirFile('held.json');
+      await file.writeAsString('old');
+
+      final briefly = await file.open();
+      unawaited(
+        Future<void>.delayed(const Duration(milliseconds: 40), briefly.close),
+      );
+      await MyPaths.atomicWriteString(file, 'new');
+      expect(await file.readAsString(), 'new');
+
+      final held = await file.open();
+      try {
+        await expectLater(
+          MyPaths.atomicWriteString(file, 'lost'),
+          throwsA(isA<FileSystemException>()),
+        );
+      } finally {
+        await held.close();
+      }
+      expect(await file.readAsString(), 'new');
+      expect(
+        dir.listSync().where((e) => e.path.endsWith('.tmp')),
+        isEmpty,
+      );
+    }, skip: !Platform.isWindows);
 
     test('userDataLogsDir 创建 logs 子目录', () async {
       final dir = Directory.systemTemp.createTempSync('xly_user_data_');

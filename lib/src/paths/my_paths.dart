@@ -74,7 +74,9 @@ class MyPaths {
     return _copyAssetToDir(assetRelativePath, app: false);
   }
 
-  /// 原子写入：先写 `.tmp` 再 rename。
+  /// 原子且耐断电的写入：先写 `.tmp` 并刷盘，再 rename 覆盖。
+  ///
+  /// 断电后文件要么是旧内容要么是新内容；rename 被短暂占用会重试，仍失败则保留旧文件并抛出。
   static Future<void> atomicWriteString(File file, String content) {
     return UserDataPathState.atomicWriteString(file, content);
   }

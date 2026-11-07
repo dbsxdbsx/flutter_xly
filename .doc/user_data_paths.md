@@ -79,7 +79,7 @@ flowchart LR
 | `userDataDirFile(relativePath)` | `Future<File>` | userData 轨下文件 |
 | `userDataLogsDir()` | `Future<String>` | `logs/` 子目录 |
 | `copyAssetToAppDir` / `copyAssetToUserDataDir` | `Future<File>` | 从 `assets/` 复制（目标不存在时写入） |
-| `atomicWriteString(file, content)` | `Future<void>` | 原子写 |
+| `atomicWriteString(file, content)` | `Future<void>` | 原子写：`.tmp` 刷盘后改名覆盖，断电后要么旧要么新；改名短暂被占用会重试，仍失败保留旧文件并抛出 |
 
 `relativePath`：可为 `'config.json'` 或 `'logs/app.log'`；禁止 `..` 与绝对路径。
 

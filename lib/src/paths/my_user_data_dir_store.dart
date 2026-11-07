@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import '_durable_write.dart';
+
 /// 将用户选择的数据目录路径保存在系统应用支持目录（bootstrap 指针），
 /// 以便下次启动时定位真实数据位置。
 class MyUserDataDirStore {
@@ -68,14 +70,6 @@ class MyUserDataDirStore {
 
     final content = const JsonEncoder.withIndent('  ')
         .convert(buildJsonPayload(normalized));
-
-    final tmp = File('${file.path}.tmp');
-    await tmp.writeAsString(content);
-    try {
-      await tmp.rename(file.path);
-    } on FileSystemException {
-      if (await file.exists()) await file.delete();
-      await tmp.rename(file.path);
-    }
+    await durableReplaceString(file, content);
   }
 }
