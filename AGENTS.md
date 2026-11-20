@@ -2,7 +2,7 @@
 
 > 项目级 AI agent onboarding 入口（[Agentic AI Foundation 开放标准](https://github.com/agentic-ai-foundation/agentsmd)）。
 > 本文件只记录仓库内可共享的事实、约定与索引；个人 Cursor Rules / Skills 不写入此处。
-> 最近更新：2026-10-30（启动叠层：动画时间点推算、三层初始化、失败页、启动阶梯）。
+> 最近更新：2026-11-20（`0.60.0`：`MyHorizontalScroller` / `MySegmentedToggle`、`MyToast.showLoadingThenToast(loadingDelay)`、紧凑滑块同帧 `RenderBox` 布局与全局桌面双击/拖窗命中升级）。
 
 ## 1. Project Identity
 
@@ -10,7 +10,7 @@
 - **主语言 / 框架**：Dart 3.5+、Flutter 3.7+；GetX、window_manager、flutter_screenutil 等（部分在 `lib/xly.dart` 再导出）。
 - **阶段**：Beta（持续发版，`CHANGELOG.md` 跟踪）。
 - **仓库**：<https://github.com/dbsxdbsx/flutter_xly>
-- **当前版本**：`pubspec.yaml` → `0.59.0`（**0.59.0** 启动叠层重做；**0.58.0** 窗口启动显隐与首帧出示拆开；见 `CHANGELOG`）。
+- **当前版本**：`pubspec.yaml` → `0.60.0`（**0.60.0** `MyHorizontalScroller` / `MySegmentedToggle` 与桌面交互命中修复；**0.59.0** 启动叠层重做；见 `CHANGELOG`）。
 
 ## 2. Project Map
 
@@ -62,6 +62,8 @@ xly/
 - 改 **Windows 通知** → `lib/src/notify/`、`.doc/my_notify_usage_guide.md`
 - 改 **菜单系统（MyMenu / MyMenuAnchor / MyMenuButton）** → `lib/src/menu/`
 - 改 **Toast / 作用域遮罩（MyToast / MyScrimHost / showScrim）** → `lib/src/toast/`、[`.doc/my_scrim_usage.md`](.doc/my_scrim_usage.md)
+- 改 **横向滚动条（MyHorizontalScroller / MyHorizontalScrollerController）** → `lib/src/horizontal_scroller.dart`、`test/horizontal_scroller_test.dart`
+- 改 **物理滑块分段开关（MySegmentedToggle / MyToggleOption）** → `lib/src/segmented_toggle.dart`、`test/segmented_toggle_test.dart`
 - 改 **CLI** → `bin/`、`tool/`
 
 `analysis_options.yaml` 排除：`lib/xly.dart`、`user_code/**`。
@@ -78,6 +80,7 @@ xly/
 | bootstrap 登记类型 | `flutter test test/bootstrap_put_async_test.dart` | `run<T>` / `putAsync<T>` 对 `void` 推断 |
 | 桌面拖窗 / 双击分流 | `flutter test test/desktop_window_gestures_test.dart test/window_drag_gesture_recognizer_test.dart` | 连点不最大化；鼠标手抖不拖窗 |
 | 卡片 below 布局 | `flutter test test/card_below_layout_test.dart` | `MyCard.below` 左对齐标题并伸到 trailing 底下 |
+| 横滚容器 / 分段开关 | `flutter test test/horizontal_scroller_test.dart test/segmented_toggle_test.dart` | 内部拖滑、头尾动态锚定/粘尾、跨段拖滑、窗口缩放对齐 |
 | 静态分析 | `flutter analyze` | |
 | 跑示例 | `cd example && flutter run` | 桌面需对应平台工程 |
 
@@ -122,9 +125,9 @@ xly/
 
 ## 5. Active Context
 
-- **最近完成**：**0.59.0** 启动叠层：从 Lottie 推定格帧和大动作结束点、`afterSplashMotion` / `backgroundBootstrap` 三层初始化、慢提示与失败页（`onRestart`）、`brandBuilder` / `captionBuilder`、淡出、`MyBootTrace`。
-- **上一轮**：**0.58.2** 可拖卡片鼠标按下即拖；**0.58.0** `showWindowOnInit` 与首帧出示拆开。
-- **上一版**：**0.57.2** `MyCard.below`；**0.57.0** `MyBootstrapTask.run` / `putAsync`。
+- **最近完成**：**0.60.0** `MyHorizontalScroller`（内部拖滑 + 头尾动态增删锚定/粘尾）、`MySegmentedToggle`（连续物理滑块 + 同帧 `RenderBox` 布局）、`MySegmentedControl` 紧凑缩放修复、`MyToast.showLoadingThenToast(loadingDelay)`、全局桌面双击/拖窗命中升级及 `MyPaths.atomicWriteString` 刷盘原子写。
+- **上一轮**：**0.59.0** 启动叠层（Lottie 时间点推算、三层初始化、失败页、`MyBootTrace`）；**0.58.2** 可拖卡片鼠标按下即拖。
+- **上一版**：**0.58.0** `showWindowOnInit` 与首帧出示拆开；**0.57.2** `MyCard.below`。
 - **后续**：见 [`.issue/xly-package-hygiene-backlog.md`](.issue/xly-package-hygiene-backlog.md)（可选：可配置持久化键前缀）。
 
 > **公开仓库纪律**：`AGENTS.md` / `README` / `CHANGELOG` / `.doc/` 中**禁止**写入未开源消费者项目名、内部路径或私有仓库线索。

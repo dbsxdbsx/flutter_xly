@@ -1,6 +1,12 @@
+import 'dart:math' as math;
+import 'dart:ui' show lerpDouble;
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+import '../app/desktop_window_gestures.dart';
 import 'tab.dart';
 import 'tab_controller.dart';
 
@@ -10,8 +16,8 @@ import 'tab_controller.dart';
 /// 通常由 [MyTabView] 内部使用，也可以单独使用。
 ///
 /// **布局模式**：通过 [fit] 参数控制水平布局行为：
-/// - [MyTabBarFit.stretched]：各 Tab 等宽拉伸填满容器（默认）
-/// - [MyTabBarFit.compact]：各 Tab 按内容收缩，整体宽度由内容决定
+/// - [MyTabBarFit.stretched]：各 Tab 等宽拉伸填满容器
+/// - [MyTabBarFit.compact]：各 Tab 按内容收缩，整体宽度由内容决定（默认）
 ///
 /// **选中态滑块动画**：切换 Tab 时，选中态背景会平滑滑动到目标 Tab 位置，
 /// 可通过 [slideDuration] 和 [slideCurve] 自定义动画行为。
@@ -47,7 +53,7 @@ class MySegmentedControl extends StatefulWidget {
   /// Tab 控制器
   final MyTabController controller;
 
-  /// 水平布局模式（默认 [MyTabBarFit.stretched]）
+  /// 水平布局模式（默认 [MyTabBarFit.compact]）
   final MyTabBarFit fit;
 
   /// 背景色（默认：亮色 #E2E3E6，暗色 #2B2E33）
@@ -81,22 +87,24 @@ class MySegmentedControl extends StatefulWidget {
   State<MySegmentedControl> createState() => _MySegmentedControlState();
 }
 
-class _MySegmentedControlState extends State<MySegmentedControl> {
-  // compact 模式下用于测量每个 Tab 按钮实际位置和宽度的 key
-  List<GlobalKey> _tabKeys = [];
-  // compact 模式下 Row 的 key，用于计算相对坐标
-  final GlobalKey _rowKey = GlobalKey();
-  // compact 模式下存储测量到的滑块位置和宽度
-  double? _slideLeft;
-  double? _slideWidth;
-  // 是否已完成首次测量（compact 模式下首帧不显示滑块动画）
-  bool _hasMeasured = false;
+class _MySegmentedControlState extends State<MySegmentedControl>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _posController;
+
+  Duration get _slideDuration =>
+      widget.slideDuration ?? const Duration(milliseconds: 200);
+  Curve get _slideCurve => widget.slideCurve ?? Curves.easeInOut;
+  double get _maxPos =>
+      widget.tabs.isEmpty ? 0.0 : (widget.tabs.length - 1).toDouble();
 
   @override
   void initState() {
     super.initState();
     widget.controller.addListener(_onTabChanged);
-    _initKeys();
+    _posController = AnimationController.unbounded(
+      vsync: this,
+      value: widget.controller.index.toDouble().clamp(0.0, _maxPos),
+    );
   }
 
   @override
@@ -105,49 +113,39 @@ class _MySegmentedControlState extends State<MySegmentedControl> {
     if (oldWidget.controller != widget.controller) {
       oldWidget.controller.removeListener(_onTabChanged);
       widget.controller.addListener(_onTabChanged);
-    }
-    // Tab 数量变化时重新初始化 keys
-    if (oldWidget.tabs.length != widget.tabs.length) {
-      _initKeys();
-      _hasMeasured = false;
+      _posController.stop();
+      _posController.value =
+          widget.controller.index.toDouble().clamp(0.0, _maxPos);
+    } else if (oldWidget.tabs.length != widget.tabs.length) {
+      _posController.stop();
+      _posController.value =
+          widget.controller.index.toDouble().clamp(0.0, _maxPos);
     }
   }
 
   @override
   void dispose() {
     widget.controller.removeListener(_onTabChanged);
+    _posController.dispose();
     super.dispose();
-  }
-
-  void _initKeys() {
-    _tabKeys = List.generate(widget.tabs.length, (_) => GlobalKey());
   }
 
   void _onTabChanged() {
     if (!mounted) return;
-    if (_isCompact) {
-      _measureAndUpdate();
+    final target = widget.controller.index.toDouble().clamp(0.0, _maxPos);
+    if ((_posController.value - target).abs() > 0.001) {
+      _posController.animateTo(
+        target,
+        duration: _slideDuration,
+        curve: _slideCurve,
+      );
+    } else {
+      _posController.value = target;
     }
     setState(() {});
   }
 
   bool get _isCompact => widget.fit == MyTabBarFit.compact;
-
-  /// compact 模式下测量指定 Tab 的位置
-  void _measureAndUpdate() {
-    final index = widget.controller.index;
-    if (index >= _tabKeys.length) return;
-
-    final tabKey = _tabKeys[index];
-    final tabBox = tabKey.currentContext?.findRenderObject() as RenderBox?;
-    final rowBox = _rowKey.currentContext?.findRenderObject() as RenderBox?;
-    if (tabBox == null || rowBox == null) return;
-
-    final offset = tabBox.localToGlobal(Offset.zero, ancestor: rowBox);
-    _slideLeft = offset.dx;
-    _slideWidth = tabBox.size.width;
-    _hasMeasured = true;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -170,33 +168,33 @@ class _MySegmentedControlState extends State<MySegmentedControl> {
             spreadRadius: 0.5.r,
           ),
         ];
-    final slideDuration =
-        widget.slideDuration ?? const Duration(milliseconds: 200);
-    final slideCurve = widget.slideCurve ?? Curves.easeInOut;
 
-    final container = Container(
-      padding: padding,
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: borderRadius,
-        boxShadow: boxShadow,
+    return MyDoubleClickConsumeZone(
+      child: Container(
+        padding: padding,
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: borderRadius,
+          boxShadow: boxShadow,
+        ),
+        child: _isCompact
+            ? _buildCompactBody(
+                isLight,
+                dividerColor,
+                dividerWidth,
+                dividerIndent,
+                _slideDuration,
+              )
+            : _buildStretchedBody(
+                isLight,
+                dividerColor,
+                dividerWidth,
+                dividerIndent,
+                _slideDuration,
+                _slideCurve,
+              ),
       ),
-      child: _isCompact
-          ? _buildCompactBody(isLight, dividerColor, dividerWidth,
-              dividerIndent, slideDuration, slideCurve)
-          : _buildStretchedBody(isLight, dividerColor, dividerWidth,
-              dividerIndent, slideDuration, slideCurve),
     );
-
-    // compact 模式下首帧后进行测量
-    if (_isCompact && !_hasMeasured) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _measureAndUpdate();
-        if (mounted) setState(() {});
-      });
-    }
-
-    return container;
   }
 
   // ─────────────────────────────────────────────────────────
@@ -256,7 +254,7 @@ class _MySegmentedControlState extends State<MySegmentedControl> {
   }
 
   // ─────────────────────────────────────────────────────────
-  // compact 模式：IntrinsicWidth + GlobalKey 测量
+  // compact 模式：自定义 RenderBox 同帧布局（无缓存、窗口缩放零错位）
   // ─────────────────────────────────────────────────────────
 
   Widget _buildCompactBody(
@@ -265,40 +263,22 @@ class _MySegmentedControlState extends State<MySegmentedControl> {
     double dividerWidth,
     double dividerIndent,
     Duration slideDuration,
-    Curve slideCurve,
   ) {
     final activeIndex = widget.controller.index;
 
-    return IntrinsicHeight(
-      child: IntrinsicWidth(
-        child: Stack(
-          children: [
-            // ── 底层：选中态滑块（首帧前隐藏，避免位置跳动） ──
-            if (_hasMeasured && _slideLeft != null && _slideWidth != null)
-              AnimatedPositioned(
-                duration: slideDuration,
-                curve: slideCurve,
-                left: _slideLeft!,
-                top: 0,
-                bottom: 0,
-                width: _slideWidth!,
-                child: _buildSlideDecoration(isLight, activeIndex),
-              ),
-            // ── 上层：Tab 按钮 + 分隔线 ──
-            Row(
-              key: _rowKey,
-              mainAxisSize: MainAxisSize.min,
-              children: _buildChildren(
-                dividerColor,
-                dividerWidth,
-                dividerIndent,
-                slideDuration,
-                useExpanded: false,
-              ),
-            ),
-          ],
+    return _CompactSegmentedControlLayout(
+      position: _posController,
+      tabCount: widget.tabs.length,
+      children: [
+        IgnorePointer(child: _buildSlideDecoration(isLight, activeIndex)),
+        ..._buildChildren(
+          dividerColor,
+          dividerWidth,
+          dividerIndent,
+          slideDuration,
+          useExpanded: false,
         ),
-      ),
+      ],
     );
   }
 
@@ -367,7 +347,6 @@ class _MySegmentedControlState extends State<MySegmentedControl> {
       }
 
       final button = _TabButton(
-        key: _isCompact ? _tabKeys[i] : null,
         tab: widget.tabs[i],
         active: i == activeIndex,
         onTap: () => widget.controller.index = i,
@@ -381,12 +360,234 @@ class _MySegmentedControlState extends State<MySegmentedControl> {
 }
 
 // ─────────────────────────────────────────────────────────
+// 内部布局引擎：compact 模式零缓存同帧定位滑块
+// ─────────────────────────────────────────────────────────
+
+class _CompactSegmentedControlLayout extends MultiChildRenderObjectWidget {
+  const _CompactSegmentedControlLayout({
+    required this.position,
+    required this.tabCount,
+    required super.children,
+  });
+
+  final ValueListenable<double> position;
+  final int tabCount;
+
+  @override
+  _RenderCompactSegmentedControlLayout createRenderObject(
+    BuildContext context,
+  ) {
+    return _RenderCompactSegmentedControlLayout(
+      position: position,
+      tabCount: tabCount,
+    );
+  }
+
+  @override
+  void updateRenderObject(
+    BuildContext context,
+    _RenderCompactSegmentedControlLayout renderObject,
+  ) {
+    renderObject
+      ..position = position
+      ..tabCount = tabCount;
+  }
+}
+
+class _CompactSegmentedParentData extends ContainerBoxParentData<RenderBox> {}
+
+class _RenderCompactSegmentedControlLayout extends RenderBox
+    with
+        ContainerRenderObjectMixin<RenderBox, _CompactSegmentedParentData>,
+        RenderBoxContainerDefaultsMixin<RenderBox,
+            _CompactSegmentedParentData> {
+  _RenderCompactSegmentedControlLayout({
+    required ValueListenable<double> position,
+    required int tabCount,
+  })  : _position = position,
+        _tabCount = tabCount;
+
+  ValueListenable<double> _position;
+  set position(ValueListenable<double> value) {
+    if (_position == value) return;
+    if (attached) _position.removeListener(_onPositionChanged);
+    _position = value;
+    if (attached) _position.addListener(_onPositionChanged);
+    markNeedsLayout();
+  }
+
+  int _tabCount;
+  set tabCount(int value) {
+    if (_tabCount == value) return;
+    _tabCount = value;
+    markNeedsLayout();
+  }
+
+  @override
+  void attach(PipelineOwner owner) {
+    super.attach(owner);
+    _position.addListener(_onPositionChanged);
+  }
+
+  @override
+  void detach() {
+    _position.removeListener(_onPositionChanged);
+    super.detach();
+  }
+
+  void _onPositionChanged() {
+    markNeedsLayout();
+  }
+
+  @override
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! _CompactSegmentedParentData) {
+      child.parentData = _CompactSegmentedParentData();
+    }
+  }
+
+  List<RenderBox> _rowChildren() {
+    final result = <RenderBox>[];
+    final thumb = firstChild;
+    if (thumb == null) return result;
+    var child = childAfter(thumb);
+    while (child != null) {
+      result.add(child);
+      child = childAfter(child);
+    }
+    return result;
+  }
+
+  @override
+  double computeMinIntrinsicWidth(double height) {
+    var sum = 0.0;
+    for (final child in _rowChildren()) {
+      sum += child.getMinIntrinsicWidth(height);
+    }
+    return sum;
+  }
+
+  @override
+  double computeMaxIntrinsicWidth(double height) {
+    var sum = 0.0;
+    for (final child in _rowChildren()) {
+      sum += child.getMaxIntrinsicWidth(height);
+    }
+    return sum;
+  }
+
+  @override
+  double computeMinIntrinsicHeight(double width) {
+    var maxH = 0.0;
+    for (final child in _rowChildren()) {
+      maxH = math.max(maxH, child.getMinIntrinsicHeight(double.infinity));
+    }
+    return maxH;
+  }
+
+  @override
+  double computeMaxIntrinsicHeight(double width) {
+    var maxH = 0.0;
+    for (final child in _rowChildren()) {
+      maxH = math.max(maxH, child.getMaxIntrinsicHeight(double.infinity));
+    }
+    return maxH;
+  }
+
+  @override
+  void performLayout() {
+    final thumb = firstChild;
+    final rowChildren = _rowChildren();
+    if (thumb == null || rowChildren.isEmpty || _tabCount <= 0) {
+      size = constraints.smallest;
+      return;
+    }
+
+    final double trackHeight;
+    if (constraints.hasTightHeight) {
+      trackHeight = constraints.maxHeight;
+    } else {
+      var h = constraints.minHeight;
+      for (final child in rowChildren) {
+        h = math.max(h, child.getMaxIntrinsicHeight(double.infinity));
+      }
+      trackHeight = h.clamp(constraints.minHeight, constraints.maxHeight);
+    }
+
+    final natWidths = List<double>.filled(rowChildren.length, 0.0);
+    var naturalTotal = 0.0;
+    for (var i = 0; i < rowChildren.length; i++) {
+      final w = rowChildren[i].getMaxIntrinsicWidth(trackHeight);
+      natWidths[i] = w;
+      naturalTotal += w;
+    }
+
+    final scale = (constraints.hasBoundedWidth &&
+            naturalTotal > constraints.maxWidth &&
+            naturalTotal > 0)
+        ? constraints.maxWidth / naturalTotal
+        : 1.0;
+
+    final tabLefts = <double>[];
+    final tabWidths = <double>[];
+    var cursorX = 0.0;
+    for (var i = 0; i < rowChildren.length; i++) {
+      final child = rowChildren[i];
+      final w = math.max(0.0, natWidths[i] * scale);
+      child.layout(
+        BoxConstraints.tightFor(width: w, height: trackHeight),
+        parentUsesSize: true,
+      );
+      (child.parentData! as _CompactSegmentedParentData).offset =
+          Offset(cursorX, 0.0);
+      // 偶数索引（0, 2, 4...）是 Tab 按钮，奇数索引是分隔线。
+      if (i.isEven) {
+        tabLefts.add(cursorX);
+        tabWidths.add(child.size.width);
+      }
+      cursorX += child.size.width;
+    }
+
+    size = constraints.constrain(Size(cursorX, trackHeight));
+
+    if (tabLefts.isEmpty) {
+      thumb.layout(const BoxConstraints.tightFor(width: 0, height: 0));
+      return;
+    }
+
+    final maxPos = (tabLefts.length - 1).toDouble();
+    final pos = _position.value.clamp(0.0, maxPos);
+    final lo = pos.floor().clamp(0, tabLefts.length - 1);
+    final hi = pos.ceil().clamp(0, tabLefts.length - 1);
+    final t = pos - lo;
+    final left = lerpDouble(tabLefts[lo], tabLefts[hi], t)!;
+    final width = math.max(0.0, lerpDouble(tabWidths[lo], tabWidths[hi], t)!);
+
+    thumb.layout(
+      BoxConstraints.tightFor(width: width, height: size.height),
+      parentUsesSize: false,
+    );
+    (thumb.parentData! as _CompactSegmentedParentData).offset =
+        Offset(left, 0.0);
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    defaultPaint(context, offset);
+  }
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) {
+    return defaultHitTestChildren(result, position: position);
+  }
+}
+
+// ─────────────────────────────────────────────────────────
 // 内部组件：单个 Tab 按钮（不再渲染选中态背景，由滑块层负责）
 // ─────────────────────────────────────────────────────────
 
 class _TabButton extends StatefulWidget {
   const _TabButton({
-    super.key,
     required this.tab,
     required this.active,
     required this.onTap,
@@ -452,27 +653,29 @@ class _TabButtonState extends State<_TabButton> {
           duration: const Duration(milliseconds: 150),
           curve: Curves.easeInOut,
           alignment: Alignment.center,
-          padding: padding,
           decoration: BoxDecoration(
             color: backgroundColor,
             borderRadius: borderRadius,
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (widget.tab.icon != null) ...[
-                widget.tab.icon!,
-                SizedBox(width: 4.w),
-              ],
-              Flexible(
-                child: Text(
-                  widget.tab.label,
-                  style: textStyle,
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
+          child: Padding(
+            padding: padding,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (widget.tab.icon != null) ...[
+                  widget.tab.icon!,
+                  SizedBox(width: 4.w),
+                ],
+                Flexible(
+                  child: Text(
+                    widget.tab.label,
+                    style: textStyle,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

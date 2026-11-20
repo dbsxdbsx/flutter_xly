@@ -290,6 +290,114 @@ void main() {
           10,
         ));
   });
+
+  testWidgets('MyHorizontalScroller 显式尺寸按逻辑像素直接使用，默认值只缩放一次', (tester) async {
+    _configureView(tester);
+    final chips = [
+      for (var i = 0; i < 12; i++)
+        const SizedBox(
+            width: 60, height: 28, child: ColoredBox(color: Colors.blue)),
+    ];
+
+    // 显式参数：逻辑像素直接生效，不二次缩放
+    await _pumpScaled(
+      tester,
+      SizedBox(
+        width: 200,
+        height: 36,
+        child: MyHorizontalScroller(
+          fadeWidth: 23,
+          indicatorHitWidth: 31,
+          indicatorIconSize: 17,
+          child: Row(children: chips),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final explicitBox = tester.widget<SizedBox>(
+      find.byKey(MyHorizontalScroller.trailingIndicatorKey),
+    );
+    final explicitIcon = tester.widget<Icon>(
+      find.descendant(
+        of: find.byKey(MyHorizontalScroller.trailingIndicatorKey),
+        matching: find.byType(Icon),
+      ),
+    );
+    expect(explicitBox.width, 31);
+    expect(explicitIcon.size, 17);
+
+    // 默认参数：只按 ScreenUtil 缩放一次
+    await _pumpScaled(
+      tester,
+      SizedBox(
+        width: 200,
+        height: 36,
+        child: MyHorizontalScroller(
+          child: Row(children: chips),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final scaleWidth = _testSize.width / _designSize.width;
+    final defaultBox = tester.widget<SizedBox>(
+      find.byKey(MyHorizontalScroller.trailingIndicatorKey),
+    );
+    final defaultIcon = tester.widget<Icon>(
+      find.descendant(
+        of: find.byKey(MyHorizontalScroller.trailingIndicatorKey),
+        matching: find.byType(Icon),
+      ),
+    );
+    expect(defaultBox.width, closeTo(26 * scaleWidth, 0.001));
+    expect(defaultIcon.size, closeTo(16 * scaleWidth, 0.001));
+  });
+
+  testWidgets('MySegmentedToggle 显式尺寸按逻辑像素直接使用，默认值只缩放一次', (tester) async {
+    _configureView(tester);
+
+    await _pumpScaled(
+      tester,
+      MySegmentedToggle<String>(
+        value: 'a',
+        onChanged: (_) {},
+        fontSize: 13,
+        iconSize: 15,
+        options: const [
+          MyToggleOption(value: 'a', label: '手动', icon: Icons.lock_outline),
+          MyToggleOption(value: 'b', label: '智能', icon: Icons.auto_awesome),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.widget<Text>(find.text('手动')).style!.fontSize, 13);
+    expect(tester.widget<Icon>(find.byIcon(Icons.lock_outline)).size, 15);
+
+    await _pumpScaled(
+      tester,
+      MySegmentedToggle<String>(
+        value: 'a',
+        onChanged: (_) {},
+        options: const [
+          MyToggleOption(value: 'a', label: '手动', icon: Icons.lock_outline),
+          MyToggleOption(value: 'b', label: '智能', icon: Icons.auto_awesome),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final scaleWidth = _testSize.width / _designSize.width;
+    expect(
+      tester.widget<Text>(find.text('手动')).style!.fontSize,
+      closeTo(11 * scaleWidth, 0.001),
+    );
+    expect(
+      tester.widget<Icon>(find.byIcon(Icons.lock_outline)).size,
+      closeTo(12 * scaleWidth, 0.001),
+    );
+  });
 }
 
 void _configureView(WidgetTester tester) {

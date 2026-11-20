@@ -41,3 +41,5 @@ export 'src/tray/tray.dart';
 export 'src/notify/lib.dart';
 export 'src/loading_dot.dart';
 export 'src/tab_view/lib.dart';
+export 'src/horizontal_scroller.dart';
+export 'src/segmented_toggle.dart';

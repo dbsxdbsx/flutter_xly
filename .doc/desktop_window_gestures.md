@@ -20,17 +20,23 @@ Listener（只观察指针，不进竞技场）
         └── 页面内容
 ```
 
-1. **双击判定只在 Listener 层做**，用两次鼠标 DOWN/UP 的时间与距离，对照 `kDoubleTapTimeout` / `kDoubleTapSlop`。
-2. 第二次 DOWN 时立刻 `classifyDesktopHit`，避免内层回调改树后，UP 时把交互区误判成空白。
+1. **双击判定只在 Listener 层做**，仅响应鼠标主键（`kPrimaryMouseButton`），用两次鼠标 DOWN/UP 的时间与距离对照 `kDoubleTapTimeout` / `kDoubleTapSlop`。
+2. **每一击按下都执行 `classifyDesktopHit`**：只要按下命中非 `background`，立刻清零双击态。既防止在交互控件上连点两下穿透全屏，也防止第 1 击点掉消失型按钮后、第 2 击落在露出的背景上被误算成空白处双击。
 3. 分类结果：
 
 | 命中 | 含义 | 窗口最大化 |
 |------|------|------------|
-| `editable` | `RenderEditable`（`TextField` / `MyTextEditor` / `MySpinBox` 数字区） | 否，留给选词 / 获焦 |
-| `interactive` | 带 tap 语义的 `GestureDetector` / `InkWell`，或 `MyDoubleClickConsumeZone` | 否，连点留给控件 |
-| `background` | 空白、只有滚动/拖拽语义的区域 | 是 |
+| `editable` | `RenderEditable` 或 `Semantics(textField: true)`（`TextField` / `MyTextEditor` / `MySpinBox` 数字区） | 否，留给选词 / 获焦 |
+| `interactive` | `MyDoubleClickConsumeZone`、`RenderSemanticsGestureHandler`（`onTap` / `onLongPress`）、`RenderSemanticsAnnotations`（`button` / `link` / `slider` / `toggled` / `checked` / `mixed` / `onTap` / `onLongPress` / `onIncrease` / `onDecrease`）或带交互光标（`click` / `grab` / `text` / `move` / `resize*` 等）的 `MouseTrackerAnnotation` | 否，连点留给控件 |
+| `background` | 空白、只有滚动/拖拽语义、`showRightMenu`、纯展示卡片等非交互区 | 是 |
+
+> 为什么不能只查 `RenderSemanticsGestureHandler`：Flutter 的 `InkWell` / `InkResponse` 会给内部 `GestureDetector` 传 `excludeFromSemantics: true`，改由外层 `Semantics`（`RenderSemanticsAnnotations`）与 `MouseRegion` 表达交互。因此必须同时检查后两层，才能覆盖 `MyButton`、`ElevatedButton`、`TextButton`、`IconButton`、`MyCard`、`FilterChip`、`Switch`、`Checkbox`、`Radio`、`Slider` 等全部标准控件。
 
 `Scrollable` 也会挂 `RenderSemanticsGestureHandler`，但 `onTap == null`，仍算空白——列表空隙可以双击最大化。
+
+## 整窗拖拽自动避让
+
+`MyWindowDragGestureRecognizer.isPointerAllowed` 除尊重 `MyWindowDragExcludeZone` 外，还会自动跳过非鼠标主键以及落点命中输入框、按钮、开关、滑块与文本/拖拽光标区域的 pointer，防止划选文字或按下按钮拖出取消时把整扇窗口拖走；同时刻意保留普通非可排序 `MyCard` 与空白区的整窗拖拽能力。
 
 ## 硬约束
 

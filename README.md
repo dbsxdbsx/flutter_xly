@@ -64,6 +64,8 @@ XLY 是一个 Flutter 懒人工具包，提供了一些常用的功能和组件�
 36. 路径双轨(`MyPaths` app / userData；`MyUserDataDirStore` / `MyUserDataDirSession` 启动编排) — 见 [`.doc/user_data_paths.md`](.doc/user_data_paths.md)
 37. 系统文件/夹选择(`MyPicker`，封装 `file_selector`；与 `MySelector` 应用内列表分离) — 见 [`.doc/user_data_picker.md`](.doc/user_data_picker.md)
 38. 桌面双击消费区(`MyDoubleClickConsumeZone`)(标记 Listener-only 自定义控件，避免连点/双击穿透到窗口最大化；`MySpinBox` / `MyTextEditor` 已内置，见 [`.doc/desktop_window_gestures.md`](.doc/desktop_window_gestures.md))
+39. 横向滚动容器(`MyHorizontalScroller` / `MyHorizontalScrollerController`)(支持桌面鼠标内部拖滑不拖母窗、悬停垂直滚轮横滚、边缘渐变遮罩与 `<` / `>` 翻页箭头，以及头部增删同帧视口锚定与尾部智能粘尾/自动滚入视野)
+40. 物理滑块分段开关(`MySegmentedToggle` / `MyToggleOption`)(值驱动的 2~N 段胶囊开关，支持点击与满程跟手拖滑、实时颜色/宽度插值、松手零倒车与失败自动回弹，以及等宽/紧凑两种窗口缩放零错位布局)
 
 ## 内置依赖包
 

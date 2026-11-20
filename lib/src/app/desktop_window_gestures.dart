@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 /// 整窗拖拽的判定阈值（逻辑像素）。
@@ -25,12 +26,23 @@ class MyWindowDragGestureRecognizer extends PanGestureRecognizer {
   /// 否则关掉拖窗后它照样会赢下 pan，把子组件的拖拽吞掉。
   bool Function()? isEnabled;
 
-  /// 按下点落在 [MyWindowDragExcludeZone] 里的 pointer 不追踪：
-  /// 让卡片长按拖动、滑块等子组件独自走竞技场，而不是靠 12px 阈值赛跑。
+  /// 按下点落在 [MyWindowDragExcludeZone]、输入框、按钮、开关、滑块等自有拖拽/
+  /// 点击取消语义的控件，或非鼠标主键时，不追踪该 pointer：
+  /// 让卡片长按拖动、文本划选、滑块、按钮拉出取消等原生交互独自走竞技场，
+  /// 而不是被外层整窗拖拽劫持。
   @override
   bool isPointerAllowed(PointerEvent event) {
     if (isEnabled != null && !isEnabled!()) return false;
     if (_windowDragExcludedPointers.contains(event.pointer)) return false;
+    if (event.kind == PointerDeviceKind.mouse &&
+        event is PointerDownEvent &&
+        event.buttons != kPrimaryMouseButton) {
+      return false;
+    }
+    if (event is PointerDownEvent &&
+        _shouldExcludeWindowDragAt(event.position)) {
+      return false;
+    }
     return super.isPointerAllowed(event);
   }
 
@@ -64,18 +76,27 @@ enum MyDesktopHitKind {
 /// 通过 hit test 分类 [globalPosition] 的交互属性。
 ///
 /// 检测顺序：
-/// 1. [RenderEditable] → 输入框
-/// 2. [RenderMyDoubleClickConsumeZone] → 显式标记
-/// 3. [RenderSemanticsGestureHandler.onTap] 非空 → InkWell / 带 onTap 或
-///    onTapDown 的 [GestureDetector] 等
+/// 1. [RenderEditable] / `Semantics(textField: true)` → 输入框（`editable`）
+/// 2. [RenderMyDoubleClickConsumeZone] → 显式标记（`interactive`）
+/// 3. [RenderSemanticsGestureHandler]（`onTap != null || onLongPress != null`）→
+///    带点击/长按的 [GestureDetector]
+/// 4. [RenderSemanticsAnnotations]（`button` / `link` / `slider` / `toggled` /
+///    `checked` / `mixed` / `onTap` / `onLongPress` / `onIncrease` / `onDecrease`）→
+///    `ElevatedButton` / `MyButton` / `IconButton` / `InkWell` / `MyCard` /
+///    `FilterChip` / `Switch` / `Checkbox` / `Radio` 等全部标准交互控件
+///    （注：Flutter 的 `InkWell` 会给内部 `GestureDetector` 传
+///    `excludeFromSemantics: true`，改由外层 `Semantics` + `MouseRegion`
+///    表达交互，因此必须检测本层）
+/// 5. [MouseTrackerAnnotation]（含 [RenderMouseRegion] 与可点击 `TextSpan`）的
+///    交互光标（`click` / `grab` / `grabbing` / `text` / `move` / `resize*`）→
+///    覆盖 `Slider`、可点击富文本链接等自定义指针控件
 ///
-/// [Scrollable] 等只有 scroll/drag 语义的 handler（`onTap == null`）不算交互，
-/// 这样列表空白处仍能双击最大化。
+/// [Scrollable] 等只有 scroll/drag 语义的 handler（`onTap == null`）以及
+/// 仅有 `scopesRoute` / `label` / `MouseCursor.defer` 的容器仍判为 `background`，
+/// 保证页面空白处、列表空白处、整页 `showRightMenu` 仍能正常双击最大化。
 ///
-/// Flutter 只要存在 [TapGestureRecognizer]（包括仅 `onSecondaryTapDown`）
-/// 就会填上非空 `onTap`。整页右键请用 `showRightMenu`（内部是 Listener），
-/// 不要自行用 `GestureDetector(onSecondaryTapDown)` 包一整页。整页
-/// `GestureDetector(onTap: unfocus)` 同样会关掉空白处最大化。
+/// 若自定义控件既不用标准交互组件、也没挂交互光标、只靠 [Listener] 或仅
+/// `GestureDetector(onDoubleTap: ...)` 响应，请套 [MyDoubleClickConsumeZone]。
 MyDesktopHitKind classifyDesktopHit(Offset globalPosition) {
   final viewId =
       WidgetsBinding.instance.platformDispatcher.implicitView?.viewId;
@@ -85,23 +106,119 @@ MyDesktopHitKind classifyDesktopHit(Offset globalPosition) {
   WidgetsBinding.instance.hitTestInView(result, globalPosition, viewId);
 
   var hasEditable = false;
-  var hasConsumeZone = false;
-  var hasTapInteractive = false;
+  var hasInteractive = false;
 
   for (final entry in result.path) {
     final target = entry.target;
-    if (target is RenderEditable) hasEditable = true;
-    if (target is RenderMyDoubleClickConsumeZone) hasConsumeZone = true;
-    if (target is RenderSemanticsGestureHandler && target.onTap != null) {
-      hasTapInteractive = true;
+    if (target is RenderEditable) {
+      hasEditable = true;
+      continue;
+    }
+    if (target is RenderMyDoubleClickConsumeZone) {
+      hasInteractive = true;
+      continue;
+    }
+    if (target is RenderSemanticsGestureHandler &&
+        (target.onTap != null || target.onLongPress != null)) {
+      hasInteractive = true;
+      continue;
+    }
+    if (target is RenderSemanticsAnnotations) {
+      final props = target.properties;
+      if (props.textField == true) {
+        hasEditable = true;
+      } else if (_hasInteractiveSemantics(props)) {
+        hasInteractive = true;
+      }
+      continue;
+    }
+    if (target case MouseTrackerAnnotation(:final cursor)
+        when _isInteractiveCursor(cursor)) {
+      hasInteractive = true;
     }
   }
 
   if (hasEditable) return MyDesktopHitKind.editable;
-  if (hasConsumeZone || hasTapInteractive) {
-    return MyDesktopHitKind.interactive;
-  }
+  if (hasInteractive) return MyDesktopHitKind.interactive;
   return MyDesktopHitKind.background;
+}
+
+bool _hasInteractiveSemantics(SemanticsProperties props) {
+  return props.button == true ||
+      props.link == true ||
+      props.slider == true ||
+      props.toggled != null ||
+      props.checked != null ||
+      props.mixed == true ||
+      props.onTap != null ||
+      props.onLongPress != null ||
+      props.onIncrease != null ||
+      props.onDecrease != null;
+}
+
+bool _isInteractiveCursor(MouseCursor cursor) {
+  return cursor == SystemMouseCursors.click ||
+      cursor == SystemMouseCursors.grab ||
+      cursor == SystemMouseCursors.grabbing ||
+      cursor == SystemMouseCursors.text ||
+      cursor == SystemMouseCursors.verticalText ||
+      cursor == SystemMouseCursors.move ||
+      cursor == SystemMouseCursors.resizeLeftRight ||
+      cursor == SystemMouseCursors.resizeUpDown ||
+      cursor == SystemMouseCursors.resizeColumn ||
+      cursor == SystemMouseCursors.resizeRow ||
+      cursor == SystemMouseCursors.resizeUpLeftDownRight ||
+      cursor == SystemMouseCursors.resizeUpRightDownLeft;
+}
+
+bool _isDragConflictCursor(MouseCursor cursor) {
+  return cursor == SystemMouseCursors.text ||
+      cursor == SystemMouseCursors.verticalText ||
+      cursor == SystemMouseCursors.grab ||
+      cursor == SystemMouseCursors.grabbing ||
+      cursor == SystemMouseCursors.move ||
+      cursor == SystemMouseCursors.resizeLeftRight ||
+      cursor == SystemMouseCursors.resizeUpDown ||
+      cursor == SystemMouseCursors.resizeColumn ||
+      cursor == SystemMouseCursors.resizeRow ||
+      cursor == SystemMouseCursors.resizeUpLeftDownRight ||
+      cursor == SystemMouseCursors.resizeUpRightDownLeft;
+}
+
+/// 命中点落在输入框、按钮、开关、滑块或拖拽/文本光标区域时，禁止外层整窗拖拽劫持。
+///
+/// 刻意不排除仅带 `InkWell(onTap)` + `click` 光标的普通大面积卡片（如 `MyCard`），
+/// 以便隐藏系统标题栏的桌面页仍可在非可排序卡片上拖窗。
+bool _shouldExcludeWindowDragAt(Offset globalPosition) {
+  final viewId =
+      WidgetsBinding.instance.platformDispatcher.implicitView?.viewId;
+  if (viewId == null) return false;
+
+  final result = HitTestResult();
+  WidgetsBinding.instance.hitTestInView(result, globalPosition, viewId);
+
+  for (final entry in result.path) {
+    final target = entry.target;
+    if (target is RenderEditable) return true;
+    if (target is RenderSemanticsAnnotations) {
+      final props = target.properties;
+      if (props.textField == true ||
+          props.button == true ||
+          props.slider == true ||
+          props.toggled != null ||
+          props.checked != null ||
+          props.mixed == true ||
+          props.onIncrease != null ||
+          props.onDecrease != null) {
+        return true;
+      }
+    }
+    if (target case MouseTrackerAnnotation(:final cursor)
+        when _isDragConflictCursor(cursor)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 /// 双击消费区域：标记子树为交互区，阻止桌面端双击穿透到窗口最大化。
@@ -151,16 +268,22 @@ class MyWindowDragExcludeZone extends StatelessWidget {
     super.key,
     required this.child,
     this.behavior = HitTestBehavior.deferToChild,
+    this.enabled = true,
   });
 
   final Widget child;
   final HitTestBehavior behavior;
 
+  /// 为 `false` 时不拦截整窗拖拽，同时保持子树结构稳定不重挂。
+  final bool enabled;
+
   @override
   Widget build(BuildContext context) {
     return Listener(
       behavior: behavior,
-      onPointerDown: (e) => _windowDragExcludedPointers.add(e.pointer),
+      onPointerDown: (e) {
+        if (enabled) _windowDragExcludedPointers.add(e.pointer);
+      },
       onPointerUp: (e) => _windowDragExcludedPointers.remove(e.pointer),
       onPointerCancel: (e) => _windowDragExcludedPointers.remove(e.pointer),
       child: child,

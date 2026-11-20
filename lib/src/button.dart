@@ -133,32 +133,35 @@ class MyButton extends StatelessWidget {
 
   Widget _buildCubeButton() {
     final effectiveSize = size ?? _defaultSize;
-    return Container(
-      width: effectiveSize,
-      height: effectiveSize,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(_effectiveCornerRadius),
-        border: Border.all(
-          color: outlineColor,
-          width: outlineWidth,
-        ),
-        color: gradient == null ? backgroundColor : null,
-        gradient: gradient,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 4.w,
-            offset: Offset(2.w, 2.w),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(_effectiveCornerRadius),
-        child: InkWell(
-          onTap: onPressed,
+    return Semantics(
+      button: true,
+      child: Container(
+        width: effectiveSize,
+        height: effectiveSize,
+        decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(_effectiveCornerRadius),
-          child: _buildButtonContent(isCube: true),
+          border: Border.all(
+            color: outlineColor,
+            width: outlineWidth,
+          ),
+          color: gradient == null ? backgroundColor : null,
+          gradient: gradient,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.2),
+              blurRadius: 4.w,
+              offset: Offset(2.w, 2.w),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(_effectiveCornerRadius),
+          child: InkWell(
+            onTap: onPressed,
+            borderRadius: BorderRadius.circular(_effectiveCornerRadius),
+            child: _buildButtonContent(isCube: true),
+          ),
         ),
       ),
     );

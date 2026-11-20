@@ -9,6 +9,7 @@ import 'pages/page11.dart';
 import 'pages/page12.dart';
 import 'pages/page13.dart';
 import 'pages/page14_paths.dart';
+import 'pages/page15_horizontal_scroller.dart';
 import 'pages/page2.dart';
 import 'pages/page3.dart';
 import 'pages/page4.dart';
@@ -148,6 +149,11 @@ void main() async {
         path: MyRoutes.page14Paths,
         page: const Page14Paths(),
         controller: () => Page14PathsController(),
+      ),
+      MyRoute<Page15HorizontalScrollerController>(
+        path: MyRoutes.page15HorizontalScroller,
+        page: const Page15HorizontalScrollerView(),
+        controller: () => Page15HorizontalScrollerController(),
       ),
     ],
     splash: const MySplash(
@@ -297,6 +303,14 @@ void main() async {
             group: '面板组件',
             route: MyRoutes.page14Paths,
           ),
+          MyAdaptiveNavigationItem(
+            icon: Icon(Icons.swap_horiz_outlined),
+            selectedIcon: Icon(Icons.swap_horiz),
+            label: '横滚与滑块开关',
+            subtitle: 'MyHorizontalScroller / Toggle',
+            group: '面板组件',
+            route: MyRoutes.page15HorizontalScroller,
+          ),
         ],
         // 导航顶部 Header（Large+ 层级及 Compact 抽屉中显示）
         navigationHeader: const _NavigationHeader(),
@@ -357,6 +371,7 @@ class MyRoutes {
   static const String page12 = '/page12';
   static const String page13 = '/page13';
   static const String page14Paths = '/page14_paths';
+  static const String page15HorizontalScroller = '/page15_horizontal_scroller';
 }
 
 // ─────────────────────────────────────────────────────────

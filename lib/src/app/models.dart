@@ -264,15 +264,37 @@ class _CustomDragAreaState extends State<CustomDragArea> {
 
   static const _kTapMoveTolerance = kDoubleTapSlop;
 
+  void _resetTapTracking() {
+    _currentDownPos = null;
+    _preClassifiedHit = null;
+    _lastTapTime = null;
+    _lastTapPos = null;
+  }
+
   void _onPointerDown(PointerDownEvent event) {
     if (event.kind != PointerDeviceKind.mouse) return;
+    // 仅鼠标左键参与空白处双击最大化；右键/中键连点绝不触发最大化。
+    if (event.buttons != kPrimaryMouseButton) {
+      _resetTapTracking();
+      return;
+    }
+
+    // 每一击按下都做命中分类：只要按下落在交互控件或输入框上，就清零双击态。
+    // 既防止在按钮上连点两下穿透全屏，也防止第 1 击点掉消失型按钮后、
+    // 第 2 击落在露出的空白背景上被误判成“空白处双击”。
+    final downHit = classifyDesktopHit(event.position);
+    if (downHit != MyDesktopHitKind.background) {
+      _resetTapTracking();
+      return;
+    }
+
     _currentDownPos = event.position;
 
     if (_lastTapTime != null &&
         _lastTapPos != null &&
         DateTime.now().difference(_lastTapTime!) < kDoubleTapTimeout &&
         (event.position - _lastTapPos!).distance < kDoubleTapSlop) {
-      _preClassifiedHit = classifyDesktopHit(event.position);
+      _preClassifiedHit = downHit;
     } else {
       _preClassifiedHit = null;
     }
@@ -285,9 +307,7 @@ class _CustomDragAreaState extends State<CustomDragArea> {
     if (downPos == null) return;
 
     if ((event.position - downPos).distance > _kTapMoveTolerance) {
-      _lastTapTime = null;
-      _lastTapPos = null;
-      _preClassifiedHit = null;
+      _resetTapTracking();
       return;
     }
 
@@ -308,10 +328,7 @@ class _CustomDragAreaState extends State<CustomDragArea> {
 
   void _onPointerCancel(PointerCancelEvent event) {
     if (event.kind != PointerDeviceKind.mouse) return;
-    _currentDownPos = null;
-    _preClassifiedHit = null;
-    _lastTapTime = null;
-    _lastTapPos = null;
+    _resetTapTracking();
   }
 
   void _onMouseDoubleTap(Offset globalPosition) {

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -438,6 +440,7 @@ class MyToast extends StatelessWidget {
     Color? spinnerColor,
     Color? backgroundColor,
     bool stackPreviousToasts = false,
+    Duration loadingDelay = Duration.zero,
     void Function(String)? onOk,
     void Function(String)? onWarn,
     void Function(String)? onError,
@@ -448,21 +451,34 @@ class MyToast extends StatelessWidget {
     // 创建消息 ValueNotifier 用于动态更新
     final messageNotifier = ValueNotifier<String>(loadingMessage);
 
-    // 显示可动态更新的加载动画
-    Toast.show(
-      ValueListenableBuilder<String>(
-        valueListenable: messageNotifier,
-        builder: (context, message, _) => LoadingWidget(
-          message: message,
-          spinnerColor: spinnerColor,
-          backgroundColor: backgroundColor ?? _defaultBackgroundColor,
+    var loadingShown = false;
+    var taskDone = false;
+    Timer? delayTimer;
+
+    void showSpinner() {
+      if (loadingShown || taskDone) return;
+      loadingShown = true;
+      Toast.show(
+        ValueListenableBuilder<String>(
+          valueListenable: messageNotifier,
+          builder: (context, message, _) => LoadingWidget(
+            message: message,
+            spinnerColor: spinnerColor,
+            backgroundColor: backgroundColor ?? _defaultBackgroundColor,
+          ),
         ),
-      ),
-      key: spinnerKey,
-      dismissOthers: !stackPreviousToasts,
-      duration: const Duration(days: 365),
-      alignment: Alignment.center,
-    );
+        key: spinnerKey,
+        dismissOthers: !stackPreviousToasts,
+        duration: const Duration(days: 365),
+        alignment: Alignment.center,
+      );
+    }
+
+    if (loadingDelay <= Duration.zero) {
+      showSpinner();
+    } else {
+      delayTimer = Timer(loadingDelay, showSpinner);
+    }
 
     try {
       // 传入消息更新函数给 task
@@ -470,10 +486,14 @@ class MyToast extends StatelessWidget {
         messageNotifier.value = newMessage;
       });
 
-      // 移除加载动画
-      Toast.dismiss(spinnerKey);
-      // 添加短暂延迟确保动画平滑过渡
-      await Future.delayed(const Duration(milliseconds: 100));
+      taskDone = true;
+      delayTimer?.cancel();
+      if (loadingShown) {
+        // 移除加载动画
+        Toast.dismiss(spinnerKey);
+        // 添加短暂延迟确保动画平滑过渡
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
 
       // 只在消息不为 null 时显示结果 toast
       if (message != null) {
@@ -514,9 +534,13 @@ class MyToast extends StatelessWidget {
 
       return success;
     } catch (e) {
-      // 移除加载动画
-      Toast.dismiss(spinnerKey);
-      await Future.delayed(const Duration(milliseconds: 100));
+      taskDone = true;
+      delayTimer?.cancel();
+      if (loadingShown) {
+        // 移除加载动画
+        Toast.dismiss(spinnerKey);
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
 
       final errorMessage = e.toString();
       if (onError != null) {

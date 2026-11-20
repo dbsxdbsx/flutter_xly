@@ -1,7 +1,18 @@
-## Unreleased
+## 0.60.0 - 2026-11-20
+
+### Added
+
+- **`MyHorizontalScroller` 与 `MyHorizontalScrollerController`**：桌面与移动端通用的横向滚动容器。溢出时支持鼠标左键/手指内部拖滑（通过 `MyWindowDragExcludeZone` 隔绝母窗拖动，走标准手势竞技场避免误触子胶囊）、悬停垂直滚轮直接横滚、边缘渐变遮罩与 `<` / `>` 翻页按钮（单击步进、长按连滚、淡入淡出与脉冲轻弹提示）。未溢出时自动放行母窗拖动与外层竖滚。
+  - `MyHorizontalScrollerController.prepareLeadingChange`：头部（左侧）动态增删时按视口位置自适应——停在头部直接推入视野；滚离头部时在布局同帧补偿滚动偏移，眼前内容像素级锚定不跳飞，并在左侧增长时轻弹 `<` 箭头。
+  - `MyHorizontalScrollerController.notifyTrailingChange` 与 `MyHorizontalTrailingReveal`（`ifAtEnd` / `always` / `never`）：尾部（右侧）动态新增支持默认智能粘尾（后台流不打断前段浏览、已在尾端自动跟滚）与始终滚入视野（主动追加平滑滚到尾部，含带展开动画的子项）。
+- **`MySegmentedToggle<T>` 与 `MyToggleOption<T>`**：值驱动的物理滑块胶囊分段开关，支持等宽与紧凑模式（`equalWidth`）、点击与跨多段 1:1 满程跟手拖滑、位置/颜色/字色实时插值、松手零倒车交接与外部拒绝平滑回弹、未选中态（`value == null`）优雅缩隐，内置桌面防拖窗与防双击穿透。
+- **`MyToast.showLoadingThenToast` 新增 `loadingDelay`**：支持延迟显示加载遮罩，短于该阈值的快速异步任务零闪烁直出结果 Toast。
+- **example 新增第 15 页**（`Page15HorizontalScrollerView`）：展示 `MySegmentedToggle` 等宽/紧凑/异步回弹与 `MyHorizontalScroller` 内部拖滑及头尾双向动态增删。
 
 ### Fixed
 
+- **桌面端双击标准交互控件穿透触发整窗最大化**：Flutter 的 `InkWell` / `InkResponse` 对内部 `GestureDetector` 设置了 `excludeFromSemantics: true`，改由 `Semantics` + `MouseRegion` 表达交互；旧版 `classifyDesktopHit` 仅检 `RenderSemanticsGestureHandler.onTap`，导致双击 `MyButton`、`ElevatedButton`、`TextButton`、`IconButton`、`MyCard`、`FilterChip`、`Switch`、`Checkbox`、`Slider` 等控件时事件穿透触发 `windowManager.maximize()`。现升级 `classifyDesktopHit` 覆盖 `RenderSemanticsAnnotations` 与交互光标 `MouseTrackerAnnotation`，并加固 `CustomDragArea` 仅认鼠标主键且每击按下校验命中（防止第 1 击点掉消失型按钮后第 2 击误触发全屏）；`MyWindowDragGestureRecognizer` 同步排除非左键及输入框/按钮/开关/滑块等拖拽冲突区域，`MyButton` 方块形态补齐 `Semantics(button: true)`。
+- **`MySegmentedToggle` 与 `MySegmentedControl` 紧凑模式在窗口缩放后滑块错位**：原实现依赖 `GlobalKey` 测量缓存与 `postFrameCallback`（且 `AnimatedContainer` 动画化了 `padding`），拖动缩放窗口 X/Y 轴后滑块宽度与偏移与文字脱节。现改为自定义 `MultiChildRenderObjectWidget` / `RenderBox` 同帧实时布局并拆分静态 `Padding`，窗口任意倍缩放 0 延迟严丝合缝。
 - **`MyPaths.atomicWriteString` / `MyUserDataDirStore.save` 断电后可能读到整片零**：临时文件不刷盘就改名，文件系统可能只落了长度没落数据。现在先刷盘再改名，断电后要么旧内容要么新内容。
 - **改名失败时先删目标**：第二次改名再失败，新旧内容都没了。现在改名被短暂占用（杀毒、同步盘）时退避重试三次，仍失败则保留旧文件并抛出。
 
